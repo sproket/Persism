@@ -286,11 +286,8 @@ public class TestMSSQL extends BaseTest {
         } catch (Exception e) {
             log.warn(e);
         }
-        // TODO net.sf.persism.PersismException: com.microsoft.sqlserver.jdbc.SQLServerException: Incorrect syntax near the keyword 'identity'.
-        // TODO FOR NOW JUST CHANGE identity column To ID
-
-        String sql = "                       CREATE TABLE [dbo].[Contacts]( " +
-                " [ID] [uniqueidentifier] NOT NULL, " +
+        String sql = "CREATE TABLE [dbo].[Contacts]( " +
+                " [identity] [uniqueidentifier] NOT NULL, " +
                 " [PartnerID] [uniqueidentifier] NULL, " +
                 " [Type] [char](2) NOT NULL, " +
                 " [Firstname] [nvarchar](50) NULL, " +
@@ -324,7 +321,7 @@ public class TestMSSQL extends BaseTest {
 
         UUID id = UUID.randomUUID();
         Contact contact = new Contact();
-        contact.setId(id);
+        contact.setIdentity(id);
         contact.setFirstname("Fred");
         contact.setLastname("Flintstone");
         contact.setDivision("DIVISION X");

@@ -4,43 +4,21 @@
     <option name="ANALYZE_TEST_SOURCES" value="false" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="ae4eccaa-233f-45c5-91c7-c0a5a2b8b1e3" name="Default" comment="0.9.4b1 - Initial commit.">
-      <change afterPath="$PROJECT_DIR$/persism.2021-01-01.log" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/net/sf/persism/ConnectionTypes.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/test/net/sf/persism/dao/Contact.java" afterDir="false" />
+    <list default="true" id="ae4eccaa-233f-45c5-91c7-c0a5a2b8b1e3" name="Default" comment="0.9.4b2 - Cleaned up unit-tests">
+      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/PINF.iml" beforeDir="false" afterPath="$PROJECT_DIR$/PINF.iml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/derby.log" beforeDir="false" afterPath="$PROJECT_DIR$/derby.log" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/out/prod/net/sf/persism/Command.class" beforeDir="false" afterPath="$PROJECT_DIR$/out/prod/net/sf/persism/Command.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/prod/log4j.properties" beforeDir="false" afterPath="$PROJECT_DIR$/out/prod/log4j.properties" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/prod/logback.xml" beforeDir="false" afterPath="$PROJECT_DIR$/out/prod/logback.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/out/prod/net/sf/persism/MetaData$1.class" beforeDir="false" afterPath="$PROJECT_DIR$/out/prod/net/sf/persism/MetaData$1.class" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/out/prod/net/sf/persism/MetaData.class" beforeDir="false" afterPath="$PROJECT_DIR$/out/prod/net/sf/persism/MetaData.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/out/prod/net/sf/persism/Query$1.class" beforeDir="false" afterPath="$PROJECT_DIR$/out/prod/net/sf/persism/Query$1.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/out/prod/net/sf/persism/Query.class" beforeDir="false" afterPath="$PROJECT_DIR$/out/prod/net/sf/persism/Query.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/out/prod/net/sf/persism/Types.class" beforeDir="false" afterPath="$PROJECT_DIR$/out/prod/net/sf/persism/Types.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/out/test/net/sf/persism/AllTests.class" beforeDir="false" afterPath="$PROJECT_DIR$/out/test/net/sf/persism/AllTests.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/out/test/net/sf/persism/BaseTest.class" beforeDir="false" afterPath="$PROJECT_DIR$/out/test/net/sf/persism/BaseTest.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/out/test/net/sf/persism/TestDerby.class" beforeDir="false" afterPath="$PROJECT_DIR$/out/test/net/sf/persism/TestDerby.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/out/test/net/sf/persism/TestH2.class" beforeDir="false" afterPath="$PROJECT_DIR$/out/test/net/sf/persism/TestH2.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/out/test/net/sf/persism/TestMSSQL.class" beforeDir="false" afterPath="$PROJECT_DIR$/out/test/net/sf/persism/TestMSSQL.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/out/test/net/sf/persism/TestMySQL.class" beforeDir="false" afterPath="$PROJECT_DIR$/out/test/net/sf/persism/TestMySQL.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/out/test/net/sf/persism/TestNorthwind.class" beforeDir="false" afterPath="$PROJECT_DIR$/out/test/net/sf/persism/TestNorthwind.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/out/test/net/sf/persism/TestOracle.class" beforeDir="false" afterPath="$PROJECT_DIR$/out/test/net/sf/persism/TestOracle.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/out/test/net/sf/persism/TestPostgreSQL.class" beforeDir="false" afterPath="$PROJECT_DIR$/out/test/net/sf/persism/TestPostgreSQL.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/out/test/net/sf/persism/TestPubs.class" beforeDir="false" afterPath="$PROJECT_DIR$/out/test/net/sf/persism/TestPubs.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/out/test/net/sf/persism/TestSQLite.class" beforeDir="false" afterPath="$PROJECT_DIR$/out/test/net/sf/persism/TestSQLite.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/out/test/net/sf/persism/UtilsForTests.class" beforeDir="false" afterPath="$PROJECT_DIR$/out/test/net/sf/persism/UtilsForTests.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/out/test/net/sf/persism/dao/northwind/Category.class" beforeDir="false" afterPath="$PROJECT_DIR$/out/test/net/sf/persism/dao/northwind/Category.class" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/persism.log" beforeDir="false" afterPath="$PROJECT_DIR$/persism.log" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/net/sf/persism/Command.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/net/sf/persism/Command.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/log4j.properties" beforeDir="false" afterPath="$PROJECT_DIR$/src/log4j.properties" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/logback.xml" beforeDir="false" afterPath="$PROJECT_DIR$/src/logback.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/net/sf/persism/ConnectionTypes.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/net/sf/persism/ConnectionTypes.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/net/sf/persism/MetaData.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/net/sf/persism/MetaData.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/net/sf/persism/Query.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/net/sf/persism/Query.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/test/net/sf/persism/AllTests.java" beforeDir="false" afterPath="$PROJECT_DIR$/test/net/sf/persism/AllTests.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/test/net/sf/persism/BaseTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/test/net/sf/persism/BaseTest.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/test/net/sf/persism/TestMSSQL.java" beforeDir="false" afterPath="$PROJECT_DIR$/test/net/sf/persism/TestMSSQL.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/test/net/sf/persism/TestNorthwind.java" beforeDir="false" afterPath="$PROJECT_DIR$/test/net/sf/persism/TestNorthwind.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/test/net/sf/persism/TestPubs.java" beforeDir="false" afterPath="$PROJECT_DIR$/test/net/sf/persism/TestPubs.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/test/net/sf/persism/dao/northwind/Category.java" beforeDir="false" afterPath="$PROJECT_DIR$/test/net/sf/persism/dao/northwind/Category.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/todo.txt" beforeDir="false" afterPath="$PROJECT_DIR$/todo.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/test/net/sf/persism/dao/Contact.java" beforeDir="false" afterPath="$PROJECT_DIR$/test/net/sf/persism/dao/Contact.java" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -620,7 +598,7 @@
     <property name="options.searchVisible" value="true" />
     <property name="options.splitter.details.proportions" value="0.2" />
     <property name="options.splitter.main.proportions" value="0.3" />
-    <property name="project.structure.last.edited" value="Libraries" />
+    <property name="project.structure.last.edited" value="Project" />
     <property name="project.structure.proportion" value="0.15" />
     <property name="project.structure.side.proportion" value="0.2" />
     <property name="recentsLimit" value="5" />
@@ -903,7 +881,7 @@
       <workItem from="1609673891314" duration="87000" />
       <workItem from="1609674736780" duration="6000" />
       <workItem from="1609674765341" duration="60000" />
-      <workItem from="1609674840089" duration="9013000" />
+      <workItem from="1609674840089" duration="12862000" />
     </task>
     <task id="LOCAL-00001" summary="Update now uses Persistable">
       <created>1333275659133</created>
@@ -1038,7 +1016,14 @@
       <option name="project" value="LOCAL" />
       <updated>1609675525291</updated>
     </task>
-    <option name="localTasksCounter" value="20" />
+    <task id="LOCAL-00020" summary="0.9.4b2 - Cleaned up unit-tests">
+      <created>1609684364621</created>
+      <option name="number" value="00020" />
+      <option name="presentableId" value="LOCAL-00020" />
+      <option name="project" value="LOCAL" />
+      <updated>1609684364622</updated>
+    </task>
+    <option name="localTasksCounter" value="21" />
     <servers />
   </component>
   <component name="TodoView" selected-index="0">
@@ -1143,7 +1128,8 @@
     <MESSAGE value="0.9.2" />
     <MESSAGE value="0.9.3 - added support for clob and int and float as properties where the database may store long or doubles." />
     <MESSAGE value="0.9.4b1 - Initial commit." />
-    <option name="LAST_COMMIT_MESSAGE" value="0.9.4b1 - Initial commit." />
+    <MESSAGE value="0.9.4b2 - Cleaned up unit-tests" />
+    <option name="LAST_COMMIT_MESSAGE" value="0.9.4b2 - Cleaned up unit-tests" />
     <option name="MAKE_NEW_CHANGELIST_ACTIVE" value="true" />
   </component>
   <component name="XDebuggerManager">
@@ -1158,11 +1144,6 @@
           <url>file://$PROJECT_DIR$/test/net/sf/persism/TestMetaData.java</url>
           <line>29</line>
           <option name="timeStamp" value="2" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="java-line">
-          <url>file://$PROJECT_DIR$/src/net/sf/persism/Query.java</url>
-          <line>312</line>
-          <option name="timeStamp" value="16" />
         </line-breakpoint>
       </breakpoints>
       <default-breakpoints>

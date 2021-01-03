@@ -5,7 +5,7 @@ import java.util.Objects;
 import java.util.UUID;
 
 public final class Contact {
-    private UUID Id; // todo original name was "identity" which breaks everything... how to fix? Keyword list and add [] around everything.
+    private UUID identity;
     private UUID partnerId;
     private String type;
     private String firstname;
@@ -23,12 +23,12 @@ public final class Contact {
     private Date dateAdded;
     private Date lastModified;
 
-    public UUID getId() {
-        return Id;
+    public UUID getIdentity() {
+        return identity;
     }
 
-    public void setId(UUID id) {
-        this.Id = id;
+    public void setIdentity(UUID identity) {
+        this.identity = identity;
     }
 
     public UUID getPartnerId() {
@@ -164,18 +164,18 @@ public final class Contact {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         Contact contact = (Contact) o;
-        return Objects.equals(Id, contact.Id) && Objects.equals(partnerId, contact.partnerId) && Objects.equals(type, contact.type) && Objects.equals(firstname, contact.firstname) && Objects.equals(lastname, contact.lastname) && Objects.equals(contactName, contact.contactName) && Objects.equals(company, contact.company) && Objects.equals(division, contact.division) && Objects.equals(email, contact.email) && Objects.equals(address1, contact.address1) && Objects.equals(address2, contact.address2) && Objects.equals(city, contact.city) && Objects.equals(stateProvince, contact.stateProvince) && Objects.equals(zipPostalCode, contact.zipPostalCode) && Objects.equals(country, contact.country) && Objects.equals(dateAdded, contact.dateAdded) && Objects.equals(lastModified, contact.lastModified);
+        return Objects.equals(identity, contact.identity) && Objects.equals(partnerId, contact.partnerId) && Objects.equals(type, contact.type) && Objects.equals(firstname, contact.firstname) && Objects.equals(lastname, contact.lastname) && Objects.equals(contactName, contact.contactName) && Objects.equals(company, contact.company) && Objects.equals(division, contact.division) && Objects.equals(email, contact.email) && Objects.equals(address1, contact.address1) && Objects.equals(address2, contact.address2) && Objects.equals(city, contact.city) && Objects.equals(stateProvince, contact.stateProvince) && Objects.equals(zipPostalCode, contact.zipPostalCode) && Objects.equals(country, contact.country) && Objects.equals(dateAdded, contact.dateAdded) && Objects.equals(lastModified, contact.lastModified);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(Id, partnerId, type, firstname, lastname, contactName, company, division, email, address1, address2, city, stateProvince, zipPostalCode, country, dateAdded, lastModified);
+        return Objects.hash(identity, partnerId, type, firstname, lastname, contactName, company, division, email, address1, address2, city, stateProvince, zipPostalCode, country, dateAdded, lastModified);
     }
 
     @Override
     public String toString() {
         return "Contact{" +
-                "Id=" + Id +
+                "Id=" + identity +
                 ", partnerId=" + partnerId +
                 ", type='" + type + '\'' +
                 ", firstname='" + firstname + '\'' +

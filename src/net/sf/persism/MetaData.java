@@ -12,12 +12,8 @@ import java.sql.*;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
-import static net.sf.persism.ConnectionTypes.Oracle;
-
 /**
  * Meta data collected in a map singleton based on connection url
- * TODO make this class public and provide UpdateStatement, InsertStatement, etc Objects for end users. MAYBE
- * TODO Have some way to have a enum for DB Type for users to check if they or WE need to do something specific s
  *
  * @author Dan Howard
  * @since 3/31/12 4:19 PM
@@ -32,7 +28,6 @@ final class MetaData {
     // column to property map for each class
     private Map<Class, Map<String, PropertyInfo>> propertyInfoMap = new ConcurrentHashMap<Class, Map<String, PropertyInfo>>(32);
     private Map<Class, Map<String, ColumnInfo>> columnInfoMap = new ConcurrentHashMap<Class, Map<String, ColumnInfo>>(32);
-
 
     // table name for each class
     private Map<Class, String> tableMap = new ConcurrentHashMap<Class, String>(32);
@@ -60,7 +55,6 @@ final class MetaData {
     private static final Map<String, MetaData> metaData = new ConcurrentHashMap<String, MetaData>(4);
 
     ConnectionTypes connectionType;
-    // private String schemaPattern = null;
 
     private MetaData(Connection con) throws SQLException {
 
@@ -69,15 +63,10 @@ final class MetaData {
             throw new PersismException("Unsupported connection type " + con.getMetaData().getURL());
         }
 
-//        // oracle expects the schema pattern "%" for meta requests to work - this seems to work for each DB so FAR
-//        if (connectionType == Oracle) {
-//            schemaPattern = "%";
-//        }
-
         populateTableList(con);
     }
 
-    public static synchronized MetaData getInstance(Connection con) throws SQLException {
+    static synchronized MetaData getInstance(Connection con) throws SQLException {
 
         String url = con.getMetaData().getURL();
 
@@ -90,12 +79,9 @@ final class MetaData {
 
     // Unit tests
     static synchronized void removeInstance(Connection con) throws SQLException {
-
         String url = con.getMetaData().getURL();
         log.info("removing " + url);
-        if (metaData.containsKey(url)) {
-            metaData.remove(url);
-        }
+        metaData.remove(url);
     }
 
 
@@ -107,16 +93,15 @@ final class MetaData {
             return propertyInfoMap.get(objectClass);
         }
 
-        if (tableName.contains(" ")) {
-            tableName = "\"" + tableName + "\"";
-        }
+        String sd = connectionType.getKeywordStartDelimiter();
+        String ed = connectionType.getKeywordEndDelimiter();
 
         java.sql.ResultSet rs = null;
         Statement st = null;
         try {
             st = connection.createStatement();
-            rs = st.executeQuery("SELECT * FROM " + tableName + " WHERE 1=0"); // gives us real column names with case.
-
+            // gives us real column names with case.
+            rs = st.executeQuery(new StringBuilder().append("SELECT * FROM ").append(sd).append(tableName).append(ed).append(" WHERE 1=0").toString());
             return determineColumns(objectClass, rs);
         } catch (SQLException e) {
             throw new PersismException(e);
@@ -308,14 +293,14 @@ final class MetaData {
 
     List<String> getNamedParameters(String sql) {
         if (namedParams.containsKey(sql)) {
-             return namedParams.get(sql);
+            return namedParams.get(sql);
         }
 
         if (!sql.contains(":")) {
             return Collections.emptyList();
         }
 
-                  return null;
+        return null;
     }
 
     static synchronized <T> Collection<PropertyInfo> getPropertyInfo(Class<T> objectClass) {
@@ -423,18 +408,17 @@ final class MetaData {
         }
     }
 
-    public String getUpdateStatement(Object object, Connection connection) {
+    String getUpdateStatement(Object object, Connection connection) throws PersismException {
 
         if (object instanceof Persistable) {
 
             Map<String, PropertyInfo> changedColumns = getChangedColumns((Persistable) object, connection);
             if (changedColumns.size() == 0) {
-                return ""; // nothing changed.... TODO CALLER NEEDS TO HANDLE
+                throw new PersismException("No Changes detected in " + object);
             }
             // Note we don't not add Persistable updates to updateStatementsMap since they will be different all the time.
             return buildUpdateString(object, changedColumns.keySet().iterator(), connection);
         }
-
 
         if (updateStatementsMap.containsKey(object.getClass())) {
             return updateStatementsMap.get(object.getClass());
@@ -460,17 +444,14 @@ final class MetaData {
     }
 
 
-    public String getInsertStatement(Object object, Connection connection) throws PersismException {
+    String getInsertStatement(Object object, Connection connection) throws PersismException {
         // Note this will not include columns unless they have the associated property.
-
         if (insertStatementsMap.containsKey(object.getClass())) {
             return insertStatementsMap.get(object.getClass());
         }
         try {
             return determineInsertStatement(object, connection);
-        } catch (InvocationTargetException e) {
-            throw new PersismException(e);
-        } catch (IllegalAccessException e) {
+        } catch (InvocationTargetException | IllegalAccessException e) {
             throw new PersismException(e);
         }
     }
@@ -481,20 +462,17 @@ final class MetaData {
             return insertStatementsMap.get(object.getClass());
         }
 
-        // TODO THIS AFTER
-        // Create the insert statement. If the object is not extending PersistableObject then
+        // TODO Create the insert statement. If the object is not extending PersistableObject then
         // we can store it. Otherwise we need to always dynamically generate it.
         String tableName = getTableName(object.getClass(), connection);
-        if (tableName.contains(" ")) {
-            tableName = "\"" + tableName + "\"";
-        }
-
+        String sd = connectionType.getKeywordStartDelimiter();
+        String ed = connectionType.getKeywordEndDelimiter();
 
         Map<String, ColumnInfo> columns = columnInfoMap.get(object.getClass());
         Map<String, PropertyInfo> properties = getTableColumns(object.getClass(), connection);
 
         StringBuilder sb = new StringBuilder();
-        sb.append("INSERT INTO ").append(tableName).append(" (");
+        sb.append("INSERT INTO ").append(sd).append(tableName).append(ed).append(" (");
         String sep = "";
         boolean columnsHaveDefaults = false;
 
@@ -512,7 +490,7 @@ final class MetaData {
                     }
 
                 }
-                sb.append(sep).append(column.columnName);
+                sb.append(sep).append(sd).append(column.columnName).append(ed);
                 sep = ", ";
             }
         }
@@ -535,7 +513,6 @@ final class MetaData {
         }
         sb.append(") ");
 
-
         String insertStatement;
         insertStatement = sb.toString();
 
@@ -550,7 +527,6 @@ final class MetaData {
         }
 
         return insertStatement;
-
     }
 
     public String getDeleteStatement(Object object, Connection connection) {
@@ -567,20 +543,18 @@ final class MetaData {
         }
 
         String tableName = getTableName(object.getClass(), connection);
-        if (tableName.contains(" ")) {
-            tableName = "\"" + tableName + "\"";
-        }
+        String sd = connectionType.getKeywordStartDelimiter();
+        String ed = connectionType.getKeywordEndDelimiter();
 
         List<String> primaryKeys = getPrimaryKeys(object.getClass(), connection);
 
         StringBuilder sb = new StringBuilder();
-        sb.append("DELETE FROM ").append(tableName).append(" WHERE ");
+        sb.append("DELETE FROM ").append(sd).append(tableName).append(ed).append(" WHERE ");
         String sep = "";
         for (String column : primaryKeys) {
-            sb.append(sep).append(column).append(" = ?");
+            sb.append(sep).append(sd).append(column).append(ed).append(" = ?");
             sep = " AND ";
         }
-
 
         String deleteStatement = sb.toString();
 
@@ -606,21 +580,20 @@ final class MetaData {
             return selectStatementsMap.get(object.getClass());
         }
 
+        String sd = connectionType.getKeywordStartDelimiter();
+        String ed = connectionType.getKeywordEndDelimiter();
+
         String tableName = getTableName(object.getClass(), connection);
-        if (tableName.contains(" ")) {
-            tableName = "\"" + tableName + "\"";
-        }
 
         List<String> primaryKeys = getPrimaryKeys(object.getClass(), connection);
 
         StringBuilder sb = new StringBuilder();
-        sb.append("SELECT * FROM ").append(tableName).append(" WHERE ");
+        sb.append("SELECT * FROM ").append(sd).append(tableName).append(ed).append(" WHERE ");
         String sep = "";
         for (String column : primaryKeys) {
-            sb.append(sep).append(column).append(" = ?");
+            sb.append(sep).append(sd).append(column).append(ed).append(" = ?");
             sep = " AND ";
         }
-
 
         String selectStatement = sb.toString();
 
@@ -642,9 +615,8 @@ final class MetaData {
     private String buildUpdateString(Object object, Iterator<String> it, Connection connection) throws PersismException {
 
         String tableName = getTableName(object.getClass(), connection);
-        if (tableName.contains(" ")) {
-            tableName = "\"" + tableName + "\"";
-        }
+        String sd = connectionType.getKeywordStartDelimiter();
+        String ed = connectionType.getKeywordEndDelimiter();
 
         List<String> primaryKeys = getPrimaryKeys(object.getClass(), connection);
         if (primaryKeys.size() == 0) {
@@ -654,30 +626,23 @@ final class MetaData {
         StringBuilder sb = new StringBuilder();
 
         sb.setLength(0);
-        sb.append("UPDATE ").append(tableName).append(" SET ");
+        sb.append("UPDATE ").append(sd).append(tableName).append(ed).append(" SET ");
         String sep = "";
 
-
-        // todo BUG this map is not ordered the same as properties map. the update puts params in wrong order.
-        //
         Map<String, ColumnInfo> columns = columnInfoMap.get(object.getClass());
-
         while (it.hasNext()) {
             String column = it.next();
             ColumnInfo columnInfo = columns.get(column);
-
-            if (columnInfo != null) { // todo could it ever be null?
-                if (!columnInfo.generated && !columnInfo.primary) {
-                    sb.append(sep).append(column).append(" = ?");
-                    sep = ", ";
-
-                }
+            // todo could it ever be null?
+            if (!columnInfo.generated && !columnInfo.primary) {
+                sb.append(sep).append(sd).append(column).append(ed).append(" = ?");
+                sep = ", ";
             }
         }
         sb.append(" WHERE ");
         sep = "";
         for (String column : primaryKeys) {
-            sb.append(sep).append(column).append(" = ?");
+            sb.append(sep).append(sd).append(column).append(ed).append(" = ?");
             sep = " AND ";
         }
         return sb.toString();

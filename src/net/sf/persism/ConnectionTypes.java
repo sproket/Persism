@@ -7,10 +7,10 @@ enum ConnectionTypes {
     MSSQL(null, "[", "]"),
     JTDS(null, "[", "]"),
     Derby(null, "", ""),
-    H2(null, "", ""),
+    H2(null, "\"", "\""),
     MySQL(null, "`", "`"),
     PostgreSQL(null, "\"", "\""),
-    SQLite(null, "", "");
+    SQLite(null, "[", "]");
 
     private String schemaPattern;
     private String keywordStartDelimiter;
