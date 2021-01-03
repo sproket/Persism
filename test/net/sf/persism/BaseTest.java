@@ -134,7 +134,7 @@ public abstract class BaseTest extends TestCase {
             assertEquals("Customer 1 country should be US ", "US", customer1.getCountry());
             // we cannot test long. Need to format a date and compare as string to the seconds or minutes because SQL does not store dates with exact accuracy
             log.info(new Date(dateRegistered) + " = ? " + new Date(customer1.getDateRegistered().getTime()));
-            assertEquals("Customer 1 date registered should be something?", "" + new Date(dateRegistered), "" + new Date(customer1.getDateRegistered().getTime()));
+            assertEquals("Customer 1 date registered should be more or less equal since SQL can be off by 7 millis.?", "" + new Date(dateRegistered), "" + new Date(customer1.getDateRegistered().getTime()));
         } catch (SQLException e) {
             log.error(e.getMessage(), e);
             fail(e.getMessage());

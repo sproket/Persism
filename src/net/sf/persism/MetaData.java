@@ -12,6 +12,8 @@ import java.sql.*;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
+import static net.sf.persism.ConnectionTypes.Oracle;
+
 /**
  * Meta data collected in a map singleton based on connection url
  * TODO make this class public and provide UpdateStatement, InsertStatement, etc Objects for end users. MAYBE
@@ -48,7 +50,6 @@ final class MetaData {
     private Map<String, List<String>> namedParams = new ConcurrentHashMap<String, List<String>>(32);
 
     //    private Map<Class, List<String>> primaryKeysMap = new ConcurrentHashMap<Class, List<String>>(32); // remove later maybe?
-    private String schemaPattern = null;
 
     // list of tables in the DB mapped to the connection URL string
     private List<String> tableNames = new ArrayList<String>(32);
@@ -58,12 +59,20 @@ final class MetaData {
 
     private static final Map<String, MetaData> metaData = new ConcurrentHashMap<String, MetaData>(4);
 
+    ConnectionTypes connectionType;
+    // private String schemaPattern = null;
+
     private MetaData(Connection con) throws SQLException {
 
-        // oracle expects the schema pattern "%" for meta requests to work - this seems to work for each DB so FAR
-        if (con.getMetaData().getDatabaseProductName().toUpperCase().contains("ORACLE")) {
-            schemaPattern = "%";
+        connectionType = ConnectionTypes.get(con.getMetaData().getURL());
+        if (connectionType == null) {
+            throw new PersismException("Unsupported connection type " + con.getMetaData().getURL());
         }
+
+//        // oracle expects the schema pattern "%" for meta requests to work - this seems to work for each DB so FAR
+//        if (connectionType == Oracle) {
+//            schemaPattern = "%";
+//        }
 
         populateTableList(con);
     }
@@ -237,7 +246,7 @@ final class MetaData {
              Get columns from database metadata since we don't get Type from resultSetMetaData
              with SQLite. + We also need to know if there's a default on a column.
              */
-            rs = dmd.getColumns(null, schemaPattern, tableName, null);
+            rs = dmd.getColumns(null, connectionType.getSchemaPattern(), tableName, null);
             while (rs.next()) {
                 ColumnInfo columnInfo = map.get(rs.getString("COLUMN_NAME"));
                 if (columnInfo != null) {
@@ -250,7 +259,7 @@ final class MetaData {
             rs.close();
 
             // Iterate primary keys and update column infos
-            rs = dmd.getPrimaryKeys(null, schemaPattern, tableName);
+            rs = dmd.getPrimaryKeys(null, connectionType.getSchemaPattern(), tableName);
             while (rs.next()) {
                 ColumnInfo columnInfo = map.get(rs.getString("COLUMN_NAME"));
                 if (columnInfo != null) {
@@ -401,7 +410,7 @@ final class MetaData {
             // solution:
             // http://stackoverflow.com/questions/8988945/java7-sqljdbc4-sql-error-08s01-on-getconnection
 
-            rs = con.getMetaData().getTables(null, schemaPattern, null, tableTypes);
+            rs = con.getMetaData().getTables(null, connectionType.getSchemaPattern(), null, tableTypes);
             while (rs.next()) {
                 tableNames.add(rs.getString("TABLE_NAME"));
             }

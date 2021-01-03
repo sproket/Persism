@@ -87,9 +87,9 @@ public class Command {
                             value = "" + value; // convert enum to string.
                         }
 
-                        if (value instanceof java.util.Date || value instanceof java.sql.Date) {
+                        if (value instanceof java.util.Date) {
 
-                            Date dt = (Date) value;
+                            java.util.Date dt = (java.util.Date) value;
                             value = new Timestamp(dt.getTime());
                         }
 
@@ -197,9 +197,9 @@ public class Command {
                             value = "" + value; // convert enum to string.
                         }
 
-                        if (value instanceof java.util.Date || value instanceof java.sql.Date) {
-
-                            Date dt = (Date) value;
+                        // sql.Date is a subclass so this would be true
+                        if (value instanceof java.util.Date ) {
+                            java.util.Date dt = (java.util.Date) value;
                             value = new Timestamp(dt.getTime());
                         }
 

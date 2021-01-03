@@ -29,8 +29,8 @@ public class TestMSSQL extends BaseTest {
         //log.error("SETUP ERROR", new Throwable());
         // todo somehow test with JTDS and MSSQL drivers.
         Properties props = new Properties();
-        props.load(getClass().getResourceAsStream("/jtds.properties"));
-//        props.load(getClass().getResourceAsStream("/mssql.properties"));
+        //props.load(getClass().getResourceAsStream("/jtds.properties"));
+        props.load(getClass().getResourceAsStream("/mssql.properties"));
         String driver = props.getProperty("database.driver");
         String url = props.getProperty("database.url");
         String username = props.getProperty("database.username");
@@ -281,7 +281,6 @@ public class TestMSSQL extends BaseTest {
     }
 
     public void testCreateTable() {
-log.error("WTF? testCreateTable");
         try {
             command.executeSQL("DROP TABLE Contacts");
         } catch (Exception e) {
@@ -291,24 +290,24 @@ log.error("WTF? testCreateTable");
         // TODO FOR NOW JUST CHANGE identity column To ID
 
         String sql = "                       CREATE TABLE [dbo].[Contacts]( " +
-                            " [ID] [uniqueidentifier] NOT NULL, " +
-                            " [PartnerID] [uniqueidentifier] NULL, " +
-                            " [Type] [char](2) NOT NULL, " +
-                            " [Firstname] [nvarchar](50) NULL, " +
-                            " [Lastname] [nvarchar](50) NULL, " +
-                            " [ContactName] [nvarchar](50) NULL, " +
-                            " [Company] [nvarchar](50) NULL, " +
-                            " [Division] [nvarchar](50) NULL, " +
-                            " [Email] [nvarchar](50) NULL, " +
-                            " [Address1] [nvarchar](50) NULL, " +
-                            " [Address2] [nvarchar](50) NULL, " +
-                            " [City] [nvarchar](50) NULL, " +
-                            " [StateProvince] [nvarchar](50) NULL, " +
-                            " [ZipPostalCode] [varchar](10) NULL, " +
-                            " [Country] [nvarchar](50) NULL, " +
-                            " [DateAdded] [smalldatetime] NULL, " +
-                            " [LastModified] [smalldatetime] NULL " +
-                            " ) ";
+                " [ID] [uniqueidentifier] NOT NULL, " +
+                " [PartnerID] [uniqueidentifier] NULL, " +
+                " [Type] [char](2) NOT NULL, " +
+                " [Firstname] [nvarchar](50) NULL, " +
+                " [Lastname] [nvarchar](50) NULL, " +
+                " [ContactName] [nvarchar](50) NULL, " +
+                " [Company] [nvarchar](50) NULL, " +
+                " [Division] [nvarchar](50) NULL, " +
+                " [Email] [nvarchar](50) NULL, " +
+                " [Address1] [nvarchar](50) NULL, " +
+                " [Address2] [nvarchar](50) NULL, " +
+                " [City] [nvarchar](50) NULL, " +
+                " [StateProvince] [nvarchar](50) NULL, " +
+                " [ZipPostalCode] [varchar](10) NULL, " +
+                " [Country] [nvarchar](50) NULL, " +
+                " [DateAdded] [smalldatetime] NULL, " +
+                " [LastModified] [smalldatetime] NULL " +
+                " ) ";
 
         command.executeSQL(sql);
         /* TODO

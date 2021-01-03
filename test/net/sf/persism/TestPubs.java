@@ -7,11 +7,6 @@
 package net.sf.persism;
 
 import junit.framework.TestCase;
-//import net.sf.log4jdbc.ConnectionSpy;
-import net.sf.log4jdbc.log.SpyLogDelegator;
-import net.sf.log4jdbc.sql.Spy;
-import net.sf.log4jdbc.sql.jdbcapi.ConnectionSpy;
-import net.sf.log4jdbc.sql.resultsetcollector.ResultSetCollector;
 import net.sf.persism.dao.pubs.Author;
 import net.sf.persism.dao.pubs.JobType;
 
@@ -43,72 +38,7 @@ public class TestPubs extends TestCase {
 
         con = DriverManager.getConnection(url, username, password);
 
-        con = new ConnectionSpy(con, new SpyLogDelegator() {
-            @Override
-            public boolean isJdbcLoggingEnabled() {
-                return true;
-            }
-
-            @Override
-            public void exceptionOccured(Spy spy, String s, Exception e, String s1, long l) {
-                log.error(s, e);
-            }
-
-            @Override
-            public void methodReturned(Spy spy, String s, String s1) {
-                log.info(s);
-            }
-
-            @Override
-            public void constructorReturned(Spy spy, String s) {
-                log.info(s);
-            }
-
-            @Override
-            public void sqlOccurred(Spy spy, String s, String s1) {
-                log.info(s);
-            }
-
-            @Override
-            public void sqlTimingOccurred(Spy spy, long l, String s, String s1) {
-                log.info(s);
-            }
-
-            @Override
-            public void connectionOpened(Spy spy, long l) {
-                log.info(l);
-            }
-
-            @Override
-            public void connectionClosed(Spy spy, long l) {
-                log.info(l);
-            }
-
-            @Override
-            public void connectionAborted(Spy spy, long l) {
-                log.info(l);
-            }
-
-            @Override
-            public void debug(String s) {
-                log.info(s);
-            }
-
-            @Override
-            public boolean isResultSetCollectionEnabled() {
-                return true;
-            }
-
-            @Override
-            public boolean isResultSetCollectionEnabledWithUnreadValueFillIn() {
-                return true;
-            }
-
-            @Override
-            public void resultSetCollected(ResultSetCollector resultSetCollector) {
-                log.info("resultSetCollected");
-            }
-        });
+        con = new net.sf.log4jdbc.ConnectionSpy(con);
 
         query = new Query(con);
         command = new Command(con);

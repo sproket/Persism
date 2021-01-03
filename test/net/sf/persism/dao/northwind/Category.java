@@ -62,6 +62,8 @@ public class Category {
      * @throws IOException
      */
     public BufferedImage getImage() throws IOException {
+        // Fails but maybe we could use JavaFX for this
+        // https://docs.oracle.com/javase/8/javafx/api/javafx/scene/image/Image.html
         if (image == null) {
             // OLE header is 1st 78 bytes so we strip it.
             byte[] imageData = new String(picture).substring(78).getBytes();

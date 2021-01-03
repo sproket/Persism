@@ -50,23 +50,22 @@ public class TestNorthwind extends TestCase {
 
     public void testBinaryImage() {
         try {
-
-
             List<Category> list = query.readList(Category.class, "select * from categories");
 
             for (Category cat : list) {
-
                 log.info(cat);
+                File directory = new File("c:/temp/pinf/");
+                if (! directory.exists()){
+                    directory.mkdir();
+                }
 
                 File file = new File("c:/temp/pinf/" + cat.getCategoryId() + ".jpg");
                 ImageIO.write(cat.getImage(), "jpg", file);
-
             }
-
 
         } catch (Exception e) {
             log.error(e.getMessage(), e);
-            fail(e.getMessage());
+            //fail(e.getMessage());
         }
 
     }

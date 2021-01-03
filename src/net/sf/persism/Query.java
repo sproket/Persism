@@ -301,7 +301,7 @@ public final class Query {
         int sqlColumnType = resultSetMetaData.getColumnType(column);
 
         Types columnType = Types.convert(sqlColumnType); // note this could be null if we can't match a type
-		// Since there is no specific SQL column type for UUID we will use the return type to detect it.
+        // Since there is no specific SQL column type for UUID we will use the return type to detect it.
         if (returnType.equals(UUID.class)) {
             // Check the return type for UUID since resultSetMetaData.getColumnType(column) has no UUID type
             // it always returns a char or nvarchar so we'll just test and set it here. FFS.
@@ -343,6 +343,19 @@ public final class Query {
                         value = UUID.fromString("" + value);
                     }
                     break;
+                case floatType:
+                case FloatType:
+                case doubleType:
+                case DoubleType:
+                    if (returnType.equals(java.math.BigDecimal.class)) {
+                        value = rs.getBigDecimal(column);
+                    } else if (returnType.equals(java.lang.Double.class)) {
+                        value = rs.getDouble(column);
+                    } else {
+                        value = rs.getFloat(column);
+                    }
+                    break;
+
                 default:
                     value = rs.getObject(column);
             }

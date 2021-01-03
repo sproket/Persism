@@ -24,10 +24,12 @@ public class AllTests {
         theTestSuite.addTestSuite(TestSQLite.class);
         theTestSuite.addTestSuite(TestDerby.class);
         theTestSuite.addTestSuite(TestMySQL.class);
+        theTestSuite.addTestSuite(TestPostgreSQL.class);
 
         theTestSuite.addTestSuite(TestTypes.class);
         theTestSuite.addTestSuite(TestNorthwind.class);
         theTestSuite.addTestSuite(TestPubs.class);
+
 
         return theTestSuite;
     }
