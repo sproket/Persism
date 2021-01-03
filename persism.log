@@ -1,0 +1,961 @@
+INFO  Jan 01 15:51:31 net.sf.persism.TestUtil - Postman{host='blah', port=80, user='x', password='123'}
+INFO  Jan 01 17:40:44 jdbc.sqlonly - DROP TABLE Orders 
+
+INFO  Jan 01 17:40:44 jdbc.sqlonly - CREATE TABLE Orders ( [ID] [int] IDENTITY(1,1) NOT NULL, NAME VARCHAR(30) NULL, ROW_ID VARCHAR(30) 
+NULL, Customer_ID VARCHAR(10) NULL, PAID BIT NULL, CREATED datetime ) 
+
+INFO  Jan 01 17:40:44 jdbc.sqlonly - DROP TABLE Customers 
+
+INFO  Jan 01 17:40:44 jdbc.sqlonly - CREATE TABLE Customers ( Customer_ID varchar(10) PRIMARY KEY NOT NULL, Company_Name VARCHAR(30) 
+NULL, Contact_Name VARCHAR(30) NULL, Contact_Title VARCHAR(10) NULL, Address VARCHAR(40) NULL, 
+City VARCHAR(30) NULL, Region VARCHAR(10) NULL, Postal_Code VARCHAR(10) NULL, Country VARCHAR(2) 
+NULL, Phone VARCHAR(30) NULL, Fax VARCHAR(30) NULL, Date_Registered datetime default current_timestamp, 
+Date_Of_Last_Order datetime ) 
+
+INFO  Jan 01 17:40:44 jdbc.sqlonly - DROP TABLE TABLENOPRIMARY 
+
+INFO  Jan 01 17:40:44 jdbc.sqlonly - CREATE TABLE TABLENOPRIMARY ( ID INT, Name VARCHAR(30), Field4 VARCHAR(30), Field5 DATETIME 
+) 
+
+INFO  Jan 01 17:40:44 net.sf.persism.MetaData - getting instance jdbc:jtds:sqlserver://pinf-win;DatabaseName=PINF;instance=;useLOBs=false
+INFO  Jan 01 17:40:44 net.sf.persism.MetaData - getting instance jdbc:jtds:sqlserver://pinf-win;DatabaseName=PINF;instance=;useLOBs=false
+INFO  Jan 01 17:40:45 net.sf.persism.TestMSSQL - net.sf.persism.dao.Procedure - Procedure
+INFO  Jan 01 17:40:45 jdbc.sqlonly - TRUNCATE TABLE ORDERS 
+
+INFO  Jan 01 17:40:45 jdbc.sqlonly - TRUNCATE TABLE EXAMCODE 
+
+INFO  Jan 01 17:40:45 net.sf.persism.MetaData - removing jdbc:jtds:sqlserver://pinf-win;DatabaseName=PINF;instance=;useLOBs=false
+INFO  Jan 01 17:40:45 jdbc.sqlonly - DROP TABLE Orders 
+
+INFO  Jan 01 17:40:45 jdbc.sqlonly - CREATE TABLE Orders ( [ID] [int] IDENTITY(1,1) NOT NULL, NAME VARCHAR(30) NULL, ROW_ID VARCHAR(30) 
+NULL, Customer_ID VARCHAR(10) NULL, PAID BIT NULL, CREATED datetime ) 
+
+INFO  Jan 01 17:40:45 jdbc.sqlonly - DROP TABLE Customers 
+
+INFO  Jan 01 17:40:45 jdbc.sqlonly - CREATE TABLE Customers ( Customer_ID varchar(10) PRIMARY KEY NOT NULL, Company_Name VARCHAR(30) 
+NULL, Contact_Name VARCHAR(30) NULL, Contact_Title VARCHAR(10) NULL, Address VARCHAR(40) NULL, 
+City VARCHAR(30) NULL, Region VARCHAR(10) NULL, Postal_Code VARCHAR(10) NULL, Country VARCHAR(2) 
+NULL, Phone VARCHAR(30) NULL, Fax VARCHAR(30) NULL, Date_Registered datetime default current_timestamp, 
+Date_Of_Last_Order datetime ) 
+
+INFO  Jan 01 17:40:45 jdbc.sqlonly - DROP TABLE TABLENOPRIMARY 
+
+INFO  Jan 01 17:40:45 jdbc.sqlonly - CREATE TABLE TABLENOPRIMARY ( ID INT, Name VARCHAR(30), Field4 VARCHAR(30), Field5 DATETIME 
+) 
+
+INFO  Jan 01 17:40:45 net.sf.persism.MetaData - getting instance jdbc:jtds:sqlserver://pinf-win;DatabaseName=PINF;instance=;useLOBs=false
+INFO  Jan 01 17:40:45 net.sf.persism.MetaData - getting instance jdbc:jtds:sqlserver://pinf-win;DatabaseName=PINF;instance=;useLOBs=false
+INFO  Jan 01 17:40:45 jdbc.sqlonly - SELECT * FROM EXAMCODE WHERE 1=0 
+
+WARN  Jan 01 17:40:45 net.sf.persism.MetaData - Property not found for column: Desc_f class: class net.sf.persism.dao.Procedure
+WARN  Jan 01 17:40:45 net.sf.persism.MetaData - Property not found for column: ExamSubType class: class net.sf.persism.dao.Procedure
+WARN  Jan 01 17:40:45 net.sf.persism.MetaData - Property not found for column: ActCodeForInjection class: class net.sf.persism.dao.Procedure
+WARN  Jan 01 17:40:45 net.sf.persism.MetaData - Property not found for column: AbdomenSpineOrOther class: class net.sf.persism.dao.Procedure
+WARN  Jan 01 17:40:45 net.sf.persism.MetaData - Property not found for column: AcExamCode_No2 class: class net.sf.persism.dao.Procedure
+WARN  Jan 01 17:40:45 net.sf.persism.MetaData - Property not found for column: AcExamCode_No3 class: class net.sf.persism.dao.Procedure
+WARN  Jan 01 17:40:45 net.sf.persism.MetaData - Property not found for column: StatCode class: class net.sf.persism.dao.Procedure
+WARN  Jan 01 17:40:45 net.sf.persism.MetaData - Property not found for column: SuppressRole7ForUltrasound class: class net.sf.persism.dao.Procedure
+WARN  Jan 01 17:40:45 net.sf.persism.MetaData - Property not found for column: PreferredAptDuration class: class net.sf.persism.dao.Procedure
+WARN  Jan 01 17:40:45 net.sf.persism.MetaData - Property not found for column: ProfessionalFeeCode1 class: class net.sf.persism.dao.Procedure
+WARN  Jan 01 17:40:45 net.sf.persism.MetaData - Property not found for column: ProfessionalFeeCode2 class: class net.sf.persism.dao.Procedure
+WARN  Jan 01 17:40:45 net.sf.persism.MetaData - Property not found for column: ProfessionalFeeCode3 class: class net.sf.persism.dao.Procedure
+WARN  Jan 01 17:40:45 net.sf.persism.MetaData - Property not found for column: ProfessionalFeeCode4 class: class net.sf.persism.dao.Procedure
+WARN  Jan 01 17:40:45 net.sf.persism.MetaData - Property not found for column: TechnicalFeeCode1 class: class net.sf.persism.dao.Procedure
+WARN  Jan 01 17:40:45 net.sf.persism.MetaData - Property not found for column: TechnicalFeeCode2 class: class net.sf.persism.dao.Procedure
+WARN  Jan 01 17:40:45 net.sf.persism.MetaData - Property not found for column: TechnicalFeeCode3 class: class net.sf.persism.dao.Procedure
+WARN  Jan 01 17:40:45 net.sf.persism.MetaData - Property not found for column: TechnicalFeeCode4 class: class net.sf.persism.dao.Procedure
+WARN  Jan 01 17:40:45 net.sf.persism.MetaData - Property not found for column: ICD9RequiredForBilling class: class net.sf.persism.dao.Procedure
+WARN  Jan 01 17:40:45 net.sf.persism.MetaData - Property not found for column: ProFeeUnits class: class net.sf.persism.dao.Procedure
+WARN  Jan 01 17:40:45 net.sf.persism.MetaData - Property not found for column: ProFeeUnits1 class: class net.sf.persism.dao.Procedure
+WARN  Jan 01 17:40:45 net.sf.persism.MetaData - Property not found for column: ProFeeUnits2 class: class net.sf.persism.dao.Procedure
+WARN  Jan 01 17:40:45 net.sf.persism.MetaData - Property not found for column: ProFeeUnits3 class: class net.sf.persism.dao.Procedure
+WARN  Jan 01 17:40:45 net.sf.persism.MetaData - Property not found for column: ProFeeUnits4 class: class net.sf.persism.dao.Procedure
+WARN  Jan 01 17:40:45 net.sf.persism.MetaData - Property not found for column: TechFeeUnits class: class net.sf.persism.dao.Procedure
+WARN  Jan 01 17:40:45 net.sf.persism.MetaData - Property not found for column: TechFeeUnits1 class: class net.sf.persism.dao.Procedure
+WARN  Jan 01 17:40:45 net.sf.persism.MetaData - Property not found for column: TechFeeUnits2 class: class net.sf.persism.dao.Procedure
+WARN  Jan 01 17:40:45 net.sf.persism.MetaData - Property not found for column: TechFeeUnits3 class: class net.sf.persism.dao.Procedure
+WARN  Jan 01 17:40:45 net.sf.persism.MetaData - Property not found for column: TechFeeUnits4 class: class net.sf.persism.dao.Procedure
+WARN  Jan 01 17:40:45 net.sf.persism.MetaData - Property not found for column: NumberOfUnitsToBill class: class net.sf.persism.dao.Procedure
+WARN  Jan 01 17:40:45 net.sf.persism.MetaData - Property not found for column: QuickNormalText class: class net.sf.persism.dao.Procedure
+WARN  Jan 01 17:40:45 net.sf.persism.MetaData - Property not found for column: CIHIGroupCode class: class net.sf.persism.dao.Procedure
+WARN  Jan 01 17:40:45 net.sf.persism.MetaData - Property not found for column: ProfessionalFeeCode5 class: class net.sf.persism.dao.Procedure
+WARN  Jan 01 17:40:45 net.sf.persism.MetaData - Property not found for column: ProfessionalFeeCode6 class: class net.sf.persism.dao.Procedure
+WARN  Jan 01 17:40:45 net.sf.persism.MetaData - Property not found for column: TechnicalFeeCode5 class: class net.sf.persism.dao.Procedure
+WARN  Jan 01 17:40:45 net.sf.persism.MetaData - Property not found for column: TechnicalFeeCode6 class: class net.sf.persism.dao.Procedure
+WARN  Jan 01 17:40:45 net.sf.persism.MetaData - Property not found for column: ProFeeUnits5 class: class net.sf.persism.dao.Procedure
+WARN  Jan 01 17:40:45 net.sf.persism.MetaData - Property not found for column: ProFeeUnits6 class: class net.sf.persism.dao.Procedure
+WARN  Jan 01 17:40:45 net.sf.persism.MetaData - Property not found for column: TechFeeUnits5 class: class net.sf.persism.dao.Procedure
+WARN  Jan 01 17:40:45 net.sf.persism.MetaData - Property not found for column: TechFeeUnits6 class: class net.sf.persism.dao.Procedure
+WARN  Jan 01 17:40:45 net.sf.persism.MetaData - Property not found for column: EnableBirads class: class net.sf.persism.dao.Procedure
+WARN  Jan 01 17:40:45 net.sf.persism.MetaData - Property not found for column: PrintPatientLetter class: class net.sf.persism.dao.Procedure
+WARN  Jan 01 17:40:45 net.sf.persism.MetaData - Property not found for column: InstructionsForStaff class: class net.sf.persism.dao.Procedure
+WARN  Jan 01 17:40:45 net.sf.persism.MetaData - Property not found for column: Retired class: class net.sf.persism.dao.Procedure
+WARN  Jan 01 17:40:45 net.sf.persism.MetaData - Property not found for column: ExternalID1 class: class net.sf.persism.dao.Procedure
+WARN  Jan 01 17:40:45 net.sf.persism.MetaData - Property not found for column: ExternalID2 class: class net.sf.persism.dao.Procedure
+WARN  Jan 01 17:40:45 net.sf.persism.MetaData - Property not found for column: ExternalID3 class: class net.sf.persism.dao.Procedure
+WARN  Jan 01 17:40:45 net.sf.persism.MetaData - Property not found for column: MaxDaysAgoForSameProcedure class: class net.sf.persism.dao.Procedure
+WARN  Jan 01 17:40:45 net.sf.persism.MetaData - Property not found for column: RepeatWarningThresholdDays class: class net.sf.persism.dao.Procedure
+WARN  Jan 01 17:40:45 net.sf.persism.MetaData - Property not found for column: MammoType class: class net.sf.persism.dao.Procedure
+WARN  Jan 01 17:40:45 net.sf.persism.MetaData - Property not found for column: ProximityWarningHours class: class net.sf.persism.dao.Procedure
+WARN  Jan 01 17:40:45 net.sf.persism.MetaData - Property not found for column: ProximityWarningMessage class: class net.sf.persism.dao.Procedure
+WARN  Jan 01 17:40:45 net.sf.persism.MetaData - Property not found for column: ScheduleWithPhases class: class net.sf.persism.dao.Procedure
+WARN  Jan 01 17:40:45 net.sf.persism.MetaData - Property not found for column: AllowRefMdsAndNursesToSchedule class: class net.sf.persism.dao.Procedure
+WARN  Jan 01 17:40:45 net.sf.persism.MetaData - Property not found for column: NumberOfPhases class: class net.sf.persism.dao.Procedure
+WARN  Jan 01 17:40:45 net.sf.persism.MetaData - Property not found for column: ExamCount class: class net.sf.persism.dao.Procedure
+WARN  Jan 01 17:40:45 net.sf.persism.MetaData - Property not found for column: M1 class: class net.sf.persism.dao.Procedure
+WARN  Jan 01 17:40:45 net.sf.persism.MetaData - Property not found for column: M2 class: class net.sf.persism.dao.Procedure
+WARN  Jan 01 17:40:45 net.sf.persism.MetaData - Property not found for column: M3 class: class net.sf.persism.dao.Procedure
+WARN  Jan 01 17:40:45 net.sf.persism.MetaData - Property not found for column: M4 class: class net.sf.persism.dao.Procedure
+WARN  Jan 01 17:40:45 net.sf.persism.MetaData - Property not found for column: M5 class: class net.sf.persism.dao.Procedure
+WARN  Jan 01 17:40:45 net.sf.persism.MetaData - Property not found for column: InstructionsForStaffVisibility class: class net.sf.persism.dao.Procedure
+WARN  Jan 01 17:40:45 net.sf.persism.MetaData - Property not found for column: DefaultImpression class: class net.sf.persism.dao.Procedure
+WARN  Jan 01 17:40:45 net.sf.persism.MetaData - Property not found for column: ExcludeFromOtherPriors class: class net.sf.persism.dao.Procedure
+WARN  Jan 01 17:40:45 net.sf.persism.MetaData - Property not found for column: ExcludeFromGroupable class: class net.sf.persism.dao.Procedure
+WARN  Jan 01 17:40:45 net.sf.persism.MetaData - Property not found for column: DefaultModifiers class: class net.sf.persism.dao.Procedure
+WARN  Jan 01 17:40:45 net.sf.persism.MetaData - Property not found for column: AlwaysPrintDoNotFaxReport class: class net.sf.persism.dao.Procedure
+WARN  Jan 01 17:40:45 net.sf.persism.MetaData - Property not found for column: RequiresProtocol class: class net.sf.persism.dao.Procedure
+WARN  Jan 01 17:40:45 net.sf.persism.MetaData - Property not found for column: NeverRequiresInterpretation class: class net.sf.persism.dao.Procedure
+WARN  Jan 01 17:40:45 net.sf.persism.MetaData - Property not found for column: ProfFeeDescrip class: class net.sf.persism.dao.Procedure
+WARN  Jan 01 17:40:45 net.sf.persism.MetaData - Property not found for column: ProfFeeDescrip1 class: class net.sf.persism.dao.Procedure
+WARN  Jan 01 17:40:45 net.sf.persism.MetaData - Property not found for column: ProfFeeDescrip2 class: class net.sf.persism.dao.Procedure
+WARN  Jan 01 17:40:45 net.sf.persism.MetaData - Property not found for column: ProfFeeDescrip3 class: class net.sf.persism.dao.Procedure
+WARN  Jan 01 17:40:45 net.sf.persism.MetaData - Property not found for column: ProfFeeDescrip4 class: class net.sf.persism.dao.Procedure
+WARN  Jan 01 17:40:45 net.sf.persism.MetaData - Property not found for column: ProfFeeDescrip5 class: class net.sf.persism.dao.Procedure
+WARN  Jan 01 17:40:45 net.sf.persism.MetaData - Property not found for column: ProfFeeDescrip6 class: class net.sf.persism.dao.Procedure
+WARN  Jan 01 17:40:45 net.sf.persism.MetaData - Property not found for column: TechFeeDescrip class: class net.sf.persism.dao.Procedure
+WARN  Jan 01 17:40:45 net.sf.persism.MetaData - Property not found for column: TechFeeDescrip1 class: class net.sf.persism.dao.Procedure
+WARN  Jan 01 17:40:45 net.sf.persism.MetaData - Property not found for column: TechFeeDescrip2 class: class net.sf.persism.dao.Procedure
+WARN  Jan 01 17:40:45 net.sf.persism.MetaData - Property not found for column: TechFeeDescrip3 class: class net.sf.persism.dao.Procedure
+WARN  Jan 01 17:40:45 net.sf.persism.MetaData - Property not found for column: TechFeeDescrip4 class: class net.sf.persism.dao.Procedure
+WARN  Jan 01 17:40:45 net.sf.persism.MetaData - Property not found for column: TechFeeDescrip5 class: class net.sf.persism.dao.Procedure
+WARN  Jan 01 17:40:45 net.sf.persism.MetaData - Property not found for column: TechFeeDescrip6 class: class net.sf.persism.dao.Procedure
+WARN  Jan 01 17:40:45 net.sf.persism.MetaData - Property not found for column: PromptTech4Supplies class: class net.sf.persism.dao.Procedure
+WARN  Jan 01 17:40:45 net.sf.persism.MetaData - Property not found for column: SCMUniqueID class: class net.sf.persism.dao.Procedure
+INFO  Jan 01 17:40:45 jdbc.sqlonly - SELECT * FROM EXAMCODE WHERE 1=0 
+
+INFO  Jan 01 17:40:45 jdbc.sqlonly - INSERT INTO EXAMCODE (ExamType_No, Desc_e, Points, AccompanyingExamCode_No, SideRequired, BodyPartNo, 
+AllowInRooms, ReservationType, ProfessionalFeeCode, TechnicalFeeCode) VALUES ( 2 , 'TEST 99' 
+, NULL , 0 , 0 , 0 , NULL , 0 , NULL , NULL ) 
+
+INFO  Jan 01 17:40:45 net.sf.persism.MetaData - getting instance jdbc:jtds:sqlserver://pinf-win;DatabaseName=PINF;instance=;useLOBs=false
+INFO  Jan 01 17:40:45 jdbc.sqlonly - SELECT * FROM EXAMCODE WHERE ExamCode_no = 1 
+
+INFO  Jan 01 17:40:45 net.sf.persism.TestMSSQL - Procedure{examCodeNo=1, description='TEST 99'}
+INFO  Jan 01 17:40:45 jdbc.sqlonly - TRUNCATE TABLE ORDERS 
+
+INFO  Jan 01 17:40:45 jdbc.sqlonly - TRUNCATE TABLE EXAMCODE 
+
+INFO  Jan 01 17:40:45 net.sf.persism.MetaData - removing jdbc:jtds:sqlserver://pinf-win;DatabaseName=PINF;instance=;useLOBs=false
+INFO  Jan 01 17:40:45 jdbc.sqlonly - DROP TABLE Orders 
+
+INFO  Jan 01 17:40:45 jdbc.sqlonly - CREATE TABLE Orders ( [ID] [int] IDENTITY(1,1) NOT NULL, NAME VARCHAR(30) NULL, ROW_ID VARCHAR(30) 
+NULL, Customer_ID VARCHAR(10) NULL, PAID BIT NULL, CREATED datetime ) 
+
+INFO  Jan 01 17:40:45 jdbc.sqlonly - DROP TABLE Customers 
+
+INFO  Jan 01 17:40:45 jdbc.sqlonly - CREATE TABLE Customers ( Customer_ID varchar(10) PRIMARY KEY NOT NULL, Company_Name VARCHAR(30) 
+NULL, Contact_Name VARCHAR(30) NULL, Contact_Title VARCHAR(10) NULL, Address VARCHAR(40) NULL, 
+City VARCHAR(30) NULL, Region VARCHAR(10) NULL, Postal_Code VARCHAR(10) NULL, Country VARCHAR(2) 
+NULL, Phone VARCHAR(30) NULL, Fax VARCHAR(30) NULL, Date_Registered datetime default current_timestamp, 
+Date_Of_Last_Order datetime ) 
+
+INFO  Jan 01 17:40:45 jdbc.sqlonly - DROP TABLE TABLENOPRIMARY 
+
+INFO  Jan 01 17:40:45 jdbc.sqlonly - CREATE TABLE TABLENOPRIMARY ( ID INT, Name VARCHAR(30), Field4 VARCHAR(30), Field5 DATETIME 
+) 
+
+INFO  Jan 01 17:40:45 net.sf.persism.MetaData - getting instance jdbc:jtds:sqlserver://pinf-win;DatabaseName=PINF;instance=;useLOBs=false
+INFO  Jan 01 17:40:45 net.sf.persism.MetaData - getting instance jdbc:jtds:sqlserver://pinf-win;DatabaseName=PINF;instance=;useLOBs=false
+INFO  Jan 01 17:40:45 jdbc.sqlonly - SELECT * FROM EXAMCODE WHERE 1=0 
+
+WARN  Jan 01 17:40:45 net.sf.persism.MetaData - Property not found for column: Desc_f class: class net.sf.persism.dao.Procedure
+WARN  Jan 01 17:40:45 net.sf.persism.MetaData - Property not found for column: ExamSubType class: class net.sf.persism.dao.Procedure
+WARN  Jan 01 17:40:45 net.sf.persism.MetaData - Property not found for column: ActCodeForInjection class: class net.sf.persism.dao.Procedure
+WARN  Jan 01 17:40:45 net.sf.persism.MetaData - Property not found for column: AbdomenSpineOrOther class: class net.sf.persism.dao.Procedure
+WARN  Jan 01 17:40:45 net.sf.persism.MetaData - Property not found for column: AcExamCode_No2 class: class net.sf.persism.dao.Procedure
+WARN  Jan 01 17:40:45 net.sf.persism.MetaData - Property not found for column: AcExamCode_No3 class: class net.sf.persism.dao.Procedure
+WARN  Jan 01 17:40:45 net.sf.persism.MetaData - Property not found for column: StatCode class: class net.sf.persism.dao.Procedure
+WARN  Jan 01 17:40:45 net.sf.persism.MetaData - Property not found for column: SuppressRole7ForUltrasound class: class net.sf.persism.dao.Procedure
+WARN  Jan 01 17:40:45 net.sf.persism.MetaData - Property not found for column: PreferredAptDuration class: class net.sf.persism.dao.Procedure
+WARN  Jan 01 17:40:45 net.sf.persism.MetaData - Property not found for column: ProfessionalFeeCode1 class: class net.sf.persism.dao.Procedure
+WARN  Jan 01 17:40:45 net.sf.persism.MetaData - Property not found for column: ProfessionalFeeCode2 class: class net.sf.persism.dao.Procedure
+WARN  Jan 01 17:40:45 net.sf.persism.MetaData - Property not found for column: ProfessionalFeeCode3 class: class net.sf.persism.dao.Procedure
+WARN  Jan 01 17:40:45 net.sf.persism.MetaData - Property not found for column: ProfessionalFeeCode4 class: class net.sf.persism.dao.Procedure
+WARN  Jan 01 17:40:45 net.sf.persism.MetaData - Property not found for column: TechnicalFeeCode1 class: class net.sf.persism.dao.Procedure
+WARN  Jan 01 17:40:45 net.sf.persism.MetaData - Property not found for column: TechnicalFeeCode2 class: class net.sf.persism.dao.Procedure
+WARN  Jan 01 17:40:45 net.sf.persism.MetaData - Property not found for column: TechnicalFeeCode3 class: class net.sf.persism.dao.Procedure
+WARN  Jan 01 17:40:45 net.sf.persism.MetaData - Property not found for column: TechnicalFeeCode4 class: class net.sf.persism.dao.Procedure
+WARN  Jan 01 17:40:45 net.sf.persism.MetaData - Property not found for column: ICD9RequiredForBilling class: class net.sf.persism.dao.Procedure
+WARN  Jan 01 17:40:45 net.sf.persism.MetaData - Property not found for column: ProFeeUnits class: class net.sf.persism.dao.Procedure
+WARN  Jan 01 17:40:45 net.sf.persism.MetaData - Property not found for column: ProFeeUnits1 class: class net.sf.persism.dao.Procedure
+WARN  Jan 01 17:40:45 net.sf.persism.MetaData - Property not found for column: ProFeeUnits2 class: class net.sf.persism.dao.Procedure
+WARN  Jan 01 17:40:45 net.sf.persism.MetaData - Property not found for column: ProFeeUnits3 class: class net.sf.persism.dao.Procedure
+WARN  Jan 01 17:40:45 net.sf.persism.MetaData - Property not found for column: ProFeeUnits4 class: class net.sf.persism.dao.Procedure
+WARN  Jan 01 17:40:45 net.sf.persism.MetaData - Property not found for column: TechFeeUnits class: class net.sf.persism.dao.Procedure
+WARN  Jan 01 17:40:45 net.sf.persism.MetaData - Property not found for column: TechFeeUnits1 class: class net.sf.persism.dao.Procedure
+WARN  Jan 01 17:40:45 net.sf.persism.MetaData - Property not found for column: TechFeeUnits2 class: class net.sf.persism.dao.Procedure
+WARN  Jan 01 17:40:45 net.sf.persism.MetaData - Property not found for column: TechFeeUnits3 class: class net.sf.persism.dao.Procedure
+WARN  Jan 01 17:40:45 net.sf.persism.MetaData - Property not found for column: TechFeeUnits4 class: class net.sf.persism.dao.Procedure
+WARN  Jan 01 17:40:45 net.sf.persism.MetaData - Property not found for column: NumberOfUnitsToBill class: class net.sf.persism.dao.Procedure
+WARN  Jan 01 17:40:45 net.sf.persism.MetaData - Property not found for column: QuickNormalText class: class net.sf.persism.dao.Procedure
+WARN  Jan 01 17:40:45 net.sf.persism.MetaData - Property not found for column: CIHIGroupCode class: class net.sf.persism.dao.Procedure
+WARN  Jan 01 17:40:45 net.sf.persism.MetaData - Property not found for column: ProfessionalFeeCode5 class: class net.sf.persism.dao.Procedure
+WARN  Jan 01 17:40:45 net.sf.persism.MetaData - Property not found for column: ProfessionalFeeCode6 class: class net.sf.persism.dao.Procedure
+WARN  Jan 01 17:40:45 net.sf.persism.MetaData - Property not found for column: TechnicalFeeCode5 class: class net.sf.persism.dao.Procedure
+WARN  Jan 01 17:40:45 net.sf.persism.MetaData - Property not found for column: TechnicalFeeCode6 class: class net.sf.persism.dao.Procedure
+WARN  Jan 01 17:40:45 net.sf.persism.MetaData - Property not found for column: ProFeeUnits5 class: class net.sf.persism.dao.Procedure
+WARN  Jan 01 17:40:45 net.sf.persism.MetaData - Property not found for column: ProFeeUnits6 class: class net.sf.persism.dao.Procedure
+WARN  Jan 01 17:40:45 net.sf.persism.MetaData - Property not found for column: TechFeeUnits5 class: class net.sf.persism.dao.Procedure
+WARN  Jan 01 17:40:45 net.sf.persism.MetaData - Property not found for column: TechFeeUnits6 class: class net.sf.persism.dao.Procedure
+WARN  Jan 01 17:40:45 net.sf.persism.MetaData - Property not found for column: EnableBirads class: class net.sf.persism.dao.Procedure
+WARN  Jan 01 17:40:45 net.sf.persism.MetaData - Property not found for column: PrintPatientLetter class: class net.sf.persism.dao.Procedure
+WARN  Jan 01 17:40:45 net.sf.persism.MetaData - Property not found for column: InstructionsForStaff class: class net.sf.persism.dao.Procedure
+WARN  Jan 01 17:40:45 net.sf.persism.MetaData - Property not found for column: Retired class: class net.sf.persism.dao.Procedure
+WARN  Jan 01 17:40:45 net.sf.persism.MetaData - Property not found for column: ExternalID1 class: class net.sf.persism.dao.Procedure
+WARN  Jan 01 17:40:45 net.sf.persism.MetaData - Property not found for column: ExternalID2 class: class net.sf.persism.dao.Procedure
+WARN  Jan 01 17:40:45 net.sf.persism.MetaData - Property not found for column: ExternalID3 class: class net.sf.persism.dao.Procedure
+WARN  Jan 01 17:40:45 net.sf.persism.MetaData - Property not found for column: MaxDaysAgoForSameProcedure class: class net.sf.persism.dao.Procedure
+WARN  Jan 01 17:40:45 net.sf.persism.MetaData - Property not found for column: RepeatWarningThresholdDays class: class net.sf.persism.dao.Procedure
+WARN  Jan 01 17:40:45 net.sf.persism.MetaData - Property not found for column: MammoType class: class net.sf.persism.dao.Procedure
+WARN  Jan 01 17:40:45 net.sf.persism.MetaData - Property not found for column: ProximityWarningHours class: class net.sf.persism.dao.Procedure
+WARN  Jan 01 17:40:45 net.sf.persism.MetaData - Property not found for column: ProximityWarningMessage class: class net.sf.persism.dao.Procedure
+WARN  Jan 01 17:40:45 net.sf.persism.MetaData - Property not found for column: ScheduleWithPhases class: class net.sf.persism.dao.Procedure
+WARN  Jan 01 17:40:45 net.sf.persism.MetaData - Property not found for column: AllowRefMdsAndNursesToSchedule class: class net.sf.persism.dao.Procedure
+WARN  Jan 01 17:40:45 net.sf.persism.MetaData - Property not found for column: NumberOfPhases class: class net.sf.persism.dao.Procedure
+WARN  Jan 01 17:40:45 net.sf.persism.MetaData - Property not found for column: ExamCount class: class net.sf.persism.dao.Procedure
+WARN  Jan 01 17:40:45 net.sf.persism.MetaData - Property not found for column: M1 class: class net.sf.persism.dao.Procedure
+WARN  Jan 01 17:40:45 net.sf.persism.MetaData - Property not found for column: M2 class: class net.sf.persism.dao.Procedure
+WARN  Jan 01 17:40:45 net.sf.persism.MetaData - Property not found for column: M3 class: class net.sf.persism.dao.Procedure
+WARN  Jan 01 17:40:45 net.sf.persism.MetaData - Property not found for column: M4 class: class net.sf.persism.dao.Procedure
+WARN  Jan 01 17:40:45 net.sf.persism.MetaData - Property not found for column: M5 class: class net.sf.persism.dao.Procedure
+WARN  Jan 01 17:40:45 net.sf.persism.MetaData - Property not found for column: InstructionsForStaffVisibility class: class net.sf.persism.dao.Procedure
+WARN  Jan 01 17:40:45 net.sf.persism.MetaData - Property not found for column: DefaultImpression class: class net.sf.persism.dao.Procedure
+WARN  Jan 01 17:40:45 net.sf.persism.MetaData - Property not found for column: ExcludeFromOtherPriors class: class net.sf.persism.dao.Procedure
+WARN  Jan 01 17:40:45 net.sf.persism.MetaData - Property not found for column: ExcludeFromGroupable class: class net.sf.persism.dao.Procedure
+WARN  Jan 01 17:40:45 net.sf.persism.MetaData - Property not found for column: DefaultModifiers class: class net.sf.persism.dao.Procedure
+WARN  Jan 01 17:40:45 net.sf.persism.MetaData - Property not found for column: AlwaysPrintDoNotFaxReport class: class net.sf.persism.dao.Procedure
+WARN  Jan 01 17:40:45 net.sf.persism.MetaData - Property not found for column: RequiresProtocol class: class net.sf.persism.dao.Procedure
+WARN  Jan 01 17:40:45 net.sf.persism.MetaData - Property not found for column: NeverRequiresInterpretation class: class net.sf.persism.dao.Procedure
+WARN  Jan 01 17:40:45 net.sf.persism.MetaData - Property not found for column: ProfFeeDescrip class: class net.sf.persism.dao.Procedure
+WARN  Jan 01 17:40:45 net.sf.persism.MetaData - Property not found for column: ProfFeeDescrip1 class: class net.sf.persism.dao.Procedure
+WARN  Jan 01 17:40:45 net.sf.persism.MetaData - Property not found for column: ProfFeeDescrip2 class: class net.sf.persism.dao.Procedure
+WARN  Jan 01 17:40:45 net.sf.persism.MetaData - Property not found for column: ProfFeeDescrip3 class: class net.sf.persism.dao.Procedure
+WARN  Jan 01 17:40:45 net.sf.persism.MetaData - Property not found for column: ProfFeeDescrip4 class: class net.sf.persism.dao.Procedure
+WARN  Jan 01 17:40:45 net.sf.persism.MetaData - Property not found for column: ProfFeeDescrip5 class: class net.sf.persism.dao.Procedure
+WARN  Jan 01 17:40:45 net.sf.persism.MetaData - Property not found for column: ProfFeeDescrip6 class: class net.sf.persism.dao.Procedure
+WARN  Jan 01 17:40:45 net.sf.persism.MetaData - Property not found for column: TechFeeDescrip class: class net.sf.persism.dao.Procedure
+WARN  Jan 01 17:40:45 net.sf.persism.MetaData - Property not found for column: TechFeeDescrip1 class: class net.sf.persism.dao.Procedure
+WARN  Jan 01 17:40:45 net.sf.persism.MetaData - Property not found for column: TechFeeDescrip2 class: class net.sf.persism.dao.Procedure
+WARN  Jan 01 17:40:45 net.sf.persism.MetaData - Property not found for column: TechFeeDescrip3 class: class net.sf.persism.dao.Procedure
+WARN  Jan 01 17:40:45 net.sf.persism.MetaData - Property not found for column: TechFeeDescrip4 class: class net.sf.persism.dao.Procedure
+WARN  Jan 01 17:40:45 net.sf.persism.MetaData - Property not found for column: TechFeeDescrip5 class: class net.sf.persism.dao.Procedure
+WARN  Jan 01 17:40:45 net.sf.persism.MetaData - Property not found for column: TechFeeDescrip6 class: class net.sf.persism.dao.Procedure
+WARN  Jan 01 17:40:45 net.sf.persism.MetaData - Property not found for column: PromptTech4Supplies class: class net.sf.persism.dao.Procedure
+WARN  Jan 01 17:40:45 net.sf.persism.MetaData - Property not found for column: SCMUniqueID class: class net.sf.persism.dao.Procedure
+INFO  Jan 01 17:40:45 jdbc.sqlonly - SELECT * FROM EXAMCODE WHERE 1=0 
+
+INFO  Jan 01 17:40:45 jdbc.sqlonly - INSERT INTO EXAMCODE (ExamType_No, Desc_e, Points, AccompanyingExamCode_No, SideRequired, BodyPartNo, 
+AllowInRooms, ReservationType, ProfessionalFeeCode, TechnicalFeeCode) VALUES ( 0 , 'new proc' 
+, NULL , 0 , 0 , 0 , NULL , 0 , NULL , NULL ) 
+
+INFO  Jan 01 17:40:45 net.sf.persism.MetaData - getting instance jdbc:jtds:sqlserver://pinf-win;DatabaseName=PINF;instance=;useLOBs=false
+INFO  Jan 01 17:40:45 jdbc.sqlonly - SELECT * FROM EXAMCODE WHERE ExamCode_no = 1 
+
+INFO  Jan 01 17:40:45 jdbc.sqlonly - SELECT * FROM EXAMCODE WHERE ExamCode_no = 1 
+
+INFO  Jan 01 17:40:45 jdbc.sqlonly - SELECT * FROM EXAMCODE WHERE ExamCode_no = 1 
+
+INFO  Jan 01 17:40:45 jdbc.sqlonly - UPDATE EXAMCODE SET AccompanyingExamCode_No = 0, AllowInRooms = NULL, BodyPartNo = 0, Desc_e 
+= 'JUNK JUNK JUNK', ExamType_No = 0, Points = NULL, PrepInstructions = ' ', ProfessionalFeeCode 
+= NULL, ReservationType = 0, SideRequired = 0, TechnicalFeeCode = NULL WHERE ExamCode_no = 
+1 
+
+INFO  Jan 01 17:40:46 jdbc.sqlonly - SELECT * FROM EXAMCODE WHERE ExamCode_no = 1 
+
+INFO  Jan 01 17:40:46 jdbc.sqlonly - SELECT * FROM Orders WHERE 1=0 
+
+WARN  Jan 01 17:40:46 net.sf.persism.MetaData - Property not found for column: ROW_ID class: class net.sf.persism.dao.Order
+INFO  Jan 01 17:40:46 jdbc.sqlonly - SELECT * FROM Orders WHERE 1=0 
+
+INFO  Jan 01 17:40:46 jdbc.sqlonly - INSERT INTO Orders (NAME, Customer_ID, PAID, CREATED) VALUES ( 'MOO' , NULL , 0 , NULL ) 
+
+INFO  Jan 01 17:40:46 jdbc.sqlonly - SELECT * FROM ORDERS 
+
+INFO  Jan 01 17:40:46 jdbc.sqlonly - UPDATE Orders SET NAME = 'COW' WHERE ID = 1 
+
+INFO  Jan 01 17:40:46 jdbc.sqlonly - TRUNCATE TABLE ORDERS 
+
+INFO  Jan 01 17:40:46 jdbc.sqlonly - TRUNCATE TABLE EXAMCODE 
+
+INFO  Jan 01 17:40:46 net.sf.persism.MetaData - removing jdbc:jtds:sqlserver://pinf-win;DatabaseName=PINF;instance=;useLOBs=false
+INFO  Jan 01 17:40:46 jdbc.sqlonly - DROP TABLE Orders 
+
+INFO  Jan 01 17:40:46 jdbc.sqlonly - CREATE TABLE Orders ( [ID] [int] IDENTITY(1,1) NOT NULL, NAME VARCHAR(30) NULL, ROW_ID VARCHAR(30) 
+NULL, Customer_ID VARCHAR(10) NULL, PAID BIT NULL, CREATED datetime ) 
+
+INFO  Jan 01 17:40:46 jdbc.sqlonly - DROP TABLE Customers 
+
+INFO  Jan 01 17:40:46 jdbc.sqlonly - CREATE TABLE Customers ( Customer_ID varchar(10) PRIMARY KEY NOT NULL, Company_Name VARCHAR(30) 
+NULL, Contact_Name VARCHAR(30) NULL, Contact_Title VARCHAR(10) NULL, Address VARCHAR(40) NULL, 
+City VARCHAR(30) NULL, Region VARCHAR(10) NULL, Postal_Code VARCHAR(10) NULL, Country VARCHAR(2) 
+NULL, Phone VARCHAR(30) NULL, Fax VARCHAR(30) NULL, Date_Registered datetime default current_timestamp, 
+Date_Of_Last_Order datetime ) 
+
+INFO  Jan 01 17:40:46 jdbc.sqlonly - DROP TABLE TABLENOPRIMARY 
+
+INFO  Jan 01 17:40:46 jdbc.sqlonly - CREATE TABLE TABLENOPRIMARY ( ID INT, Name VARCHAR(30), Field4 VARCHAR(30), Field5 DATETIME 
+) 
+
+INFO  Jan 01 17:40:46 net.sf.persism.MetaData - getting instance jdbc:jtds:sqlserver://pinf-win;DatabaseName=PINF;instance=;useLOBs=false
+INFO  Jan 01 17:40:46 net.sf.persism.MetaData - getting instance jdbc:jtds:sqlserver://pinf-win;DatabaseName=PINF;instance=;useLOBs=false
+INFO  Jan 01 17:40:46 jdbc.sqlonly - select examdate from exams 
+
+INFO  Jan 01 17:40:46 net.sf.persism.TestMSSQL - Fri Sep 23 11:18:05 EDT 2011
+INFO  Jan 01 17:40:46 jdbc.sqlonly - select count(*) from exams 
+
+INFO  Jan 01 17:40:46 net.sf.persism.TestMSSQL - 2
+INFO  Jan 01 17:40:46 net.sf.persism.TestMSSQL - 1997-03-04
+INFO  Jan 01 17:40:46 jdbc.sqlonly - select count(*) from exams where examDate > '03/04/1997 00:00:00.000' 
+
+INFO  Jan 01 17:40:46 net.sf.persism.TestMSSQL - 2
+INFO  Jan 01 17:40:46 jdbc.sqlonly - TRUNCATE TABLE ORDERS 
+
+INFO  Jan 01 17:40:46 jdbc.sqlonly - TRUNCATE TABLE EXAMCODE 
+
+INFO  Jan 01 17:40:46 net.sf.persism.MetaData - removing jdbc:jtds:sqlserver://pinf-win;DatabaseName=PINF;instance=;useLOBs=false
+INFO  Jan 01 17:40:46 jdbc.sqlonly - DROP TABLE Orders 
+
+INFO  Jan 01 17:40:46 jdbc.sqlonly - CREATE TABLE Orders ( [ID] [int] IDENTITY(1,1) NOT NULL, NAME VARCHAR(30) NULL, ROW_ID VARCHAR(30) 
+NULL, Customer_ID VARCHAR(10) NULL, PAID BIT NULL, CREATED datetime ) 
+
+INFO  Jan 01 17:40:46 jdbc.sqlonly - DROP TABLE Customers 
+
+INFO  Jan 01 17:40:46 jdbc.sqlonly - CREATE TABLE Customers ( Customer_ID varchar(10) PRIMARY KEY NOT NULL, Company_Name VARCHAR(30) 
+NULL, Contact_Name VARCHAR(30) NULL, Contact_Title VARCHAR(10) NULL, Address VARCHAR(40) NULL, 
+City VARCHAR(30) NULL, Region VARCHAR(10) NULL, Postal_Code VARCHAR(10) NULL, Country VARCHAR(2) 
+NULL, Phone VARCHAR(30) NULL, Fax VARCHAR(30) NULL, Date_Registered datetime default current_timestamp, 
+Date_Of_Last_Order datetime ) 
+
+INFO  Jan 01 17:40:46 jdbc.sqlonly - DROP TABLE TABLENOPRIMARY 
+
+INFO  Jan 01 17:40:46 jdbc.sqlonly - CREATE TABLE TABLENOPRIMARY ( ID INT, Name VARCHAR(30), Field4 VARCHAR(30), Field5 DATETIME 
+) 
+
+INFO  Jan 01 17:40:46 net.sf.persism.MetaData - getting instance jdbc:jtds:sqlserver://pinf-win;DatabaseName=PINF;instance=;useLOBs=false
+INFO  Jan 01 17:40:46 net.sf.persism.MetaData - getting instance jdbc:jtds:sqlserver://pinf-win;DatabaseName=PINF;instance=;useLOBs=false
+INFO  Jan 01 17:40:46 jdbc.sqlonly - SELECT * FROM EXAMCODE WHERE 1=0 
+
+WARN  Jan 01 17:40:46 net.sf.persism.MetaData - Property not found for column: Desc_f class: class net.sf.persism.dao.Procedure
+WARN  Jan 01 17:40:46 net.sf.persism.MetaData - Property not found for column: ExamSubType class: class net.sf.persism.dao.Procedure
+WARN  Jan 01 17:40:46 net.sf.persism.MetaData - Property not found for column: ActCodeForInjection class: class net.sf.persism.dao.Procedure
+WARN  Jan 01 17:40:46 net.sf.persism.MetaData - Property not found for column: AbdomenSpineOrOther class: class net.sf.persism.dao.Procedure
+WARN  Jan 01 17:40:46 net.sf.persism.MetaData - Property not found for column: AcExamCode_No2 class: class net.sf.persism.dao.Procedure
+WARN  Jan 01 17:40:46 net.sf.persism.MetaData - Property not found for column: AcExamCode_No3 class: class net.sf.persism.dao.Procedure
+WARN  Jan 01 17:40:46 net.sf.persism.MetaData - Property not found for column: StatCode class: class net.sf.persism.dao.Procedure
+WARN  Jan 01 17:40:46 net.sf.persism.MetaData - Property not found for column: SuppressRole7ForUltrasound class: class net.sf.persism.dao.Procedure
+WARN  Jan 01 17:40:46 net.sf.persism.MetaData - Property not found for column: PreferredAptDuration class: class net.sf.persism.dao.Procedure
+WARN  Jan 01 17:40:46 net.sf.persism.MetaData - Property not found for column: ProfessionalFeeCode1 class: class net.sf.persism.dao.Procedure
+WARN  Jan 01 17:40:46 net.sf.persism.MetaData - Property not found for column: ProfessionalFeeCode2 class: class net.sf.persism.dao.Procedure
+WARN  Jan 01 17:40:46 net.sf.persism.MetaData - Property not found for column: ProfessionalFeeCode3 class: class net.sf.persism.dao.Procedure
+WARN  Jan 01 17:40:46 net.sf.persism.MetaData - Property not found for column: ProfessionalFeeCode4 class: class net.sf.persism.dao.Procedure
+WARN  Jan 01 17:40:46 net.sf.persism.MetaData - Property not found for column: TechnicalFeeCode1 class: class net.sf.persism.dao.Procedure
+WARN  Jan 01 17:40:46 net.sf.persism.MetaData - Property not found for column: TechnicalFeeCode2 class: class net.sf.persism.dao.Procedure
+WARN  Jan 01 17:40:46 net.sf.persism.MetaData - Property not found for column: TechnicalFeeCode3 class: class net.sf.persism.dao.Procedure
+WARN  Jan 01 17:40:46 net.sf.persism.MetaData - Property not found for column: TechnicalFeeCode4 class: class net.sf.persism.dao.Procedure
+WARN  Jan 01 17:40:46 net.sf.persism.MetaData - Property not found for column: ICD9RequiredForBilling class: class net.sf.persism.dao.Procedure
+WARN  Jan 01 17:40:46 net.sf.persism.MetaData - Property not found for column: ProFeeUnits class: class net.sf.persism.dao.Procedure
+WARN  Jan 01 17:40:46 net.sf.persism.MetaData - Property not found for column: ProFeeUnits1 class: class net.sf.persism.dao.Procedure
+WARN  Jan 01 17:40:46 net.sf.persism.MetaData - Property not found for column: ProFeeUnits2 class: class net.sf.persism.dao.Procedure
+WARN  Jan 01 17:40:46 net.sf.persism.MetaData - Property not found for column: ProFeeUnits3 class: class net.sf.persism.dao.Procedure
+WARN  Jan 01 17:40:46 net.sf.persism.MetaData - Property not found for column: ProFeeUnits4 class: class net.sf.persism.dao.Procedure
+WARN  Jan 01 17:40:46 net.sf.persism.MetaData - Property not found for column: TechFeeUnits class: class net.sf.persism.dao.Procedure
+WARN  Jan 01 17:40:46 net.sf.persism.MetaData - Property not found for column: TechFeeUnits1 class: class net.sf.persism.dao.Procedure
+WARN  Jan 01 17:40:46 net.sf.persism.MetaData - Property not found for column: TechFeeUnits2 class: class net.sf.persism.dao.Procedure
+WARN  Jan 01 17:40:46 net.sf.persism.MetaData - Property not found for column: TechFeeUnits3 class: class net.sf.persism.dao.Procedure
+WARN  Jan 01 17:40:46 net.sf.persism.MetaData - Property not found for column: TechFeeUnits4 class: class net.sf.persism.dao.Procedure
+WARN  Jan 01 17:40:46 net.sf.persism.MetaData - Property not found for column: NumberOfUnitsToBill class: class net.sf.persism.dao.Procedure
+WARN  Jan 01 17:40:46 net.sf.persism.MetaData - Property not found for column: QuickNormalText class: class net.sf.persism.dao.Procedure
+WARN  Jan 01 17:40:46 net.sf.persism.MetaData - Property not found for column: CIHIGroupCode class: class net.sf.persism.dao.Procedure
+WARN  Jan 01 17:40:46 net.sf.persism.MetaData - Property not found for column: ProfessionalFeeCode5 class: class net.sf.persism.dao.Procedure
+WARN  Jan 01 17:40:46 net.sf.persism.MetaData - Property not found for column: ProfessionalFeeCode6 class: class net.sf.persism.dao.Procedure
+WARN  Jan 01 17:40:46 net.sf.persism.MetaData - Property not found for column: TechnicalFeeCode5 class: class net.sf.persism.dao.Procedure
+WARN  Jan 01 17:40:46 net.sf.persism.MetaData - Property not found for column: TechnicalFeeCode6 class: class net.sf.persism.dao.Procedure
+WARN  Jan 01 17:40:46 net.sf.persism.MetaData - Property not found for column: ProFeeUnits5 class: class net.sf.persism.dao.Procedure
+WARN  Jan 01 17:40:46 net.sf.persism.MetaData - Property not found for column: ProFeeUnits6 class: class net.sf.persism.dao.Procedure
+WARN  Jan 01 17:40:46 net.sf.persism.MetaData - Property not found for column: TechFeeUnits5 class: class net.sf.persism.dao.Procedure
+WARN  Jan 01 17:40:46 net.sf.persism.MetaData - Property not found for column: TechFeeUnits6 class: class net.sf.persism.dao.Procedure
+WARN  Jan 01 17:40:46 net.sf.persism.MetaData - Property not found for column: EnableBirads class: class net.sf.persism.dao.Procedure
+WARN  Jan 01 17:40:46 net.sf.persism.MetaData - Property not found for column: PrintPatientLetter class: class net.sf.persism.dao.Procedure
+WARN  Jan 01 17:40:46 net.sf.persism.MetaData - Property not found for column: InstructionsForStaff class: class net.sf.persism.dao.Procedure
+WARN  Jan 01 17:40:46 net.sf.persism.MetaData - Property not found for column: Retired class: class net.sf.persism.dao.Procedure
+WARN  Jan 01 17:40:46 net.sf.persism.MetaData - Property not found for column: ExternalID1 class: class net.sf.persism.dao.Procedure
+WARN  Jan 01 17:40:46 net.sf.persism.MetaData - Property not found for column: ExternalID2 class: class net.sf.persism.dao.Procedure
+WARN  Jan 01 17:40:46 net.sf.persism.MetaData - Property not found for column: ExternalID3 class: class net.sf.persism.dao.Procedure
+WARN  Jan 01 17:40:46 net.sf.persism.MetaData - Property not found for column: MaxDaysAgoForSameProcedure class: class net.sf.persism.dao.Procedure
+WARN  Jan 01 17:40:46 net.sf.persism.MetaData - Property not found for column: RepeatWarningThresholdDays class: class net.sf.persism.dao.Procedure
+WARN  Jan 01 17:40:46 net.sf.persism.MetaData - Property not found for column: MammoType class: class net.sf.persism.dao.Procedure
+WARN  Jan 01 17:40:46 net.sf.persism.MetaData - Property not found for column: ProximityWarningHours class: class net.sf.persism.dao.Procedure
+WARN  Jan 01 17:40:46 net.sf.persism.MetaData - Property not found for column: ProximityWarningMessage class: class net.sf.persism.dao.Procedure
+WARN  Jan 01 17:40:46 net.sf.persism.MetaData - Property not found for column: ScheduleWithPhases class: class net.sf.persism.dao.Procedure
+WARN  Jan 01 17:40:46 net.sf.persism.MetaData - Property not found for column: AllowRefMdsAndNursesToSchedule class: class net.sf.persism.dao.Procedure
+WARN  Jan 01 17:40:46 net.sf.persism.MetaData - Property not found for column: NumberOfPhases class: class net.sf.persism.dao.Procedure
+WARN  Jan 01 17:40:46 net.sf.persism.MetaData - Property not found for column: ExamCount class: class net.sf.persism.dao.Procedure
+WARN  Jan 01 17:40:46 net.sf.persism.MetaData - Property not found for column: M1 class: class net.sf.persism.dao.Procedure
+WARN  Jan 01 17:40:46 net.sf.persism.MetaData - Property not found for column: M2 class: class net.sf.persism.dao.Procedure
+WARN  Jan 01 17:40:46 net.sf.persism.MetaData - Property not found for column: M3 class: class net.sf.persism.dao.Procedure
+WARN  Jan 01 17:40:46 net.sf.persism.MetaData - Property not found for column: M4 class: class net.sf.persism.dao.Procedure
+WARN  Jan 01 17:40:46 net.sf.persism.MetaData - Property not found for column: M5 class: class net.sf.persism.dao.Procedure
+WARN  Jan 01 17:40:46 net.sf.persism.MetaData - Property not found for column: InstructionsForStaffVisibility class: class net.sf.persism.dao.Procedure
+WARN  Jan 01 17:40:46 net.sf.persism.MetaData - Property not found for column: DefaultImpression class: class net.sf.persism.dao.Procedure
+WARN  Jan 01 17:40:46 net.sf.persism.MetaData - Property not found for column: ExcludeFromOtherPriors class: class net.sf.persism.dao.Procedure
+WARN  Jan 01 17:40:46 net.sf.persism.MetaData - Property not found for column: ExcludeFromGroupable class: class net.sf.persism.dao.Procedure
+WARN  Jan 01 17:40:46 net.sf.persism.MetaData - Property not found for column: DefaultModifiers class: class net.sf.persism.dao.Procedure
+WARN  Jan 01 17:40:46 net.sf.persism.MetaData - Property not found for column: AlwaysPrintDoNotFaxReport class: class net.sf.persism.dao.Procedure
+WARN  Jan 01 17:40:46 net.sf.persism.MetaData - Property not found for column: RequiresProtocol class: class net.sf.persism.dao.Procedure
+WARN  Jan 01 17:40:46 net.sf.persism.MetaData - Property not found for column: NeverRequiresInterpretation class: class net.sf.persism.dao.Procedure
+WARN  Jan 01 17:40:46 net.sf.persism.MetaData - Property not found for column: ProfFeeDescrip class: class net.sf.persism.dao.Procedure
+WARN  Jan 01 17:40:46 net.sf.persism.MetaData - Property not found for column: ProfFeeDescrip1 class: class net.sf.persism.dao.Procedure
+WARN  Jan 01 17:40:46 net.sf.persism.MetaData - Property not found for column: ProfFeeDescrip2 class: class net.sf.persism.dao.Procedure
+WARN  Jan 01 17:40:46 net.sf.persism.MetaData - Property not found for column: ProfFeeDescrip3 class: class net.sf.persism.dao.Procedure
+WARN  Jan 01 17:40:46 net.sf.persism.MetaData - Property not found for column: ProfFeeDescrip4 class: class net.sf.persism.dao.Procedure
+WARN  Jan 01 17:40:46 net.sf.persism.MetaData - Property not found for column: ProfFeeDescrip5 class: class net.sf.persism.dao.Procedure
+WARN  Jan 01 17:40:46 net.sf.persism.MetaData - Property not found for column: ProfFeeDescrip6 class: class net.sf.persism.dao.Procedure
+WARN  Jan 01 17:40:46 net.sf.persism.MetaData - Property not found for column: TechFeeDescrip class: class net.sf.persism.dao.Procedure
+WARN  Jan 01 17:40:46 net.sf.persism.MetaData - Property not found for column: TechFeeDescrip1 class: class net.sf.persism.dao.Procedure
+WARN  Jan 01 17:40:46 net.sf.persism.MetaData - Property not found for column: TechFeeDescrip2 class: class net.sf.persism.dao.Procedure
+WARN  Jan 01 17:40:46 net.sf.persism.MetaData - Property not found for column: TechFeeDescrip3 class: class net.sf.persism.dao.Procedure
+WARN  Jan 01 17:40:46 net.sf.persism.MetaData - Property not found for column: TechFeeDescrip4 class: class net.sf.persism.dao.Procedure
+WARN  Jan 01 17:40:46 net.sf.persism.MetaData - Property not found for column: TechFeeDescrip5 class: class net.sf.persism.dao.Procedure
+WARN  Jan 01 17:40:46 net.sf.persism.MetaData - Property not found for column: TechFeeDescrip6 class: class net.sf.persism.dao.Procedure
+WARN  Jan 01 17:40:46 net.sf.persism.MetaData - Property not found for column: PromptTech4Supplies class: class net.sf.persism.dao.Procedure
+WARN  Jan 01 17:40:46 net.sf.persism.MetaData - Property not found for column: SCMUniqueID class: class net.sf.persism.dao.Procedure
+INFO  Jan 01 17:40:46 jdbc.sqlonly - SELECT ExamCode_No, EXAMTYPE_NO, DESC_E FROM EXAMCODE 
+
+INFO  Jan 01 17:40:46 jdbc.sqlonly - SELECT * FROM EXAMCODE 
+
+INFO  Jan 01 17:40:46 net.sf.persism.TestMSSQL - time to read procs 1: 11
+INFO  Jan 01 17:40:46 net.sf.persism.TestMSSQL - []
+INFO  Jan 01 17:40:46 jdbc.sqlonly - SELECT * FROM EXAMCODE 
+
+INFO  Jan 01 17:40:46 net.sf.persism.TestMSSQL - time to read procs 2: 4
+INFO  Jan 01 17:40:46 net.sf.persism.TestMSSQL - time to display procs: 4
+INFO  Jan 01 17:40:46 jdbc.sqlonly - SELECT * FROM EXAMCODE WHERE 1=0 
+
+INFO  Jan 01 17:40:46 jdbc.sqlonly - INSERT INTO EXAMCODE (ExamType_No, Desc_e, Points, AccompanyingExamCode_No, SideRequired, BodyPartNo, 
+AllowInRooms, ReservationType, ProfessionalFeeCode, TechnicalFeeCode) VALUES ( 0 , 'COW' , 
+NULL , 0 , 0 , 0 , NULL , 0 , NULL , NULL ) 
+
+INFO  Jan 01 17:40:46 net.sf.persism.MetaData - getting instance jdbc:jtds:sqlserver://pinf-win;DatabaseName=PINF;instance=;useLOBs=false
+INFO  Jan 01 17:40:46 jdbc.sqlonly - SELECT * FROM EXAMCODE WHERE ExamCode_no = 1 
+
+INFO  Jan 01 17:40:46 jdbc.sqlonly - select * from EXAMCODE WHERE ExamCode_No=1 
+
+INFO  Jan 01 17:40:46 net.sf.persism.TestMSSQL - time to read procs 3: 5
+INFO  Jan 01 17:40:46 jdbc.sqlonly - DELETE FROM EXAMCODE WHERE ExamCode_no = 1 
+
+INFO  Jan 01 17:40:46 jdbc.sqlonly - TRUNCATE TABLE ORDERS 
+
+INFO  Jan 01 17:40:46 jdbc.sqlonly - TRUNCATE TABLE EXAMCODE 
+
+INFO  Jan 01 17:40:46 net.sf.persism.MetaData - removing jdbc:jtds:sqlserver://pinf-win;DatabaseName=PINF;instance=;useLOBs=false
+INFO  Jan 01 17:40:46 jdbc.sqlonly - DROP TABLE Orders 
+
+INFO  Jan 01 17:40:46 jdbc.sqlonly - CREATE TABLE Orders ( [ID] [int] IDENTITY(1,1) NOT NULL, NAME VARCHAR(30) NULL, ROW_ID VARCHAR(30) 
+NULL, Customer_ID VARCHAR(10) NULL, PAID BIT NULL, CREATED datetime ) 
+
+INFO  Jan 01 17:40:46 jdbc.sqlonly - DROP TABLE Customers 
+
+INFO  Jan 01 17:40:46 jdbc.sqlonly - CREATE TABLE Customers ( Customer_ID varchar(10) PRIMARY KEY NOT NULL, Company_Name VARCHAR(30) 
+NULL, Contact_Name VARCHAR(30) NULL, Contact_Title VARCHAR(10) NULL, Address VARCHAR(40) NULL, 
+City VARCHAR(30) NULL, Region VARCHAR(10) NULL, Postal_Code VARCHAR(10) NULL, Country VARCHAR(2) 
+NULL, Phone VARCHAR(30) NULL, Fax VARCHAR(30) NULL, Date_Registered datetime default current_timestamp, 
+Date_Of_Last_Order datetime ) 
+
+INFO  Jan 01 17:40:46 jdbc.sqlonly - DROP TABLE TABLENOPRIMARY 
+
+INFO  Jan 01 17:40:46 jdbc.sqlonly - CREATE TABLE TABLENOPRIMARY ( ID INT, Name VARCHAR(30), Field4 VARCHAR(30), Field5 DATETIME 
+) 
+
+INFO  Jan 01 17:40:46 net.sf.persism.MetaData - getting instance jdbc:jtds:sqlserver://pinf-win;DatabaseName=PINF;instance=;useLOBs=false
+INFO  Jan 01 17:40:46 net.sf.persism.MetaData - getting instance jdbc:jtds:sqlserver://pinf-win;DatabaseName=PINF;instance=;useLOBs=false
+INFO  Jan 01 17:40:46 jdbc.sqlonly - SELECT * FROM ROOMS WHERE 1=0 
+
+WARN  Jan 01 17:40:46 net.sf.persism.MetaData - Property not found for column: Desc_f class: class net.sf.persism.dao.Room
+WARN  Jan 01 17:40:46 net.sf.persism.MetaData - Property not found for column: StartTime1 class: class net.sf.persism.dao.Room
+WARN  Jan 01 17:40:46 net.sf.persism.MetaData - Property not found for column: EndTime1 class: class net.sf.persism.dao.Room
+WARN  Jan 01 17:40:46 net.sf.persism.MetaData - Property not found for column: StartTime2 class: class net.sf.persism.dao.Room
+WARN  Jan 01 17:40:46 net.sf.persism.MetaData - Property not found for column: EndTime2 class: class net.sf.persism.dao.Room
+WARN  Jan 01 17:40:46 net.sf.persism.MetaData - Property not found for column: StartTime3 class: class net.sf.persism.dao.Room
+WARN  Jan 01 17:40:46 net.sf.persism.MetaData - Property not found for column: EndTime3 class: class net.sf.persism.dao.Room
+WARN  Jan 01 17:40:46 net.sf.persism.MetaData - Property not found for column: StartTime4 class: class net.sf.persism.dao.Room
+WARN  Jan 01 17:40:46 net.sf.persism.MetaData - Property not found for column: EndTime4 class: class net.sf.persism.dao.Room
+WARN  Jan 01 17:40:46 net.sf.persism.MetaData - Property not found for column: StartTime5 class: class net.sf.persism.dao.Room
+WARN  Jan 01 17:40:46 net.sf.persism.MetaData - Property not found for column: EndTime5 class: class net.sf.persism.dao.Room
+WARN  Jan 01 17:40:46 net.sf.persism.MetaData - Property not found for column: StartTime6 class: class net.sf.persism.dao.Room
+WARN  Jan 01 17:40:46 net.sf.persism.MetaData - Property not found for column: EndTime6 class: class net.sf.persism.dao.Room
+WARN  Jan 01 17:40:46 net.sf.persism.MetaData - Property not found for column: StartTime7 class: class net.sf.persism.dao.Room
+WARN  Jan 01 17:40:46 net.sf.persism.MetaData - Property not found for column: EndTime7 class: class net.sf.persism.dao.Room
+WARN  Jan 01 17:40:46 net.sf.persism.MetaData - Property not found for column: ExamType_No class: class net.sf.persism.dao.Room
+WARN  Jan 01 17:40:46 net.sf.persism.MetaData - Property not found for column: ExternalID class: class net.sf.persism.dao.Room
+WARN  Jan 01 17:40:46 net.sf.persism.MetaData - Property not found for column: FacilityNo class: class net.sf.persism.dao.Room
+WARN  Jan 01 17:40:46 net.sf.persism.MetaData - Property not found for column: ProcsAllowed class: class net.sf.persism.dao.Room
+WARN  Jan 01 17:40:46 net.sf.persism.MetaData - Property not found for column: ppn_room class: class net.sf.persism.dao.Room
+WARN  Jan 01 17:40:46 net.sf.persism.MetaData - Property not found for column: DefaultCostcenterNo class: class net.sf.persism.dao.Room
+WARN  Jan 01 17:40:46 net.sf.persism.MetaData - Property not found for column: EnableFilmTracking class: class net.sf.persism.dao.Room
+WARN  Jan 01 17:40:46 net.sf.persism.MetaData - Property not found for column: Retired class: class net.sf.persism.dao.Room
+WARN  Jan 01 17:40:46 net.sf.persism.MetaData - Property not found for column: DefaultFilmLocation class: class net.sf.persism.dao.Room
+WARN  Jan 01 17:40:46 net.sf.persism.MetaData - Property not found for column: FilmHomeLocation class: class net.sf.persism.dao.Room
+WARN  Jan 01 17:40:46 net.sf.persism.MetaData - Property not found for column: DigitalImaging class: class net.sf.persism.dao.Room
+INFO  Jan 01 17:40:46 jdbc.sqlonly - SELECT Room_no, Desc_E, Intervals FROM ROOMS 
+
+INFO  Jan 01 17:40:46 net.sf.persism.TestMSSQL - time to read rooms: 42 size: 0
+INFO  Jan 01 17:40:46 jdbc.sqlonly - SELECT Room_no, Desc_E, Intervals FROM ROOMS 
+
+INFO  Jan 01 17:40:46 net.sf.persism.TestMSSQL - time to read rooms again: 3
+INFO  Jan 01 17:40:46 net.sf.persism.TestMSSQL - time to display rooms : 0
+INFO  Jan 01 17:40:46 jdbc.sqlonly - TRUNCATE TABLE ORDERS 
+
+INFO  Jan 01 17:40:46 jdbc.sqlonly - TRUNCATE TABLE EXAMCODE 
+
+INFO  Jan 01 17:40:46 net.sf.persism.MetaData - removing jdbc:jtds:sqlserver://pinf-win;DatabaseName=PINF;instance=;useLOBs=false
+INFO  Jan 01 17:40:46 jdbc.sqlonly - DROP TABLE Orders 
+
+INFO  Jan 01 17:40:46 jdbc.sqlonly - CREATE TABLE Orders ( [ID] [int] IDENTITY(1,1) NOT NULL, NAME VARCHAR(30) NULL, ROW_ID VARCHAR(30) 
+NULL, Customer_ID VARCHAR(10) NULL, PAID BIT NULL, CREATED datetime ) 
+
+INFO  Jan 01 17:40:46 jdbc.sqlonly - DROP TABLE Customers 
+
+INFO  Jan 01 17:40:46 jdbc.sqlonly - CREATE TABLE Customers ( Customer_ID varchar(10) PRIMARY KEY NOT NULL, Company_Name VARCHAR(30) 
+NULL, Contact_Name VARCHAR(30) NULL, Contact_Title VARCHAR(10) NULL, Address VARCHAR(40) NULL, 
+City VARCHAR(30) NULL, Region VARCHAR(10) NULL, Postal_Code VARCHAR(10) NULL, Country VARCHAR(2) 
+NULL, Phone VARCHAR(30) NULL, Fax VARCHAR(30) NULL, Date_Registered datetime default current_timestamp, 
+Date_Of_Last_Order datetime ) 
+
+INFO  Jan 01 17:40:46 jdbc.sqlonly - DROP TABLE TABLENOPRIMARY 
+
+INFO  Jan 01 17:40:46 jdbc.sqlonly - CREATE TABLE TABLENOPRIMARY ( ID INT, Name VARCHAR(30), Field4 VARCHAR(30), Field5 DATETIME 
+) 
+
+INFO  Jan 01 17:40:46 net.sf.persism.MetaData - getting instance jdbc:jtds:sqlserver://pinf-win;DatabaseName=PINF;instance=;useLOBs=false
+INFO  Jan 01 17:40:46 net.sf.persism.MetaData - getting instance jdbc:jtds:sqlserver://pinf-win;DatabaseName=PINF;instance=;useLOBs=false
+INFO  Jan 01 17:40:46 jdbc.sqlonly - select top 10 ExamID, p.DESC_E ProcedureDescription, r.DESC_E RoomDescription, eXaMdAtE from 
+exams left join EXAMCODE as p ON Exams.ExamCode_No = p.ExamCode_No left join ROOMS as r ON 
+Exams.Room_No = r.Room_No 
+
+INFO  Jan 01 17:40:46 net.sf.persism.TestMSSQL - [QueryResult{examId=1, procedureDescription='null', modalityDescription='null', examDate=Fri Sep 23 11:18:05 EDT 2011}, QueryResult{examId=2, procedureDescription='null', modalityDescription='null', examDate=Fri Oct 07 07:26:39 EDT 2011}]
+INFO  Jan 01 17:40:46 jdbc.sqlonly - select top 10 ExamID, p.Desc_E ProcedureDescription, r.Desc_E RoomDescription, ExamDate from 
+exams left join EXAMCODE as p ON Exams.ExamCode_No = p.ExamCode_No left join ROOMS as r ON 
+Exams.Room_No = r.Room_No 
+
+INFO  Jan 01 17:40:46 net.sf.persism.TestMSSQL - [QueryResult{examId=1, procedureDescription='null', modalityDescription='null', examDate=Fri Sep 23 11:18:05 EDT 2011}, QueryResult{examId=2, procedureDescription='null', modalityDescription='null', examDate=Fri Oct 07 07:26:39 EDT 2011}]
+INFO  Jan 01 17:40:46 jdbc.sqlonly - TRUNCATE TABLE ORDERS 
+
+INFO  Jan 01 17:40:46 jdbc.sqlonly - TRUNCATE TABLE EXAMCODE 
+
+INFO  Jan 01 17:40:46 net.sf.persism.MetaData - removing jdbc:jtds:sqlserver://pinf-win;DatabaseName=PINF;instance=;useLOBs=false
+INFO  Jan 01 17:40:46 jdbc.sqlonly - DROP TABLE Orders 
+
+INFO  Jan 01 17:40:46 jdbc.sqlonly - CREATE TABLE Orders ( [ID] [int] IDENTITY(1,1) NOT NULL, NAME VARCHAR(30) NULL, ROW_ID VARCHAR(30) 
+NULL, Customer_ID VARCHAR(10) NULL, PAID BIT NULL, CREATED datetime ) 
+
+INFO  Jan 01 17:40:46 jdbc.sqlonly - DROP TABLE Customers 
+
+INFO  Jan 01 17:40:46 jdbc.sqlonly - CREATE TABLE Customers ( Customer_ID varchar(10) PRIMARY KEY NOT NULL, Company_Name VARCHAR(30) 
+NULL, Contact_Name VARCHAR(30) NULL, Contact_Title VARCHAR(10) NULL, Address VARCHAR(40) NULL, 
+City VARCHAR(30) NULL, Region VARCHAR(10) NULL, Postal_Code VARCHAR(10) NULL, Country VARCHAR(2) 
+NULL, Phone VARCHAR(30) NULL, Fax VARCHAR(30) NULL, Date_Registered datetime default current_timestamp, 
+Date_Of_Last_Order datetime ) 
+
+INFO  Jan 01 17:40:46 jdbc.sqlonly - DROP TABLE TABLENOPRIMARY 
+
+INFO  Jan 01 17:40:46 jdbc.sqlonly - CREATE TABLE TABLENOPRIMARY ( ID INT, Name VARCHAR(30), Field4 VARCHAR(30), Field5 DATETIME 
+) 
+
+INFO  Jan 01 17:40:46 net.sf.persism.MetaData - getting instance jdbc:jtds:sqlserver://pinf-win;DatabaseName=PINF;instance=;useLOBs=false
+INFO  Jan 01 17:40:46 net.sf.persism.MetaData - getting instance jdbc:jtds:sqlserver://pinf-win;DatabaseName=PINF;instance=;useLOBs=false
+INFO  Jan 01 17:40:46 net.sf.persism.TestMSSQL - |TestMSSQL| ---- net.sf.persism.TestMSSQL
+INFO  Jan 01 17:40:46 net.sf.persism.TestMSSQL - Array of Object has length 3
+INFO  Jan 01 17:40:46 net.sf.persism.TestMSSQL - Array of String has length 3 [Blobbo, Cracked, Dumbo]
+INFO  Jan 01 17:40:46 jdbc.sqlonly - TRUNCATE TABLE ORDERS 
+
+INFO  Jan 01 17:40:46 jdbc.sqlonly - TRUNCATE TABLE EXAMCODE 
+
+INFO  Jan 01 17:40:46 net.sf.persism.MetaData - removing jdbc:jtds:sqlserver://pinf-win;DatabaseName=PINF;instance=;useLOBs=false
+INFO  Jan 01 17:40:46 jdbc.sqlonly - DROP TABLE Orders 
+
+INFO  Jan 01 17:40:46 jdbc.sqlonly - CREATE TABLE Orders ( [ID] [int] IDENTITY(1,1) NOT NULL, NAME VARCHAR(30) NULL, ROW_ID VARCHAR(30) 
+NULL, Customer_ID VARCHAR(10) NULL, PAID BIT NULL, CREATED datetime ) 
+
+INFO  Jan 01 17:40:46 jdbc.sqlonly - DROP TABLE Customers 
+
+INFO  Jan 01 17:40:46 jdbc.sqlonly - CREATE TABLE Customers ( Customer_ID varchar(10) PRIMARY KEY NOT NULL, Company_Name VARCHAR(30) 
+NULL, Contact_Name VARCHAR(30) NULL, Contact_Title VARCHAR(10) NULL, Address VARCHAR(40) NULL, 
+City VARCHAR(30) NULL, Region VARCHAR(10) NULL, Postal_Code VARCHAR(10) NULL, Country VARCHAR(2) 
+NULL, Phone VARCHAR(30) NULL, Fax VARCHAR(30) NULL, Date_Registered datetime default current_timestamp, 
+Date_Of_Last_Order datetime ) 
+
+INFO  Jan 01 17:40:46 jdbc.sqlonly - DROP TABLE TABLENOPRIMARY 
+
+INFO  Jan 01 17:40:46 jdbc.sqlonly - CREATE TABLE TABLENOPRIMARY ( ID INT, Name VARCHAR(30), Field4 VARCHAR(30), Field5 DATETIME 
+) 
+
+INFO  Jan 01 17:40:46 net.sf.persism.MetaData - getting instance jdbc:jtds:sqlserver://pinf-win;DatabaseName=PINF;instance=;useLOBs=false
+INFO  Jan 01 17:40:46 net.sf.persism.MetaData - getting instance jdbc:jtds:sqlserver://pinf-win;DatabaseName=PINF;instance=;useLOBs=false
+INFO  Jan 01 17:40:46 net.sf.persism.TestMSSQL - Customers
+INFO  Jan 01 17:40:46 net.sf.persism.TestMSSQL - EXAMCODE
+INFO  Jan 01 17:40:46 net.sf.persism.TestMSSQL - EXAMS
+INFO  Jan 01 17:40:46 net.sf.persism.TestMSSQL - NOPRIMARY
+INFO  Jan 01 17:40:46 net.sf.persism.TestMSSQL - Orders
+INFO  Jan 01 17:40:46 net.sf.persism.TestMSSQL - ROOMS
+INFO  Jan 01 17:40:46 net.sf.persism.TestMSSQL - TABLENOPRIMARY
+INFO  Jan 01 17:40:46 net.sf.persism.TestMSSQL - USERS
+INFO  Jan 01 17:40:46 jdbc.sqlonly - TRUNCATE TABLE ORDERS 
+
+INFO  Jan 01 17:40:46 jdbc.sqlonly - TRUNCATE TABLE EXAMCODE 
+
+INFO  Jan 01 17:40:46 net.sf.persism.MetaData - removing jdbc:jtds:sqlserver://pinf-win;DatabaseName=PINF;instance=;useLOBs=false
+INFO  Jan 01 17:40:46 jdbc.sqlonly - DROP TABLE Orders 
+
+INFO  Jan 01 17:40:46 jdbc.sqlonly - CREATE TABLE Orders ( [ID] [int] IDENTITY(1,1) NOT NULL, NAME VARCHAR(30) NULL, ROW_ID VARCHAR(30) 
+NULL, Customer_ID VARCHAR(10) NULL, PAID BIT NULL, CREATED datetime ) 
+
+INFO  Jan 01 17:40:46 jdbc.sqlonly - DROP TABLE Customers 
+
+INFO  Jan 01 17:40:46 jdbc.sqlonly - CREATE TABLE Customers ( Customer_ID varchar(10) PRIMARY KEY NOT NULL, Company_Name VARCHAR(30) 
+NULL, Contact_Name VARCHAR(30) NULL, Contact_Title VARCHAR(10) NULL, Address VARCHAR(40) NULL, 
+City VARCHAR(30) NULL, Region VARCHAR(10) NULL, Postal_Code VARCHAR(10) NULL, Country VARCHAR(2) 
+NULL, Phone VARCHAR(30) NULL, Fax VARCHAR(30) NULL, Date_Registered datetime default current_timestamp, 
+Date_Of_Last_Order datetime ) 
+
+INFO  Jan 01 17:40:46 jdbc.sqlonly - DROP TABLE TABLENOPRIMARY 
+
+INFO  Jan 01 17:40:46 jdbc.sqlonly - CREATE TABLE TABLENOPRIMARY ( ID INT, Name VARCHAR(30), Field4 VARCHAR(30), Field5 DATETIME 
+) 
+
+INFO  Jan 01 17:40:46 net.sf.persism.MetaData - getting instance jdbc:jtds:sqlserver://pinf-win;DatabaseName=PINF;instance=;useLOBs=false
+INFO  Jan 01 17:40:46 net.sf.persism.MetaData - getting instance jdbc:jtds:sqlserver://pinf-win;DatabaseName=PINF;instance=;useLOBs=false
+INFO  Jan 01 17:40:46 jdbc.sqlonly - SELECT * FROM ORDERS WHERE 1=2 
+
+INFO  Jan 01 17:40:46 net.sf.persism.TestMSSQL - ID
+INFO  Jan 01 17:40:46 net.sf.persism.TestMSSQL - true
+INFO  Jan 01 17:40:46 net.sf.persism.TestMSSQL - NAME
+INFO  Jan 01 17:40:46 net.sf.persism.TestMSSQL - false
+INFO  Jan 01 17:40:46 net.sf.persism.TestMSSQL - ROW_ID
+INFO  Jan 01 17:40:46 net.sf.persism.TestMSSQL - false
+INFO  Jan 01 17:40:46 net.sf.persism.TestMSSQL - Customer_ID
+INFO  Jan 01 17:40:46 net.sf.persism.TestMSSQL - false
+INFO  Jan 01 17:40:46 net.sf.persism.TestMSSQL - PAID
+INFO  Jan 01 17:40:46 net.sf.persism.TestMSSQL - false
+INFO  Jan 01 17:40:46 net.sf.persism.TestMSSQL - CREATED
+INFO  Jan 01 17:40:46 net.sf.persism.TestMSSQL - false
+INFO  Jan 01 17:40:46 jdbc.sqlonly - TRUNCATE TABLE ORDERS 
+
+INFO  Jan 01 17:40:46 jdbc.sqlonly - TRUNCATE TABLE EXAMCODE 
+
+INFO  Jan 01 17:40:46 net.sf.persism.MetaData - removing jdbc:jtds:sqlserver://pinf-win;DatabaseName=PINF;instance=;useLOBs=false
+INFO  Jan 01 17:40:46 jdbc.sqlonly - DROP TABLE Orders 
+
+INFO  Jan 01 17:40:46 jdbc.sqlonly - CREATE TABLE Orders ( [ID] [int] IDENTITY(1,1) NOT NULL, NAME VARCHAR(30) NULL, ROW_ID VARCHAR(30) 
+NULL, Customer_ID VARCHAR(10) NULL, PAID BIT NULL, CREATED datetime ) 
+
+INFO  Jan 01 17:40:46 jdbc.sqlonly - DROP TABLE Customers 
+
+INFO  Jan 01 17:40:46 jdbc.sqlonly - CREATE TABLE Customers ( Customer_ID varchar(10) PRIMARY KEY NOT NULL, Company_Name VARCHAR(30) 
+NULL, Contact_Name VARCHAR(30) NULL, Contact_Title VARCHAR(10) NULL, Address VARCHAR(40) NULL, 
+City VARCHAR(30) NULL, Region VARCHAR(10) NULL, Postal_Code VARCHAR(10) NULL, Country VARCHAR(2) 
+NULL, Phone VARCHAR(30) NULL, Fax VARCHAR(30) NULL, Date_Registered datetime default current_timestamp, 
+Date_Of_Last_Order datetime ) 
+
+INFO  Jan 01 17:40:46 jdbc.sqlonly - DROP TABLE TABLENOPRIMARY 
+
+INFO  Jan 01 17:40:46 jdbc.sqlonly - CREATE TABLE TABLENOPRIMARY ( ID INT, Name VARCHAR(30), Field4 VARCHAR(30), Field5 DATETIME 
+) 
+
+INFO  Jan 01 17:40:46 net.sf.persism.MetaData - getting instance jdbc:jtds:sqlserver://pinf-win;DatabaseName=PINF;instance=;useLOBs=false
+INFO  Jan 01 17:40:46 net.sf.persism.MetaData - getting instance jdbc:jtds:sqlserver://pinf-win;DatabaseName=PINF;instance=;useLOBs=false
+INFO  Jan 01 17:40:46 net.sf.persism.BaseTest - 2012-05-28
+INFO  Jan 01 17:40:46 net.sf.persism.BaseTest - 2011-06-12
+INFO  Jan 01 17:40:46 jdbc.sqlonly - SELECT * FROM Customers WHERE 1=0 
+
+INFO  Jan 01 17:40:46 jdbc.sqlonly - SELECT * FROM Customers WHERE 1=0 
+
+WARN  Jan 01 17:40:46 net.sf.persism.Command - TRUNCATION with Column: ColumnInfo{columnName='Country', columnType=StringType, generated=false, primary=false, hasDefault=false} for table: Customers. Old value: "USA" New value: "US"
+INFO  Jan 01 17:40:46 jdbc.sqlonly - INSERT INTO Customers (Customer_ID, Company_Name, Contact_Name, Contact_Title, Address, City, 
+Region, Postal_Code, Country, Phone, Fax, Date_Registered, Date_Of_Last_Order) VALUES ( '123' 
+, 'ABC Inc' , 'Fred' , 'LORD' , '123 Sesame Street' , 'MTL' , 'East' , '12345' , 'US' , 'phone' 
+, 'fax' , '06/12/2011 18:52:25.000' , '05/28/2012 19:28:35.000' ) 
+
+INFO  Jan 01 17:40:46 jdbc.sqlonly - SELECT * FROM Customers WHERE Customer_ID = '123' 
+
+INFO  Jan 01 17:40:46 jdbc.sqlonly - TRUNCATE TABLE ORDERS 
+
+INFO  Jan 01 17:40:46 jdbc.sqlonly - TRUNCATE TABLE EXAMCODE 
+
+INFO  Jan 01 17:40:46 net.sf.persism.MetaData - removing jdbc:jtds:sqlserver://pinf-win;DatabaseName=PINF;instance=;useLOBs=false
+INFO  Jan 01 17:40:46 jdbc.sqlonly - DROP TABLE Orders 
+
+INFO  Jan 01 17:40:46 jdbc.sqlonly - CREATE TABLE Orders ( [ID] [int] IDENTITY(1,1) NOT NULL, NAME VARCHAR(30) NULL, ROW_ID VARCHAR(30) 
+NULL, Customer_ID VARCHAR(10) NULL, PAID BIT NULL, CREATED datetime ) 
+
+INFO  Jan 01 17:40:46 jdbc.sqlonly - DROP TABLE Customers 
+
+INFO  Jan 01 17:40:46 jdbc.sqlonly - CREATE TABLE Customers ( Customer_ID varchar(10) PRIMARY KEY NOT NULL, Company_Name VARCHAR(30) 
+NULL, Contact_Name VARCHAR(30) NULL, Contact_Title VARCHAR(10) NULL, Address VARCHAR(40) NULL, 
+City VARCHAR(30) NULL, Region VARCHAR(10) NULL, Postal_Code VARCHAR(10) NULL, Country VARCHAR(2) 
+NULL, Phone VARCHAR(30) NULL, Fax VARCHAR(30) NULL, Date_Registered datetime default current_timestamp, 
+Date_Of_Last_Order datetime ) 
+
+INFO  Jan 01 17:40:46 jdbc.sqlonly - DROP TABLE TABLENOPRIMARY 
+
+INFO  Jan 01 17:40:46 jdbc.sqlonly - CREATE TABLE TABLENOPRIMARY ( ID INT, Name VARCHAR(30), Field4 VARCHAR(30), Field5 DATETIME 
+) 
+
+INFO  Jan 01 17:40:46 net.sf.persism.MetaData - getting instance jdbc:jtds:sqlserver://pinf-win;DatabaseName=PINF;instance=;useLOBs=false
+INFO  Jan 01 17:40:46 net.sf.persism.MetaData - getting instance jdbc:jtds:sqlserver://pinf-win;DatabaseName=PINF;instance=;useLOBs=false
+INFO  Jan 01 17:40:46 jdbc.sqlonly - TRUNCATE TABLE ORDERS 
+
+INFO  Jan 01 17:40:46 jdbc.sqlonly - TRUNCATE TABLE EXAMCODE 
+
+INFO  Jan 01 17:40:46 net.sf.persism.MetaData - removing jdbc:jtds:sqlserver://pinf-win;DatabaseName=PINF;instance=;useLOBs=false
+INFO  Jan 01 17:40:46 jdbc.sqlonly - DROP TABLE Orders 
+
+INFO  Jan 01 17:40:46 jdbc.sqlonly - CREATE TABLE Orders ( [ID] [int] IDENTITY(1,1) NOT NULL, NAME VARCHAR(30) NULL, ROW_ID VARCHAR(30) 
+NULL, Customer_ID VARCHAR(10) NULL, PAID BIT NULL, CREATED datetime ) 
+
+INFO  Jan 01 17:40:46 jdbc.sqlonly - DROP TABLE Customers 
+
+INFO  Jan 01 17:40:46 jdbc.sqlonly - CREATE TABLE Customers ( Customer_ID varchar(10) PRIMARY KEY NOT NULL, Company_Name VARCHAR(30) 
+NULL, Contact_Name VARCHAR(30) NULL, Contact_Title VARCHAR(10) NULL, Address VARCHAR(40) NULL, 
+City VARCHAR(30) NULL, Region VARCHAR(10) NULL, Postal_Code VARCHAR(10) NULL, Country VARCHAR(2) 
+NULL, Phone VARCHAR(30) NULL, Fax VARCHAR(30) NULL, Date_Registered datetime default current_timestamp, 
+Date_Of_Last_Order datetime ) 
+
+INFO  Jan 01 17:40:46 jdbc.sqlonly - DROP TABLE TABLENOPRIMARY 
+
+INFO  Jan 01 17:40:46 jdbc.sqlonly - CREATE TABLE TABLENOPRIMARY ( ID INT, Name VARCHAR(30), Field4 VARCHAR(30), Field5 DATETIME 
+) 
+
+INFO  Jan 01 17:40:46 net.sf.persism.MetaData - getting instance jdbc:jtds:sqlserver://pinf-win;DatabaseName=PINF;instance=;useLOBs=false
+INFO  Jan 01 17:40:46 net.sf.persism.MetaData - getting instance jdbc:jtds:sqlserver://pinf-win;DatabaseName=PINF;instance=;useLOBs=false
+INFO  Jan 01 17:40:46 jdbc.sqlonly - SELECT * FROM Customers WHERE 1=0 
+
+INFO  Jan 01 17:40:46 jdbc.sqlonly - SELECT * FROM Customers WHERE 1=0 
+
+INFO  Jan 01 17:40:47 jdbc.sqlonly - INSERT INTO Customers (Customer_ID, Company_Name, Contact_Name, Contact_Title, Address, City, 
+Region, Postal_Code, Country, Phone, Fax, Date_Of_Last_Order) VALUES ( '123' , 'ABC INC' , 
+NULL , NULL , NULL , NULL , NULL , NULL , NULL , NULL , NULL , NULL ) 
+
+INFO  Jan 01 17:40:47 net.sf.persism.MetaData - getting instance jdbc:jtds:sqlserver://pinf-win;DatabaseName=PINF;instance=;useLOBs=false
+INFO  Jan 01 17:40:47 jdbc.sqlonly - SELECT * FROM Customers WHERE Customer_ID = '123' 
+
+INFO  Jan 01 17:40:47 jdbc.sqlonly - INSERT INTO Customers (Customer_ID, Company_Name, Contact_Name, Contact_Title, Address, City, 
+Region, Postal_Code, Country, Phone, Fax, Date_Of_Last_Order) VALUES ( '456' , 'XYZ INC' , 
+NULL , NULL , NULL , NULL , NULL , NULL , NULL , NULL , NULL , NULL ) 
+
+INFO  Jan 01 17:40:47 jdbc.sqlonly - SELECT * FROM Customers WHERE Customer_ID = '456' 
+
+INFO  Jan 01 17:40:47 jdbc.sqlonly - SELECT * FROM Orders WHERE 1=0 
+
+WARN  Jan 01 17:40:47 net.sf.persism.MetaData - Property not found for column: ROW_ID class: class net.sf.persism.dao.Order
+INFO  Jan 01 17:40:47 jdbc.sqlonly - SELECT * FROM Orders WHERE 1=0 
+
+INFO  Jan 01 17:40:47 jdbc.sqlonly - INSERT INTO Orders (NAME, Customer_ID, PAID, CREATED) VALUES ( 'ORDER 1' , '123' , 1 , '01/01/2021 
+17:40:47.062' ) 
+
+INFO  Jan 01 17:40:47 jdbc.sqlonly - select * from orders 
+
+INFO  Jan 01 17:40:47 jdbc.sqlonly - INSERT INTO Orders (NAME, Customer_ID, PAID, CREATED) VALUES ( 'ORDER 2' , '123' , 0 , '01/01/2021 
+17:40:47.077' ) 
+
+INFO  Jan 01 17:40:47 jdbc.sqlonly - INSERT INTO Orders (NAME, Customer_ID, PAID, CREATED) VALUES ( 'ORDER 3' , '456' , 0 , '01/01/2021 
+17:40:47.079' ) 
+
+INFO  Jan 01 17:40:47 jdbc.sqlonly - INSERT INTO Orders (NAME, Customer_ID, PAID, CREATED) VALUES ( 'ORDER 4' , '456' , 0 , '01/01/2021 
+17:40:47.081' ) 
+
+INFO  Jan 01 17:40:47 net.sf.persism.BaseTest - SELECT c.Customer_ID, c.Company_Name, o.ID Order_ID, o.Name AS Description, o.Created AS DateCreated, o.PAID  FROM ORDERS o JOIN Customers c ON o.Customer_ID = c.Customer_ID
+INFO  Jan 01 17:40:47 jdbc.sqlonly - SELECT c.Customer_ID, c.Company_Name, o.ID Order_ID, o.Name AS Description, o.Created AS DateCreated, 
+o.PAID FROM ORDERS o JOIN Customers c ON o.Customer_ID = c.Customer_ID 
+
+INFO  Jan 01 17:40:47 net.sf.persism.BaseTest - [
+CustomerOrder{customerId='123', companyName='ABC INC', description='ORDER 1', orderId=1, dateCreated=Fri Jan 01 17:40:47 EST 2021, paid=true}, 
+CustomerOrder{customerId='123', companyName='ABC INC', description='ORDER 2', orderId=2, dateCreated=Fri Jan 01 17:40:47 EST 2021, paid=false}, 
+CustomerOrder{customerId='456', companyName='XYZ INC', description='ORDER 3', orderId=3, dateCreated=Fri Jan 01 17:40:47 EST 2021, paid=false}, 
+CustomerOrder{customerId='456', companyName='XYZ INC', description='ORDER 4', orderId=4, dateCreated=Fri Jan 01 17:40:47 EST 2021, paid=false}]
+INFO  Jan 01 17:40:47 jdbc.sqlonly - TRUNCATE TABLE ORDERS 
+
+INFO  Jan 01 17:40:47 jdbc.sqlonly - TRUNCATE TABLE EXAMCODE 
+
+INFO  Jan 01 17:40:47 net.sf.persism.MetaData - removing jdbc:jtds:sqlserver://pinf-win;DatabaseName=PINF;instance=;useLOBs=false
+INFO  Jan 01 17:40:47 jdbc.sqlonly - DROP TABLE Orders 
+
+INFO  Jan 01 17:40:47 jdbc.sqlonly - CREATE TABLE Orders ( [ID] [int] IDENTITY(1,1) NOT NULL, NAME VARCHAR(30) NULL, ROW_ID VARCHAR(30) 
+NULL, Customer_ID VARCHAR(10) NULL, PAID BIT NULL, CREATED datetime ) 
+
+INFO  Jan 01 17:40:47 jdbc.sqlonly - DROP TABLE Customers 
+
+INFO  Jan 01 17:40:47 jdbc.sqlonly - CREATE TABLE Customers ( Customer_ID varchar(10) PRIMARY KEY NOT NULL, Company_Name VARCHAR(30) 
+NULL, Contact_Name VARCHAR(30) NULL, Contact_Title VARCHAR(10) NULL, Address VARCHAR(40) NULL, 
+City VARCHAR(30) NULL, Region VARCHAR(10) NULL, Postal_Code VARCHAR(10) NULL, Country VARCHAR(2) 
+NULL, Phone VARCHAR(30) NULL, Fax VARCHAR(30) NULL, Date_Registered datetime default current_timestamp, 
+Date_Of_Last_Order datetime ) 
+
+INFO  Jan 01 17:40:47 jdbc.sqlonly - DROP TABLE TABLENOPRIMARY 
+
+INFO  Jan 01 17:40:47 jdbc.sqlonly - CREATE TABLE TABLENOPRIMARY ( ID INT, Name VARCHAR(30), Field4 VARCHAR(30), Field5 DATETIME 
+) 
+
+INFO  Jan 01 17:40:47 net.sf.persism.MetaData - getting instance jdbc:jtds:sqlserver://pinf-win;DatabaseName=PINF;instance=;useLOBs=false
+INFO  Jan 01 17:40:47 net.sf.persism.MetaData - getting instance jdbc:jtds:sqlserver://pinf-win;DatabaseName=PINF;instance=;useLOBs=false
+INFO  Jan 01 17:40:47 net.sf.persism.BaseTest - testQueryWithSpecificColumnsWhereCaseDoesNotMatch with : jdbc:jtds:sqlserver://pinf-win;DatabaseName=PINF;instance=;useLOBs=false
+INFO  Jan 01 17:40:47 jdbc.sqlonly - SELECT * FROM Customers WHERE 1=0 
+
+INFO  Jan 01 17:40:47 jdbc.sqlonly - SELECT * FROM Customers WHERE 1=0 
+
+INFO  Jan 01 17:40:47 jdbc.sqlonly - DELETE FROM Customers WHERE Customer_ID = 'MOO' 
+
+INFO  Jan 01 17:40:47 jdbc.sqlonly - INSERT INTO Customers (Customer_ID, Company_Name, Contact_Name, Contact_Title, Address, City, 
+Region, Postal_Code, Country, Phone, Fax, Date_Registered, Date_Of_Last_Order) VALUES ( 'MOO' 
+, 'TEST' , 'fred flintstone' , 'Lord' , '123 sesame street' , 'city' , 'East' , '54321' , 'US' 
+, '456-678-1234' , '123-456-7890' , '01/01/2021 17:40:47.168' , NULL ) 
+
+INFO  Jan 01 17:40:47 jdbc.sqlonly - UPDATE Customers SET Address = '123 sesame street', City = 'city', Company_Name = 'TEST', Contact_Name 
+= 'fred flintstone', Contact_Title = 'Lord', Country = 'US', Date_Of_Last_Order = NULL, Date_Registered 
+= '01/01/2021 17:40:47.168', Fax = '123-456-7890', Phone = '456-678-1234', Postal_Code = '54321', 
+Region = 'North' WHERE Customer_ID = 'MOO' 
+
+INFO  Jan 01 17:40:47 jdbc.sqlonly - SELECT Country from CUSTOMERS 
+
+ERROR Jan 01 17:40:47 net.sf.persism.BaseTest - Object class net.sf.persism.dao.Customer was not properly initialized. Some properties not found in the queried columns. : [Address, City, Contact_Name, Date_Registered, Customer_ID, Date_Of_Last_Order, Phone, Contact_Title, Postal_Code, Region, Company_Name, Fax]
+net.sf.persism.PersismException: Object class net.sf.persism.dao.Customer was not properly initialized. Some properties not found in the queried columns. : [Address, City, Contact_Name, Date_Registered, Customer_ID, Date_Of_Last_Order, Phone, Contact_Title, Postal_Code, Region, Company_Name, Fax]
+	at net.sf.persism.Query.readObject(Query.java:286) ~[prod/:na]
+	at net.sf.persism.Query.readList(Query.java:79) ~[prod/:na]
+	at net.sf.persism.BaseTest.testQueryWithSpecificColumnsWhereCaseDoesNotMatch(BaseTest.java:173) ~[test/:na]
+	at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method) ~[na:1.8.0_60]
+	at sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:62) ~[na:1.8.0_60]
+	at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43) ~[na:1.8.0_60]
+	at java.lang.reflect.Method.invoke(Method.java:497) ~[na:1.8.0_60]
+	at junit.framework.TestCase.runTest(TestCase.java:154) [junit.jar:na]
+	at junit.framework.TestCase.runBare(TestCase.java:127) [junit.jar:na]
+	at junit.framework.TestResult$1.protect(TestResult.java:106) [junit.jar:na]
+	at junit.framework.TestResult.runProtected(TestResult.java:124) [junit.jar:na]
+	at junit.framework.TestResult.run(TestResult.java:109) [junit.jar:na]
+	at junit.framework.TestCase.run(TestCase.java:118) [junit.jar:na]
+	at junit.framework.TestSuite.runTest(TestSuite.java:208) [junit.jar:na]
+	at junit.framework.TestSuite.run(TestSuite.java:203) [junit.jar:na]
+	at junit.textui.TestRunner.doRun(TestRunner.java:116) [junit.jar:na]
+	at com.intellij.junit3.JUnit3IdeaTestRunner.doRun(JUnit3IdeaTestRunner.java:139) [junit-rt.jar:na]
+	at junit.textui.TestRunner.doRun(TestRunner.java:109) [junit.jar:na]
+	at com.intellij.junit3.JUnit3IdeaTestRunner.startRunnerWithArgs(JUnit3IdeaTestRunner.java:52) [junit-rt.jar:na]
+	at com.intellij.rt.execution.junit.JUnitStarter.prepareStreamsAndStart(JUnitStarter.java:195) [junit-rt.jar:na]
+	at com.intellij.rt.execution.junit.JUnitStarter.main(JUnitStarter.java:63) [junit-rt.jar:na]
+	at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method) ~[na:1.8.0_60]
+	at sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:62) ~[na:1.8.0_60]
+	at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43) ~[na:1.8.0_60]
+	at java.lang.reflect.Method.invoke(Method.java:497) ~[na:1.8.0_60]
+	at com.intellij.rt.execution.application.AppMain.main(AppMain.java:120) [idea_rt.jar:na]
+INFO  Jan 01 17:40:47 jdbc.sqlonly - SELECT company_NAME, Date_Of_Last_ORDER, contact_title, pHone, rEGion, postal_CODE, FAX, DATE_Registered, 
+ADDress, CUStomer_id, Contact_name, country, city from CUSTOMERS 
+
+INFO  Jan 01 17:40:47 net.sf.persism.BaseTest - [Customer{customerId='MOO', companyName='TEST', contactName='fred flintstone', contactTitle='Lord', address='123 sesame street', city='city', region=North, postalCode='54321', country='US', phone='456-678-1234', fax='123-456-7890', dateRegistered=Fri Jan 01 17:40:47 EST 2021, dateOfLastOrder=null}]
+INFO  Jan 01 17:40:47 jdbc.sqlonly - TRUNCATE TABLE ORDERS 
+
+INFO  Jan 01 17:40:47 jdbc.sqlonly - TRUNCATE TABLE EXAMCODE 
+
+INFO  Jan 01 17:40:47 net.sf.persism.MetaData - removing jdbc:jtds:sqlserver://pinf-win;DatabaseName=PINF;instance=;useLOBs=false
+INFO  Jan 01 17:40:47 jdbc.sqlonly - DROP TABLE Orders 
+
+INFO  Jan 01 17:40:47 jdbc.sqlonly - CREATE TABLE Orders ( [ID] [int] IDENTITY(1,1) NOT NULL, NAME VARCHAR(30) NULL, ROW_ID VARCHAR(30) 
+NULL, Customer_ID VARCHAR(10) NULL, PAID BIT NULL, CREATED datetime ) 
+
+INFO  Jan 01 17:40:47 jdbc.sqlonly - DROP TABLE Customers 
+
+INFO  Jan 01 17:40:47 jdbc.sqlonly - CREATE TABLE Customers ( Customer_ID varchar(10) PRIMARY KEY NOT NULL, Company_Name VARCHAR(30) 
+NULL, Contact_Name VARCHAR(30) NULL, Contact_Title VARCHAR(10) NULL, Address VARCHAR(40) NULL, 
+City VARCHAR(30) NULL, Region VARCHAR(10) NULL, Postal_Code VARCHAR(10) NULL, Country VARCHAR(2) 
+NULL, Phone VARCHAR(30) NULL, Fax VARCHAR(30) NULL, Date_Registered datetime default current_timestamp, 
+Date_Of_Last_Order datetime ) 
+
+INFO  Jan 01 17:40:47 jdbc.sqlonly - DROP TABLE TABLENOPRIMARY 
+
+INFO  Jan 01 17:40:47 jdbc.sqlonly - CREATE TABLE TABLENOPRIMARY ( ID INT, Name VARCHAR(30), Field4 VARCHAR(30), Field5 DATETIME 
+) 
+
+INFO  Jan 01 17:40:47 net.sf.persism.MetaData - getting instance jdbc:jtds:sqlserver://pinf-win;DatabaseName=PINF;instance=;useLOBs=false
+INFO  Jan 01 17:40:47 net.sf.persism.MetaData - getting instance jdbc:jtds:sqlserver://pinf-win;DatabaseName=PINF;instance=;useLOBs=false
+INFO  Jan 01 17:40:47 net.sf.persism.BaseTest - testRefreshObject with : jdbc:jtds:sqlserver://pinf-win;DatabaseName=PINF;instance=;useLOBs=false
+INFO  Jan 01 17:40:47 jdbc.sqlonly - SELECT * FROM Customers WHERE 1=0 
+
+INFO  Jan 01 17:40:47 jdbc.sqlonly - SELECT * FROM Customers WHERE 1=0 
+
+INFO  Jan 01 17:40:47 jdbc.sqlonly - DELETE FROM Customers WHERE Customer_ID = 'MOO' 
+
+INFO  Jan 01 17:40:47 jdbc.sqlonly - INSERT INTO Customers (Customer_ID, Company_Name, Contact_Name, Contact_Title, Address, City, 
+Region, Postal_Code, Country, Phone, Fax, Date_Registered, Date_Of_Last_Order) VALUES ( 'MOO' 
+, 'TEST' , 'fred flintstone' , 'Lord' , '123 sesame street' , 'city' , NULL , '54321' , 'US' 
+, '456-678-1234' , '123-456-7890' , '01/01/2021 17:40:47.323' , NULL ) 
+
+INFO  Jan 01 17:40:47 jdbc.sqlonly - SELECT * FROM Customers WHERE Customer_ID = 'MOO' 
+
+INFO  Jan 01 17:40:47 jdbc.sqlonly - SELECT * FROM Customers WHERE Customer_ID = 'MOO' 
+
+INFO  Jan 01 17:40:47 net.sf.persism.BaseTest - Fri Jan 01 17:40:47 EST 2021 = ? Fri Jan 01 17:40:47 EST 2021
+INFO  Jan 01 17:40:47 jdbc.sqlonly - TRUNCATE TABLE ORDERS 
+
+INFO  Jan 01 17:40:47 jdbc.sqlonly - TRUNCATE TABLE EXAMCODE 
+
+INFO  Jan 01 17:40:47 net.sf.persism.MetaData - removing jdbc:jtds:sqlserver://pinf-win;DatabaseName=PINF;instance=;useLOBs=false
+INFO  Jan 01 17:40:47 jdbc.sqlonly - DROP TABLE Orders 
+
+INFO  Jan 01 17:40:47 jdbc.sqlonly - CREATE TABLE Orders ( [ID] [int] IDENTITY(1,1) NOT NULL, NAME VARCHAR(30) NULL, ROW_ID VARCHAR(30) 
+NULL, Customer_ID VARCHAR(10) NULL, PAID BIT NULL, CREATED datetime ) 
+
+INFO  Jan 01 17:40:47 jdbc.sqlonly - DROP TABLE Customers 
+
+INFO  Jan 01 17:40:47 jdbc.sqlonly - CREATE TABLE Customers ( Customer_ID varchar(10) PRIMARY KEY NOT NULL, Company_Name VARCHAR(30) 
+NULL, Contact_Name VARCHAR(30) NULL, Contact_Title VARCHAR(10) NULL, Address VARCHAR(40) NULL, 
+City VARCHAR(30) NULL, Region VARCHAR(10) NULL, Postal_Code VARCHAR(10) NULL, Country VARCHAR(2) 
+NULL, Phone VARCHAR(30) NULL, Fax VARCHAR(30) NULL, Date_Registered datetime default current_timestamp, 
+Date_Of_Last_Order datetime ) 
+
+INFO  Jan 01 17:40:47 jdbc.sqlonly - DROP TABLE TABLENOPRIMARY 
+
+INFO  Jan 01 17:40:47 jdbc.sqlonly - CREATE TABLE TABLENOPRIMARY ( ID INT, Name VARCHAR(30), Field4 VARCHAR(30), Field5 DATETIME 
+) 
+
+INFO  Jan 01 17:40:47 net.sf.persism.MetaData - getting instance jdbc:jtds:sqlserver://pinf-win;DatabaseName=PINF;instance=;useLOBs=false
+INFO  Jan 01 17:40:47 net.sf.persism.MetaData - getting instance jdbc:jtds:sqlserver://pinf-win;DatabaseName=PINF;instance=;useLOBs=false
+INFO  Jan 01 17:40:47 jdbc.sqlonly - SELECT * FROM Customers WHERE 1=0 
+
+INFO  Jan 01 17:40:47 jdbc.sqlonly - SELECT * FROM Customers WHERE 1=0 
+
+INFO  Jan 01 17:40:47 jdbc.sqlonly - DELETE FROM Customers WHERE Customer_ID = 'MOO' 
+
+INFO  Jan 01 17:40:47 jdbc.sqlonly - INSERT INTO Customers (Customer_ID, Company_Name, Contact_Name, Contact_Title, Address, City, 
+Region, Postal_Code, Country, Phone, Fax, Date_Registered, Date_Of_Last_Order) VALUES ( 'MOO' 
+, 'TEST' , 'fred flintstone' , 'Lord' , '123 sesame street' , 'city' , 'East' , '54321' , 'US' 
+, '456-678-1234' , '123-456-7890' , '01/01/2021 17:40:47.421' , NULL ) 
+
+INFO  Jan 01 17:40:47 jdbc.sqlonly - SELECT Country from CUSTOMERS 
+
+INFO  Jan 01 17:40:47 jdbc.sqlonly - SELECT Country from CUSTOMERS 
+
+INFO  Jan 01 17:40:47 jdbc.sqlonly - SELECT Country from CUSTOMERS 
+
+INFO  Jan 01 17:40:47 jdbc.sqlonly - select Date_Registered from Customers 
+
+INFO  Jan 01 17:40:47 net.sf.persism.BaseTest - [Fri Jan 01 17:40:47 EST 2021]
+INFO  Jan 01 17:40:47 jdbc.sqlonly - select Date_Registered from Customers 
+
+INFO  Jan 01 17:40:47 net.sf.persism.BaseTest - Fri Jan 01 17:40:47 EST 2021
+INFO  Jan 01 17:40:47 jdbc.sqlonly - select Date_Registered from Customers 
+
+INFO  Jan 01 17:40:47 net.sf.persism.BaseTest - [2021-01-01]
+INFO  Jan 01 17:40:47 jdbc.sqlonly - select Date_Registered from Customers 
+
+INFO  Jan 01 17:40:47 net.sf.persism.BaseTest - 2021-01-01
+INFO  Jan 01 17:40:47 jdbc.sqlonly - TRUNCATE TABLE ORDERS 
+
+INFO  Jan 01 17:40:47 jdbc.sqlonly - TRUNCATE TABLE EXAMCODE 
+
+INFO  Jan 01 17:40:47 net.sf.persism.MetaData - removing jdbc:jtds:sqlserver://pinf-win;DatabaseName=PINF;instance=;useLOBs=false

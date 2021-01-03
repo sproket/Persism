@@ -1,0 +1,34 @@
+package net.sf.persism;
+
+import java.lang.annotation.Annotation;
+import java.lang.reflect.Method;
+import java.util.HashMap;
+import java.util.Map;
+
+/**
+ * $RCSfile: $
+ * $Revision: $
+ * $Date: $
+ * Created by IntelliJ IDEA.
+ * User: DHoward
+ * Date: 9/8/11
+ * Time: 8:09 AM
+ */
+final class PropertyInfo {
+
+    String propertyName;
+    Method getter;
+    Method setter;
+    int length;
+
+    Map<Class<? extends Annotation>, Annotation> annotations = new HashMap<Class<? extends Annotation>, Annotation>(4);
+
+    Annotation getAnnotation(Class<? extends  Annotation> annotationClass) {
+        return annotations.get(annotationClass);
+    }
+
+    @Override
+    public String toString() {
+        return "PropertyInfo: " + propertyName + " getter: " + getter + " setter " + setter;
+    }
+}

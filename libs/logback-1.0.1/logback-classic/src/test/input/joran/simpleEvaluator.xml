@@ -1,0 +1,10 @@
+<configuration>
+  <evaluator name="msgEval">
+    <Expression>m.matches(message)</Expression>
+    <matcher>
+      <Name>m</Name>
+      <regex>^hello.*</regex>
+      <CaseSensitive>false</CaseSensitive>
+    </matcher>
+  </evaluator>
+</configuration>

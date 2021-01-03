@@ -1,0 +1,7 @@
+<configuration debug="false">
+
+  <contextListener class="ch.qos.logback.classic.jul.LevelChangePropagator"/>
+  <logger name="a.b.c" level="WARN" />
+  <root level="TRACE"/>
+
+</configuration>

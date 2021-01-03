@@ -1,0 +1,53 @@
+package net.sf.persism.annotations;
+
+/**
+ * Created by IntelliJ IDEA.
+ * User: DHoward
+ * Date: 9/8/11
+ * Time: 6:18 AM
+ */
+
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
+
+/**
+ * Optional annotation defining a column mapping for a property on the class. This annotation can appear on the class field, getter or setter.
+ */
+@Retention(RetentionPolicy.RUNTIME)
+@Target({ElementType.METHOD, ElementType.FIELD})
+public @interface Column {
+
+    /**
+     * Name of the column mapped to the property. Used when the property cannot be auto-mapped to a table column.
+     * <p>
+     * It's only required if Persism cannot discover the column/property mapping on its own.
+     */
+    String value() default "";
+
+    /**
+     * Indicates if the column is generated in the database - like an auto increment field.
+     * This will tell Persism to exclude this column in
+     * insert/update statements and to update the object with this value after an insert.
+     * <p>
+     * It's only required if Persism cannot detect this column attribute on its own.
+     */
+    boolean generated() default false;
+
+    /**
+     * Indicates that this column is a primary key.
+     * <p>
+     * It's only required if Persism cannot detect this column attribute on its own.
+     */
+    boolean primary() default false;
+
+    /**
+     * Indicates that this column has a default value in the database. This tells Persism that if the data object
+     * did not specify a value then Persism will update the data object with the default after an insert.
+     * <p>
+     * It's only required if Persism cannot detect this column attribute on its own.
+     */
+    boolean hasDefault() default false;
+
+}

@@ -1,0 +1,155 @@
+/*#############################################################
+Name: Transparentia
+Date: 2006-08-20
+Description: Simple, lightweight and slightly blue.
+Author: Viktor Persson
+URL: http://templates.arcsin.se
+
+Feel free to use and modify but please provide credits.
+#############################################################*/
+
+/* standard elements */
+* {
+    margin: 0;
+    padding: 0;
+}
+
+a {
+    color: deepskyblue;
+}
+
+a:hover {
+    color: dodgerblue;
+}
+
+body {
+    background: whitesmoke;
+    color: darkslategray;
+    font: normal 80% "Lucida Sans Unicode", sans-serif;
+    margin: 0;
+    margin-top: 10px;
+    margin-left: 10px;
+    margin-right: 10px;
+
+    padding: 0 180px 0 0;
+}
+
+div#right-sidebar {
+    background: #ffffff;
+    color: darkslategray;
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 180px;
+    height: 100%;
+    padding-top: 16px;
+}
+
+@media screen {
+    body>div#right-sidebar {
+        position: fixed;
+    }
+}
+
+* html body {
+    overflow: hidden;
+}
+
+* html div#container {
+    height: 100%;
+    overflow: auto;
+}
+
+input {
+    color: darkslategray;
+    font: normal 1.1em "Lucida Sans Unicode", sans-serif;
+}
+
+p, cite, code, ul, tt {
+    font-size: 1.2em;
+    padding-bottom: 1.2em;
+}
+
+#Xul {
+    padding-left: 20px;
+}
+
+h1 {
+    font-size: 2.0em;
+    margin-bottom: 4px;
+}
+
+h2 {
+    font-size: 1.4em;
+    margin-bottom: 4px;
+}
+
+h3 {
+    font-size: 1.1em;
+    margin-bottom: 4px;
+}
+
+pre {
+    border-bottom: 1px solid blue;
+    border-right: 1px solid blue;
+    color: darkslategray;
+    background: whitesmoke;
+    display: block;
+    font: normal 1.1em "Lucida Console";
+    margin-bottom: 12px;
+    padding-left: 2%;
+    padding-right: 2%;
+    padding-top: 2px;
+    padding-bottom: 2px;
+    white-space: pre;
+    width: 100%;
+}
+
+code {
+    font: normal 1.1em "Lucida Console";
+}
+
+tt {
+    font: normal small "Lucida Console";
+}
+
+cite {
+    background: url(../img/quote.gif) no-repeat;
+    color: darkslategray;
+    display: block;
+    font: normal 1.3em "Lucida Sans Unicode", serif;
+    padding-left: 28px;
+}
+
+h1, h2, h3 {
+    color: dodgerblue;
+    padding-top: 6px;
+}
+
+/* footer -- not used*/
+.footer {
+    background: white;
+    border: 1px solid whitesmoke;
+    color: dimgray;
+    font-size: 1.1em;
+    margin: 0 auto;
+    text-align: center;
+    padding: 6px;
+    width: 720px;
+}
+
+.footer a {
+    color: dodgerblue;
+    text-decoration: none;
+}
+
+.footer a:hover {
+    color: deepskyblue;
+    text-decoration: underline;
+}
+
+.famousQuotes {
+    padding-left: 10px;
+    font-style: italic;
+    font-size: 90%;
+}

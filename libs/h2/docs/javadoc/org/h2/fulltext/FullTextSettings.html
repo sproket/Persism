@@ -1,0 +1,263 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
+<head><meta http-equiv="Content-Type" content="text/html;charset=utf-8" /><title>
+FullTextSettings
+</title><link rel="stylesheet" type="text/css" href="../../../stylesheet.css" />
+<script type="text/javascript" src="../../../animate.js"></script>
+</head><body onload="openLink();">
+<table class="content"><tr class="content"><td class="content"><div class="contentDiv">
+<h1>FullTextSettings</h1>
+The global settings of a full text search.<br /><br />
+<table class="block"><tr onclick="return allDetails()"><th colspan="2">Methods</th></tr>
+<tr id="__0" onclick="return on(0)">
+<td class="return">static void</td><td class="method">
+<a id="closeAll" href="#closeAll">closeAll</a>()
+<div class="methodText">Close all fulltext settings, freeing up memory.</div>
+</td></tr>
+<tr onclick="return off(0)" class="detail" id="_0">
+<td class="return">static void</td><td>
+<a id="closeAll" href="#closeAll">closeAll</a>()
+<div class="methodText">Close all fulltext settings, freeing up memory.</div>
+</td></tr>
+<tr id="__1" onclick="return on(1)">
+<td class="return">static String</td><td class="method">
+<a id="getIndexPath_Connection" href="#getIndexPath_Connection">getIndexPath</a>(Connection conn)
+<div class="methodText">Get the file system path.</div>
+</td></tr>
+<tr onclick="return off(1)" class="detail" id="_1">
+<td class="return">static String</td><td>
+<a id="getIndexPath_Connection" href="#getIndexPath_Connection">getIndexPath</a>(Connection conn) throws SQLException
+<div class="methodText">Get the file system path.</div>
+<div class="itemTitle">Parameters:</div>
+<div class="item">conn - the connection</div>
+<div class="itemTitle">Returns:</div>
+<div class="item">the file system path</div>
+</td></tr>
+<tr id="__2" onclick="return on(2)">
+<td class="return">static FullTextSettings</td><td class="method">
+<a id="getInstance_Connection" href="#getInstance_Connection">getInstance</a>(Connection conn)
+<div class="methodText">Get or create the fulltext settings for this database.</div>
+</td></tr>
+<tr onclick="return off(2)" class="detail" id="_2">
+<td class="return">static FullTextSettings</td><td>
+<a id="getInstance_Connection" href="#getInstance_Connection">getInstance</a>(Connection conn) throws SQLException
+<div class="methodText">Get or create the fulltext settings for this database.</div>
+<div class="itemTitle">Parameters:</div>
+<div class="item">conn - the connection</div>
+<div class="itemTitle">Returns:</div>
+<div class="item">the settings</div>
+</td></tr>
+<tr id="__3" onclick="return on(3)">
+<td class="return"></td><td class="method">
+<a id="FullTextSettings" href="#FullTextSettings">FullTextSettings</a>()
+<div class="methodText">Create a new instance.</div>
+</td></tr>
+<tr onclick="return off(3)" class="detail" id="_3">
+<td class="return"></td><td>
+<a id="FullTextSettings" href="#FullTextSettings">FullTextSettings</a>()
+<div class="methodText">Create a new instance.</div>
+</td></tr>
+<tr id="__4" onclick="return on(4)">
+<td class="return">void</td><td class="method">
+<a id="addIndexInfo_IndexInfo" href="#addIndexInfo_IndexInfo">addIndexInfo</a>(IndexInfo index)
+<div class="methodText">Add an index.</div>
+</td></tr>
+<tr onclick="return off(4)" class="detail" id="_4">
+<td class="return">void</td><td>
+<a id="addIndexInfo_IndexInfo" href="#addIndexInfo_IndexInfo">addIndexInfo</a>(IndexInfo index)
+<div class="methodText">Add an index.</div>
+<div class="itemTitle">Parameters:</div>
+<div class="item">index - the index</div>
+</td></tr>
+<tr id="__5" onclick="return on(5)">
+<td class="return">String</td><td class="method">
+<a id="convertWord_String" href="#convertWord_String">convertWord</a>(String word)
+<div class="methodText">Convert a word to uppercase.</div>
+</td></tr>
+<tr onclick="return off(5)" class="detail" id="_5">
+<td class="return">String</td><td>
+<a id="convertWord_String" href="#convertWord_String">convertWord</a>(String word)
+<div class="methodText">Convert a word to uppercase. This method returns null if the word is in
+ the ignore list.</div>
+<div class="itemTitle">Parameters:</div>
+<div class="item">word - the word to convert and check</div>
+<div class="itemTitle">Returns:</div>
+<div class="item">the uppercase version of the word or null</div>
+</td></tr>
+<tr id="__6" onclick="return on(6)">
+<td class="return">HashSet</td><td class="method">
+<a id="getIgnoreList" href="#getIgnoreList">getIgnoreList</a>()
+<div class="methodText">Get the ignore list.</div>
+</td></tr>
+<tr onclick="return off(6)" class="detail" id="_6">
+<td class="return">HashSet</td><td>
+<a id="getIgnoreList" href="#getIgnoreList">getIgnoreList</a>()
+<div class="methodText">Get the ignore list.</div>
+<div class="itemTitle">Returns:</div>
+<div class="item">the ignore list</div>
+</td></tr>
+<tr id="__7" onclick="return on(7)">
+<td class="return">IndexInfo</td><td class="method">
+<a id="getIndexInfo_int" href="#getIndexInfo_int">getIndexInfo</a>(int indexId)
+<div class="methodText">Get the index information for the given index id.</div>
+</td></tr>
+<tr onclick="return off(7)" class="detail" id="_7">
+<td class="return">IndexInfo</td><td>
+<a id="getIndexInfo_int" href="#getIndexInfo_int">getIndexInfo</a>(int indexId)
+<div class="methodText">Get the index information for the given index id.</div>
+<div class="itemTitle">Parameters:</div>
+<div class="item">indexId - the index id</div>
+<div class="itemTitle">Returns:</div>
+<div class="item">the index info</div>
+</td></tr>
+<tr id="__8" onclick="return on(8)">
+<td class="return">String</td><td class="method">
+<a id="getWhitespaceChars" href="#getWhitespaceChars">getWhitespaceChars</a>()
+</td></tr>
+<tr onclick="return off(8)" class="detail" id="_8">
+<td class="return">String</td><td>
+<a id="getWhitespaceChars" href="#getWhitespaceChars">getWhitespaceChars</a>()
+<div class="methodText"></div>
+</td></tr>
+<tr id="__9" onclick="return on(9)">
+<td class="return">HashMap</td><td class="method">
+<a id="getWordList" href="#getWordList">getWordList</a>()
+<div class="methodText">Get the word list.</div>
+</td></tr>
+<tr onclick="return off(9)" class="detail" id="_9">
+<td class="return">HashMap</td><td>
+<a id="getWordList" href="#getWordList">getWordList</a>()
+<div class="methodText">Get the word list.</div>
+<div class="itemTitle">Returns:</div>
+<div class="item">the word list</div>
+</td></tr>
+<tr id="__10" onclick="return on(10)">
+<td class="return">boolean</td><td class="method">
+<a id="isInitialized" href="#isInitialized">isInitialized</a>()
+<div class="methodText">Get the initialized flag.</div>
+</td></tr>
+<tr onclick="return off(10)" class="detail" id="_10">
+<td class="return">boolean</td><td>
+<a id="isInitialized" href="#isInitialized">isInitialized</a>()
+<div class="methodText">Get the initialized flag.</div>
+<div class="itemTitle">Returns:</div>
+<div class="item">whether this instance is initialized</div>
+</td></tr>
+<tr id="__11" onclick="return on(11)">
+<td class="return">PreparedStatement</td><td class="method">
+<a id="prepare_Connection_String" href="#prepare_Connection_String">prepare</a>(Connection conn, String sql)
+<div class="methodText">Prepare a statement.</div>
+</td></tr>
+<tr onclick="return off(11)" class="detail" id="_11">
+<td class="return">PreparedStatement</td><td>
+<a id="prepare_Connection_String" href="#prepare_Connection_String">prepare</a>(Connection conn, String sql) throws SQLException
+<div class="methodText">Prepare a statement. The statement is cached in a soft reference cache.</div>
+<div class="itemTitle">Parameters:</div>
+<div class="item">conn - the connection</div>
+<div class="item">sql - the statement</div>
+<div class="itemTitle">Returns:</div>
+<div class="item">the prepared statement</div>
+</td></tr>
+<tr id="__12" onclick="return on(12)">
+<td class="return">void</td><td class="method">
+<a id="removeAllIndexes" href="#removeAllIndexes">removeAllIndexes</a>()
+<div class="methodText">Remove all indexes from the settings.</div>
+</td></tr>
+<tr onclick="return off(12)" class="detail" id="_12">
+<td class="return">void</td><td>
+<a id="removeAllIndexes" href="#removeAllIndexes">removeAllIndexes</a>()
+<div class="methodText">Remove all indexes from the settings.</div>
+</td></tr>
+<tr id="__13" onclick="return on(13)">
+<td class="return">void</td><td class="method">
+<a id="removeIndexInfo_IndexInfo" href="#removeIndexInfo_IndexInfo">removeIndexInfo</a>(IndexInfo index)
+<div class="methodText">Remove an index from the settings.</div>
+</td></tr>
+<tr onclick="return off(13)" class="detail" id="_13">
+<td class="return">void</td><td>
+<a id="removeIndexInfo_IndexInfo" href="#removeIndexInfo_IndexInfo">removeIndexInfo</a>(IndexInfo index)
+<div class="methodText">Remove an index from the settings.</div>
+<div class="itemTitle">Parameters:</div>
+<div class="item">index - the index to remove</div>
+</td></tr>
+<tr id="__14" onclick="return on(14)">
+<td class="return">void</td><td class="method">
+<a id="setInitialized_boolean" href="#setInitialized_boolean">setInitialized</a>(boolean b)
+<div class="methodText">Set the initialized flag.</div>
+</td></tr>
+<tr onclick="return off(14)" class="detail" id="_14">
+<td class="return">void</td><td>
+<a id="setInitialized_boolean" href="#setInitialized_boolean">setInitialized</a>(boolean b)
+<div class="methodText">Set the initialized flag.</div>
+<div class="itemTitle">Parameters:</div>
+<div class="item">b - the new value</div>
+</td></tr>
+<tr id="__15" onclick="return on(15)">
+<td class="return">void</td><td class="method">
+<a id="setWhitespaceChars_String" href="#setWhitespaceChars_String">setWhitespaceChars</a>(String whitespaceChars)
+</td></tr>
+<tr onclick="return off(15)" class="detail" id="_15">
+<td class="return">void</td><td>
+<a id="setWhitespaceChars_String" href="#setWhitespaceChars_String">setWhitespaceChars</a>(String whitespaceChars)
+<div class="methodText"></div>
+</td></tr>
+</table>
+<br /><table><tr><th colspan="2">Fields</th></tr>
+<tr><td class="return">static HashMap</td><td class="method">
+<a href="#settings">SETTINGS</a>
+</td></tr>
+<tr><td class="return">static SoftHashMap</td><td class="method">
+<a href="#cache">cache</a>
+</td></tr>
+<tr><td class="return">static HashSet</td><td class="method">
+<a href="#ignorelist">ignoreList</a>
+</td></tr>
+<tr><td class="return">static HashMap</td><td class="method">
+<a href="#indexes">indexes</a>
+</td></tr>
+<tr><td class="return">static boolean</td><td class="method">
+<a href="#initialized">initialized</a>
+</td></tr>
+<tr><td class="return">static String</td><td class="method">
+<a href="#whitespacechars">whitespaceChars</a>
+</td></tr>
+<tr><td class="return">static HashMap</td><td class="method">
+<a href="#words">words</a>
+</td></tr>
+</table>
+<h4 id="settings"><span class="methodName">SETTINGS
+
+</span></h4>
+<div class="item">The settings of open indexes.</div>
+<hr />
+<h4 id="cache"><span class="methodName">cache
+
+</span></h4>
+<div class="item">The prepared statement cache.</div>
+<hr />
+<h4 id="ignorelist"><span class="methodName">ignoreList
+
+</span></h4>
+<div class="item">The set of words not to index (stop words).</div>
+<hr />
+<h4 id="indexes"><span class="methodName">indexes
+
+</span></h4>
+<div class="item">The set of indexes in this database.</div>
+<hr />
+<h4 id="initialized"><span class="methodName">initialized
+
+</span></h4>
+<div class="item">Whether this instance has been initialized.</div>
+<hr />
+<h4 id="whitespacechars"><span class="methodName">whitespaceChars
+
+</span></h4>
+<div class="item">The whitespace characters.</div>
+<hr />
+<h4 id="words"><span class="methodName">words
+
+</span></h4>
+<div class="item">The set of words / terms.</div>
+<hr />
+</div></td></tr></table></body></html>

@@ -1,0 +1,5 @@
+Build instructions to follow.
+
+Probably I will add a wiki page here about it.
+http://sourceforge.net/p/persism/wiki/Home/
+

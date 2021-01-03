@@ -1,0 +1,39 @@
+Installation Instructions
+Microsoft JDBC Driver 8.4 for SQL Server
+
+
+INTRODUCTION
+------------
+These are instructions for unpacking the sqljdbc_<version>_enu.zip and the 
+sqljdbc_<version>_enu.tar.gz.
+
+
+WINDOWS
+-------
+1. Read the license.txt file. Downloading and using the Microsoft JDBC Driver 8.4 for SQL Server signifies acceptance of this license.
+
+2. Download the sqljdbc_<version>_enu.zip to a temporary directory.
+
+3. Extract sqljdbc_<version>_enu.zip
+
+4. Enter an extract directory when prompted; it is recommended that you unpack
+   this zip file in %ProgramFiles% with the default directory:
+
+	Microsoft JDBC DRIVER 8.4 for SQL Server
+
+
+UNIX
+----
+1. Read the license.txt file. Downloading and using the Microsoft JDBC Driver 8.4 for SQL Server signifies acceptance of this license.
+
+2. Download the sqljdbc_<version>_enu.tar.gz to a temporary directory.
+
+3. To unpack the zipped tar, navigate to the directory where you want the
+   driver unpacked and type:
+
+	gzip -d sqljdbc_<version>_enu.tar.gz
+
+4. To unpack the tar, move it to the directory where you want the driver 
+   installed and type:
+
+	tar -xf sqljdbc_<version>_enu.tar

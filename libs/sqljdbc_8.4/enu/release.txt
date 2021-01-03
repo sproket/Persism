@@ -1,0 +1,230 @@
+Release Information
+Microsoft JDBC Driver 8.4 for SQL Server
+August 2020
+
+------------
+INTRODUCTION
+------------
+This file contains late-breaking or other important information that supplements the Microsoft JDBC 
+Driver 8.4 for SQL Server documentation. You should read this file completely before installing 
+the JDBC driver.
+
+Your feedback is very important to us and we will strive to respond to your feedback in a timely 
+manner. For information about providing feedback by using the JDBC driver blogs and online forums, 
+see the Microsoft JDBC Driver 8.4 for SQL Server page at https://aka.ms/mssql-jdbc-feedback
+
+
+------------
+INSTALLATION
+------------
+Instructions for installing the JDBC driver are located in install.txt. Refer to that file for 
+information about installing the JDBC driver on Windows, Linux and macOS operating systems.
+
+
+---------------------------
+SUPPORTED OPERATING SYSTEMS
+---------------------------
+Supported operating systems for Microsoft JDBC Driver 8.4 for SQL Server include:
+  Windows Server 2012
+  Windows Server 2012 R2
+  Windows Server 2016
+  Windows Server 2019
+  Windows 8.1
+  Windows 10
+  Linux
+  macOS
+
+The list above is an example of some of the supported operating systems. The JDBC driver is designed 
+to work on any operating system that supports the use of a Java Virtual Machine (JVM). 
+
+However, only the latest operating systems of Linux and MacOS (Ubuntu 20.04, Ubuntu 18.04, CentOS 7, SUSE 12,
+ macOS 10.15) have been tested for compatibility and support.
+
+
+-----------------------
+SUPPORTED JAVA VERSIONS
+-----------------------
+The Microsoft JDBC Driver 8.4 for SQL Server has been tested and supports latest versions of Java 
+Development Kit(JDK) builds from Open JDK and Zulu on supported Operating Systems as mentioned above.
+The below family versions of Java Runtime Environment (JRE) System Library are supported:
+
+  ----------------------------------------------------------------------
+  JRE Family Version | Driver JAR for Maximum Support
+  ----------------------------------------------------------------------
+  8+                 | mssql-jdbc-8.4.1.jre8.jar
+  11+                | mssql-jdbc-8.4.1.jre11.jar
+  14+                | mssql-jdbc-8.4.1.jre14.jar
+
+
+----------------
+RELEASE CONTENTS
+----------------
+The Microsoft JDBC Driver 8.4 for SQL Server zip or tar file unpacks the following files 
+in the specified locations, relative to the selected installation directory:
+
+<installation directory>\sqljdbc_<version>\<language>\install.txt
+<installation directory>\sqljdbc_<version>\<language>\release.txt
+<installation directory>\sqljdbc_<version>\<language>\license.txt
+<installation directory>\sqljdbc_<version>\<language>\thirdpartynotices.txt
+<installation directory>\sqljdbc_<version>\<language>\mssql-jdbc-8.4.1.jre8.jar
+<installation directory>\sqljdbc_<version>\<language>\mssql-jdbc-8.4.1.jre11.jar
+<installation directory>\sqljdbc_<version>\<language>\mssql-jdbc-8.4.1.jre14.jar
+<installation directory>\sqljdbc_<version>\<language>\auth\x86\mssql-jdbc_auth-8.4.1.x86.dll
+<installation directory>\sqljdbc_<version>\<language>\auth\x64\mssql-jdbc_auth-8.4.1.x64.dll
+<installation directory>\sqljdbc_<version>\<language>\samples\<sample files...>
+<installation directory>\sqljdbc_<version>\<language>\xa\xa_install.sql
+<installation directory>\sqljdbc_<version>\<language>\xa\x86\sqljdbc_xa.dll
+<installation directory>\sqljdbc_<version>\<language>\xa\x64\sqljdbc_xa.dll
+
+For detailed information about each component please refer to the online documentation,
+Microsoft JDBC Driver for SQL Server Documentation: https://aka.ms/mssql-jdbc
+
+
+-------------
+DOCUMENTATION
+-------------
+This release information, installation instructions, and license terms are included in this package. 
+All other documentation may be found online.
+
+Please note that the offline help files have been discontinued. 
+
+
+---------
+JAR FILES
+---------
+To support backward compatibility and possible upgrade scenarios, the JDBC Driver 8.4 includes 
+three JAR class libraries in each installation package:
+	mssql-jdbc-8.4.1.jre8.jar
+	mssql-jdbc-8.4.1.jre11.jar
+	mssql-jdbc-8.4.1.jre14.jar
+
+
+----------------------
+FEATURE SPECIFIC FILES
+----------------------
+Azure Active Directory and Integrated Authentication (on Windows) components are included 
+in the 'auth' directory.
+
+JDBC distributed transaction components are included in the 'xa' directory.
+
+
+--------------------
+FEATURE DEPENDENCIES
+--------------------
+A few features in Microsoft JDBC Driver 8.4 for SQL Server are dependent on external libraries 
+as listed below:
+
+1. Using 'Always Encrypted' with Azure Key Vault Provider
+   Dependent libraries: azure-keyvault(version 1.2.4), adal4j(version 1.6.5),
+   and client-runtime(version 1.7.4)
+
+2. Using 'Always Encrypted with secure enclaves'
+   Dependent libraries: com.google.code.gson(version 2.8.6),
+   and org.bouncycastle(version 1.65). org.bouncycastle is only required for JDK 8.
+ 
+3. Using 'Azure Active Directory Integrated Authentication' on Windows, Linux and macOS Operating Systems
+   Dependent libraries: adal4j(version 1.6.5), and client-runtime(version 1.7.4)
+   
+4. Using 'useFmtOnly' to retrieve parameter metadata
+   Dependent libraries: antlr-runtime (version 4.7.2)
+   
+Detailed information on including these dependent libraries in a Standard Java Application 
+or a Maven Application can be found here: https://go.microsoft.com/fwlink/?linkid=867575
+
+-------
+SAMPLES
+-------
+Sample applications that demonstrate various features of the JDBC driver are included in the 'samples'
+directory. For more details about each sample and how to run them, please refer to the online 
+documentation.
+
+
+-----------
+CHANGE LIST
+-----------
+Changes from 8.4.0.0 to 8.4.1.0:
+- Fixed issue with `SQLServerConnectionPoolProxy` not being compatible with `delayLoadingLobs`.
+- Fixed a potential `NullPointerException` issue with `delayLoadingLobs`.
+- Fixed issue with decrypting column encryption keys using Windows Certificate Store.
+
+Changes from 8.2.2.0 to 8.4.0.0:
+- Added support for sensitivity ranking when using SQL Data Discovery and Classification.
+- Added 'SQLServerDatabaseMetaData.getDatabaseCompatibilityLevel()' API to return the database compatibility level.
+- Added support for Azure SQL DNS Caching.
+- Added delayed durability option to 'SQLServerConnection.commit()'.
+- Added certificate expiry validation when using Always Encrypted with secure enclaves feature.
+- Added SQL State to Exception when connection is closed.
+- Added connection properties to specify custom SocketFactory.
+- Added support for Client Certificate Authentication.
+- Added support for JAVA 14.
+- Added support for authentication to Azure Key Vault using Managed Identity.
+- Updated the driver to throw a warning when TLS version lower than 1.2 is negotiated.
+- Introduced 'SQLServerBulkCSVFileRecord.setEscapeColumnDelimitersCSV()' to escape delimiters and double quotes when using bulk copy to load from CSV files.
+- Introduced extended bulk copy support against Azure Data Warehouse.
+- Introduced 'delayLoadingLobs' connection property to provide backward compatibility when streaming LOBs.
+
+ Bug Fixes: 
+- Fixed an issue with 'DatabaseMetaData.getColumns()' intermittently returning table column descriptions in incorrect order.
+- Fixed an issue with spatial datatypes casting error when Always Encrypted is enabled.
+- Fixed an issue with 'DatabaseMetaData.getColumns()' not returning correct type for IS_AUTOINCREMENT and IS_GENERATEDCOLUMN against Azure Data Warehouse.
+- Fixed an issue with 'Geography.STAsBinary()' and 'Geometry.STAsBinary()' returning WKB format instead of CLR format.
+- Fixed an issue with allowing non-MSSQL ResultSets to bulk copy 'DateTimeOffset'.
+- Fixed issues identified by SonarQube.
+- Fixed an issue with batch insertion failing when Always Encrypted is enabled.
+- Fixed an issue with MSI authentication failing due to expiry date format mismatch.
+- Fixed an issue with streams not getting closed when using Always Encrypted with secure enclaves feature.
+- Fixed an issue with retrieving SQL VARIANT as its underlying type.
+- Fixed issues with the driver not being JAVA 8 compliant.
+- Fixed an issue with 'PreparedStatement' when inserting large spatial data types.
+- Fixed an issue with escaping curly brackets in connection string.
+- Fixed a warning when retrieving Operating System information from SQL Server Linux when using distributed transactions.
+
+Improvements:
+- Updated 'SQLServerPreparedStatement.setObject()' to retrieve TVP name from 'SQLServerDataTable'.
+- Improved exception message when connecting to redirection-enabled Azure server.
+- Improved performance when parsing connection string.
+- Added database name to Always Encrypted enclave caching key.
+- Removed unused code.
+
+------------
+KNOWN ISSUES
+------------
+The following are known issues with the Microsoft JDBC Driver 8.4 for SQL Server:
+
+1) CONNECTION DROPPING WITH SQL AZURE
+
+When connecting to SQL Azure, idle connections may be terminated by a network component (such as a 
+firewall) after a period of inactivity. To avoid dropping idle connections by a network component, 
+the following registry settings (or their non-Windows equivalents) should be set on the operating 
+system where the driver is loaded:
+           
+Registry Setting                                                                   Recommended value
+HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\Tcpip\Parameters\KeepAliveTime            30000
+HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\Tcpip\Parameters\KeepAliveInterval         1000
+HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\Tcpip\Parameters\TcpMaxDataRetransmission  10
+
+2) WHEN USING TVP WITH SQL_VARIANT 
+
+2.a) FOR DATE VALUES
+
+When using TVP to populate a table that contains datetime/smalldatetime/date values stored in sql_variant column, 
+calling getDateTime()/getSmallDateTime()/getDate() on ResultSet does not work and throws the following exception:
+
+	java.lang.String cannot be cast to java.sql.Timestamp
+
+Workaround: use getString() or getObject() instead.
+
+2.b) USING TVP WITH SQL_VARIANT FOR NULL VALUES
+
+If you are using TVP to populate a table and send NULL value to sql_variant column type, you will encounter
+an exception as inserting NULL value with column type sql_variant in TVP is currently not supported.
+
+
+3) WHEN USING NTLM AUTHENTICATION
+
+Enabling Extended Protection and encrypted connections at the same time is currently not supported.
+
+4) WHEN USING useFmtOnly
+
+There are some issues with the feature, which are caused by deficiencies in SQL parsing logic.
+See https://aka.ms/mssql-jdbc-usefmtonly for more details and workaround suggestions.
