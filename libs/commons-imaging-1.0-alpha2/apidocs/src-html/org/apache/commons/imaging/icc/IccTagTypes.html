@@ -1,0 +1,413 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="en">
+<head>
+<title>Source code</title>
+<link rel="stylesheet" type="text/css" href="../../../../../../stylesheet.css" title="Style">
+</head>
+<body>
+<div class="sourceContainer">
+<pre><span class="sourceLineNo">001</span>/*<a name="line.1"></a>
+<span class="sourceLineNo">002</span> * Licensed to the Apache Software Foundation (ASF) under one or more<a name="line.2"></a>
+<span class="sourceLineNo">003</span> * contributor license agreements.  See the NOTICE file distributed with<a name="line.3"></a>
+<span class="sourceLineNo">004</span> * this work for additional information regarding copyright ownership.<a name="line.4"></a>
+<span class="sourceLineNo">005</span> * The ASF licenses this file to You under the Apache License, Version 2.0<a name="line.5"></a>
+<span class="sourceLineNo">006</span> * (the "License"); you may not use this file except in compliance with<a name="line.6"></a>
+<span class="sourceLineNo">007</span> * the License.  You may obtain a copy of the License at<a name="line.7"></a>
+<span class="sourceLineNo">008</span> *<a name="line.8"></a>
+<span class="sourceLineNo">009</span> *      http://www.apache.org/licenses/LICENSE-2.0<a name="line.9"></a>
+<span class="sourceLineNo">010</span> *<a name="line.10"></a>
+<span class="sourceLineNo">011</span> * Unless required by applicable law or agreed to in writing, software<a name="line.11"></a>
+<span class="sourceLineNo">012</span> * distributed under the License is distributed on an "AS IS" BASIS,<a name="line.12"></a>
+<span class="sourceLineNo">013</span> * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.<a name="line.13"></a>
+<span class="sourceLineNo">014</span> * See the License for the specific language governing permissions and<a name="line.14"></a>
+<span class="sourceLineNo">015</span> * limitations under the License.<a name="line.15"></a>
+<span class="sourceLineNo">016</span> */<a name="line.16"></a>
+<span class="sourceLineNo">017</span>package org.apache.commons.imaging.icc;<a name="line.17"></a>
+<span class="sourceLineNo">018</span><a name="line.18"></a>
+<span class="sourceLineNo">019</span>public enum IccTagTypes implements IccTagType {<a name="line.19"></a>
+<span class="sourceLineNo">020</span>    A_TO_B0_TAG("AToB0Tag",<a name="line.20"></a>
+<span class="sourceLineNo">021</span>            "lut8Type or lut16Type or lutAtoBType", 0x41324230<a name="line.21"></a>
+<span class="sourceLineNo">022</span>    //            "This tag defines a color transform from Device to PCS using lookup table tag element structures. The processing mechanisms are described in lut8Type or lut16Type or lutAtoBType.");<a name="line.22"></a>
+<span class="sourceLineNo">023</span>    ),<a name="line.23"></a>
+<span class="sourceLineNo">024</span><a name="line.24"></a>
+<span class="sourceLineNo">025</span>    //    public static final IccTagType AToB0Tag = new IccTagType(<a name="line.25"></a>
+<span class="sourceLineNo">026</span>    //    "AToB0Tag",<a name="line.26"></a>
+<span class="sourceLineNo">027</span>    //    "lut8Type or lut16Type or lutAtoBType",<a name="line.27"></a>
+<span class="sourceLineNo">028</span>    //    "�A2B0� (41324230h)",<a name="line.28"></a>
+<span class="sourceLineNo">029</span>    //    "This tag defines a color transform from Device to PCS using lookup table tag element structures. The processing",<a name="line.29"></a>
+<span class="sourceLineNo">030</span>    //    "mechanisms are described in lut8Type or lut16Type or lutAtoBType.",<a name="line.30"></a>
+<span class="sourceLineNo">031</span>    //    );<a name="line.31"></a>
+<span class="sourceLineNo">032</span><a name="line.32"></a>
+<span class="sourceLineNo">033</span>    A_TO_B1_TAG("AToB1Tag",<a name="line.33"></a>
+<span class="sourceLineNo">034</span>            "lut8Type or lut16Type or lutAtoBType", 0x41324231<a name="line.34"></a>
+<span class="sourceLineNo">035</span>    //    "This tag defines a color transform from Device to PCS using lookup table tag element structures. The processing",<a name="line.35"></a>
+<span class="sourceLineNo">036</span>    //    "mechanisms are described in lut8Type or lut16Type or lutAtoBType.",<a name="line.36"></a>
+<span class="sourceLineNo">037</span>    ),<a name="line.37"></a>
+<span class="sourceLineNo">038</span><a name="line.38"></a>
+<span class="sourceLineNo">039</span>    A_TO_B2_TAG("AToB2Tag",<a name="line.39"></a>
+<span class="sourceLineNo">040</span>            "lut8Type or lut16Type or lutAtoBType", 0x41324232<a name="line.40"></a>
+<span class="sourceLineNo">041</span>    //    "This tag defines a color transform from Device to PCS using lookup table tag element structures. The processing",<a name="line.41"></a>
+<span class="sourceLineNo">042</span>    //    "mechanisms are described in lut8Type or lut16Type or lutAtoBType.",<a name="line.42"></a>
+<span class="sourceLineNo">043</span>    ),<a name="line.43"></a>
+<span class="sourceLineNo">044</span><a name="line.44"></a>
+<span class="sourceLineNo">045</span>    BLUE_MATRIX_COLUMN_TAG(<a name="line.45"></a>
+<span class="sourceLineNo">046</span>            "blueMatrixColumnTag", "XYZType", 0x6258595A<a name="line.46"></a>
+<span class="sourceLineNo">047</span>    //    "The third column in the matrix used in TRC/matrix transforms.",<a name="line.47"></a>
+<span class="sourceLineNo">048</span>    ),<a name="line.48"></a>
+<span class="sourceLineNo">049</span><a name="line.49"></a>
+<span class="sourceLineNo">050</span>    BLUE_TRC_TAG("blueTRCTag",<a name="line.50"></a>
+<span class="sourceLineNo">051</span>            "curveType or parametricCurveType", 0x62545243<a name="line.51"></a>
+<span class="sourceLineNo">052</span>    //    "Blue channel tone reproduction curve. The first element represents no colorant (white) or phosphors",<a name="line.52"></a>
+<span class="sourceLineNo">053</span>    //    "(black) and the last element represents 100 percent colorant (blue) or 100 percent phosphor (blue).",<a name="line.53"></a>
+<span class="sourceLineNo">054</span>    ),<a name="line.54"></a>
+<span class="sourceLineNo">055</span><a name="line.55"></a>
+<span class="sourceLineNo">056</span>    B_TO_A0_TAG("BToA0Tag",<a name="line.56"></a>
+<span class="sourceLineNo">057</span>            "lut8Type or lut16Type or lutBtoAType", 0x42324130<a name="line.57"></a>
+<span class="sourceLineNo">058</span>    //    "This tag defines a color transform from PCS to Device using the lookup table tag element structures. The",<a name="line.58"></a>
+<span class="sourceLineNo">059</span>    //    "processing mechanisms are described in lut8Type or lut16Type or lutBtoAType.",<a name="line.59"></a>
+<span class="sourceLineNo">060</span>    ),<a name="line.60"></a>
+<span class="sourceLineNo">061</span><a name="line.61"></a>
+<span class="sourceLineNo">062</span>    B_TO_A1_TAG("BToA1Tag",<a name="line.62"></a>
+<span class="sourceLineNo">063</span>            "lut8Type or lut16Type or lutBtoAType", 0x42324131<a name="line.63"></a>
+<span class="sourceLineNo">064</span>    //    "This tag defines a color transform from PCS to Device using the lookup table tag element structures. The",<a name="line.64"></a>
+<span class="sourceLineNo">065</span>    //    "processing mechanisms are described in lut8Type or lut16Type or lutBtoAType.",<a name="line.65"></a>
+<span class="sourceLineNo">066</span>    ),<a name="line.66"></a>
+<span class="sourceLineNo">067</span><a name="line.67"></a>
+<span class="sourceLineNo">068</span>    B_TO_A2_TAG("BToA2Tag",<a name="line.68"></a>
+<span class="sourceLineNo">069</span>            "lut8Type or lut16Type or lutBtoAType", 0x42324132<a name="line.69"></a>
+<span class="sourceLineNo">070</span>    //    "This tag defines a color transform from PCS to Device using the lookup table tag element structures. The",<a name="line.70"></a>
+<span class="sourceLineNo">071</span>    //    "processing mechanisms are described in lut8Type or lut16Type or lutBtoAType.",<a name="line.71"></a>
+<span class="sourceLineNo">072</span>    ),<a name="line.72"></a>
+<span class="sourceLineNo">073</span><a name="line.73"></a>
+<span class="sourceLineNo">074</span>    CALIBRATION_DATE_TIME_TAG(<a name="line.74"></a>
+<span class="sourceLineNo">075</span>            "calibrationDateTimeTag", "dateTimeType", 0x63616C74<a name="line.75"></a>
+<span class="sourceLineNo">076</span>    //    "Profile calibration date and time. Initially, this tag matches the contents of the profile header�s creation",<a name="line.76"></a>
+<span class="sourceLineNo">077</span>    //    "date/time field. This allows applications and utilities to verify if this profile matches a vendor�s profile and",<a name="line.77"></a>
+<span class="sourceLineNo">078</span>    //    "how recently calibration has been performed.",<a name="line.78"></a>
+<span class="sourceLineNo">079</span>    ),<a name="line.79"></a>
+<span class="sourceLineNo">080</span><a name="line.80"></a>
+<span class="sourceLineNo">081</span>    CHAR_TARGET_TAG(<a name="line.81"></a>
+<span class="sourceLineNo">082</span>            "charTargetTag", "textType", 0x74617267<a name="line.82"></a>
+<span class="sourceLineNo">083</span>    //    "This tag contains the name of the registered characterization data set, or it contains the measurement data",<a name="line.83"></a>
+<span class="sourceLineNo">084</span>    //    "for a characterization target. This tag is provided so that distributed utilities can identify the underlying",<a name="line.84"></a>
+<span class="sourceLineNo">085</span>    //    "characterization data, create transforms \"on the fly\" or check the current performance against the original",<a name="line.85"></a>
+<span class="sourceLineNo">086</span>    //    "device performance.",<a name="line.86"></a>
+<span class="sourceLineNo">087</span>    //    "The first seven characters of the text shall identify the nature of the characterization data.",<a name="line.87"></a>
+<span class="sourceLineNo">088</span>    //    "If the first seven characters are \"ICCHDAT\", then the remainder of the text shall be a single space followed",<a name="line.88"></a>
+<span class="sourceLineNo">089</span>    //    "by the Reference Name of a characterization data set in the ICC Characterization Data Registry and terminated",<a name="line.89"></a>
+<span class="sourceLineNo">090</span>    //    "with a NULL byte (00h). The Reference Name in the text must match exactly (including case) the",<a name="line.90"></a>
+<span class="sourceLineNo">091</span>    //    "Reference Name in the registry.",<a name="line.91"></a>
+<span class="sourceLineNo">092</span>    //    "If the first seven characters match one of the identifiers defined in an ANSI or ISO standard, then the tag",<a name="line.92"></a>
+<span class="sourceLineNo">093</span>    //    "embeds the exact data file format defined in that standard. Each of these file formats contains an identifying",<a name="line.93"></a>
+<span class="sourceLineNo">094</span>    //    "character string as the first seven characters of the format, allowing an external parser to determine",<a name="line.94"></a>
+<span class="sourceLineNo">095</span>    //    "which data file format is being used. This provides the facilities to include a wide range of targets using a",<a name="line.95"></a>
+<span class="sourceLineNo">096</span>    //    "variety of measurement specifications in a standard manner.",<a name="line.96"></a>
+<span class="sourceLineNo">097</span>    //    "NOTE: It is highly recommended that the profileDescriptionTag also include an identification of the characterization",<a name="line.97"></a>
+<span class="sourceLineNo">098</span>    //    "data that was used in the creation of the profile (e.g. \"Based on CGATS TR 001\").",<a name="line.98"></a>
+<span class="sourceLineNo">099</span>    ),<a name="line.99"></a>
+<span class="sourceLineNo">100</span><a name="line.100"></a>
+<span class="sourceLineNo">101</span>    CHROMATIC_ADAPTATION_TAG(<a name="line.101"></a>
+<span class="sourceLineNo">102</span>            "chromaticAdaptationTag", "s15Fixed16ArrayType", 0x63686164<a name="line.102"></a>
+<span class="sourceLineNo">103</span>    //    "This tag converts an XYZ color, measured at a device's specific illumination conditions, to an XYZ color in",<a name="line.103"></a>
+<span class="sourceLineNo">104</span>    //    "the PCS illumination conditions after complete adaptation.",<a name="line.104"></a>
+<span class="sourceLineNo">105</span>    //    "The tag reflects a survey of the currently used methods of conversion, all of which can be formulated as a",<a name="line.105"></a>
+<span class="sourceLineNo">106</span>    //    "matrix transformation (see Annex E). Such a 3 by 3 chromatic adaptation matrix is organized as a 9-element",<a name="line.106"></a>
+<span class="sourceLineNo">107</span>    //    "array of signed 15.16 numbers (s15Fixed16ArrayType tag). Similarly as in the other occurrences of a",<a name="line.107"></a>
+<span class="sourceLineNo">108</span>    //    "3 by 3 matrix in the ICC tags, the dimension corresponding to the matrix rows varies least rapidly while the",<a name="line.108"></a>
+<span class="sourceLineNo">109</span>    //    "one corresponding to the matrix columns varies most rapidly.",<a name="line.109"></a>
+<span class="sourceLineNo">110</span>    //    "(19)",<a name="line.110"></a>
+<span class="sourceLineNo">111</span>    //    "(20)",<a name="line.111"></a>
+<span class="sourceLineNo">112</span>    //    "array a0 a1 a2 a3 a4 a5 a6 a7 a8 =",<a name="line.112"></a>
+<span class="sourceLineNo">113</span>    //    "Xpcs",<a name="line.113"></a>
+<span class="sourceLineNo">114</span>    //    "Ypcs",<a name="line.114"></a>
+<span class="sourceLineNo">115</span>    //    "Zpcs",<a name="line.115"></a>
+<span class="sourceLineNo">116</span>    //    "a0 a1 a2",<a name="line.116"></a>
+<span class="sourceLineNo">117</span>    //    "a3 a4 a5",<a name="line.117"></a>
+<span class="sourceLineNo">118</span>    //    "a6 a7 a8",<a name="line.118"></a>
+<span class="sourceLineNo">119</span>    //    "Xsrc",<a name="line.119"></a>
+<span class="sourceLineNo">120</span>    //    "Ysrc",<a name="line.120"></a>
+<span class="sourceLineNo">121</span>    //    "Zsrc",<a name="line.121"></a>
+<span class="sourceLineNo">122</span>    //    "=",<a name="line.122"></a>
+<span class="sourceLineNo">123</span>    //    "Where XYZsrc represents the measured value in the actual device viewing condition and XYZpcs represents",<a name="line.123"></a>
+<span class="sourceLineNo">124</span>    //    "the chromatically adapted value in the PCS.",<a name="line.124"></a>
+<span class="sourceLineNo">125</span>    //    "The chromatic adaptation matrix is a combination of three separate conversions:",<a name="line.125"></a>
+<span class="sourceLineNo">126</span>    //    "1) Conversion of source CIE XYZ tristimulus values to cone response tristimulus values.",<a name="line.126"></a>
+<span class="sourceLineNo">127</span>    //    "2) Adjustment of the cone response values for an observer�s chromatic adaptation.",<a name="line.127"></a>
+<span class="sourceLineNo">128</span>    //    "3) Conversion of the adjusted cone response tristimulus back to CIE XYZ values.",<a name="line.128"></a>
+<span class="sourceLineNo">129</span>    ),<a name="line.129"></a>
+<span class="sourceLineNo">130</span><a name="line.130"></a>
+<span class="sourceLineNo">131</span>    CHROMATICITY_TAG(<a name="line.131"></a>
+<span class="sourceLineNo">132</span>            "chromaticityTag", "chromaticityType", 0x6368726D<a name="line.132"></a>
+<span class="sourceLineNo">133</span>    //    "The data and type of phosphor/colorant chromaticity set.",<a name="line.133"></a>
+<span class="sourceLineNo">134</span>    ),<a name="line.134"></a>
+<span class="sourceLineNo">135</span><a name="line.135"></a>
+<span class="sourceLineNo">136</span>    COLORANT_ORDER_TAG(<a name="line.136"></a>
+<span class="sourceLineNo">137</span>            "colorantOrderTag", "colorantOrderType", 0x636C726F<a name="line.137"></a>
+<span class="sourceLineNo">138</span>    //    "This tag specifies the laydown order of colorants.",<a name="line.138"></a>
+<span class="sourceLineNo">139</span>    ),<a name="line.139"></a>
+<span class="sourceLineNo">140</span><a name="line.140"></a>
+<span class="sourceLineNo">141</span>    COLORANT_TABLE_TAG(<a name="line.141"></a>
+<span class="sourceLineNo">142</span>            "colorantTableTag", "colorantTableType", 0x636C7274<a name="line.142"></a>
+<span class="sourceLineNo">143</span>    //    "This tag identifies the colorants used in the profile by a unique name and an XYZ or L*a*b* value.",<a name="line.143"></a>
+<span class="sourceLineNo">144</span>    //    "This is a required tag for profiles where the color space defined in the header is xCLR, where x is one of",<a name="line.144"></a>
+<span class="sourceLineNo">145</span>    //    "the allowed numbers from 2 through Fh, per Table 13. See Section 6.3.3.2, Section 6.3.4.1.",<a name="line.145"></a>
+<span class="sourceLineNo">146</span>    ),<a name="line.146"></a>
+<span class="sourceLineNo">147</span><a name="line.147"></a>
+<span class="sourceLineNo">148</span>    COPYRIGHT_TAG(<a name="line.148"></a>
+<span class="sourceLineNo">149</span>            "copyrightTag", "multiLocalizedUnicodeType", 0x63707274<a name="line.149"></a>
+<span class="sourceLineNo">150</span>    //    "This tag contains the text copyright information for the profile.",<a name="line.150"></a>
+<span class="sourceLineNo">151</span>    ),<a name="line.151"></a>
+<span class="sourceLineNo">152</span><a name="line.152"></a>
+<span class="sourceLineNo">153</span>    DEVICE_MFG_DESC_TAG(<a name="line.153"></a>
+<span class="sourceLineNo">154</span>            "deviceMfgDescTag", "multiLocalizedUnicodeType", 0x646D6E64<a name="line.154"></a>
+<span class="sourceLineNo">155</span>    //    "Structure containing invariant and localizable versions of the device manufacturer for display. The content",<a name="line.155"></a>
+<span class="sourceLineNo">156</span>    //    "of this structure is described in 6.5.12.",<a name="line.156"></a>
+<span class="sourceLineNo">157</span>    ),<a name="line.157"></a>
+<span class="sourceLineNo">158</span><a name="line.158"></a>
+<span class="sourceLineNo">159</span>    DEVICE_MODEL_DESC_TAG(<a name="line.159"></a>
+<span class="sourceLineNo">160</span>            "deviceModelDescTag", "multiLocalizedUnicodeType", 0x646D6464<a name="line.160"></a>
+<span class="sourceLineNo">161</span>    //    "Structure containing invariant and localizable versions of the device model for display. The content of this",<a name="line.161"></a>
+<span class="sourceLineNo">162</span>    //    "structure is described in 6.5.12.",<a name="line.162"></a>
+<span class="sourceLineNo">163</span>    ),<a name="line.163"></a>
+<span class="sourceLineNo">164</span><a name="line.164"></a>
+<span class="sourceLineNo">165</span>    GAMUT_TAG("gamutTag",<a name="line.165"></a>
+<span class="sourceLineNo">166</span>            "lut8Type or lut16Type or lutBtoAType", 0x67616D74<a name="line.166"></a>
+<span class="sourceLineNo">167</span>    //    "Out of gamut tag. The processing mechanisms are described in lut8Type or lut16Type or lutBtoAType.",<a name="line.167"></a>
+<span class="sourceLineNo">168</span>    //    "This tag takes PCS values as its input and produces a single channel of output. If the output value is 0, the",<a name="line.168"></a>
+<span class="sourceLineNo">169</span>    //    "PCS color is in-gamut. If the output is non-zero, the PCS color is out-of-gamut, with the output value �n+1�",<a name="line.169"></a>
+<span class="sourceLineNo">170</span>    //    "being at least as far out of gamut as the output value �n�.",<a name="line.170"></a>
+<span class="sourceLineNo">171</span>    ),<a name="line.171"></a>
+<span class="sourceLineNo">172</span><a name="line.172"></a>
+<span class="sourceLineNo">173</span>    GRAY_TRC_TAG("grayTRCTag",<a name="line.173"></a>
+<span class="sourceLineNo">174</span>            "curveType or parametricCurveType", 0x6B545243<a name="line.174"></a>
+<span class="sourceLineNo">175</span>    //    "Gray tone reproduction curve. The tone reproduction curve provides the necessary information to convert",<a name="line.175"></a>
+<span class="sourceLineNo">176</span>    //    "between a single device channel and the CIEXYZ encoding of the profile connection space. The first element",<a name="line.176"></a>
+<span class="sourceLineNo">177</span>    //    "represents black and the last element represents white.",<a name="line.177"></a>
+<span class="sourceLineNo">178</span>    ),<a name="line.178"></a>
+<span class="sourceLineNo">179</span><a name="line.179"></a>
+<span class="sourceLineNo">180</span>    GREEN_MATRIX_COLUMN_TAG(<a name="line.180"></a>
+<span class="sourceLineNo">181</span>            "greenMatrixColumnTag", "XYZType", 0x6758595A<a name="line.181"></a>
+<span class="sourceLineNo">182</span>    //    "The second column in the matrix used in TRC/matrix transforms.",<a name="line.182"></a>
+<span class="sourceLineNo">183</span>    ),<a name="line.183"></a>
+<span class="sourceLineNo">184</span><a name="line.184"></a>
+<span class="sourceLineNo">185</span>    GREEN_TRC_TAG(<a name="line.185"></a>
+<span class="sourceLineNo">186</span>    //    "6.4.21 ",<a name="line.186"></a>
+<span class="sourceLineNo">187</span>            "greenTRCTag", "curveType or parametricCurveType", 0x67545243<a name="line.187"></a>
+<span class="sourceLineNo">188</span>    //    "Green channel tone reproduction curve. The first element represents no colorant (white) or phosphors",<a name="line.188"></a>
+<span class="sourceLineNo">189</span>    //    "(black) and the last element represents 100 percent colorant (green) or 100 percent phosphor (green).",<a name="line.189"></a>
+<span class="sourceLineNo">190</span>    ),<a name="line.190"></a>
+<span class="sourceLineNo">191</span><a name="line.191"></a>
+<span class="sourceLineNo">192</span>    LUMINANCE_TAG(<a name="line.192"></a>
+<span class="sourceLineNo">193</span>    //    "6.4.22 ",<a name="line.193"></a>
+<span class="sourceLineNo">194</span>            "luminanceTag", "XYZType", 0x6C756D69<a name="line.194"></a>
+<span class="sourceLineNo">195</span>    //    "Absolute luminance of emissive devices in candelas per square meter as described by the Y channel. The",<a name="line.195"></a>
+<span class="sourceLineNo">196</span>    //    "X and Z channels are ignored in all cases.",<a name="line.196"></a>
+<span class="sourceLineNo">197</span>    ),<a name="line.197"></a>
+<span class="sourceLineNo">198</span><a name="line.198"></a>
+<span class="sourceLineNo">199</span>    MEASUREMENT_TAG(<a name="line.199"></a>
+<span class="sourceLineNo">200</span>    //    "6.4.23 ",<a name="line.200"></a>
+<span class="sourceLineNo">201</span>            "measurementTag", "measurementType", 0x6D656173<a name="line.201"></a>
+<span class="sourceLineNo">202</span>    //    "Alternative measurement specification such as a D65 illuminant instead of the default D50.",<a name="line.202"></a>
+<span class="sourceLineNo">203</span>    ),<a name="line.203"></a>
+<span class="sourceLineNo">204</span><a name="line.204"></a>
+<span class="sourceLineNo">205</span>    MEDIA_BLACK_POINT_TAG(<a name="line.205"></a>
+<span class="sourceLineNo">206</span>    //    "6.4.24 ",<a name="line.206"></a>
+<span class="sourceLineNo">207</span>            "mediaBlackPointTag", "XYZType", 0x626B7074<a name="line.207"></a>
+<span class="sourceLineNo">208</span>    //    "This tag specifies the media black point and contains the CIE 1931 XYZ colorimetry of the black point of",<a name="line.208"></a>
+<span class="sourceLineNo">209</span>    //    "the actual medium.",<a name="line.209"></a>
+<span class="sourceLineNo">210</span>    //    "NOTE Previous revisions of this specification contained an error indicating that this tag is used to calculate",<a name="line.210"></a>
+<span class="sourceLineNo">211</span>    //    "ICC-absolute colorimetry. This is not the case.",<a name="line.211"></a>
+<span class="sourceLineNo">212</span>    ),<a name="line.212"></a>
+<span class="sourceLineNo">213</span><a name="line.213"></a>
+<span class="sourceLineNo">214</span>    MEDIA_WHITE_POINT_TAG(<a name="line.214"></a>
+<span class="sourceLineNo">215</span>    //    "6.4.25 ",<a name="line.215"></a>
+<span class="sourceLineNo">216</span>            "mediaWhitePointTag", "XYZType", 0x77747074<a name="line.216"></a>
+<span class="sourceLineNo">217</span>    //    "This tag, which is used for generating ICC-absolute colorimetric intent, specifies the XYZ tristimulus values",<a name="line.217"></a>
+<span class="sourceLineNo">218</span>    //    "of the media white point. If the media is measured under an illumination source which has a chromaticity",<a name="line.218"></a>
+<span class="sourceLineNo">219</span>    //    "other than D50, the measured values must be adjusted to D50 using the chromaticAdaptationTag matrix",<a name="line.219"></a>
+<span class="sourceLineNo">220</span>    //    "before recording in the tag. For reflecting and transmitting media, the tag values are specified relative to",<a name="line.220"></a>
+<span class="sourceLineNo">221</span>    //    "the perfect diffuser (which is normalized to a Y value of 1,0) for illuminant D50. For displays, the values",<a name="line.221"></a>
+<span class="sourceLineNo">222</span>    //    "specified must be those of D50 (i.e. 0,9642, 1,0 0,8249) normalized such that Y = 1,0.",<a name="line.222"></a>
+<span class="sourceLineNo">223</span>    //    "See Annex A for a more complete description of the use of the media white point.",<a name="line.223"></a>
+<span class="sourceLineNo">224</span>    ),<a name="line.224"></a>
+<span class="sourceLineNo">225</span><a name="line.225"></a>
+<span class="sourceLineNo">226</span>    NAMED_COLOR_2_TAG(<a name="line.226"></a>
+<span class="sourceLineNo">227</span>    //    "6.4.26 ",<a name="line.227"></a>
+<span class="sourceLineNo">228</span>            "namedColor2Tag", "namedColor2Type", 0x6E636C32<a name="line.228"></a>
+<span class="sourceLineNo">229</span>    //    "Named color information providing a PCS and optional device representation for a list of named colors.",<a name="line.229"></a>
+<span class="sourceLineNo">230</span>    ),<a name="line.230"></a>
+<span class="sourceLineNo">231</span><a name="line.231"></a>
+<span class="sourceLineNo">232</span>    OUTPUT_RESPONSE_TAG(<a name="line.232"></a>
+<span class="sourceLineNo">233</span>    //    "6.4.27 ",<a name="line.233"></a>
+<span class="sourceLineNo">234</span>            "outputResponseTag", "responseCurveSet16Type", 0x72657370<a name="line.234"></a>
+<span class="sourceLineNo">235</span>    //    "Structure containing a description of the device response for which the profile is intended. The content of",<a name="line.235"></a>
+<span class="sourceLineNo">236</span>    //    "this structure is described in 6.5.16.",<a name="line.236"></a>
+<span class="sourceLineNo">237</span>    //    "NOTE The user�s attention is called to the possibility that the use of this tag for device calibration may",<a name="line.237"></a>
+<span class="sourceLineNo">238</span>    //    "require use of an invention covered by patent rights. By publication of this specification, no position is",<a name="line.238"></a>
+<span class="sourceLineNo">239</span>    //    "taken with respect to the validity of this claim or of any patent rights in connection therewith. The patent",<a name="line.239"></a>
+<span class="sourceLineNo">240</span>    //    "holder has, however, filed a statement of willingness to grant a license under these rights on reasonable",<a name="line.240"></a>
+<span class="sourceLineNo">241</span>    //    "and nondiscriminatory terms and conditions to applicants desiring to obtain such a license. Details may be",<a name="line.241"></a>
+<span class="sourceLineNo">242</span>    //    "obtained from the publisher.",<a name="line.242"></a>
+<span class="sourceLineNo">243</span>    ),<a name="line.243"></a>
+<span class="sourceLineNo">244</span><a name="line.244"></a>
+<span class="sourceLineNo">245</span>    PREVIEW_0_TAG(<a name="line.245"></a>
+<span class="sourceLineNo">246</span>    //    "6.4.28 ",<a name="line.246"></a>
+<span class="sourceLineNo">247</span>            "preview0Tag", "lut8Type or lut16Type or lutBtoAType", 0x70726530<a name="line.247"></a>
+<span class="sourceLineNo">248</span>    //    "Preview transformation from PCS to device space and back to the PCS. The processing mechanisms are",<a name="line.248"></a>
+<span class="sourceLineNo">249</span>    //    "described in lut8Type or lut16Type or lutBtoAType.",<a name="line.249"></a>
+<span class="sourceLineNo">250</span>    //    "This tag contains the combination of tag B2A0 and tag A2B1.",<a name="line.250"></a>
+<span class="sourceLineNo">251</span>    ),<a name="line.251"></a>
+<span class="sourceLineNo">252</span><a name="line.252"></a>
+<span class="sourceLineNo">253</span>    PREVIEW_1_TAG(<a name="line.253"></a>
+<span class="sourceLineNo">254</span>    //    "6.4.29 ",<a name="line.254"></a>
+<span class="sourceLineNo">255</span>            "preview1Tag", "lut8Type or lut16Type or lutBtoAType", 0x70726531<a name="line.255"></a>
+<span class="sourceLineNo">256</span>    //    "Preview transformation from the PCS to device space and back to the PCS. The processing mechanisms",<a name="line.256"></a>
+<span class="sourceLineNo">257</span>    //    "are described in lut8Type or lut16Type or lutBtoAType.",<a name="line.257"></a>
+<span class="sourceLineNo">258</span>    //    "This tag contains the combination of tag B2A1 and tag A2B1.",<a name="line.258"></a>
+<span class="sourceLineNo">259</span>    ),<a name="line.259"></a>
+<span class="sourceLineNo">260</span><a name="line.260"></a>
+<span class="sourceLineNo">261</span>    PREVIEW_2_TAG(<a name="line.261"></a>
+<span class="sourceLineNo">262</span>    //    "6.4.30 ",<a name="line.262"></a>
+<span class="sourceLineNo">263</span>            "preview2Tag", "lut8Type or lut16Type or lutBtoAType", 0x70726532<a name="line.263"></a>
+<span class="sourceLineNo">264</span>    //    "Preview transformation from PCS to device space and back to the PCS. The processing mechanisms are",<a name="line.264"></a>
+<span class="sourceLineNo">265</span>    //    "described in lut8Type or lut16Type or lutBtoAType.",<a name="line.265"></a>
+<span class="sourceLineNo">266</span>    //    "This tag contains the combination of tag B2A2 and tag A2B1.",<a name="line.266"></a>
+<span class="sourceLineNo">267</span>    ),<a name="line.267"></a>
+<span class="sourceLineNo">268</span><a name="line.268"></a>
+<span class="sourceLineNo">269</span>    PROFILE_DESCRIPTION_TAG(<a name="line.269"></a>
+<span class="sourceLineNo">270</span>    //    "6.4.31 ",<a name="line.270"></a>
+<span class="sourceLineNo">271</span>            "profileDescriptionTag", "multiLocalizedUnicodeType", 0x64657363<a name="line.271"></a>
+<span class="sourceLineNo">272</span>    //    "Structure containing invariant and localizable versions of the profile description for display. The content of",<a name="line.272"></a>
+<span class="sourceLineNo">273</span>    //    "this structure is described in 6.5.12. This invariant description has no fixed relationship to the actual profile",<a name="line.273"></a>
+<span class="sourceLineNo">274</span>    //    "disk file name.",<a name="line.274"></a>
+<span class="sourceLineNo">275</span>    ),<a name="line.275"></a>
+<span class="sourceLineNo">276</span><a name="line.276"></a>
+<span class="sourceLineNo">277</span>    PROFILE_SEQUENCE_DESC_TAG(<a name="line.277"></a>
+<span class="sourceLineNo">278</span>    //    "6.4.32 ",<a name="line.278"></a>
+<span class="sourceLineNo">279</span>            "profileSequenceDescTag", "profileSequenceDescType", 0x70736571<a name="line.279"></a>
+<span class="sourceLineNo">280</span>    //    "Structure containing a description of the profile sequence from source to destination, typically used with",<a name="line.280"></a>
+<span class="sourceLineNo">281</span>    //    "the DeviceLink profile. The content of this structure is described in 6.5.15.",<a name="line.281"></a>
+<span class="sourceLineNo">282</span>    ),<a name="line.282"></a>
+<span class="sourceLineNo">283</span><a name="line.283"></a>
+<span class="sourceLineNo">284</span>    RED_MATRIX_COLUMN_TAG(<a name="line.284"></a>
+<span class="sourceLineNo">285</span>    //    "6.4.33 ",<a name="line.285"></a>
+<span class="sourceLineNo">286</span>            "redMatrixColumnTag", "XYZType", 0x7258595A<a name="line.286"></a>
+<span class="sourceLineNo">287</span>    //    "The first column in the matrix used in TRC/matrix transforms.",<a name="line.287"></a>
+<span class="sourceLineNo">288</span>    ),<a name="line.288"></a>
+<span class="sourceLineNo">289</span><a name="line.289"></a>
+<span class="sourceLineNo">290</span>    RED_TRC_TAG(<a name="line.290"></a>
+<span class="sourceLineNo">291</span>    //    "6.4.34 ",<a name="line.291"></a>
+<span class="sourceLineNo">292</span>            "redTRCTag", "curveType or parametricCurveType", 0x72545243<a name="line.292"></a>
+<span class="sourceLineNo">293</span>    //    "Red channel tone reproduction curve. The first element represents no colorant (white) or phosphors",<a name="line.293"></a>
+<span class="sourceLineNo">294</span>    //    "(black) and the last element represents 100 percent colorant (red) or 100 percent phosphor (red).",<a name="line.294"></a>
+<span class="sourceLineNo">295</span>    ),<a name="line.295"></a>
+<span class="sourceLineNo">296</span><a name="line.296"></a>
+<span class="sourceLineNo">297</span>    TECHNOLOGY_TAG(<a name="line.297"></a>
+<span class="sourceLineNo">298</span>    //    "6.4.35 ",<a name="line.298"></a>
+<span class="sourceLineNo">299</span>            "technologyTag", "signatureType", 0x74656368<a name="line.299"></a>
+<span class="sourceLineNo">300</span>    //    "Device technology information such as CRT, Dye Sublimation, etc. The encoding is such that:",<a name="line.300"></a>
+<span class="sourceLineNo">301</span>    ),<a name="line.301"></a>
+<span class="sourceLineNo">302</span><a name="line.302"></a>
+<span class="sourceLineNo">303</span>    VIEWING_COND_DESC_TAG(<a name="line.303"></a>
+<span class="sourceLineNo">304</span>    //    "6.4.36 ",<a name="line.304"></a>
+<span class="sourceLineNo">305</span>            "viewingCondDescTag", "multiLocalizedUnicodeType", 0x76756564<a name="line.305"></a>
+<span class="sourceLineNo">306</span>    //    "Structure containing invariant and localizable versions of the viewing conditions. The content of this structure",<a name="line.306"></a>
+<span class="sourceLineNo">307</span>    //    "is described in 6.5.12.",<a name="line.307"></a>
+<span class="sourceLineNo">308</span><a name="line.308"></a>
+<span class="sourceLineNo">309</span>    ),<a name="line.309"></a>
+<span class="sourceLineNo">310</span><a name="line.310"></a>
+<span class="sourceLineNo">311</span>    VIEWING_CONDITIONS_TAG(<a name="line.311"></a>
+<span class="sourceLineNo">312</span>    //    "6.4.37 ",<a name="line.312"></a>
+<span class="sourceLineNo">313</span>            "viewingConditionsTag", "viewingConditionsType", 0x76696577<a name="line.313"></a>
+<span class="sourceLineNo">314</span>    //    "Viewing conditions parameters. The content of this structure is described in 6.5.25.",<a name="line.314"></a>
+<span class="sourceLineNo">315</span>    );<a name="line.315"></a>
+<span class="sourceLineNo">316</span><a name="line.316"></a>
+<span class="sourceLineNo">317</span>    public final String name;<a name="line.317"></a>
+<span class="sourceLineNo">318</span>    public final String typeDescription;<a name="line.318"></a>
+<span class="sourceLineNo">319</span>    public final int signature;<a name="line.319"></a>
+<span class="sourceLineNo">320</span><a name="line.320"></a>
+<span class="sourceLineNo">321</span>    IccTagTypes(final String name, final String typeDescription, final int signature) {<a name="line.321"></a>
+<span class="sourceLineNo">322</span>        this.name = name;<a name="line.322"></a>
+<span class="sourceLineNo">323</span>        this.typeDescription = typeDescription;<a name="line.323"></a>
+<span class="sourceLineNo">324</span>        this.signature = signature;<a name="line.324"></a>
+<span class="sourceLineNo">325</span>    }<a name="line.325"></a>
+<span class="sourceLineNo">326</span><a name="line.326"></a>
+<span class="sourceLineNo">327</span>    @Override<a name="line.327"></a>
+<span class="sourceLineNo">328</span>    public String getName() {<a name="line.328"></a>
+<span class="sourceLineNo">329</span>        return name;<a name="line.329"></a>
+<span class="sourceLineNo">330</span>    }<a name="line.330"></a>
+<span class="sourceLineNo">331</span><a name="line.331"></a>
+<span class="sourceLineNo">332</span>    @Override<a name="line.332"></a>
+<span class="sourceLineNo">333</span>    public String getTypeDescription() {<a name="line.333"></a>
+<span class="sourceLineNo">334</span>        return typeDescription;<a name="line.334"></a>
+<span class="sourceLineNo">335</span>    }<a name="line.335"></a>
+<span class="sourceLineNo">336</span><a name="line.336"></a>
+<span class="sourceLineNo">337</span>    @Override<a name="line.337"></a>
+<span class="sourceLineNo">338</span>    public int getSignature() {<a name="line.338"></a>
+<span class="sourceLineNo">339</span>        return signature;<a name="line.339"></a>
+<span class="sourceLineNo">340</span>    }<a name="line.340"></a>
+<span class="sourceLineNo">341</span>}<a name="line.341"></a>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</pre>
+</div>
+</body>
+</html>

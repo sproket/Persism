@@ -1,0 +1,166 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="en">
+<head>
+<title>Source code</title>
+<link rel="stylesheet" type="text/css" href="../../../../../../../../stylesheet.css" title="Style">
+</head>
+<body>
+<div class="sourceContainer">
+<pre><span class="sourceLineNo">001</span>/*<a name="line.1"></a>
+<span class="sourceLineNo">002</span> * Licensed to the Apache Software Foundation (ASF) under one or more<a name="line.2"></a>
+<span class="sourceLineNo">003</span> * contributor license agreements.  See the NOTICE file distributed with<a name="line.3"></a>
+<span class="sourceLineNo">004</span> * this work for additional information regarding copyright ownership.<a name="line.4"></a>
+<span class="sourceLineNo">005</span> * The ASF licenses this file to You under the Apache License, Version 2.0<a name="line.5"></a>
+<span class="sourceLineNo">006</span> * (the "License"); you may not use this file except in compliance with<a name="line.6"></a>
+<span class="sourceLineNo">007</span> * the License.  You may obtain a copy of the License at<a name="line.7"></a>
+<span class="sourceLineNo">008</span> *<a name="line.8"></a>
+<span class="sourceLineNo">009</span> *      http://www.apache.org/licenses/LICENSE-2.0<a name="line.9"></a>
+<span class="sourceLineNo">010</span> *<a name="line.10"></a>
+<span class="sourceLineNo">011</span> * Unless required by applicable law or agreed to in writing, software<a name="line.11"></a>
+<span class="sourceLineNo">012</span> * distributed under the License is distributed on an "AS IS" BASIS,<a name="line.12"></a>
+<span class="sourceLineNo">013</span> * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.<a name="line.13"></a>
+<span class="sourceLineNo">014</span> * See the License for the specific language governing permissions and<a name="line.14"></a>
+<span class="sourceLineNo">015</span> * limitations under the License.<a name="line.15"></a>
+<span class="sourceLineNo">016</span> */<a name="line.16"></a>
+<span class="sourceLineNo">017</span>package org.apache.commons.imaging.formats.jpeg.iptc;<a name="line.17"></a>
+<span class="sourceLineNo">018</span><a name="line.18"></a>
+<span class="sourceLineNo">019</span><a name="line.19"></a>
+<span class="sourceLineNo">020</span>public final class IptcConstants {<a name="line.20"></a>
+<span class="sourceLineNo">021</span>    public static final int IPTC_NON_EXTENDED_RECORD_MAXIMUM_SIZE = 32767;<a name="line.21"></a>
+<span class="sourceLineNo">022</span><a name="line.22"></a>
+<span class="sourceLineNo">023</span>    public static final int IMAGE_RESOURCE_BLOCK_PHOTOSHOP2_INFO = 0x03e8;<a name="line.23"></a>
+<span class="sourceLineNo">024</span>    public static final int IMAGE_RESOURCE_BLOCK_MACINTOSH_PRINT_INFO = 0x03e9;<a name="line.24"></a>
+<span class="sourceLineNo">025</span>    public static final int IMAGE_RESOURCE_BLOCK_XML_DATA = 0x03ea;<a name="line.25"></a>
+<span class="sourceLineNo">026</span>    public static final int IMAGE_RESOURCE_BLOCK_PHOTOSHOP2_COLOR_TABLE = 0x03eb;<a name="line.26"></a>
+<span class="sourceLineNo">027</span>    public static final int IMAGE_RESOURCE_BLOCK_RESOLUTION_INFO = 0x03ed;<a name="line.27"></a>
+<span class="sourceLineNo">028</span>    public static final int IMAGE_RESOURCE_BLOCK_ALPHA_CHANNELS_NAMES = 0x03ee;<a name="line.28"></a>
+<span class="sourceLineNo">029</span>    public static final int IMAGE_RESOURCE_BLOCK_DISPLAY_INFO = 0x03ef;<a name="line.29"></a>
+<span class="sourceLineNo">030</span>    public static final int IMAGE_RESOURCE_BLOCK_PSTRING_CAPTION = 0x03f0;<a name="line.30"></a>
+<span class="sourceLineNo">031</span>    public static final int IMAGE_RESOURCE_BLOCK_BORDER_INFORMATION = 0x03f1;<a name="line.31"></a>
+<span class="sourceLineNo">032</span>    public static final int IMAGE_RESOURCE_BLOCK_BACKGROUND_COLOR = 0x03f2;<a name="line.32"></a>
+<span class="sourceLineNo">033</span>    public static final int IMAGE_RESOURCE_BLOCK_PRINT_FLAGS = 0x03f3;<a name="line.33"></a>
+<span class="sourceLineNo">034</span>    public static final int IMAGE_RESOURCE_BLOCK_BW_HALFTONING_INFO = 0x03f4;<a name="line.34"></a>
+<span class="sourceLineNo">035</span>    public static final int IMAGE_RESOURCE_BLOCK_COLOR_HALFTONING_INFO = 0x03f5;<a name="line.35"></a>
+<span class="sourceLineNo">036</span>    public static final int IMAGE_RESOURCE_BLOCK_DUOTONE_HALFTONING_INFO = 0x03f6;<a name="line.36"></a>
+<span class="sourceLineNo">037</span>    public static final int IMAGE_RESOURCE_BLOCK_BW_TRANSFER_FUNC = 0x03f7;<a name="line.37"></a>
+<span class="sourceLineNo">038</span>    public static final int IMAGE_RESOURCE_BLOCK_COLOR_TRANSFER_FUNCS = 0x03f8;<a name="line.38"></a>
+<span class="sourceLineNo">039</span>    public static final int IMAGE_RESOURCE_BLOCK_DUOTONE_TRANSFER_FUNCS = 0x03f9;<a name="line.39"></a>
+<span class="sourceLineNo">040</span>    public static final int IMAGE_RESOURCE_BLOCK_DUOTONE_IMAGE_INFO = 0x03fa;<a name="line.40"></a>
+<span class="sourceLineNo">041</span>    public static final int IMAGE_RESOURCE_BLOCK_EFFECTIVE_BW = 0x03fb;<a name="line.41"></a>
+<span class="sourceLineNo">042</span>    public static final int IMAGE_RESOURCE_BLOCK_OBSOLETE_PHOTOSHOP_TAG1 = 0x03fc;<a name="line.42"></a>
+<span class="sourceLineNo">043</span>    public static final int IMAGE_RESOURCE_BLOCK_EPS_OPTIONS = 0x03fd;<a name="line.43"></a>
+<span class="sourceLineNo">044</span>    public static final int IMAGE_RESOURCE_BLOCK_QUICK_MASK_INFO = 0x03fe;<a name="line.44"></a>
+<span class="sourceLineNo">045</span>    public static final int IMAGE_RESOURCE_BLOCK_OBSOLETE_PHOTOSHOP_TAG2 = 0x03ff;<a name="line.45"></a>
+<span class="sourceLineNo">046</span>    public static final int IMAGE_RESOURCE_BLOCK_LAYER_STATE_INFO = 0x0400;<a name="line.46"></a>
+<span class="sourceLineNo">047</span>    public static final int IMAGE_RESOURCE_BLOCK_WORKING_PATH = 0x0401;<a name="line.47"></a>
+<span class="sourceLineNo">048</span>    public static final int IMAGE_RESOURCE_BLOCK_LAYERS_GROUP_INFO = 0x0402;<a name="line.48"></a>
+<span class="sourceLineNo">049</span>    public static final int IMAGE_RESOURCE_BLOCK_OBSOLETE_PHOTOSHOP_TAG3 = 0x0403;<a name="line.49"></a>
+<span class="sourceLineNo">050</span>    public static final int IMAGE_RESOURCE_BLOCK_IPTC_DATA = 0x0404;<a name="line.50"></a>
+<span class="sourceLineNo">051</span>    public static final int IMAGE_RESOURCE_BLOCK_RAW_IMAGE_MODE = 0x0405;<a name="line.51"></a>
+<span class="sourceLineNo">052</span>    public static final int IMAGE_RESOURCE_BLOCK_JPEG_QUALITY = 0x0406;<a name="line.52"></a>
+<span class="sourceLineNo">053</span>    public static final int IMAGE_RESOURCE_BLOCK_GRID_GUIDES_INFO = 0x0408;<a name="line.53"></a>
+<span class="sourceLineNo">054</span>    public static final int IMAGE_RESOURCE_BLOCK_PHOTOSHOP_BGR_THUMBNAIL = 0x0409;<a name="line.54"></a>
+<span class="sourceLineNo">055</span>    public static final int IMAGE_RESOURCE_BLOCK_COPYRIGHT_FLAG = 0x040a;<a name="line.55"></a>
+<span class="sourceLineNo">056</span>    public static final int IMAGE_RESOURCE_BLOCK_URL = 0x040b;<a name="line.56"></a>
+<span class="sourceLineNo">057</span>    public static final int IMAGE_RESOURCE_BLOCK_PHOTOSHOP_THUMBNAIL = 0x040c;<a name="line.57"></a>
+<span class="sourceLineNo">058</span>    public static final int IMAGE_RESOURCE_BLOCK_GLOBAL_ANGLE = 0x040d;<a name="line.58"></a>
+<span class="sourceLineNo">059</span>    public static final int IMAGE_RESOURCE_BLOCK_COLOR_SAMPLERS_RESOURCE = 0x040e;<a name="line.59"></a>
+<span class="sourceLineNo">060</span>    public static final int IMAGE_RESOURCE_BLOCK_ICC_PROFILE = 0x040f;<a name="line.60"></a>
+<span class="sourceLineNo">061</span>    public static final int IMAGE_RESOURCE_BLOCK_WATERMARK = 0x0410;<a name="line.61"></a>
+<span class="sourceLineNo">062</span>    public static final int IMAGE_RESOURCE_BLOCK_ICC_UNTAGGED = 0x0411;<a name="line.62"></a>
+<span class="sourceLineNo">063</span>    public static final int IMAGE_RESOURCE_BLOCK_EFFECTS_VISIBLE = 0x0412;<a name="line.63"></a>
+<span class="sourceLineNo">064</span>    public static final int IMAGE_RESOURCE_BLOCK_SPOT_HALFTONE = 0x0413;<a name="line.64"></a>
+<span class="sourceLineNo">065</span>    public static final int IMAGE_RESOURCE_BLOCK_IDS_BASE_VALUE = 0x0414;<a name="line.65"></a>
+<span class="sourceLineNo">066</span>    public static final int IMAGE_RESOURCE_BLOCK_UNICODE_ALPHA_NAMES = 0x0415;<a name="line.66"></a>
+<span class="sourceLineNo">067</span>    public static final int IMAGE_RESOURCE_BLOCK_INDEXED_COLOUR_TABLE_COUNT = 0x0416;<a name="line.67"></a>
+<span class="sourceLineNo">068</span>    public static final int IMAGE_RESOURCE_BLOCK_TRANSPARENT_INDEX = 0x0417;<a name="line.68"></a>
+<span class="sourceLineNo">069</span>    public static final int IMAGE_RESOURCE_BLOCK_GLOBAL_ALTITUDE = 0x0419;<a name="line.69"></a>
+<span class="sourceLineNo">070</span>    public static final int IMAGE_RESOURCE_BLOCK_SLICES = 0x041a;<a name="line.70"></a>
+<span class="sourceLineNo">071</span>    public static final int IMAGE_RESOURCE_BLOCK_WORKFLOW_URL = 0x041b;<a name="line.71"></a>
+<span class="sourceLineNo">072</span>    public static final int IMAGE_RESOURCE_BLOCK_JUMP_TO_XPEP = 0x041c;<a name="line.72"></a>
+<span class="sourceLineNo">073</span>    public static final int IMAGE_RESOURCE_BLOCK_ALPHA_IDENTIFIERS = 0x041d;<a name="line.73"></a>
+<span class="sourceLineNo">074</span>    public static final int IMAGE_RESOURCE_BLOCK_URL_LIST = 0x041e;<a name="line.74"></a>
+<span class="sourceLineNo">075</span>    public static final int IMAGE_RESOURCE_BLOCK_VERSION_INFO = 0x0421;<a name="line.75"></a>
+<span class="sourceLineNo">076</span>    public static final int IMAGE_RESOURCE_BLOCK_EXIFINFO = 0x0422;<a name="line.76"></a>
+<span class="sourceLineNo">077</span>    public static final int IMAGE_RESOURCE_BLOCK_EXIF_INFO2 = 0x0423;<a name="line.77"></a>
+<span class="sourceLineNo">078</span>    public static final int IMAGE_RESOURCE_BLOCK_XMP = 0x0424;<a name="line.78"></a>
+<span class="sourceLineNo">079</span>    public static final int IMAGE_RESOURCE_BLOCK_CAPTION_DIGEST = 0x0425;<a name="line.79"></a>
+<span class="sourceLineNo">080</span>    public static final int IMAGE_RESOURCE_BLOCK_PRINT_SCALE = 0x0426;<a name="line.80"></a>
+<span class="sourceLineNo">081</span>    public static final int IMAGE_RESOURCE_BLOCK_PIXEL_ASPECT_RATIO = 0x0428;<a name="line.81"></a>
+<span class="sourceLineNo">082</span>    public static final int IMAGE_RESOURCE_BLOCK_LAYER_COMPS = 0x0429;<a name="line.82"></a>
+<span class="sourceLineNo">083</span>    public static final int IMAGE_RESOURCE_BLOCK_ALTERNATE_DUOTONE_COLORS = 0x042a;<a name="line.83"></a>
+<span class="sourceLineNo">084</span>    public static final int IMAGE_RESOURCE_BLOCK_ALTERNATE_SPOT_COLORS = 0x042b;<a name="line.84"></a>
+<span class="sourceLineNo">085</span>    public static final int IMAGE_RESOURCE_BLOCK_CLIPPING_PATH_NAME = 0x0bb7;<a name="line.85"></a>
+<span class="sourceLineNo">086</span>    public static final int IMAGE_RESOURCE_BLOCK_PRINT_FLAGS_INFO = 0x2710;<a name="line.86"></a>
+<span class="sourceLineNo">087</span><a name="line.87"></a>
+<span class="sourceLineNo">088</span>    public static final int IPTC_RECORD_TAG_MARKER = 0x1c;<a name="line.88"></a>
+<span class="sourceLineNo">089</span>    public static final int IPTC_ENVELOPE_RECORD_NUMBER = 0x01;<a name="line.89"></a>
+<span class="sourceLineNo">090</span>    public static final int IPTC_APPLICATION_2_RECORD_NUMBER = 0x02;<a name="line.90"></a>
+<span class="sourceLineNo">091</span><a name="line.91"></a>
+<span class="sourceLineNo">092</span>    private IptcConstants() {<a name="line.92"></a>
+<span class="sourceLineNo">093</span>    }<a name="line.93"></a>
+<span class="sourceLineNo">094</span>}<a name="line.94"></a>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</pre>
+</div>
+</body>
+</html>

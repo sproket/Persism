@@ -1,0 +1,175 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="en">
+<head>
+<title>Source code</title>
+<link rel="stylesheet" type="text/css" href="../../../../../stylesheet.css" title="Style">
+</head>
+<body>
+<div class="sourceContainer">
+<pre><span class="sourceLineNo">001</span>/*<a name="line.1"></a>
+<span class="sourceLineNo">002</span> * Licensed to the Apache Software Foundation (ASF) under one or more<a name="line.2"></a>
+<span class="sourceLineNo">003</span> * contributor license agreements.  See the NOTICE file distributed with<a name="line.3"></a>
+<span class="sourceLineNo">004</span> * this work for additional information regarding copyright ownership.<a name="line.4"></a>
+<span class="sourceLineNo">005</span> * The ASF licenses this file to You under the Apache License, Version 2.0<a name="line.5"></a>
+<span class="sourceLineNo">006</span> * (the "License"); you may not use this file except in compliance with<a name="line.6"></a>
+<span class="sourceLineNo">007</span> * the License.  You may obtain a copy of the License at<a name="line.7"></a>
+<span class="sourceLineNo">008</span> *<a name="line.8"></a>
+<span class="sourceLineNo">009</span> *      http://www.apache.org/licenses/LICENSE-2.0<a name="line.9"></a>
+<span class="sourceLineNo">010</span> *<a name="line.10"></a>
+<span class="sourceLineNo">011</span> * Unless required by applicable law or agreed to in writing, software<a name="line.11"></a>
+<span class="sourceLineNo">012</span> * distributed under the License is distributed on an "AS IS" BASIS,<a name="line.12"></a>
+<span class="sourceLineNo">013</span> * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.<a name="line.13"></a>
+<span class="sourceLineNo">014</span> * See the License for the specific language governing permissions and<a name="line.14"></a>
+<span class="sourceLineNo">015</span> * limitations under the License.<a name="line.15"></a>
+<span class="sourceLineNo">016</span> */<a name="line.16"></a>
+<span class="sourceLineNo">017</span>package org.apache.commons.imaging;<a name="line.17"></a>
+<span class="sourceLineNo">018</span><a name="line.18"></a>
+<span class="sourceLineNo">019</span>import java.awt.color.ColorSpace;<a name="line.19"></a>
+<span class="sourceLineNo">020</span>import java.awt.color.ICC_ColorSpace;<a name="line.20"></a>
+<span class="sourceLineNo">021</span>import java.awt.color.ICC_Profile;<a name="line.21"></a>
+<span class="sourceLineNo">022</span>import java.awt.image.BufferedImage;<a name="line.22"></a>
+<span class="sourceLineNo">023</span>import java.util.logging.Logger;<a name="line.23"></a>
+<span class="sourceLineNo">024</span><a name="line.24"></a>
+<span class="sourceLineNo">025</span>import org.apache.commons.imaging.icc.IccProfileInfo;<a name="line.25"></a>
+<span class="sourceLineNo">026</span>import org.apache.commons.imaging.icc.IccProfileParser;<a name="line.26"></a>
+<span class="sourceLineNo">027</span><a name="line.27"></a>
+<span class="sourceLineNo">028</span>/**<a name="line.28"></a>
+<span class="sourceLineNo">029</span> * Used to store metadata and descriptive information extracted from<a name="line.29"></a>
+<span class="sourceLineNo">030</span> * image files.<a name="line.30"></a>
+<span class="sourceLineNo">031</span> */<a name="line.31"></a>
+<span class="sourceLineNo">032</span>public class ImageDump {<a name="line.32"></a>
+<span class="sourceLineNo">033</span><a name="line.33"></a>
+<span class="sourceLineNo">034</span>    private static final Logger LOGGER = Logger.getLogger(ImageDump.class.getName());<a name="line.34"></a>
+<span class="sourceLineNo">035</span><a name="line.35"></a>
+<span class="sourceLineNo">036</span>    private String colorSpaceTypeToName(final ColorSpace cs) {<a name="line.36"></a>
+<span class="sourceLineNo">037</span>        // System.out.println(prefix + ": " + "type: "<a name="line.37"></a>
+<span class="sourceLineNo">038</span>        // + cs.getType() );<a name="line.38"></a>
+<span class="sourceLineNo">039</span>        switch (cs.getType()) {<a name="line.39"></a>
+<span class="sourceLineNo">040</span>        case ColorSpace.TYPE_CMYK:<a name="line.40"></a>
+<span class="sourceLineNo">041</span>            return "TYPE_CMYK";<a name="line.41"></a>
+<span class="sourceLineNo">042</span>        case ColorSpace.TYPE_RGB:<a name="line.42"></a>
+<span class="sourceLineNo">043</span>            return "TYPE_RGB";<a name="line.43"></a>
+<span class="sourceLineNo">044</span><a name="line.44"></a>
+<span class="sourceLineNo">045</span>        case ColorSpace.CS_sRGB:<a name="line.45"></a>
+<span class="sourceLineNo">046</span>            return "CS_sRGB";<a name="line.46"></a>
+<span class="sourceLineNo">047</span>        case ColorSpace.CS_GRAY:<a name="line.47"></a>
+<span class="sourceLineNo">048</span>            return "CS_GRAY";<a name="line.48"></a>
+<span class="sourceLineNo">049</span>        case ColorSpace.CS_CIEXYZ:<a name="line.49"></a>
+<span class="sourceLineNo">050</span>            return "CS_CIEXYZ";<a name="line.50"></a>
+<span class="sourceLineNo">051</span>        case ColorSpace.CS_LINEAR_RGB:<a name="line.51"></a>
+<span class="sourceLineNo">052</span>            return "CS_LINEAR_RGB";<a name="line.52"></a>
+<span class="sourceLineNo">053</span>        case ColorSpace.CS_PYCC:<a name="line.53"></a>
+<span class="sourceLineNo">054</span>            return "CS_PYCC";<a name="line.54"></a>
+<span class="sourceLineNo">055</span>        default:<a name="line.55"></a>
+<span class="sourceLineNo">056</span>            return "unknown";<a name="line.56"></a>
+<span class="sourceLineNo">057</span>        }<a name="line.57"></a>
+<span class="sourceLineNo">058</span>    }<a name="line.58"></a>
+<span class="sourceLineNo">059</span><a name="line.59"></a>
+<span class="sourceLineNo">060</span>    public void dumpColorSpace(final String prefix, final ColorSpace cs) {<a name="line.60"></a>
+<span class="sourceLineNo">061</span>        LOGGER.fine(prefix + ": " + "type: " + cs.getType() + " ("<a name="line.61"></a>
+<span class="sourceLineNo">062</span>                + colorSpaceTypeToName(cs) + ")");<a name="line.62"></a>
+<span class="sourceLineNo">063</span><a name="line.63"></a>
+<span class="sourceLineNo">064</span>        if (!(cs instanceof ICC_ColorSpace)) {<a name="line.64"></a>
+<span class="sourceLineNo">065</span>            LOGGER.fine(prefix + ": " + "Unknown ColorSpace: "<a name="line.65"></a>
+<span class="sourceLineNo">066</span>                    + cs.getClass().getName());<a name="line.66"></a>
+<span class="sourceLineNo">067</span>            return;<a name="line.67"></a>
+<span class="sourceLineNo">068</span>        }<a name="line.68"></a>
+<span class="sourceLineNo">069</span><a name="line.69"></a>
+<span class="sourceLineNo">070</span>        final ICC_ColorSpace iccColorSpace = (ICC_ColorSpace) cs;<a name="line.70"></a>
+<span class="sourceLineNo">071</span>        final ICC_Profile iccProfile = iccColorSpace.getProfile();<a name="line.71"></a>
+<span class="sourceLineNo">072</span><a name="line.72"></a>
+<span class="sourceLineNo">073</span>        final byte[] bytes = iccProfile.getData();<a name="line.73"></a>
+<span class="sourceLineNo">074</span><a name="line.74"></a>
+<span class="sourceLineNo">075</span>        final IccProfileParser parser = new IccProfileParser();<a name="line.75"></a>
+<span class="sourceLineNo">076</span><a name="line.76"></a>
+<span class="sourceLineNo">077</span>        final IccProfileInfo info = parser.getICCProfileInfo(bytes);<a name="line.77"></a>
+<span class="sourceLineNo">078</span>        info.dump(prefix);<a name="line.78"></a>
+<span class="sourceLineNo">079</span>    }<a name="line.79"></a>
+<span class="sourceLineNo">080</span><a name="line.80"></a>
+<span class="sourceLineNo">081</span>    public void dump(final BufferedImage src) {<a name="line.81"></a>
+<span class="sourceLineNo">082</span>        dump("", src);<a name="line.82"></a>
+<span class="sourceLineNo">083</span>    }<a name="line.83"></a>
+<span class="sourceLineNo">084</span><a name="line.84"></a>
+<span class="sourceLineNo">085</span>    public void dump(final String prefix, final BufferedImage src) {<a name="line.85"></a>
+<span class="sourceLineNo">086</span>        LOGGER.fine(prefix + ": " + "dump");<a name="line.86"></a>
+<span class="sourceLineNo">087</span>        dumpColorSpace(prefix, src.getColorModel().getColorSpace());<a name="line.87"></a>
+<span class="sourceLineNo">088</span>        dumpBIProps(prefix, src);<a name="line.88"></a>
+<span class="sourceLineNo">089</span>    }<a name="line.89"></a>
+<span class="sourceLineNo">090</span><a name="line.90"></a>
+<span class="sourceLineNo">091</span>    public void dumpBIProps(final String prefix, final BufferedImage src) {<a name="line.91"></a>
+<span class="sourceLineNo">092</span>        final String[] keys = src.getPropertyNames();<a name="line.92"></a>
+<span class="sourceLineNo">093</span>        if (keys == null) {<a name="line.93"></a>
+<span class="sourceLineNo">094</span>            LOGGER.fine(prefix + ": no props");<a name="line.94"></a>
+<span class="sourceLineNo">095</span>            return;<a name="line.95"></a>
+<span class="sourceLineNo">096</span>        }<a name="line.96"></a>
+<span class="sourceLineNo">097</span>        for (final String key : keys) {<a name="line.97"></a>
+<span class="sourceLineNo">098</span>            LOGGER.fine(prefix + ": " + key + ": "<a name="line.98"></a>
+<span class="sourceLineNo">099</span>                    + src.getProperty(key));<a name="line.99"></a>
+<span class="sourceLineNo">100</span>        }<a name="line.100"></a>
+<span class="sourceLineNo">101</span>    }<a name="line.101"></a>
+<span class="sourceLineNo">102</span><a name="line.102"></a>
+<span class="sourceLineNo">103</span>}<a name="line.103"></a>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</pre>
+</div>
+</body>
+</html>

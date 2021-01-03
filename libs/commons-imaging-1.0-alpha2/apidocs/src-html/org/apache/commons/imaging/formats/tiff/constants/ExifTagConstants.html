@@ -1,0 +1,726 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="en">
+<head>
+<title>Source code</title>
+<link rel="stylesheet" type="text/css" href="../../../../../../../../stylesheet.css" title="Style">
+</head>
+<body>
+<div class="sourceContainer">
+<pre><span class="sourceLineNo">001</span>/*<a name="line.1"></a>
+<span class="sourceLineNo">002</span> * Licensed to the Apache Software Foundation (ASF) under one or more<a name="line.2"></a>
+<span class="sourceLineNo">003</span> * contributor license agreements.  See the NOTICE file distributed with<a name="line.3"></a>
+<span class="sourceLineNo">004</span> * this work for additional information regarding copyright ownership.<a name="line.4"></a>
+<span class="sourceLineNo">005</span> * The ASF licenses this file to You under the Apache License, Version 2.0<a name="line.5"></a>
+<span class="sourceLineNo">006</span> * (the "License"); you may not use this file except in compliance with<a name="line.6"></a>
+<span class="sourceLineNo">007</span> * the License.  You may obtain a copy of the License at<a name="line.7"></a>
+<span class="sourceLineNo">008</span> *<a name="line.8"></a>
+<span class="sourceLineNo">009</span> *      http://www.apache.org/licenses/LICENSE-2.0<a name="line.9"></a>
+<span class="sourceLineNo">010</span> *<a name="line.10"></a>
+<span class="sourceLineNo">011</span> * Unless required by applicable law or agreed to in writing, software<a name="line.11"></a>
+<span class="sourceLineNo">012</span> * distributed under the License is distributed on an "AS IS" BASIS,<a name="line.12"></a>
+<span class="sourceLineNo">013</span> * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.<a name="line.13"></a>
+<span class="sourceLineNo">014</span> * See the License for the specific language governing permissions and<a name="line.14"></a>
+<span class="sourceLineNo">015</span> * limitations under the License.<a name="line.15"></a>
+<span class="sourceLineNo">016</span> */<a name="line.16"></a>
+<span class="sourceLineNo">017</span>package org.apache.commons.imaging.formats.tiff.constants;<a name="line.17"></a>
+<span class="sourceLineNo">018</span><a name="line.18"></a>
+<span class="sourceLineNo">019</span>import java.util.Arrays;<a name="line.19"></a>
+<span class="sourceLineNo">020</span>import java.util.Collections;<a name="line.20"></a>
+<span class="sourceLineNo">021</span>import java.util.List;<a name="line.21"></a>
+<span class="sourceLineNo">022</span><a name="line.22"></a>
+<span class="sourceLineNo">023</span>import org.apache.commons.imaging.formats.tiff.taginfos.TagInfo;<a name="line.23"></a>
+<span class="sourceLineNo">024</span>import org.apache.commons.imaging.formats.tiff.taginfos.TagInfoAscii;<a name="line.24"></a>
+<span class="sourceLineNo">025</span>import org.apache.commons.imaging.formats.tiff.taginfos.TagInfoByte;<a name="line.25"></a>
+<span class="sourceLineNo">026</span>import org.apache.commons.imaging.formats.tiff.taginfos.TagInfoBytes;<a name="line.26"></a>
+<span class="sourceLineNo">027</span>import org.apache.commons.imaging.formats.tiff.taginfos.TagInfoDirectory;<a name="line.27"></a>
+<span class="sourceLineNo">028</span>import org.apache.commons.imaging.formats.tiff.taginfos.TagInfoDouble;<a name="line.28"></a>
+<span class="sourceLineNo">029</span>import org.apache.commons.imaging.formats.tiff.taginfos.TagInfoGpsText;<a name="line.29"></a>
+<span class="sourceLineNo">030</span>import org.apache.commons.imaging.formats.tiff.taginfos.TagInfoLong;<a name="line.30"></a>
+<span class="sourceLineNo">031</span>import org.apache.commons.imaging.formats.tiff.taginfos.TagInfoLongs;<a name="line.31"></a>
+<span class="sourceLineNo">032</span>import org.apache.commons.imaging.formats.tiff.taginfos.TagInfoRational;<a name="line.32"></a>
+<span class="sourceLineNo">033</span>import org.apache.commons.imaging.formats.tiff.taginfos.TagInfoRationals;<a name="line.33"></a>
+<span class="sourceLineNo">034</span>import org.apache.commons.imaging.formats.tiff.taginfos.TagInfoSLong;<a name="line.34"></a>
+<span class="sourceLineNo">035</span>import org.apache.commons.imaging.formats.tiff.taginfos.TagInfoSRational;<a name="line.35"></a>
+<span class="sourceLineNo">036</span>import org.apache.commons.imaging.formats.tiff.taginfos.TagInfoShort;<a name="line.36"></a>
+<span class="sourceLineNo">037</span>import org.apache.commons.imaging.formats.tiff.taginfos.TagInfoShortOrLong;<a name="line.37"></a>
+<span class="sourceLineNo">038</span>import org.apache.commons.imaging.formats.tiff.taginfos.TagInfoShorts;<a name="line.38"></a>
+<span class="sourceLineNo">039</span>import org.apache.commons.imaging.formats.tiff.taginfos.TagInfoUndefined;<a name="line.39"></a>
+<span class="sourceLineNo">040</span>import org.apache.commons.imaging.formats.tiff.taginfos.TagInfoUndefineds;<a name="line.40"></a>
+<span class="sourceLineNo">041</span>import org.apache.commons.imaging.formats.tiff.taginfos.TagInfoUnknowns;<a name="line.41"></a>
+<span class="sourceLineNo">042</span><a name="line.42"></a>
+<span class="sourceLineNo">043</span>/**<a name="line.43"></a>
+<span class="sourceLineNo">044</span> * References:<a name="line.44"></a>
+<span class="sourceLineNo">045</span> * http://www.sno.phy.queensu.ca/~phil/exiftool/TagNames/EXIF.html<a name="line.45"></a>
+<span class="sourceLineNo">046</span> * http://tiki-lounge.com/~raf/tiff/fields.html<a name="line.46"></a>
+<span class="sourceLineNo">047</span> * http://www.awaresystems.be/imaging/tiff/tifftags.html<a name="line.47"></a>
+<span class="sourceLineNo">048</span> *<a name="line.48"></a>
+<span class="sourceLineNo">049</span> * "Stonits": http://www.anyhere.com/gward/pixformat/tiffluv.html<a name="line.49"></a>
+<span class="sourceLineNo">050</span> */<a name="line.50"></a>
+<span class="sourceLineNo">051</span>public final class ExifTagConstants {<a name="line.51"></a>
+<span class="sourceLineNo">052</span><a name="line.52"></a>
+<span class="sourceLineNo">053</span>    public static final TagInfoAscii EXIF_TAG_INTEROPERABILITY_INDEX = new TagInfoAscii(<a name="line.53"></a>
+<span class="sourceLineNo">054</span>            "InteroperabilityIndex", 0x0001, -1,<a name="line.54"></a>
+<span class="sourceLineNo">055</span>            TiffDirectoryType.EXIF_DIRECTORY_INTEROP_IFD);<a name="line.55"></a>
+<span class="sourceLineNo">056</span>    public static final TagInfoUndefined EXIF_TAG_INTEROPERABILITY_VERSION = new TagInfoUndefined(<a name="line.56"></a>
+<span class="sourceLineNo">057</span>            "InteroperabilityVersion", 0x0002,<a name="line.57"></a>
+<span class="sourceLineNo">058</span>            TiffDirectoryType.EXIF_DIRECTORY_INTEROP_IFD);<a name="line.58"></a>
+<span class="sourceLineNo">059</span>    public static final TagInfoAscii EXIF_TAG_PROCESSING_SOFTWARE = new TagInfoAscii(<a name="line.59"></a>
+<span class="sourceLineNo">060</span>            "ProcessingSoftware", 0x000b, -1,<a name="line.60"></a>
+<span class="sourceLineNo">061</span>            TiffDirectoryType.EXIF_DIRECTORY_IFD0);<a name="line.61"></a>
+<span class="sourceLineNo">062</span>    public static final TagInfoAscii EXIF_TAG_SOFTWARE = new TagInfoAscii(<a name="line.62"></a>
+<span class="sourceLineNo">063</span>            "Software", 0x0131, -1,<a name="line.63"></a>
+<span class="sourceLineNo">064</span>            TiffDirectoryType.EXIF_DIRECTORY_IFD0);<a name="line.64"></a>
+<span class="sourceLineNo">065</span>    public static final TagInfoLong EXIF_TAG_PREVIEW_IMAGE_START_IFD0 = new TagInfoLong(<a name="line.65"></a>
+<span class="sourceLineNo">066</span>            "PreviewImageStart", 0x0111,<a name="line.66"></a>
+<span class="sourceLineNo">067</span>            TiffDirectoryType.EXIF_DIRECTORY_IFD0, true);<a name="line.67"></a>
+<span class="sourceLineNo">068</span>    public static final TagInfoLong EXIF_TAG_PREVIEW_IMAGE_START_SUB_IFD1 = new TagInfoLong(<a name="line.68"></a>
+<span class="sourceLineNo">069</span>            "PreviewImageStart", 0x0111,<a name="line.69"></a>
+<span class="sourceLineNo">070</span>            TiffDirectoryType.EXIF_DIRECTORY_SUB_IFD1, true);<a name="line.70"></a>
+<span class="sourceLineNo">071</span>    public static final TagInfoLong EXIF_TAG_JPG_FROM_RAW_START_SUB_IFD2 = new TagInfoLong(<a name="line.71"></a>
+<span class="sourceLineNo">072</span>            "JpgFromRawStart", 0x0111,<a name="line.72"></a>
+<span class="sourceLineNo">073</span>            TiffDirectoryType.EXIF_DIRECTORY_SUB_IFD2, true);<a name="line.73"></a>
+<span class="sourceLineNo">074</span>    public static final TagInfoLong EXIF_TAG_PREVIEW_IMAGE_LENGTH_IFD0 = new TagInfoLong(<a name="line.74"></a>
+<span class="sourceLineNo">075</span>            "PreviewImageLength", 0x0117,<a name="line.75"></a>
+<span class="sourceLineNo">076</span>            TiffDirectoryType.EXIF_DIRECTORY_IFD0);<a name="line.76"></a>
+<span class="sourceLineNo">077</span>    public static final TagInfoLong EXIF_TAG_PREVIEW_IMAGE_LENGTH_SUB_IFD1 = new TagInfoLong(<a name="line.77"></a>
+<span class="sourceLineNo">078</span>            "PreviewImageLength", 0x0117,<a name="line.78"></a>
+<span class="sourceLineNo">079</span>            TiffDirectoryType.EXIF_DIRECTORY_SUB_IFD1);<a name="line.79"></a>
+<span class="sourceLineNo">080</span>    public static final TagInfoLong EXIF_TAG_JPG_FROM_RAW_LENGTH_SUB_IFD2 = new TagInfoLong(<a name="line.80"></a>
+<span class="sourceLineNo">081</span>            "JpgFromRawLength", 0x0117,<a name="line.81"></a>
+<span class="sourceLineNo">082</span>            TiffDirectoryType.EXIF_DIRECTORY_SUB_IFD2);<a name="line.82"></a>
+<span class="sourceLineNo">083</span>    public static final TagInfoLong EXIF_TAG_PREVIEW_IMAGE_START_MAKER_NOTES = new TagInfoLong(<a name="line.83"></a>
+<span class="sourceLineNo">084</span>            "PreviewImageStart", 0x0201,<a name="line.84"></a>
+<span class="sourceLineNo">085</span>            TiffDirectoryType.EXIF_DIRECTORY_MAKER_NOTES);<a name="line.85"></a>
+<span class="sourceLineNo">086</span>    public static final TagInfoLong EXIF_TAG_JPG_FROM_RAW_START_SUB_IFD = new TagInfoLong(<a name="line.86"></a>
+<span class="sourceLineNo">087</span>            "JpgFromRawStart", 0x0201,<a name="line.87"></a>
+<span class="sourceLineNo">088</span>            TiffDirectoryType.EXIF_DIRECTORY_SUB_IFD, true);<a name="line.88"></a>
+<span class="sourceLineNo">089</span>    public static final TagInfoLong EXIF_TAG_JPG_FROM_RAW_START_IFD2 = new TagInfoLong(<a name="line.89"></a>
+<span class="sourceLineNo">090</span>            "JpgFromRawStart", 0x0201,<a name="line.90"></a>
+<span class="sourceLineNo">091</span>            TiffDirectoryType.EXIF_DIRECTORY_IFD2, true);<a name="line.91"></a>
+<span class="sourceLineNo">092</span>    public static final TagInfoLong EXIF_TAG_OTHER_IMAGE_START = new TagInfoLong(<a name="line.92"></a>
+<span class="sourceLineNo">093</span>            "OtherImageStart", 0x0201,<a name="line.93"></a>
+<span class="sourceLineNo">094</span>            TiffDirectoryType.EXIF_DIRECTORY_UNKNOWN, true);<a name="line.94"></a>
+<span class="sourceLineNo">095</span>    public static final TagInfoLong EXIF_TAG_PREVIEW_IMAGE_LENGTH_MAKER_NOTES = new TagInfoLong(<a name="line.95"></a>
+<span class="sourceLineNo">096</span>            "PreviewImageLength", 0x0202,<a name="line.96"></a>
+<span class="sourceLineNo">097</span>            TiffDirectoryType.EXIF_DIRECTORY_MAKER_NOTES);<a name="line.97"></a>
+<span class="sourceLineNo">098</span>    public static final TagInfoLong EXIF_TAG_JPG_FROM_RAW_LENGTH_SUB_IFD = new TagInfoLong(<a name="line.98"></a>
+<span class="sourceLineNo">099</span>            "JpgFromRawLength", 0x0202,<a name="line.99"></a>
+<span class="sourceLineNo">100</span>            TiffDirectoryType.EXIF_DIRECTORY_SUB_IFD);<a name="line.100"></a>
+<span class="sourceLineNo">101</span>    public static final TagInfoLong EXIF_TAG_JPG_FROM_RAW_LENGTH_IFD2 = new TagInfoLong(<a name="line.101"></a>
+<span class="sourceLineNo">102</span>            "JpgFromRawLength", 0x0202,<a name="line.102"></a>
+<span class="sourceLineNo">103</span>            TiffDirectoryType.EXIF_DIRECTORY_IFD2);<a name="line.103"></a>
+<span class="sourceLineNo">104</span>    public static final TagInfoLong EXIF_TAG_OTHER_IMAGE_LENGTH = new TagInfoLong(<a name="line.104"></a>
+<span class="sourceLineNo">105</span>            "OtherImageLength", 0x0202,<a name="line.105"></a>
+<span class="sourceLineNo">106</span>            TiffDirectoryType.EXIF_DIRECTORY_UNKNOWN);<a name="line.106"></a>
+<span class="sourceLineNo">107</span>    public static final TagInfoBytes EXIF_TAG_APPLICATION_NOTES = new TagInfoBytes(<a name="line.107"></a>
+<span class="sourceLineNo">108</span>            "ApplicationNotes", 0x02bc, -1,<a name="line.108"></a>
+<span class="sourceLineNo">109</span>            TiffDirectoryType.EXIF_DIRECTORY_UNKNOWN);<a name="line.109"></a>
+<span class="sourceLineNo">110</span>    public static final TagInfoUnknowns EXIF_TAG_MATTEING = new TagInfoUnknowns(<a name="line.110"></a>
+<span class="sourceLineNo">111</span>            "Matteing", 0x80e3, -1,<a name="line.111"></a>
+<span class="sourceLineNo">112</span>            TiffDirectoryType.EXIF_DIRECTORY_UNKNOWN);<a name="line.112"></a>
+<span class="sourceLineNo">113</span>    public static final TagInfoUnknowns EXIF_TAG_DATA_TYPE = new TagInfoUnknowns(<a name="line.113"></a>
+<span class="sourceLineNo">114</span>            "DataType", 0x80e4, -1,<a name="line.114"></a>
+<span class="sourceLineNo">115</span>            TiffDirectoryType.EXIF_DIRECTORY_UNKNOWN);<a name="line.115"></a>
+<span class="sourceLineNo">116</span>    public static final TagInfoUnknowns EXIF_TAG_IMAGE_DEPTH = new TagInfoUnknowns(<a name="line.116"></a>
+<span class="sourceLineNo">117</span>            "ImageDepth", 0x80e5, -1,<a name="line.117"></a>
+<span class="sourceLineNo">118</span>            TiffDirectoryType.EXIF_DIRECTORY_UNKNOWN);<a name="line.118"></a>
+<span class="sourceLineNo">119</span>    public static final TagInfoUnknowns EXIF_TAG_TILE_DEPTH = new TagInfoUnknowns(<a name="line.119"></a>
+<span class="sourceLineNo">120</span>            "TileDepth", 0x80e6, -1,<a name="line.120"></a>
+<span class="sourceLineNo">121</span>            TiffDirectoryType.EXIF_DIRECTORY_UNKNOWN);<a name="line.121"></a>
+<span class="sourceLineNo">122</span>    public static final TagInfoUnknowns EXIF_TAG_MODEL_2 = new TagInfoUnknowns(<a name="line.122"></a>
+<span class="sourceLineNo">123</span>            "Model2", 0x827d, -1,<a name="line.123"></a>
+<span class="sourceLineNo">124</span>            TiffDirectoryType.EXIF_DIRECTORY_UNKNOWN);<a name="line.124"></a>
+<span class="sourceLineNo">125</span>    public static final TagInfoRationals EXIF_TAG_EXPOSURE_TIME = new TagInfoRationals(<a name="line.125"></a>
+<span class="sourceLineNo">126</span>            "ExposureTime", 0x829a, -1,<a name="line.126"></a>
+<span class="sourceLineNo">127</span>            TiffDirectoryType.EXIF_DIRECTORY_EXIF_IFD);<a name="line.127"></a>
+<span class="sourceLineNo">128</span>    public static final TagInfoRationals EXIF_TAG_FNUMBER = new TagInfoRationals(<a name="line.128"></a>
+<span class="sourceLineNo">129</span>            "FNumber", 0x829d, -1,<a name="line.129"></a>
+<span class="sourceLineNo">130</span>            TiffDirectoryType.EXIF_DIRECTORY_EXIF_IFD);<a name="line.130"></a>
+<span class="sourceLineNo">131</span>    // FIXME: other types?<a name="line.131"></a>
+<span class="sourceLineNo">132</span>    public static final TagInfoLong EXIF_TAG_IPTC_NAA = new TagInfoLong(<a name="line.132"></a>
+<span class="sourceLineNo">133</span>            "IPTC-NAA", 0x83bb,<a name="line.133"></a>
+<span class="sourceLineNo">134</span>            TiffDirectoryType.EXIF_DIRECTORY_IFD0);<a name="line.134"></a>
+<span class="sourceLineNo">135</span>    public static final TagInfoShorts EXIF_TAG_INTERGRAPH_PACKET_DATA = new TagInfoShorts(<a name="line.135"></a>
+<span class="sourceLineNo">136</span>            "IntergraphPacketData", 0x847e, -1,<a name="line.136"></a>
+<span class="sourceLineNo">137</span>            TiffDirectoryType.EXIF_DIRECTORY_UNKNOWN);<a name="line.137"></a>
+<span class="sourceLineNo">138</span>    public static final TagInfoLongs EXIF_TAG_INTERGRAPH_FLAG_REGISTERS = new TagInfoLongs(<a name="line.138"></a>
+<span class="sourceLineNo">139</span>            "IntergraphFlagRegisters", 0x847f, 16,<a name="line.139"></a>
+<span class="sourceLineNo">140</span>            TiffDirectoryType.EXIF_DIRECTORY_UNKNOWN);<a name="line.140"></a>
+<span class="sourceLineNo">141</span>    public static final TagInfoAscii EXIF_TAG_SITE = new TagInfoAscii(<a name="line.141"></a>
+<span class="sourceLineNo">142</span>            "Site", 0x84e0, -1,<a name="line.142"></a>
+<span class="sourceLineNo">143</span>            TiffDirectoryType.EXIF_DIRECTORY_UNKNOWN);<a name="line.143"></a>
+<span class="sourceLineNo">144</span>    public static final TagInfoAscii EXIF_TAG_COLOR_SEQUENCE = new TagInfoAscii(<a name="line.144"></a>
+<span class="sourceLineNo">145</span>            "ColorSequence", 0x84e1, -1,<a name="line.145"></a>
+<span class="sourceLineNo">146</span>            TiffDirectoryType.EXIF_DIRECTORY_UNKNOWN);<a name="line.146"></a>
+<span class="sourceLineNo">147</span>    public static final TagInfoAscii EXIF_TAG_IT8HEADER = new TagInfoAscii(<a name="line.147"></a>
+<span class="sourceLineNo">148</span>            "IT8Header", 0x84e2, -1,<a name="line.148"></a>
+<span class="sourceLineNo">149</span>            TiffDirectoryType.EXIF_DIRECTORY_UNKNOWN);<a name="line.149"></a>
+<span class="sourceLineNo">150</span>    public static final TagInfoShort EXIF_TAG_RASTER_PADDING = new TagInfoShort(<a name="line.150"></a>
+<span class="sourceLineNo">151</span>            "RasterPadding", 0x84e3,<a name="line.151"></a>
+<span class="sourceLineNo">152</span>            TiffDirectoryType.EXIF_DIRECTORY_UNKNOWN);<a name="line.152"></a>
+<span class="sourceLineNo">153</span>    public static final TagInfoShort EXIF_TAG_BITS_PER_RUN_LENGTH = new TagInfoShort(<a name="line.153"></a>
+<span class="sourceLineNo">154</span>            "BitsPerRunLength", 0x84e4,<a name="line.154"></a>
+<span class="sourceLineNo">155</span>            TiffDirectoryType.EXIF_DIRECTORY_UNKNOWN);<a name="line.155"></a>
+<span class="sourceLineNo">156</span>    public static final TagInfoShort EXIF_TAG_BITS_PER_EXTENDED_RUN_LENGTH = new TagInfoShort(<a name="line.156"></a>
+<span class="sourceLineNo">157</span>            "BitsPerExtendedRunLength", 0x84e5,<a name="line.157"></a>
+<span class="sourceLineNo">158</span>            TiffDirectoryType.EXIF_DIRECTORY_UNKNOWN);<a name="line.158"></a>
+<span class="sourceLineNo">159</span>    public static final TagInfoBytes EXIF_TAG_COLOR_TABLE = new TagInfoBytes(<a name="line.159"></a>
+<span class="sourceLineNo">160</span>            "ColorTable", 0x84e6, -1,<a name="line.160"></a>
+<span class="sourceLineNo">161</span>            TiffDirectoryType.EXIF_DIRECTORY_UNKNOWN);<a name="line.161"></a>
+<span class="sourceLineNo">162</span>    public static final TagInfoByte EXIF_TAG_IMAGE_COLOR_INDICATOR = new TagInfoByte(<a name="line.162"></a>
+<span class="sourceLineNo">163</span>            "ImageColorIndicator", 0x84e7,<a name="line.163"></a>
+<span class="sourceLineNo">164</span>            TiffDirectoryType.EXIF_DIRECTORY_UNKNOWN);<a name="line.164"></a>
+<span class="sourceLineNo">165</span>    public static final TagInfoByte EXIF_TAG_BACKGROUND_COLOR_INDICATOR = new TagInfoByte(<a name="line.165"></a>
+<span class="sourceLineNo">166</span>            "BackgroundColorIndicator", 0x84e8,<a name="line.166"></a>
+<span class="sourceLineNo">167</span>            TiffDirectoryType.EXIF_DIRECTORY_UNKNOWN);<a name="line.167"></a>
+<span class="sourceLineNo">168</span>    public static final TagInfoBytes EXIF_TAG_IMAGE_COLOR_VALUE = new TagInfoBytes(<a name="line.168"></a>
+<span class="sourceLineNo">169</span>            "ImageColorValue", 0x84e9, -1,<a name="line.169"></a>
+<span class="sourceLineNo">170</span>            TiffDirectoryType.EXIF_DIRECTORY_UNKNOWN);<a name="line.170"></a>
+<span class="sourceLineNo">171</span>    public static final TagInfoBytes EXIF_TAG_BACKGROUND_COLOR_VALUE = new TagInfoBytes(<a name="line.171"></a>
+<span class="sourceLineNo">172</span>            "BackgroundColorValue", 0x84ea, -1,<a name="line.172"></a>
+<span class="sourceLineNo">173</span>            TiffDirectoryType.EXIF_DIRECTORY_UNKNOWN);<a name="line.173"></a>
+<span class="sourceLineNo">174</span>    public static final TagInfoBytes EXIF_TAG_PIXEL_INTENSITY_RANGE = new TagInfoBytes(<a name="line.174"></a>
+<span class="sourceLineNo">175</span>            "PixelIntensityRange", 0x84eb, -1,<a name="line.175"></a>
+<span class="sourceLineNo">176</span>            TiffDirectoryType.EXIF_DIRECTORY_UNKNOWN);<a name="line.176"></a>
+<span class="sourceLineNo">177</span>    public static final TagInfoByte EXIF_TAG_TRANSPARENCY_INDICATOR = new TagInfoByte(<a name="line.177"></a>
+<span class="sourceLineNo">178</span>            "TransparencyIndicator", 0x84ec,<a name="line.178"></a>
+<span class="sourceLineNo">179</span>            TiffDirectoryType.EXIF_DIRECTORY_UNKNOWN);<a name="line.179"></a>
+<span class="sourceLineNo">180</span>    public static final TagInfoAscii EXIF_TAG_COLOR_CHARACTERIZATION = new TagInfoAscii(<a name="line.180"></a>
+<span class="sourceLineNo">181</span>            "ColorCharacterization", 0x84ed, -1,<a name="line.181"></a>
+<span class="sourceLineNo">182</span>            TiffDirectoryType.EXIF_DIRECTORY_UNKNOWN);<a name="line.182"></a>
+<span class="sourceLineNo">183</span>    public static final TagInfoShortOrLong EXIF_TAG_HCUSAGE = new TagInfoShortOrLong(<a name="line.183"></a>
+<span class="sourceLineNo">184</span>            "HCUsage", 0x84ee, 1,<a name="line.184"></a>
+<span class="sourceLineNo">185</span>            TiffDirectoryType.EXIF_DIRECTORY_UNKNOWN);<a name="line.185"></a>
+<span class="sourceLineNo">186</span>    public static final TagInfoAscii EXIF_TAG_SEMINFO = new TagInfoAscii(<a name="line.186"></a>
+<span class="sourceLineNo">187</span>            "SEMInfo", 0x8546, 1,<a name="line.187"></a>
+<span class="sourceLineNo">188</span>            TiffDirectoryType.EXIF_DIRECTORY_IFD0);<a name="line.188"></a>
+<span class="sourceLineNo">189</span>    public static final TagInfoLong EXIF_TAG_AFCP_IPTC = new TagInfoLong(<a name="line.189"></a>
+<span class="sourceLineNo">190</span>            "AFCP_IPTC", 0x8568,<a name="line.190"></a>
+<span class="sourceLineNo">191</span>            TiffDirectoryType.EXIF_DIRECTORY_UNKNOWN);<a name="line.191"></a>
+<span class="sourceLineNo">192</span>    public static final TagInfoLong EXIF_TAG_LEAF_DATA = new TagInfoLong(<a name="line.192"></a>
+<span class="sourceLineNo">193</span>            "LeafData", 0x8606,<a name="line.193"></a>
+<span class="sourceLineNo">194</span>            TiffDirectoryType.EXIF_DIRECTORY_UNKNOWN);<a name="line.194"></a>
+<span class="sourceLineNo">195</span>    public static final TagInfoBytes EXIF_TAG_PHOTOSHOP_SETTINGS = new TagInfoBytes(<a name="line.195"></a>
+<span class="sourceLineNo">196</span>            "PhotoshopSettings", 0x8649, -1,<a name="line.196"></a>
+<span class="sourceLineNo">197</span>            TiffDirectoryType.EXIF_DIRECTORY_UNKNOWN);<a name="line.197"></a>
+<span class="sourceLineNo">198</span>    public static final TagInfoDirectory EXIF_TAG_EXIF_OFFSET = new TagInfoDirectory(<a name="line.198"></a>
+<span class="sourceLineNo">199</span>            "ExifOffset", 0x8769,<a name="line.199"></a>
+<span class="sourceLineNo">200</span>            TiffDirectoryType.EXIF_DIRECTORY_UNKNOWN);<a name="line.200"></a>
+<span class="sourceLineNo">201</span>    public static final TagInfoShort EXIF_TAG_EXPOSURE_PROGRAM = new TagInfoShort(<a name="line.201"></a>
+<span class="sourceLineNo">202</span>            "ExposureProgram", 0x8822,<a name="line.202"></a>
+<span class="sourceLineNo">203</span>            TiffDirectoryType.EXIF_DIRECTORY_EXIF_IFD);<a name="line.203"></a>
+<span class="sourceLineNo">204</span>    public static final int EXPOSURE_PROGRAM_VALUE_MANUAL = 1;<a name="line.204"></a>
+<span class="sourceLineNo">205</span>    public static final int EXPOSURE_PROGRAM_VALUE_PROGRAM_AE = 2;<a name="line.205"></a>
+<span class="sourceLineNo">206</span>    public static final int EXPOSURE_PROGRAM_VALUE_APERTURE_PRIORITY_AE = 3;<a name="line.206"></a>
+<span class="sourceLineNo">207</span>    public static final int EXPOSURE_PROGRAM_VALUE_SHUTTER_SPEED_PRIORITY_AE = 4;<a name="line.207"></a>
+<span class="sourceLineNo">208</span>    public static final int EXPOSURE_PROGRAM_VALUE_CREATIVE_SLOW_SPEED = 5;<a name="line.208"></a>
+<span class="sourceLineNo">209</span>    public static final int EXPOSURE_PROGRAM_VALUE_ACTION_HIGH_SPEED = 6;<a name="line.209"></a>
+<span class="sourceLineNo">210</span>    public static final int EXPOSURE_PROGRAM_VALUE_PORTRAIT = 7;<a name="line.210"></a>
+<span class="sourceLineNo">211</span>    public static final int EXPOSURE_PROGRAM_VALUE_LANDSCAPE = 8;<a name="line.211"></a>
+<span class="sourceLineNo">212</span>    public static final TagInfoAscii EXIF_TAG_SPECTRAL_SENSITIVITY = new TagInfoAscii(<a name="line.212"></a>
+<span class="sourceLineNo">213</span>            "SpectralSensitivity", 0x8824, -1,<a name="line.213"></a>
+<span class="sourceLineNo">214</span>            TiffDirectoryType.EXIF_DIRECTORY_EXIF_IFD);<a name="line.214"></a>
+<span class="sourceLineNo">215</span>    public static final TagInfoDirectory EXIF_TAG_GPSINFO = new TagInfoDirectory(<a name="line.215"></a>
+<span class="sourceLineNo">216</span>            "GPSInfo", 0x8825,<a name="line.216"></a>
+<span class="sourceLineNo">217</span>            TiffDirectoryType.EXIF_DIRECTORY_UNKNOWN);<a name="line.217"></a>
+<span class="sourceLineNo">218</span>    public static final TagInfoShorts EXIF_TAG_ISO = new TagInfoShorts(<a name="line.218"></a>
+<span class="sourceLineNo">219</span>            "PhotographicSensitivity", 0x8827, -1,<a name="line.219"></a>
+<span class="sourceLineNo">220</span>            TiffDirectoryType.EXIF_DIRECTORY_EXIF_IFD);<a name="line.220"></a>
+<span class="sourceLineNo">221</span>    public static final TagInfoUndefineds EXIF_TAG_OPTO_ELECTRIC_CONV_FACTOR = new TagInfoUndefineds(<a name="line.221"></a>
+<span class="sourceLineNo">222</span>            "Opto - Electric Conv Factor", 0x8828, -1,<a name="line.222"></a>
+<span class="sourceLineNo">223</span>            TiffDirectoryType.EXIF_DIRECTORY_UNKNOWN);<a name="line.223"></a>
+<span class="sourceLineNo">224</span>    public static final TagInfoLong EXIF_TAG_LEAF_SUB_IFD = new TagInfoLong(<a name="line.224"></a>
+<span class="sourceLineNo">225</span>            "LeafSubIFD", 0x888a,<a name="line.225"></a>
+<span class="sourceLineNo">226</span>            TiffDirectoryType.EXIF_DIRECTORY_UNKNOWN);<a name="line.226"></a>
+<span class="sourceLineNo">227</span>    public static final TagInfoUndefineds EXIF_TAG_EXIF_VERSION = new TagInfoUndefineds(<a name="line.227"></a>
+<span class="sourceLineNo">228</span>            "ExifVersion", 0x9000, 4,<a name="line.228"></a>
+<span class="sourceLineNo">229</span>            TiffDirectoryType.EXIF_DIRECTORY_EXIF_IFD);<a name="line.229"></a>
+<span class="sourceLineNo">230</span>    public static final TagInfoAscii EXIF_TAG_DATE_TIME_ORIGINAL = new TagInfoAscii(<a name="line.230"></a>
+<span class="sourceLineNo">231</span>            "DateTimeOriginal", 0x9003, 20,<a name="line.231"></a>
+<span class="sourceLineNo">232</span>            TiffDirectoryType.EXIF_DIRECTORY_EXIF_IFD);<a name="line.232"></a>
+<span class="sourceLineNo">233</span>    public static final TagInfoAscii EXIF_TAG_DATE_TIME_DIGITIZED = new TagInfoAscii(<a name="line.233"></a>
+<span class="sourceLineNo">234</span>            "DateTimeDigitized", 0x9004, 20, TiffDirectoryType.EXIF_DIRECTORY_EXIF_IFD);<a name="line.234"></a>
+<span class="sourceLineNo">235</span>    public static final TagInfoUndefineds EXIF_TAG_COMPONENTS_CONFIGURATION = new TagInfoUndefineds(<a name="line.235"></a>
+<span class="sourceLineNo">236</span>            "ComponentsConfiguration", 0x9101, 4,<a name="line.236"></a>
+<span class="sourceLineNo">237</span>            TiffDirectoryType.EXIF_DIRECTORY_EXIF_IFD);<a name="line.237"></a>
+<span class="sourceLineNo">238</span>    public static final TagInfoRational EXIF_TAG_COMPRESSED_BITS_PER_PIXEL = new TagInfoRational(<a name="line.238"></a>
+<span class="sourceLineNo">239</span>            "CompressedBitsPerPixel", 0x9102,<a name="line.239"></a>
+<span class="sourceLineNo">240</span>            TiffDirectoryType.EXIF_DIRECTORY_EXIF_IFD);<a name="line.240"></a>
+<span class="sourceLineNo">241</span>    public static final TagInfoSRational EXIF_TAG_SHUTTER_SPEED_VALUE = new TagInfoSRational(<a name="line.241"></a>
+<span class="sourceLineNo">242</span>            "ShutterSpeedValue", 0x9201,<a name="line.242"></a>
+<span class="sourceLineNo">243</span>            TiffDirectoryType.EXIF_DIRECTORY_EXIF_IFD);<a name="line.243"></a>
+<span class="sourceLineNo">244</span>    public static final TagInfoRational EXIF_TAG_APERTURE_VALUE = new TagInfoRational(<a name="line.244"></a>
+<span class="sourceLineNo">245</span>            "ApertureValue", 0x9202,<a name="line.245"></a>
+<span class="sourceLineNo">246</span>            TiffDirectoryType.EXIF_DIRECTORY_EXIF_IFD);<a name="line.246"></a>
+<span class="sourceLineNo">247</span>    public static final TagInfoSRational EXIF_TAG_BRIGHTNESS_VALUE = new TagInfoSRational(<a name="line.247"></a>
+<span class="sourceLineNo">248</span>            "BrightnessValue", 0x9203,<a name="line.248"></a>
+<span class="sourceLineNo">249</span>            TiffDirectoryType.EXIF_DIRECTORY_EXIF_IFD);<a name="line.249"></a>
+<span class="sourceLineNo">250</span>    public static final TagInfoSRational EXIF_TAG_EXPOSURE_COMPENSATION = new TagInfoSRational(<a name="line.250"></a>
+<span class="sourceLineNo">251</span>            "ExposureCompensation", 0x9204,<a name="line.251"></a>
+<span class="sourceLineNo">252</span>            TiffDirectoryType.EXIF_DIRECTORY_EXIF_IFD);<a name="line.252"></a>
+<span class="sourceLineNo">253</span>    public static final TagInfoRational EXIF_TAG_MAX_APERTURE_VALUE = new TagInfoRational(<a name="line.253"></a>
+<span class="sourceLineNo">254</span>            "MaxApertureValue", 0x9205,<a name="line.254"></a>
+<span class="sourceLineNo">255</span>            TiffDirectoryType.EXIF_DIRECTORY_EXIF_IFD);<a name="line.255"></a>
+<span class="sourceLineNo">256</span>    public static final TagInfoRationals EXIF_TAG_SUBJECT_DISTANCE = new TagInfoRationals(<a name="line.256"></a>
+<span class="sourceLineNo">257</span>            "Subject Distance", 0x9206, -1,<a name="line.257"></a>
+<span class="sourceLineNo">258</span>            TiffDirectoryType.EXIF_DIRECTORY_EXIF_IFD);<a name="line.258"></a>
+<span class="sourceLineNo">259</span>    public static final TagInfoShort EXIF_TAG_METERING_MODE = new TagInfoShort(<a name="line.259"></a>
+<span class="sourceLineNo">260</span>            "MeteringMode", 0x9207,<a name="line.260"></a>
+<span class="sourceLineNo">261</span>            TiffDirectoryType.EXIF_DIRECTORY_EXIF_IFD);<a name="line.261"></a>
+<span class="sourceLineNo">262</span>    public static final int METERING_MODE_VALUE_AVERAGE = 1;<a name="line.262"></a>
+<span class="sourceLineNo">263</span>    public static final int METERING_MODE_VALUE_CENTER_WEIGHTED_AVERAGE = 2;<a name="line.263"></a>
+<span class="sourceLineNo">264</span>    public static final int METERING_MODE_VALUE_SPOT = 3;<a name="line.264"></a>
+<span class="sourceLineNo">265</span>    public static final int METERING_MODE_VALUE_MULTI_SPOT = 4;<a name="line.265"></a>
+<span class="sourceLineNo">266</span>    public static final int METERING_MODE_VALUE_MULTI_SEGMENT = 5;<a name="line.266"></a>
+<span class="sourceLineNo">267</span>    public static final int METERING_MODE_VALUE_PARTIAL = 6;<a name="line.267"></a>
+<span class="sourceLineNo">268</span>    public static final int METERING_MODE_VALUE_OTHER = 255;<a name="line.268"></a>
+<span class="sourceLineNo">269</span>    public static final TagInfoShort EXIF_TAG_LIGHT_SOURCE = new TagInfoShort(<a name="line.269"></a>
+<span class="sourceLineNo">270</span>            "LightSource", 0x9208,<a name="line.270"></a>
+<span class="sourceLineNo">271</span>            TiffDirectoryType.EXIF_DIRECTORY_EXIF_IFD);<a name="line.271"></a>
+<span class="sourceLineNo">272</span>    public static final int LIGHT_SOURCE_VALUE_DAYLIGHT = 1;<a name="line.272"></a>
+<span class="sourceLineNo">273</span>    public static final int LIGHT_SOURCE_VALUE_FLUORESCENT = 2;<a name="line.273"></a>
+<span class="sourceLineNo">274</span>    public static final int LIGHT_SOURCE_VALUE_TUNGSTEN = 3;<a name="line.274"></a>
+<span class="sourceLineNo">275</span>    public static final int LIGHT_SOURCE_VALUE_FLASH = 4;<a name="line.275"></a>
+<span class="sourceLineNo">276</span>    public static final int LIGHT_SOURCE_VALUE_FINE_WEATHER = 9;<a name="line.276"></a>
+<span class="sourceLineNo">277</span>    public static final int LIGHT_SOURCE_VALUE_CLOUDY = 10;<a name="line.277"></a>
+<span class="sourceLineNo">278</span>    public static final int LIGHT_SOURCE_VALUE_SHADE = 11;<a name="line.278"></a>
+<span class="sourceLineNo">279</span>    public static final int LIGHT_SOURCE_VALUE_DAYLIGHT_FLUORESCENT = 12;<a name="line.279"></a>
+<span class="sourceLineNo">280</span>    public static final int LIGHT_SOURCE_VALUE_DAY_WHITE_FLUORESCENT = 13;<a name="line.280"></a>
+<span class="sourceLineNo">281</span>    public static final int LIGHT_SOURCE_VALUE_COOL_WHITE_FLUORESCENT = 14;<a name="line.281"></a>
+<span class="sourceLineNo">282</span>    public static final int LIGHT_SOURCE_VALUE_WHITE_FLUORESCENT = 15;<a name="line.282"></a>
+<span class="sourceLineNo">283</span>    public static final int LIGHT_SOURCE_VALUE_STANDARD_LIGHT_A = 17;<a name="line.283"></a>
+<span class="sourceLineNo">284</span>    public static final int LIGHT_SOURCE_VALUE_STANDARD_LIGHT_B = 18;<a name="line.284"></a>
+<span class="sourceLineNo">285</span>    public static final int LIGHT_SOURCE_VALUE_STANDARD_LIGHT_C = 19;<a name="line.285"></a>
+<span class="sourceLineNo">286</span>    public static final int LIGHT_SOURCE_VALUE_D55 = 20;<a name="line.286"></a>
+<span class="sourceLineNo">287</span>    public static final int LIGHT_SOURCE_VALUE_D65 = 21;<a name="line.287"></a>
+<span class="sourceLineNo">288</span>    public static final int LIGHT_SOURCE_VALUE_D75 = 22;<a name="line.288"></a>
+<span class="sourceLineNo">289</span>    public static final int LIGHT_SOURCE_VALUE_D50 = 23;<a name="line.289"></a>
+<span class="sourceLineNo">290</span>    public static final int LIGHT_SOURCE_VALUE_ISO_STUDIO_TUNGSTEN = 24;<a name="line.290"></a>
+<span class="sourceLineNo">291</span>    public static final int LIGHT_SOURCE_VALUE_OTHER = 255;<a name="line.291"></a>
+<span class="sourceLineNo">292</span>    public static final TagInfoShort EXIF_TAG_FLASH = new TagInfoShort(<a name="line.292"></a>
+<span class="sourceLineNo">293</span>            "Flash", 0x9209,<a name="line.293"></a>
+<span class="sourceLineNo">294</span>            TiffDirectoryType.EXIF_DIRECTORY_EXIF_IFD);<a name="line.294"></a>
+<span class="sourceLineNo">295</span>    public static final int FLASH_VALUE_NO_FLASH = 0x0;<a name="line.295"></a>
+<span class="sourceLineNo">296</span>    public static final int FLASH_VALUE_FIRED = 0x1;<a name="line.296"></a>
+<span class="sourceLineNo">297</span>    public static final int FLASH_VALUE_FIRED_RETURN_NOT_DETECTED = 0x5;<a name="line.297"></a>
+<span class="sourceLineNo">298</span>    public static final int FLASH_VALUE_FIRED_RETURN_DETECTED = 0x7;<a name="line.298"></a>
+<span class="sourceLineNo">299</span>    public static final int FLASH_VALUE_ON_DID_NOT_FIRE = 0x8;<a name="line.299"></a>
+<span class="sourceLineNo">300</span>    public static final int FLASH_VALUE_ON = 0x9;<a name="line.300"></a>
+<span class="sourceLineNo">301</span>    public static final int FLASH_VALUE_ON_RETURN_NOT_DETECTED = 0xd;<a name="line.301"></a>
+<span class="sourceLineNo">302</span>    public static final int FLASH_VALUE_ON_RETURN_DETECTED = 0xf;<a name="line.302"></a>
+<span class="sourceLineNo">303</span>    public static final int FLASH_VALUE_OFF = 0x10;<a name="line.303"></a>
+<span class="sourceLineNo">304</span>    public static final int FLASH_VALUE_OFF_DID_NOT_FIRE_RETURN_NOT_DETECTED = 0x14;<a name="line.304"></a>
+<span class="sourceLineNo">305</span>    public static final int FLASH_VALUE_AUTO_DID_NOT_FIRE = 0x18;<a name="line.305"></a>
+<span class="sourceLineNo">306</span>    public static final int FLASH_VALUE_AUTO_FIRED = 0x19;<a name="line.306"></a>
+<span class="sourceLineNo">307</span>    public static final int FLASH_VALUE_AUTO_FIRED_RETURN_NOT_DETECTED = 0x1d;<a name="line.307"></a>
+<span class="sourceLineNo">308</span>    public static final int FLASH_VALUE_AUTO_FIRED_RETURN_DETECTED = 0x1f;<a name="line.308"></a>
+<span class="sourceLineNo">309</span>    public static final int FLASH_VALUE_NO_FLASH_FUNCTION = 0x20;<a name="line.309"></a>
+<span class="sourceLineNo">310</span>    public static final int FLASH_VALUE_OFF_NO_FLASH_FUNCTION = 0x30;<a name="line.310"></a>
+<span class="sourceLineNo">311</span>    public static final int FLASH_VALUE_FIRED_RED_EYE_REDUCTION = 0x41;<a name="line.311"></a>
+<span class="sourceLineNo">312</span>    public static final int FLASH_VALUE_FIRED_RED_EYE_REDUCTION_RETURN_NOT_DETECTED = 0x45;<a name="line.312"></a>
+<span class="sourceLineNo">313</span>    public static final int FLASH_VALUE_FIRED_RED_EYE_REDUCTION_RETURN_DETECTED = 0x47;<a name="line.313"></a>
+<span class="sourceLineNo">314</span>    public static final int FLASH_VALUE_ON_RED_EYE_REDUCTION = 0x49;<a name="line.314"></a>
+<span class="sourceLineNo">315</span>    public static final int FLASH_VALUE_ON_RED_EYE_REDUCTION_RETURN_NOT_DETECTED = 0x4d;<a name="line.315"></a>
+<span class="sourceLineNo">316</span>    public static final int FLASH_VALUE_ON_RED_EYE_REDUCTION_RETURN_DETECTED = 0x4f;<a name="line.316"></a>
+<span class="sourceLineNo">317</span>    public static final int FLASH_VALUE_OFF_RED_EYE_REDUCTION = 0x50;<a name="line.317"></a>
+<span class="sourceLineNo">318</span>    public static final int FLASH_VALUE_AUTO_DID_NOT_FIRE_RED_EYE_REDUCTION = 0x58;<a name="line.318"></a>
+<span class="sourceLineNo">319</span>    public static final int FLASH_VALUE_AUTO_FIRED_RED_EYE_REDUCTION = 0x59;<a name="line.319"></a>
+<span class="sourceLineNo">320</span>    public static final int FLASH_VALUE_AUTO_FIRED_RED_EYE_REDUCTION_RETURN_NOT_DETECTED = 0x5d;<a name="line.320"></a>
+<span class="sourceLineNo">321</span>    public static final int FLASH_VALUE_AUTO_FIRED_RED_EYE_REDUCTION_RETURN_DETECTED = 0x5f;<a name="line.321"></a>
+<span class="sourceLineNo">322</span>    public static final TagInfoRationals EXIF_TAG_FOCAL_LENGTH = new TagInfoRationals(<a name="line.322"></a>
+<span class="sourceLineNo">323</span>            "FocalLength", 0x920a, -1,<a name="line.323"></a>
+<span class="sourceLineNo">324</span>            TiffDirectoryType.EXIF_DIRECTORY_EXIF_IFD);<a name="line.324"></a>
+<span class="sourceLineNo">325</span>    public static final TagInfoShorts EXIF_TAG_SUBJECT_AREA = new TagInfoShorts(<a name="line.325"></a>
+<span class="sourceLineNo">326</span>            "SubjectArea", 0x9214, -1,<a name="line.326"></a>
+<span class="sourceLineNo">327</span>            TiffDirectoryType.EXIF_DIRECTORY_EXIF_IFD);<a name="line.327"></a>
+<span class="sourceLineNo">328</span>    public static final TagInfoDouble EXIF_TAG_STO_NITS = new TagInfoDouble(<a name="line.328"></a>
+<span class="sourceLineNo">329</span>            "StoNits", 0x923f,<a name="line.329"></a>
+<span class="sourceLineNo">330</span>            TiffDirectoryType.EXIF_DIRECTORY_UNKNOWN);<a name="line.330"></a>
+<span class="sourceLineNo">331</span>    public static final TagInfoUndefineds EXIF_TAG_MAKER_NOTE = new TagInfoUndefineds(<a name="line.331"></a>
+<span class="sourceLineNo">332</span>            "MakerNote", 0x927c, -1,<a name="line.332"></a>
+<span class="sourceLineNo">333</span>            TiffDirectoryType.EXIF_DIRECTORY_EXIF_IFD);<a name="line.333"></a>
+<span class="sourceLineNo">334</span>    public static final TagInfoGpsText EXIF_TAG_USER_COMMENT = new TagInfoGpsText(<a name="line.334"></a>
+<span class="sourceLineNo">335</span>            "UserComment", 0x9286,<a name="line.335"></a>
+<span class="sourceLineNo">336</span>            TiffDirectoryType.EXIF_DIRECTORY_EXIF_IFD);<a name="line.336"></a>
+<span class="sourceLineNo">337</span>    public static final TagInfoAscii EXIF_TAG_SUB_SEC_TIME = new TagInfoAscii(<a name="line.337"></a>
+<span class="sourceLineNo">338</span>            "SubSecTime", 0x9290, -1,<a name="line.338"></a>
+<span class="sourceLineNo">339</span>            TiffDirectoryType.EXIF_DIRECTORY_EXIF_IFD);<a name="line.339"></a>
+<span class="sourceLineNo">340</span>    public static final TagInfoAscii EXIF_TAG_SUB_SEC_TIME_ORIGINAL = new TagInfoAscii(<a name="line.340"></a>
+<span class="sourceLineNo">341</span>            "SubSecTimeOriginal", 0x9291, -1,<a name="line.341"></a>
+<span class="sourceLineNo">342</span>            TiffDirectoryType.EXIF_DIRECTORY_EXIF_IFD);<a name="line.342"></a>
+<span class="sourceLineNo">343</span>    public static final TagInfoAscii EXIF_TAG_SUB_SEC_TIME_DIGITIZED = new TagInfoAscii(<a name="line.343"></a>
+<span class="sourceLineNo">344</span>            "SubSecTimeDigitized", 0x9292, -1,<a name="line.344"></a>
+<span class="sourceLineNo">345</span>            TiffDirectoryType.EXIF_DIRECTORY_EXIF_IFD);<a name="line.345"></a>
+<span class="sourceLineNo">346</span>    public static final TagInfoUndefineds EXIF_TAG_FLASHPIX_VERSION = new TagInfoUndefineds(<a name="line.346"></a>
+<span class="sourceLineNo">347</span>            "FlashpixVersion", 0xa000, 4,<a name="line.347"></a>
+<span class="sourceLineNo">348</span>            TiffDirectoryType.EXIF_DIRECTORY_EXIF_IFD);<a name="line.348"></a>
+<span class="sourceLineNo">349</span>    public static final TagInfoShort EXIF_TAG_EXIF_IMAGE_WIDTH = new TagInfoShort(<a name="line.349"></a>
+<span class="sourceLineNo">350</span>            "ExifImageWidth", 0xa002,<a name="line.350"></a>
+<span class="sourceLineNo">351</span>            TiffDirectoryType.EXIF_DIRECTORY_EXIF_IFD);<a name="line.351"></a>
+<span class="sourceLineNo">352</span>    public static final TagInfoShort EXIF_TAG_EXIF_IMAGE_LENGTH = new TagInfoShort(<a name="line.352"></a>
+<span class="sourceLineNo">353</span>            "ExifImageLength", 0xa003,<a name="line.353"></a>
+<span class="sourceLineNo">354</span>            TiffDirectoryType.EXIF_DIRECTORY_EXIF_IFD);<a name="line.354"></a>
+<span class="sourceLineNo">355</span>    public static final TagInfoAscii EXIF_TAG_RELATED_SOUND_FILE = new TagInfoAscii(<a name="line.355"></a>
+<span class="sourceLineNo">356</span>            "RelatedSoundFile", 0xa004, 13,<a name="line.356"></a>
+<span class="sourceLineNo">357</span>            TiffDirectoryType.EXIF_DIRECTORY_EXIF_IFD);<a name="line.357"></a>
+<span class="sourceLineNo">358</span>    public static final TagInfoDirectory EXIF_TAG_INTEROP_OFFSET = new TagInfoDirectory(<a name="line.358"></a>
+<span class="sourceLineNo">359</span>            "InteropOffset", 0xa005,<a name="line.359"></a>
+<span class="sourceLineNo">360</span>            TiffDirectoryType.EXIF_DIRECTORY_UNKNOWN);<a name="line.360"></a>
+<span class="sourceLineNo">361</span>    public static final TagInfoRationals EXIF_TAG_FLASH_ENERGY_EXIF_IFD = new TagInfoRationals(<a name="line.361"></a>
+<span class="sourceLineNo">362</span>            "FlashEnergy", 0xa20b, -1,<a name="line.362"></a>
+<span class="sourceLineNo">363</span>            TiffDirectoryType.EXIF_DIRECTORY_EXIF_IFD);<a name="line.363"></a>
+<span class="sourceLineNo">364</span>    public static final TagInfoUndefineds EXIF_TAG_SPATIAL_FREQUENCY_RESPONSE_2 = new TagInfoUndefineds(<a name="line.364"></a>
+<span class="sourceLineNo">365</span>            "SpatialFrequencyResponse", 0xa20c, -1,<a name="line.365"></a>
+<span class="sourceLineNo">366</span>            TiffDirectoryType.EXIF_DIRECTORY_UNKNOWN);<a name="line.366"></a>
+<span class="sourceLineNo">367</span>    public static final TagInfoUnknowns EXIF_TAG_NOISE_2 = new TagInfoUnknowns(<a name="line.367"></a>
+<span class="sourceLineNo">368</span>            "Noise", 0xa20d, -1,<a name="line.368"></a>
+<span class="sourceLineNo">369</span>            TiffDirectoryType.EXIF_DIRECTORY_UNKNOWN);<a name="line.369"></a>
+<span class="sourceLineNo">370</span>    public static final TagInfoRational EXIF_TAG_FOCAL_PLANE_XRESOLUTION_EXIF_IFD = new TagInfoRational(<a name="line.370"></a>
+<span class="sourceLineNo">371</span>            "FocalPlaneXResolution", 0xa20e,<a name="line.371"></a>
+<span class="sourceLineNo">372</span>            TiffDirectoryType.EXIF_DIRECTORY_EXIF_IFD);<a name="line.372"></a>
+<span class="sourceLineNo">373</span>    public static final TagInfoRational EXIF_TAG_FOCAL_PLANE_YRESOLUTION_EXIF_IFD = new TagInfoRational(<a name="line.373"></a>
+<span class="sourceLineNo">374</span>            "FocalPlaneYResolution", 0xa20f,<a name="line.374"></a>
+<span class="sourceLineNo">375</span>            TiffDirectoryType.EXIF_DIRECTORY_EXIF_IFD);<a name="line.375"></a>
+<span class="sourceLineNo">376</span>    public static final TagInfoShort EXIF_TAG_FOCAL_PLANE_RESOLUTION_UNIT_EXIF_IFD = new TagInfoShort(<a name="line.376"></a>
+<span class="sourceLineNo">377</span>            "FocalPlaneResolutionUnit", 0xa210,<a name="line.377"></a>
+<span class="sourceLineNo">378</span>            TiffDirectoryType.EXIF_DIRECTORY_EXIF_IFD);<a name="line.378"></a>
+<span class="sourceLineNo">379</span>    public static final int FOCAL_PLANE_RESOLUTION_UNIT_EXIF_IFD_VALUE_NONE = 1;<a name="line.379"></a>
+<span class="sourceLineNo">380</span>    public static final int FOCAL_PLANE_RESOLUTION_UNIT_EXIF_IFD_VALUE_INCHES = 2;<a name="line.380"></a>
+<span class="sourceLineNo">381</span>    public static final int FOCAL_PLANE_RESOLUTION_UNIT_EXIF_IFD_VALUE_CM = 3;<a name="line.381"></a>
+<span class="sourceLineNo">382</span>    public static final int FOCAL_PLANE_RESOLUTION_UNIT_EXIF_IFD_VALUE_MM = 4;<a name="line.382"></a>
+<span class="sourceLineNo">383</span>    public static final int FOCAL_PLANE_RESOLUTION_UNIT_EXIF_IFD_VALUE_UM = 5;<a name="line.383"></a>
+<span class="sourceLineNo">384</span>    public static final TagInfoUnknowns EXIF_TAG_IMAGE_NUMBER = new TagInfoUnknowns(<a name="line.384"></a>
+<span class="sourceLineNo">385</span>            "ImageNumber", 0xa211, -1,<a name="line.385"></a>
+<span class="sourceLineNo">386</span>            TiffDirectoryType.EXIF_DIRECTORY_UNKNOWN);<a name="line.386"></a>
+<span class="sourceLineNo">387</span>    public static final TagInfoUnknowns EXIF_TAG_SECURITY_CLASSIFICATION = new TagInfoUnknowns(<a name="line.387"></a>
+<span class="sourceLineNo">388</span>            "SecurityClassification", 0xa212, -1,<a name="line.388"></a>
+<span class="sourceLineNo">389</span>            TiffDirectoryType.EXIF_DIRECTORY_UNKNOWN);<a name="line.389"></a>
+<span class="sourceLineNo">390</span>    public static final TagInfoUnknowns EXIF_TAG_IMAGE_HISTORY = new TagInfoUnknowns(<a name="line.390"></a>
+<span class="sourceLineNo">391</span>            "ImageHistory", 0xa213, -1,<a name="line.391"></a>
+<span class="sourceLineNo">392</span>            TiffDirectoryType.EXIF_DIRECTORY_UNKNOWN);<a name="line.392"></a>
+<span class="sourceLineNo">393</span>    public static final TagInfoShorts EXIF_TAG_SUBJECT_LOCATION = new TagInfoShorts(<a name="line.393"></a>
+<span class="sourceLineNo">394</span>            "SubjectLocation", 0xa214, 2,<a name="line.394"></a>
+<span class="sourceLineNo">395</span>            TiffDirectoryType.EXIF_DIRECTORY_EXIF_IFD);<a name="line.395"></a>
+<span class="sourceLineNo">396</span>    public static final TagInfoRational EXIF_TAG_EXPOSURE_INDEX_EXIF_IFD = new TagInfoRational(<a name="line.396"></a>
+<span class="sourceLineNo">397</span>            "ExposureIndex", 0xa215,<a name="line.397"></a>
+<span class="sourceLineNo">398</span>            TiffDirectoryType.EXIF_DIRECTORY_EXIF_IFD);<a name="line.398"></a>
+<span class="sourceLineNo">399</span>    public static final TagInfoUnknowns EXIF_TAG_TIFF_EPSTANDARD_ID_2 = new TagInfoUnknowns(<a name="line.399"></a>
+<span class="sourceLineNo">400</span>            "TIFF-EPStandardID", 0xa216, -1,<a name="line.400"></a>
+<span class="sourceLineNo">401</span>            TiffDirectoryType.EXIF_DIRECTORY_UNKNOWN);<a name="line.401"></a>
+<span class="sourceLineNo">402</span>    public static final TagInfoShort EXIF_TAG_SENSING_METHOD_EXIF_IFD = new TagInfoShort(<a name="line.402"></a>
+<span class="sourceLineNo">403</span>            "SensingMethod", 0xa217,<a name="line.403"></a>
+<span class="sourceLineNo">404</span>            TiffDirectoryType.EXIF_DIRECTORY_EXIF_IFD);<a name="line.404"></a>
+<span class="sourceLineNo">405</span>    public static final int SENSING_METHOD_EXIF_IFD_VALUE_NOT_DEFINED = 1;<a name="line.405"></a>
+<span class="sourceLineNo">406</span>    public static final int SENSING_METHOD_EXIF_IFD_VALUE_ONE_CHIP_COLOR_AREA = 2;<a name="line.406"></a>
+<span class="sourceLineNo">407</span>    public static final int SENSING_METHOD_EXIF_IFD_VALUE_TWO_CHIP_COLOR_AREA = 3;<a name="line.407"></a>
+<span class="sourceLineNo">408</span>    public static final int SENSING_METHOD_EXIF_IFD_VALUE_THREE_CHIP_COLOR_AREA = 4;<a name="line.408"></a>
+<span class="sourceLineNo">409</span>    public static final int SENSING_METHOD_EXIF_IFD_VALUE_COLOR_SEQUENTIAL_AREA = 5;<a name="line.409"></a>
+<span class="sourceLineNo">410</span>    public static final int SENSING_METHOD_EXIF_IFD_VALUE_TRILINEAR = 7;<a name="line.410"></a>
+<span class="sourceLineNo">411</span>    public static final int SENSING_METHOD_EXIF_IFD_VALUE_COLOR_SEQUENTIAL_LINEAR = 8;<a name="line.411"></a>
+<span class="sourceLineNo">412</span>    public static final TagInfoUndefined EXIF_TAG_FILE_SOURCE = new TagInfoUndefined(<a name="line.412"></a>
+<span class="sourceLineNo">413</span>            "FileSource", 0xa300,<a name="line.413"></a>
+<span class="sourceLineNo">414</span>            TiffDirectoryType.EXIF_DIRECTORY_EXIF_IFD);<a name="line.414"></a>
+<span class="sourceLineNo">415</span>    public static final int FILE_SOURCE_VALUE_FILM_SCANNER = 1;<a name="line.415"></a>
+<span class="sourceLineNo">416</span>    public static final int FILE_SOURCE_VALUE_REFLECTION_PRINT_SCANNER = 2;<a name="line.416"></a>
+<span class="sourceLineNo">417</span>    public static final int FILE_SOURCE_VALUE_DIGITAL_CAMERA = 3;<a name="line.417"></a>
+<span class="sourceLineNo">418</span>    public static final TagInfoUndefined EXIF_TAG_SCENE_TYPE = new TagInfoUndefined(<a name="line.418"></a>
+<span class="sourceLineNo">419</span>            "SceneType", 0xa301,<a name="line.419"></a>
+<span class="sourceLineNo">420</span>            TiffDirectoryType.EXIF_DIRECTORY_EXIF_IFD);<a name="line.420"></a>
+<span class="sourceLineNo">421</span>    public static final TagInfoUndefineds EXIF_TAG_CFAPATTERN = new TagInfoUndefineds(<a name="line.421"></a>
+<span class="sourceLineNo">422</span>            "CFAPattern", 0xa302, -1,<a name="line.422"></a>
+<span class="sourceLineNo">423</span>            TiffDirectoryType.EXIF_DIRECTORY_EXIF_IFD);<a name="line.423"></a>
+<span class="sourceLineNo">424</span>    public static final TagInfoShort EXIF_TAG_CUSTOM_RENDERED = new TagInfoShort(<a name="line.424"></a>
+<span class="sourceLineNo">425</span>            "CustomRendered", 0xa401,<a name="line.425"></a>
+<span class="sourceLineNo">426</span>            TiffDirectoryType.EXIF_DIRECTORY_EXIF_IFD);<a name="line.426"></a>
+<span class="sourceLineNo">427</span>    public static final int CUSTOM_RENDERED_VALUE_NORMAL = 0;<a name="line.427"></a>
+<span class="sourceLineNo">428</span>    public static final int CUSTOM_RENDERED_VALUE_CUSTOM = 1;<a name="line.428"></a>
+<span class="sourceLineNo">429</span>    public static final TagInfoShort EXIF_TAG_EXPOSURE_MODE = new TagInfoShort(<a name="line.429"></a>
+<span class="sourceLineNo">430</span>            "ExposureMode", 0xa402,<a name="line.430"></a>
+<span class="sourceLineNo">431</span>            TiffDirectoryType.EXIF_DIRECTORY_EXIF_IFD);<a name="line.431"></a>
+<span class="sourceLineNo">432</span>    public static final int EXPOSURE_MODE_VALUE_AUTO = 0;<a name="line.432"></a>
+<span class="sourceLineNo">433</span>    public static final int EXPOSURE_MODE_VALUE_MANUAL = 1;<a name="line.433"></a>
+<span class="sourceLineNo">434</span>    public static final int EXPOSURE_MODE_VALUE_AUTO_BRACKET = 2;<a name="line.434"></a>
+<span class="sourceLineNo">435</span>    public static final TagInfoShort EXIF_TAG_WHITE_BALANCE_1 = new TagInfoShort(<a name="line.435"></a>
+<span class="sourceLineNo">436</span>            "WhiteBalance", 0xa403,<a name="line.436"></a>
+<span class="sourceLineNo">437</span>            TiffDirectoryType.EXIF_DIRECTORY_EXIF_IFD);<a name="line.437"></a>
+<span class="sourceLineNo">438</span>    public static final int WHITE_BALANCE_1_VALUE_AUTO = 0;<a name="line.438"></a>
+<span class="sourceLineNo">439</span>    public static final int WHITE_BALANCE_1_VALUE_MANUAL = 1;<a name="line.439"></a>
+<span class="sourceLineNo">440</span>    public static final TagInfoRational EXIF_TAG_DIGITAL_ZOOM_RATIO = new TagInfoRational(<a name="line.440"></a>
+<span class="sourceLineNo">441</span>            "DigitalZoomRatio", 0xa404,<a name="line.441"></a>
+<span class="sourceLineNo">442</span>            TiffDirectoryType.EXIF_DIRECTORY_EXIF_IFD);<a name="line.442"></a>
+<span class="sourceLineNo">443</span>    public static final TagInfoShort EXIF_TAG_FOCAL_LENGTH_IN_35MM_FORMAT = new TagInfoShort(<a name="line.443"></a>
+<span class="sourceLineNo">444</span>            "FocalLengthIn35mmFormat", 0xa405,<a name="line.444"></a>
+<span class="sourceLineNo">445</span>            TiffDirectoryType.EXIF_DIRECTORY_EXIF_IFD);<a name="line.445"></a>
+<span class="sourceLineNo">446</span>    public static final TagInfoShort EXIF_TAG_SCENE_CAPTURE_TYPE = new TagInfoShort(<a name="line.446"></a>
+<span class="sourceLineNo">447</span>            "SceneCaptureType", 0xa406,<a name="line.447"></a>
+<span class="sourceLineNo">448</span>            TiffDirectoryType.EXIF_DIRECTORY_EXIF_IFD);<a name="line.448"></a>
+<span class="sourceLineNo">449</span>    public static final int SCENE_CAPTURE_TYPE_VALUE_STANDARD = 0;<a name="line.449"></a>
+<span class="sourceLineNo">450</span>    public static final int SCENE_CAPTURE_TYPE_VALUE_LANDSCAPE = 1;<a name="line.450"></a>
+<span class="sourceLineNo">451</span>    public static final int SCENE_CAPTURE_TYPE_VALUE_PORTRAIT = 2;<a name="line.451"></a>
+<span class="sourceLineNo">452</span>    public static final int SCENE_CAPTURE_TYPE_VALUE_NIGHT = 3;<a name="line.452"></a>
+<span class="sourceLineNo">453</span>    public static final TagInfoShort EXIF_TAG_GAIN_CONTROL = new TagInfoShort(<a name="line.453"></a>
+<span class="sourceLineNo">454</span>            "GainControl", 0xa407,<a name="line.454"></a>
+<span class="sourceLineNo">455</span>            TiffDirectoryType.EXIF_DIRECTORY_EXIF_IFD);<a name="line.455"></a>
+<span class="sourceLineNo">456</span>    public static final int GAIN_CONTROL_VALUE_NONE = 0;<a name="line.456"></a>
+<span class="sourceLineNo">457</span>    public static final int GAIN_CONTROL_VALUE_LOW_GAIN_UP = 1;<a name="line.457"></a>
+<span class="sourceLineNo">458</span>    public static final int GAIN_CONTROL_VALUE_HIGH_GAIN_UP = 2;<a name="line.458"></a>
+<span class="sourceLineNo">459</span>    public static final int GAIN_CONTROL_VALUE_LOW_GAIN_DOWN = 3;<a name="line.459"></a>
+<span class="sourceLineNo">460</span>    public static final int GAIN_CONTROL_VALUE_HIGH_GAIN_DOWN = 4;<a name="line.460"></a>
+<span class="sourceLineNo">461</span>    public static final TagInfoShort EXIF_TAG_CONTRAST_1 = new TagInfoShort(<a name="line.461"></a>
+<span class="sourceLineNo">462</span>            "Contrast", 0xa408,<a name="line.462"></a>
+<span class="sourceLineNo">463</span>            TiffDirectoryType.EXIF_DIRECTORY_EXIF_IFD);<a name="line.463"></a>
+<span class="sourceLineNo">464</span>    public static final int CONTRAST_1_VALUE_NORMAL = 0;<a name="line.464"></a>
+<span class="sourceLineNo">465</span>    public static final int CONTRAST_1_VALUE_LOW = 1;<a name="line.465"></a>
+<span class="sourceLineNo">466</span>    public static final int CONTRAST_1_VALUE_HIGH = 2;<a name="line.466"></a>
+<span class="sourceLineNo">467</span>    public static final TagInfoShort EXIF_TAG_SATURATION_1 = new TagInfoShort(<a name="line.467"></a>
+<span class="sourceLineNo">468</span>            "Saturation", 0xa409,<a name="line.468"></a>
+<span class="sourceLineNo">469</span>            TiffDirectoryType.EXIF_DIRECTORY_EXIF_IFD);<a name="line.469"></a>
+<span class="sourceLineNo">470</span>    public static final int SATURATION_1_VALUE_NORMAL = 0;<a name="line.470"></a>
+<span class="sourceLineNo">471</span>    public static final int SATURATION_1_VALUE_LOW = 1;<a name="line.471"></a>
+<span class="sourceLineNo">472</span>    public static final int SATURATION_1_VALUE_HIGH = 2;<a name="line.472"></a>
+<span class="sourceLineNo">473</span>    public static final TagInfoShort EXIF_TAG_SHARPNESS_1 = new TagInfoShort(<a name="line.473"></a>
+<span class="sourceLineNo">474</span>            "Sharpness", 0xa40a,<a name="line.474"></a>
+<span class="sourceLineNo">475</span>            TiffDirectoryType.EXIF_DIRECTORY_EXIF_IFD);<a name="line.475"></a>
+<span class="sourceLineNo">476</span>    public static final int SHARPNESS_1_VALUE_NORMAL = 0;<a name="line.476"></a>
+<span class="sourceLineNo">477</span>    public static final int SHARPNESS_1_VALUE_SOFT = 1;<a name="line.477"></a>
+<span class="sourceLineNo">478</span>    public static final int SHARPNESS_1_VALUE_HARD = 2;<a name="line.478"></a>
+<span class="sourceLineNo">479</span>    public static final TagInfoUndefineds EXIF_TAG_DEVICE_SETTING_DESCRIPTION = new TagInfoUndefineds(<a name="line.479"></a>
+<span class="sourceLineNo">480</span>            "DeviceSettingDescription", 0xa40b, -1,<a name="line.480"></a>
+<span class="sourceLineNo">481</span>            TiffDirectoryType.EXIF_DIRECTORY_UNKNOWN);<a name="line.481"></a>
+<span class="sourceLineNo">482</span>    public static final TagInfoShort EXIF_TAG_SUBJECT_DISTANCE_RANGE = new TagInfoShort(<a name="line.482"></a>
+<span class="sourceLineNo">483</span>            "SubjectDistanceRange", 0xa40c,<a name="line.483"></a>
+<span class="sourceLineNo">484</span>            TiffDirectoryType.EXIF_DIRECTORY_EXIF_IFD);<a name="line.484"></a>
+<span class="sourceLineNo">485</span>    public static final int SUBJECT_DISTANCE_RANGE_VALUE_MACRO = 1;<a name="line.485"></a>
+<span class="sourceLineNo">486</span>    public static final int SUBJECT_DISTANCE_RANGE_VALUE_CLOSE = 2;<a name="line.486"></a>
+<span class="sourceLineNo">487</span>    public static final int SUBJECT_DISTANCE_RANGE_VALUE_DISTANT = 3;<a name="line.487"></a>
+<span class="sourceLineNo">488</span>    public static final TagInfoAscii EXIF_TAG_IMAGE_UNIQUE_ID = new TagInfoAscii(<a name="line.488"></a>
+<span class="sourceLineNo">489</span>            "ImageUniqueID", 0xa420, 33,<a name="line.489"></a>
+<span class="sourceLineNo">490</span>            TiffDirectoryType.EXIF_DIRECTORY_EXIF_IFD);<a name="line.490"></a>
+<span class="sourceLineNo">491</span>    public static final TagInfoAscii EXIF_TAG_CAMERA_OWNER_NAME = new TagInfoAscii(<a name="line.491"></a>
+<span class="sourceLineNo">492</span>            "CameraOwnerName", 0xa430, -1,<a name="line.492"></a>
+<span class="sourceLineNo">493</span>            TiffDirectoryType.EXIF_DIRECTORY_EXIF_IFD);<a name="line.493"></a>
+<span class="sourceLineNo">494</span>    public static final TagInfoAscii EXIF_TAG_BODY_SERIAL_NUMBER = new TagInfoAscii(<a name="line.494"></a>
+<span class="sourceLineNo">495</span>            "BodySerialNumber", 0xa431, -1,<a name="line.495"></a>
+<span class="sourceLineNo">496</span>            TiffDirectoryType.EXIF_DIRECTORY_EXIF_IFD);<a name="line.496"></a>
+<span class="sourceLineNo">497</span>    public static final TagInfoRationals EXIF_TAG_LENS_SPECIFICATION = new TagInfoRationals(<a name="line.497"></a>
+<span class="sourceLineNo">498</span>            "LensSpecification", 0xa432, 4,<a name="line.498"></a>
+<span class="sourceLineNo">499</span>            TiffDirectoryType.EXIF_DIRECTORY_EXIF_IFD);<a name="line.499"></a>
+<span class="sourceLineNo">500</span>    public static final TagInfoAscii EXIF_TAG_LENS_MAKE = new TagInfoAscii(<a name="line.500"></a>
+<span class="sourceLineNo">501</span>            "LensMake", 0xa433, -1,<a name="line.501"></a>
+<span class="sourceLineNo">502</span>            TiffDirectoryType.EXIF_DIRECTORY_EXIF_IFD);<a name="line.502"></a>
+<span class="sourceLineNo">503</span>    public static final TagInfoAscii EXIF_TAG_LENS_MODEL = new TagInfoAscii(<a name="line.503"></a>
+<span class="sourceLineNo">504</span>            "LensModel", 0xa434, -1,<a name="line.504"></a>
+<span class="sourceLineNo">505</span>            TiffDirectoryType.EXIF_DIRECTORY_EXIF_IFD);<a name="line.505"></a>
+<span class="sourceLineNo">506</span>    public static final TagInfoAscii EXIF_TAG_LENS_SERIAL_NUMBER = new TagInfoAscii(<a name="line.506"></a>
+<span class="sourceLineNo">507</span>            "LensSerialNumber", 0xa435, -1,<a name="line.507"></a>
+<span class="sourceLineNo">508</span>            TiffDirectoryType.EXIF_DIRECTORY_EXIF_IFD);<a name="line.508"></a>
+<span class="sourceLineNo">509</span>    public static final TagInfoRational EXIF_TAG_GAMMA = new TagInfoRational(<a name="line.509"></a>
+<span class="sourceLineNo">510</span>            "Gamma", 0xa500,<a name="line.510"></a>
+<span class="sourceLineNo">511</span>            TiffDirectoryType.EXIF_DIRECTORY_EXIF_IFD);<a name="line.511"></a>
+<span class="sourceLineNo">512</span>    public static final TagInfoUnknowns EXIF_TAG_ANNOTATIONS = new TagInfoUnknowns(<a name="line.512"></a>
+<span class="sourceLineNo">513</span>            "Annotations", 0xc44f, -1,<a name="line.513"></a>
+<span class="sourceLineNo">514</span>            TiffDirectoryType.EXIF_DIRECTORY_UNKNOWN);<a name="line.514"></a>
+<span class="sourceLineNo">515</span>    public static final TagInfoUndefined EXIF_TAG_PRINT_IM = new TagInfoUndefined(<a name="line.515"></a>
+<span class="sourceLineNo">516</span>            "PrintIM", 0xc4a5,<a name="line.516"></a>
+<span class="sourceLineNo">517</span>            TiffDirectoryType.EXIF_DIRECTORY_IFD0);<a name="line.517"></a>
+<span class="sourceLineNo">518</span>    public static final TagInfoSLong EXIF_TAG_OFFSET_SCHEMA = new TagInfoSLong(<a name="line.518"></a>
+<span class="sourceLineNo">519</span>            "OffsetSchema", 0xea1d,<a name="line.519"></a>
+<span class="sourceLineNo">520</span>            TiffDirectoryType.EXIF_DIRECTORY_EXIF_IFD);<a name="line.520"></a>
+<span class="sourceLineNo">521</span>    public static final TagInfoAscii EXIF_TAG_OWNER_NAME = new TagInfoAscii(<a name="line.521"></a>
+<span class="sourceLineNo">522</span>            "OwnerName", 0xfde8, -1,<a name="line.522"></a>
+<span class="sourceLineNo">523</span>            TiffDirectoryType.EXIF_DIRECTORY_EXIF_IFD);<a name="line.523"></a>
+<span class="sourceLineNo">524</span>    public static final TagInfoAscii EXIF_TAG_SERIAL_NUMBER = new TagInfoAscii(<a name="line.524"></a>
+<span class="sourceLineNo">525</span>            "SerialNumber", 0xfde9, -1,<a name="line.525"></a>
+<span class="sourceLineNo">526</span>            TiffDirectoryType.EXIF_DIRECTORY_EXIF_IFD);<a name="line.526"></a>
+<span class="sourceLineNo">527</span>    public static final TagInfoAscii EXIF_TAG_LENS = new TagInfoAscii(<a name="line.527"></a>
+<span class="sourceLineNo">528</span>            "Lens", 0xfdea, -1,<a name="line.528"></a>
+<span class="sourceLineNo">529</span>            TiffDirectoryType.EXIF_DIRECTORY_EXIF_IFD);<a name="line.529"></a>
+<span class="sourceLineNo">530</span>    public static final TagInfoAscii EXIF_TAG_RAW_FILE = new TagInfoAscii(<a name="line.530"></a>
+<span class="sourceLineNo">531</span>            "RawFile", 0xfe4c, -1,<a name="line.531"></a>
+<span class="sourceLineNo">532</span>            TiffDirectoryType.EXIF_DIRECTORY_EXIF_IFD);<a name="line.532"></a>
+<span class="sourceLineNo">533</span>    public static final TagInfoAscii EXIF_TAG_CONVERTER = new TagInfoAscii(<a name="line.533"></a>
+<span class="sourceLineNo">534</span>            "Converter", 0xfe4d, -1,<a name="line.534"></a>
+<span class="sourceLineNo">535</span>            TiffDirectoryType.EXIF_DIRECTORY_EXIF_IFD);<a name="line.535"></a>
+<span class="sourceLineNo">536</span>    public static final TagInfoAscii EXIF_TAG_WHITE_BALANCE_2 = new TagInfoAscii(<a name="line.536"></a>
+<span class="sourceLineNo">537</span>            "WhiteBalance", 0xfe4e, -1,<a name="line.537"></a>
+<span class="sourceLineNo">538</span>            TiffDirectoryType.EXIF_DIRECTORY_EXIF_IFD);<a name="line.538"></a>
+<span class="sourceLineNo">539</span>    public static final TagInfoAscii EXIF_TAG_EXPOSURE = new TagInfoAscii(<a name="line.539"></a>
+<span class="sourceLineNo">540</span>            "Exposure", 0xfe51, -1,<a name="line.540"></a>
+<span class="sourceLineNo">541</span>            TiffDirectoryType.EXIF_DIRECTORY_EXIF_IFD);<a name="line.541"></a>
+<span class="sourceLineNo">542</span>    public static final TagInfoAscii EXIF_TAG_SHADOWS = new TagInfoAscii(<a name="line.542"></a>
+<span class="sourceLineNo">543</span>            "Shadows", 0xfe52, -1,<a name="line.543"></a>
+<span class="sourceLineNo">544</span>            TiffDirectoryType.EXIF_DIRECTORY_EXIF_IFD);<a name="line.544"></a>
+<span class="sourceLineNo">545</span>    public static final TagInfoAscii EXIF_TAG_BRIGHTNESS = new TagInfoAscii(<a name="line.545"></a>
+<span class="sourceLineNo">546</span>            "Brightness", 0xfe53, -1,<a name="line.546"></a>
+<span class="sourceLineNo">547</span>            TiffDirectoryType.EXIF_DIRECTORY_EXIF_IFD);<a name="line.547"></a>
+<span class="sourceLineNo">548</span>    public static final TagInfoAscii EXIF_TAG_CONTRAST_2 = new TagInfoAscii(<a name="line.548"></a>
+<span class="sourceLineNo">549</span>            "Contrast", 0xfe54, -1,<a name="line.549"></a>
+<span class="sourceLineNo">550</span>            TiffDirectoryType.EXIF_DIRECTORY_EXIF_IFD);<a name="line.550"></a>
+<span class="sourceLineNo">551</span>    public static final TagInfoAscii EXIF_TAG_SATURATION_2 = new TagInfoAscii(<a name="line.551"></a>
+<span class="sourceLineNo">552</span>            "Saturation", 0xfe55, -1,<a name="line.552"></a>
+<span class="sourceLineNo">553</span>            TiffDirectoryType.EXIF_DIRECTORY_EXIF_IFD);<a name="line.553"></a>
+<span class="sourceLineNo">554</span>    public static final TagInfoAscii EXIF_TAG_SHARPNESS_2 = new TagInfoAscii(<a name="line.554"></a>
+<span class="sourceLineNo">555</span>            "Sharpness", 0xfe56, -1,<a name="line.555"></a>
+<span class="sourceLineNo">556</span>            TiffDirectoryType.EXIF_DIRECTORY_EXIF_IFD);<a name="line.556"></a>
+<span class="sourceLineNo">557</span>    public static final TagInfoAscii EXIF_TAG_SMOOTHNESS = new TagInfoAscii(<a name="line.557"></a>
+<span class="sourceLineNo">558</span>            "Smoothness", 0xfe57, -1,<a name="line.558"></a>
+<span class="sourceLineNo">559</span>            TiffDirectoryType.EXIF_DIRECTORY_EXIF_IFD);<a name="line.559"></a>
+<span class="sourceLineNo">560</span>    public static final TagInfoAscii EXIF_TAG_MOIRE_FILTER = new TagInfoAscii(<a name="line.560"></a>
+<span class="sourceLineNo">561</span>            "MoireFilter", 0xfe58, -1,<a name="line.561"></a>
+<span class="sourceLineNo">562</span>            TiffDirectoryType.EXIF_DIRECTORY_EXIF_IFD);<a name="line.562"></a>
+<span class="sourceLineNo">563</span><a name="line.563"></a>
+<span class="sourceLineNo">564</span>    public static final List&lt;TagInfo&gt; ALL_EXIF_TAGS =<a name="line.564"></a>
+<span class="sourceLineNo">565</span>            Collections.unmodifiableList(Arrays.asList(<a name="line.565"></a>
+<span class="sourceLineNo">566</span>                    EXIF_TAG_INTEROPERABILITY_INDEX, EXIF_TAG_INTEROPERABILITY_VERSION,<a name="line.566"></a>
+<span class="sourceLineNo">567</span>                    EXIF_TAG_PROCESSING_SOFTWARE,<a name="line.567"></a>
+<span class="sourceLineNo">568</span>                    EXIF_TAG_SOFTWARE,<a name="line.568"></a>
+<span class="sourceLineNo">569</span>                    EXIF_TAG_PREVIEW_IMAGE_START_IFD0,<a name="line.569"></a>
+<span class="sourceLineNo">570</span>                    EXIF_TAG_PREVIEW_IMAGE_START_SUB_IFD1,<a name="line.570"></a>
+<span class="sourceLineNo">571</span>                    EXIF_TAG_JPG_FROM_RAW_START_SUB_IFD2,<a name="line.571"></a>
+<span class="sourceLineNo">572</span>                    EXIF_TAG_PREVIEW_IMAGE_LENGTH_IFD0,<a name="line.572"></a>
+<span class="sourceLineNo">573</span>                    EXIF_TAG_PREVIEW_IMAGE_LENGTH_SUB_IFD1,<a name="line.573"></a>
+<span class="sourceLineNo">574</span>                    EXIF_TAG_JPG_FROM_RAW_LENGTH_SUB_IFD2,<a name="line.574"></a>
+<span class="sourceLineNo">575</span>                    EXIF_TAG_PREVIEW_IMAGE_START_MAKER_NOTES,<a name="line.575"></a>
+<span class="sourceLineNo">576</span>                    EXIF_TAG_JPG_FROM_RAW_START_SUB_IFD,<a name="line.576"></a>
+<span class="sourceLineNo">577</span>                    EXIF_TAG_JPG_FROM_RAW_START_IFD2, EXIF_TAG_OTHER_IMAGE_START,<a name="line.577"></a>
+<span class="sourceLineNo">578</span>                    EXIF_TAG_PREVIEW_IMAGE_LENGTH_MAKER_NOTES,<a name="line.578"></a>
+<span class="sourceLineNo">579</span>                    EXIF_TAG_JPG_FROM_RAW_LENGTH_SUB_IFD,<a name="line.579"></a>
+<span class="sourceLineNo">580</span>                    EXIF_TAG_JPG_FROM_RAW_LENGTH_IFD2, EXIF_TAG_OTHER_IMAGE_LENGTH,<a name="line.580"></a>
+<span class="sourceLineNo">581</span>                    EXIF_TAG_APPLICATION_NOTES,<a name="line.581"></a>
+<span class="sourceLineNo">582</span>                    EXIF_TAG_MATTEING, EXIF_TAG_DATA_TYPE,<a name="line.582"></a>
+<span class="sourceLineNo">583</span>                    EXIF_TAG_IMAGE_DEPTH, EXIF_TAG_TILE_DEPTH, EXIF_TAG_MODEL_2,<a name="line.583"></a>
+<span class="sourceLineNo">584</span>                    EXIF_TAG_EXPOSURE_TIME,<a name="line.584"></a>
+<span class="sourceLineNo">585</span>                    EXIF_TAG_FNUMBER, EXIF_TAG_IPTC_NAA,<a name="line.585"></a>
+<span class="sourceLineNo">586</span>                    EXIF_TAG_INTERGRAPH_PACKET_DATA,<a name="line.586"></a>
+<span class="sourceLineNo">587</span>                    EXIF_TAG_INTERGRAPH_FLAG_REGISTERS,<a name="line.587"></a>
+<span class="sourceLineNo">588</span>                    EXIF_TAG_SITE, EXIF_TAG_COLOR_SEQUENCE,<a name="line.588"></a>
+<span class="sourceLineNo">589</span>                    EXIF_TAG_IT8HEADER, EXIF_TAG_RASTER_PADDING,<a name="line.589"></a>
+<span class="sourceLineNo">590</span>                    EXIF_TAG_BITS_PER_RUN_LENGTH,<a name="line.590"></a>
+<span class="sourceLineNo">591</span>                    EXIF_TAG_BITS_PER_EXTENDED_RUN_LENGTH, EXIF_TAG_COLOR_TABLE,<a name="line.591"></a>
+<span class="sourceLineNo">592</span>                    EXIF_TAG_IMAGE_COLOR_INDICATOR,<a name="line.592"></a>
+<span class="sourceLineNo">593</span>                    EXIF_TAG_BACKGROUND_COLOR_INDICATOR, EXIF_TAG_IMAGE_COLOR_VALUE,<a name="line.593"></a>
+<span class="sourceLineNo">594</span>                    EXIF_TAG_BACKGROUND_COLOR_VALUE, EXIF_TAG_PIXEL_INTENSITY_RANGE,<a name="line.594"></a>
+<span class="sourceLineNo">595</span>                    EXIF_TAG_TRANSPARENCY_INDICATOR, EXIF_TAG_COLOR_CHARACTERIZATION,<a name="line.595"></a>
+<span class="sourceLineNo">596</span>                    EXIF_TAG_HCUSAGE, EXIF_TAG_SEMINFO, EXIF_TAG_AFCP_IPTC,<a name="line.596"></a>
+<span class="sourceLineNo">597</span>                    EXIF_TAG_LEAF_DATA,<a name="line.597"></a>
+<span class="sourceLineNo">598</span>                    EXIF_TAG_PHOTOSHOP_SETTINGS, EXIF_TAG_EXIF_OFFSET,<a name="line.598"></a>
+<span class="sourceLineNo">599</span>                    EXIF_TAG_EXPOSURE_PROGRAM,<a name="line.599"></a>
+<span class="sourceLineNo">600</span>                    EXIF_TAG_SPECTRAL_SENSITIVITY, EXIF_TAG_GPSINFO, EXIF_TAG_ISO,<a name="line.600"></a>
+<span class="sourceLineNo">601</span>                    EXIF_TAG_OPTO_ELECTRIC_CONV_FACTOR,<a name="line.601"></a>
+<span class="sourceLineNo">602</span>                    EXIF_TAG_LEAF_SUB_IFD,<a name="line.602"></a>
+<span class="sourceLineNo">603</span>                    EXIF_TAG_EXIF_VERSION, EXIF_TAG_DATE_TIME_ORIGINAL,<a name="line.603"></a>
+<span class="sourceLineNo">604</span>                    EXIF_TAG_DATE_TIME_DIGITIZED, EXIF_TAG_COMPONENTS_CONFIGURATION,<a name="line.604"></a>
+<span class="sourceLineNo">605</span>                    EXIF_TAG_COMPRESSED_BITS_PER_PIXEL, EXIF_TAG_SHUTTER_SPEED_VALUE,<a name="line.605"></a>
+<span class="sourceLineNo">606</span>                    EXIF_TAG_APERTURE_VALUE, EXIF_TAG_BRIGHTNESS_VALUE,<a name="line.606"></a>
+<span class="sourceLineNo">607</span>                    EXIF_TAG_EXPOSURE_COMPENSATION, EXIF_TAG_MAX_APERTURE_VALUE,<a name="line.607"></a>
+<span class="sourceLineNo">608</span>                    EXIF_TAG_SUBJECT_DISTANCE, EXIF_TAG_IMAGE_UNIQUE_ID,<a name="line.608"></a>
+<span class="sourceLineNo">609</span>                    EXIF_TAG_CAMERA_OWNER_NAME,<a name="line.609"></a>
+<span class="sourceLineNo">610</span>                    EXIF_TAG_BODY_SERIAL_NUMBER,<a name="line.610"></a>
+<span class="sourceLineNo">611</span>                    EXIF_TAG_LENS_SPECIFICATION,<a name="line.611"></a>
+<span class="sourceLineNo">612</span>                    EXIF_TAG_LENS_MAKE,<a name="line.612"></a>
+<span class="sourceLineNo">613</span>                    EXIF_TAG_LENS_MODEL,<a name="line.613"></a>
+<span class="sourceLineNo">614</span>                    EXIF_TAG_LENS_SERIAL_NUMBER,<a name="line.614"></a>
+<span class="sourceLineNo">615</span>                    EXIF_TAG_METERING_MODE,<a name="line.615"></a>
+<span class="sourceLineNo">616</span>                    EXIF_TAG_LIGHT_SOURCE, EXIF_TAG_FLASH, EXIF_TAG_FOCAL_LENGTH,<a name="line.616"></a>
+<span class="sourceLineNo">617</span>                    EXIF_TAG_SUBJECT_AREA,<a name="line.617"></a>
+<span class="sourceLineNo">618</span>                    EXIF_TAG_STO_NITS, EXIF_TAG_SUB_SEC_TIME,<a name="line.618"></a>
+<span class="sourceLineNo">619</span>                    EXIF_TAG_SUB_SEC_TIME_ORIGINAL, EXIF_TAG_SUB_SEC_TIME_DIGITIZED,<a name="line.619"></a>
+<span class="sourceLineNo">620</span>                    EXIF_TAG_FLASHPIX_VERSION,<a name="line.620"></a>
+<span class="sourceLineNo">621</span>                    EXIF_TAG_EXIF_IMAGE_WIDTH, EXIF_TAG_EXIF_IMAGE_LENGTH,<a name="line.621"></a>
+<span class="sourceLineNo">622</span>                    EXIF_TAG_RELATED_SOUND_FILE, EXIF_TAG_INTEROP_OFFSET,<a name="line.622"></a>
+<span class="sourceLineNo">623</span>                    EXIF_TAG_FLASH_ENERGY_EXIF_IFD,<a name="line.623"></a>
+<span class="sourceLineNo">624</span>                    EXIF_TAG_SPATIAL_FREQUENCY_RESPONSE_2, EXIF_TAG_NOISE_2,<a name="line.624"></a>
+<span class="sourceLineNo">625</span>                    EXIF_TAG_FOCAL_PLANE_XRESOLUTION_EXIF_IFD,<a name="line.625"></a>
+<span class="sourceLineNo">626</span>                    EXIF_TAG_FOCAL_PLANE_YRESOLUTION_EXIF_IFD,<a name="line.626"></a>
+<span class="sourceLineNo">627</span>                    EXIF_TAG_FOCAL_PLANE_RESOLUTION_UNIT_EXIF_IFD,<a name="line.627"></a>
+<span class="sourceLineNo">628</span>                    EXIF_TAG_IMAGE_NUMBER, EXIF_TAG_SECURITY_CLASSIFICATION,<a name="line.628"></a>
+<span class="sourceLineNo">629</span>                    EXIF_TAG_IMAGE_HISTORY, EXIF_TAG_SUBJECT_LOCATION,<a name="line.629"></a>
+<span class="sourceLineNo">630</span>                    EXIF_TAG_EXPOSURE_INDEX_EXIF_IFD, EXIF_TAG_TIFF_EPSTANDARD_ID_2,<a name="line.630"></a>
+<span class="sourceLineNo">631</span>                    EXIF_TAG_SENSING_METHOD_EXIF_IFD, EXIF_TAG_FILE_SOURCE,<a name="line.631"></a>
+<span class="sourceLineNo">632</span>                    EXIF_TAG_SCENE_TYPE, EXIF_TAG_CFAPATTERN, EXIF_TAG_CUSTOM_RENDERED,<a name="line.632"></a>
+<span class="sourceLineNo">633</span>                    EXIF_TAG_EXPOSURE_MODE, EXIF_TAG_WHITE_BALANCE_1,<a name="line.633"></a>
+<span class="sourceLineNo">634</span>                    EXIF_TAG_DIGITAL_ZOOM_RATIO, EXIF_TAG_FOCAL_LENGTH_IN_35MM_FORMAT,<a name="line.634"></a>
+<span class="sourceLineNo">635</span>                    EXIF_TAG_SCENE_CAPTURE_TYPE, EXIF_TAG_GAIN_CONTROL,<a name="line.635"></a>
+<span class="sourceLineNo">636</span>                    EXIF_TAG_CONTRAST_1, EXIF_TAG_SATURATION_1, EXIF_TAG_SHARPNESS_1,<a name="line.636"></a>
+<span class="sourceLineNo">637</span>                    EXIF_TAG_DEVICE_SETTING_DESCRIPTION,<a name="line.637"></a>
+<span class="sourceLineNo">638</span>                    EXIF_TAG_SUBJECT_DISTANCE_RANGE, EXIF_TAG_IMAGE_UNIQUE_ID,<a name="line.638"></a>
+<span class="sourceLineNo">639</span>                    EXIF_TAG_GAMMA,<a name="line.639"></a>
+<span class="sourceLineNo">640</span>                    EXIF_TAG_ANNOTATIONS, EXIF_TAG_PRINT_IM,<a name="line.640"></a>
+<span class="sourceLineNo">641</span>                    EXIF_TAG_OFFSET_SCHEMA, EXIF_TAG_OWNER_NAME,<a name="line.641"></a>
+<span class="sourceLineNo">642</span>                    EXIF_TAG_SERIAL_NUMBER, EXIF_TAG_LENS, EXIF_TAG_RAW_FILE,<a name="line.642"></a>
+<span class="sourceLineNo">643</span>                    EXIF_TAG_CONVERTER, EXIF_TAG_WHITE_BALANCE_2, EXIF_TAG_EXPOSURE,<a name="line.643"></a>
+<span class="sourceLineNo">644</span>                    EXIF_TAG_SHADOWS, EXIF_TAG_BRIGHTNESS, EXIF_TAG_CONTRAST_2,<a name="line.644"></a>
+<span class="sourceLineNo">645</span>                    EXIF_TAG_SATURATION_2, EXIF_TAG_SHARPNESS_2, EXIF_TAG_SMOOTHNESS,<a name="line.645"></a>
+<span class="sourceLineNo">646</span>                    EXIF_TAG_MOIRE_FILTER,<a name="line.646"></a>
+<span class="sourceLineNo">647</span><a name="line.647"></a>
+<span class="sourceLineNo">648</span>                    EXIF_TAG_USER_COMMENT, //<a name="line.648"></a>
+<span class="sourceLineNo">649</span><a name="line.649"></a>
+<span class="sourceLineNo">650</span>                    EXIF_TAG_MAKER_NOTE));<a name="line.650"></a>
+<span class="sourceLineNo">651</span><a name="line.651"></a>
+<span class="sourceLineNo">652</span>    private ExifTagConstants() {<a name="line.652"></a>
+<span class="sourceLineNo">653</span>    }<a name="line.653"></a>
+<span class="sourceLineNo">654</span>}<a name="line.654"></a>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</pre>
+</div>
+</body>
+</html>

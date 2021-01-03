@@ -4,22 +4,7 @@
     <option name="ANALYZE_TEST_SOURCES" value="false" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="ae4eccaa-233f-45c5-91c7-c0a5a2b8b1e3" name="Default" comment="0.9.4b2 - Cleaned up unit-tests">
-      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/derby.log" beforeDir="false" afterPath="$PROJECT_DIR$/derby.log" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/out/prod/log4j.properties" beforeDir="false" afterPath="$PROJECT_DIR$/out/prod/log4j.properties" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/out/prod/logback.xml" beforeDir="false" afterPath="$PROJECT_DIR$/out/prod/logback.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/out/prod/net/sf/persism/MetaData$1.class" beforeDir="false" afterPath="$PROJECT_DIR$/out/prod/net/sf/persism/MetaData$1.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/out/prod/net/sf/persism/MetaData.class" beforeDir="false" afterPath="$PROJECT_DIR$/out/prod/net/sf/persism/MetaData.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/persism.log" beforeDir="false" afterPath="$PROJECT_DIR$/persism.log" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/log4j.properties" beforeDir="false" afterPath="$PROJECT_DIR$/src/log4j.properties" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/logback.xml" beforeDir="false" afterPath="$PROJECT_DIR$/src/logback.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/net/sf/persism/ConnectionTypes.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/net/sf/persism/ConnectionTypes.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/net/sf/persism/MetaData.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/net/sf/persism/MetaData.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/test/net/sf/persism/TestMSSQL.java" beforeDir="false" afterPath="$PROJECT_DIR$/test/net/sf/persism/TestMSSQL.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/test/net/sf/persism/dao/Contact.java" beforeDir="false" afterPath="$PROJECT_DIR$/test/net/sf/persism/dao/Contact.java" afterDir="false" />
-    </list>
+    <list default="true" id="ae4eccaa-233f-45c5-91c7-c0a5a2b8b1e3" name="Default" comment="0.9.4b3 - Added support for delimiters for table and column names" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -881,7 +866,7 @@
       <workItem from="1609673891314" duration="87000" />
       <workItem from="1609674736780" duration="6000" />
       <workItem from="1609674765341" duration="60000" />
-      <workItem from="1609674840089" duration="12862000" />
+      <workItem from="1609674840089" duration="13338000" />
     </task>
     <task id="LOCAL-00001" summary="Update now uses Persistable">
       <created>1333275659133</created>
@@ -1023,7 +1008,14 @@
       <option name="project" value="LOCAL" />
       <updated>1609684364622</updated>
     </task>
-    <option name="localTasksCounter" value="21" />
+    <task id="LOCAL-00021" summary="0.9.4b3 - Added support for delimiters for table and column names">
+      <created>1609702021211</created>
+      <option name="number" value="00021" />
+      <option name="presentableId" value="LOCAL-00021" />
+      <option name="project" value="LOCAL" />
+      <updated>1609702021211</updated>
+    </task>
+    <option name="localTasksCounter" value="22" />
     <servers />
   </component>
   <component name="TodoView" selected-index="0">
@@ -1093,6 +1085,42 @@
   <component name="TypeScriptGeneratedFilesManager">
     <option name="version" value="3" />
   </component>
+  <component name="Vcs.Log.Tabs.Properties">
+    <option name="TAB_STATES">
+      <map>
+        <entry key="1">
+          <value>
+            <State>
+              <option name="SHOW_ONLY_AFFECTED_CHANGES" value="true" />
+              <option name="FILTERS">
+                <map>
+                  <entry key="branch">
+                    <value>
+                      <list>
+                        <option value="HEAD" />
+                      </list>
+                    </value>
+                  </entry>
+                  <entry key="roots">
+                    <value>
+                      <list>
+                        <option value="$PROJECT_DIR$" />
+                      </list>
+                    </value>
+                  </entry>
+                </map>
+              </option>
+            </State>
+          </value>
+        </entry>
+      </map>
+    </option>
+    <option name="OPEN_GENERIC_TABS">
+      <map>
+        <entry key="1" value="TOOL_WINDOW" />
+      </map>
+    </option>
+  </component>
   <component name="Vcs.Log.UiProperties">
     <option name="RECENTLY_FILTERED_USER_GROUPS">
       <collection />
@@ -1129,7 +1157,8 @@
     <MESSAGE value="0.9.3 - added support for clob and int and float as properties where the database may store long or doubles." />
     <MESSAGE value="0.9.4b1 - Initial commit." />
     <MESSAGE value="0.9.4b2 - Cleaned up unit-tests" />
-    <option name="LAST_COMMIT_MESSAGE" value="0.9.4b2 - Cleaned up unit-tests" />
+    <MESSAGE value="0.9.4b3 - Added support for delimiters for table and column names" />
+    <option name="LAST_COMMIT_MESSAGE" value="0.9.4b3 - Added support for delimiters for table and column names" />
     <option name="MAKE_NEW_CHANGELIST_ACTIVE" value="true" />
   </component>
   <component name="XDebuggerManager">

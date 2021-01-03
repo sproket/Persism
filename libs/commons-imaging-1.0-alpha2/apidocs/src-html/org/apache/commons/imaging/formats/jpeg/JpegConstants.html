@@ -1,0 +1,237 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="en">
+<head>
+<title>Source code</title>
+<link rel="stylesheet" type="text/css" href="../../../../../../../stylesheet.css" title="Style">
+</head>
+<body>
+<div class="sourceContainer">
+<pre><span class="sourceLineNo">001</span>/*<a name="line.1"></a>
+<span class="sourceLineNo">002</span> * Licensed to the Apache Software Foundation (ASF) under one or more<a name="line.2"></a>
+<span class="sourceLineNo">003</span> * contributor license agreements.  See the NOTICE file distributed with<a name="line.3"></a>
+<span class="sourceLineNo">004</span> * this work for additional information regarding copyright ownership.<a name="line.4"></a>
+<span class="sourceLineNo">005</span> * The ASF licenses this file to You under the Apache License, Version 2.0<a name="line.5"></a>
+<span class="sourceLineNo">006</span> * (the "License"); you may not use this file except in compliance with<a name="line.6"></a>
+<span class="sourceLineNo">007</span> * the License.  You may obtain a copy of the License at<a name="line.7"></a>
+<span class="sourceLineNo">008</span> *<a name="line.8"></a>
+<span class="sourceLineNo">009</span> *      http://www.apache.org/licenses/LICENSE-2.0<a name="line.9"></a>
+<span class="sourceLineNo">010</span> *<a name="line.10"></a>
+<span class="sourceLineNo">011</span> * Unless required by applicable law or agreed to in writing, software<a name="line.11"></a>
+<span class="sourceLineNo">012</span> * distributed under the License is distributed on an "AS IS" BASIS,<a name="line.12"></a>
+<span class="sourceLineNo">013</span> * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.<a name="line.13"></a>
+<span class="sourceLineNo">014</span> * See the License for the specific language governing permissions and<a name="line.14"></a>
+<span class="sourceLineNo">015</span> * limitations under the License.<a name="line.15"></a>
+<span class="sourceLineNo">016</span> */<a name="line.16"></a>
+<span class="sourceLineNo">017</span>package org.apache.commons.imaging.formats.jpeg;<a name="line.17"></a>
+<span class="sourceLineNo">018</span><a name="line.18"></a>
+<span class="sourceLineNo">019</span>import java.util.Arrays;<a name="line.19"></a>
+<span class="sourceLineNo">020</span>import java.util.Collections;<a name="line.20"></a>
+<span class="sourceLineNo">021</span>import java.util.List;<a name="line.21"></a>
+<span class="sourceLineNo">022</span><a name="line.22"></a>
+<span class="sourceLineNo">023</span>import org.apache.commons.imaging.common.BinaryConstant;<a name="line.23"></a>
+<span class="sourceLineNo">024</span>import org.apache.commons.imaging.common.BinaryFunctions;<a name="line.24"></a>
+<span class="sourceLineNo">025</span><a name="line.25"></a>
+<span class="sourceLineNo">026</span>public final class JpegConstants {<a name="line.26"></a>
+<span class="sourceLineNo">027</span>    public static final int MAX_SEGMENT_SIZE = 0xffff;<a name="line.27"></a>
+<span class="sourceLineNo">028</span><a name="line.28"></a>
+<span class="sourceLineNo">029</span>    public static final BinaryConstant JFIF0_SIGNATURE = new BinaryConstant(<a name="line.29"></a>
+<span class="sourceLineNo">030</span>            new byte[] { 0x4a, // J<a name="line.30"></a>
+<span class="sourceLineNo">031</span>                    0x46, // F<a name="line.31"></a>
+<span class="sourceLineNo">032</span>                    0x49, // I<a name="line.32"></a>
+<span class="sourceLineNo">033</span>                    0x46, // F<a name="line.33"></a>
+<span class="sourceLineNo">034</span>                    0x0, //<a name="line.34"></a>
+<span class="sourceLineNo">035</span>            });<a name="line.35"></a>
+<span class="sourceLineNo">036</span>    public static final BinaryConstant JFIF0_SIGNATURE_ALTERNATIVE = new BinaryConstant(<a name="line.36"></a>
+<span class="sourceLineNo">037</span>            new byte[] { 0x4a, // J<a name="line.37"></a>
+<span class="sourceLineNo">038</span>                    0x46, // F<a name="line.38"></a>
+<span class="sourceLineNo">039</span>                    0x49, // I<a name="line.39"></a>
+<span class="sourceLineNo">040</span>                    0x46, // F<a name="line.40"></a>
+<span class="sourceLineNo">041</span>                    0x20, //<a name="line.41"></a>
+<span class="sourceLineNo">042</span>            });<a name="line.42"></a>
+<span class="sourceLineNo">043</span><a name="line.43"></a>
+<span class="sourceLineNo">044</span>    public static final BinaryConstant EXIF_IDENTIFIER_CODE = new BinaryConstant(<a name="line.44"></a>
+<span class="sourceLineNo">045</span>            new byte[] { 0x45, // E<a name="line.45"></a>
+<span class="sourceLineNo">046</span>                    0x78, // x<a name="line.46"></a>
+<span class="sourceLineNo">047</span>                    0x69, // i<a name="line.47"></a>
+<span class="sourceLineNo">048</span>                    0x66, // f<a name="line.48"></a>
+<span class="sourceLineNo">049</span>            });<a name="line.49"></a>
+<span class="sourceLineNo">050</span><a name="line.50"></a>
+<span class="sourceLineNo">051</span>    public static final BinaryConstant XMP_IDENTIFIER = new BinaryConstant(<a name="line.51"></a>
+<span class="sourceLineNo">052</span>            new byte[] { 0x68, // h<a name="line.52"></a>
+<span class="sourceLineNo">053</span>                    0x74, // t<a name="line.53"></a>
+<span class="sourceLineNo">054</span>                    0x74, // t<a name="line.54"></a>
+<span class="sourceLineNo">055</span>                    0x70, // p<a name="line.55"></a>
+<span class="sourceLineNo">056</span>                    0x3A, // :<a name="line.56"></a>
+<span class="sourceLineNo">057</span>                    0x2F, // /<a name="line.57"></a>
+<span class="sourceLineNo">058</span>                    0x2F, // /<a name="line.58"></a>
+<span class="sourceLineNo">059</span>                    0x6E, // n<a name="line.59"></a>
+<span class="sourceLineNo">060</span>                    0x73, // s<a name="line.60"></a>
+<span class="sourceLineNo">061</span>                    0x2E, // .<a name="line.61"></a>
+<span class="sourceLineNo">062</span>                    0x61, // a<a name="line.62"></a>
+<span class="sourceLineNo">063</span>                    0x64, // d<a name="line.63"></a>
+<span class="sourceLineNo">064</span>                    0x6F, // o<a name="line.64"></a>
+<span class="sourceLineNo">065</span>                    0x62, // b<a name="line.65"></a>
+<span class="sourceLineNo">066</span>                    0x65, // e<a name="line.66"></a>
+<span class="sourceLineNo">067</span>                    0x2E, // .<a name="line.67"></a>
+<span class="sourceLineNo">068</span>                    0x63, // c<a name="line.68"></a>
+<span class="sourceLineNo">069</span>                    0x6F, // o<a name="line.69"></a>
+<span class="sourceLineNo">070</span>                    0x6D, // m<a name="line.70"></a>
+<span class="sourceLineNo">071</span>                    0x2F, // /<a name="line.71"></a>
+<span class="sourceLineNo">072</span>                    0x78, // x<a name="line.72"></a>
+<span class="sourceLineNo">073</span>                    0x61, // a<a name="line.73"></a>
+<span class="sourceLineNo">074</span>                    0x70, // p<a name="line.74"></a>
+<span class="sourceLineNo">075</span>                    0x2F, // /<a name="line.75"></a>
+<span class="sourceLineNo">076</span>                    0x31, // 1<a name="line.76"></a>
+<span class="sourceLineNo">077</span>                    0x2E, // .<a name="line.77"></a>
+<span class="sourceLineNo">078</span>                    0x30, // 0<a name="line.78"></a>
+<span class="sourceLineNo">079</span>                    0x2F, // /<a name="line.79"></a>
+<span class="sourceLineNo">080</span>                    0, // 0-terminated us-ascii string.<a name="line.80"></a>
+<span class="sourceLineNo">081</span>            });<a name="line.81"></a>
+<span class="sourceLineNo">082</span><a name="line.82"></a>
+<span class="sourceLineNo">083</span>    public static final BinaryConstant SOI = new BinaryConstant(new byte[] {<a name="line.83"></a>
+<span class="sourceLineNo">084</span>            (byte) 0xff, (byte) 0xd8 });<a name="line.84"></a>
+<span class="sourceLineNo">085</span>    public static final BinaryConstant EOI = new BinaryConstant(new byte[] {<a name="line.85"></a>
+<span class="sourceLineNo">086</span>            (byte) 0xff, (byte) 0xd9 });<a name="line.86"></a>
+<span class="sourceLineNo">087</span><a name="line.87"></a>
+<span class="sourceLineNo">088</span>    public static final int JPEG_APP0 = 0xE0;<a name="line.88"></a>
+<span class="sourceLineNo">089</span>    public static final int JPEG_APP0_MARKER = (0xff00) | (JPEG_APP0);<a name="line.89"></a>
+<span class="sourceLineNo">090</span>    public static final int JPEG_APP1_MARKER = (0xff00) | (JPEG_APP0 + 1);<a name="line.90"></a>
+<span class="sourceLineNo">091</span>    public static final int JPEG_APP2_MARKER = (0xff00) | (JPEG_APP0 + 2);<a name="line.91"></a>
+<span class="sourceLineNo">092</span>    public static final int JPEG_APP13_MARKER = (0xff00) | (JPEG_APP0 + 13);<a name="line.92"></a>
+<span class="sourceLineNo">093</span>    public static final int JPEG_APP14_MARKER = (0xff00) | (JPEG_APP0 + 14);<a name="line.93"></a>
+<span class="sourceLineNo">094</span>    public static final int JPEG_APP15_MARKER = (0xff00) | (JPEG_APP0 + 15);<a name="line.94"></a>
+<span class="sourceLineNo">095</span><a name="line.95"></a>
+<span class="sourceLineNo">096</span>    public static final int JFIF_MARKER = 0xFFE0;<a name="line.96"></a>
+<span class="sourceLineNo">097</span>    public static final int SOF0_MARKER = 0xFFc0;<a name="line.97"></a>
+<span class="sourceLineNo">098</span>    public static final int SOF1_MARKER = 0xFFc0 + 0x1;<a name="line.98"></a>
+<span class="sourceLineNo">099</span>    public static final int SOF2_MARKER = 0xFFc0 + 0x2;<a name="line.99"></a>
+<span class="sourceLineNo">100</span>    public static final int SOF3_MARKER = 0xFFc0 + 0x3;<a name="line.100"></a>
+<span class="sourceLineNo">101</span>    public static final int DHT_MARKER = 0xFFc0 + 0x4;<a name="line.101"></a>
+<span class="sourceLineNo">102</span>    public static final int SOF5_MARKER = 0xFFc0 + 0x5;<a name="line.102"></a>
+<span class="sourceLineNo">103</span>    public static final int SOF6_MARKER = 0xFFc0 + 0x6;<a name="line.103"></a>
+<span class="sourceLineNo">104</span>    public static final int SOF7_MARKER = 0xFFc0 + 0x7;<a name="line.104"></a>
+<span class="sourceLineNo">105</span>    public static final int SOF8_MARKER = 0xFFc0 + 0x8;<a name="line.105"></a>
+<span class="sourceLineNo">106</span>    public static final int SOF9_MARKER = 0xFFc0 + 0x9;<a name="line.106"></a>
+<span class="sourceLineNo">107</span>    public static final int SOF10_MARKER = 0xFFc0 + 0xa;<a name="line.107"></a>
+<span class="sourceLineNo">108</span>    public static final int SOF11_MARKER = 0xFFc0 + 0xb;<a name="line.108"></a>
+<span class="sourceLineNo">109</span>    public static final int DAC_MARKER = 0xFFc0 + 0xc;<a name="line.109"></a>
+<span class="sourceLineNo">110</span>    public static final int SOF13_MARKER = 0xFFc0 + 0xd;<a name="line.110"></a>
+<span class="sourceLineNo">111</span>    public static final int SOF14_MARKER = 0xFFc0 + 0xe;<a name="line.111"></a>
+<span class="sourceLineNo">112</span>    public static final int SOF15_MARKER = 0xFFc0 + 0xf;<a name="line.112"></a>
+<span class="sourceLineNo">113</span><a name="line.113"></a>
+<span class="sourceLineNo">114</span>    // marker for restart intervals<a name="line.114"></a>
+<span class="sourceLineNo">115</span>    public static final int DRI_MARKER = 0xFFdd;<a name="line.115"></a>
+<span class="sourceLineNo">116</span>    public static final int RST0_MARKER = 0xFFd0;<a name="line.116"></a>
+<span class="sourceLineNo">117</span>    public static final int RST1_MARKER = 0xFFd0 + 0x1;<a name="line.117"></a>
+<span class="sourceLineNo">118</span>    public static final int RST2_MARKER = 0xFFd0 + 0x2;<a name="line.118"></a>
+<span class="sourceLineNo">119</span>    public static final int RST3_MARKER = 0xFFd0 + 0x3;<a name="line.119"></a>
+<span class="sourceLineNo">120</span>    public static final int RST4_MARKER = 0xFFd0 + 0x4;<a name="line.120"></a>
+<span class="sourceLineNo">121</span>    public static final int RST5_MARKER = 0xFFd0 + 0x5;<a name="line.121"></a>
+<span class="sourceLineNo">122</span>    public static final int RST6_MARKER = 0xFFd0 + 0x6;<a name="line.122"></a>
+<span class="sourceLineNo">123</span>    public static final int RST7_MARKER = 0xFFd0 + 0x7;<a name="line.123"></a>
+<span class="sourceLineNo">124</span><a name="line.124"></a>
+<span class="sourceLineNo">125</span>    public static final int EOI_MARKER = 0xFFd9;<a name="line.125"></a>
+<span class="sourceLineNo">126</span>    public static final int SOS_MARKER = 0xFFda;<a name="line.126"></a>
+<span class="sourceLineNo">127</span>    public static final int DQT_MARKER = 0xFFdb;<a name="line.127"></a>
+<span class="sourceLineNo">128</span>    public static final int DNL_MARKER = 0xFFdc;<a name="line.128"></a>
+<span class="sourceLineNo">129</span>    public static final int COM_MARKER = 0xFFfe;<a name="line.129"></a>
+<span class="sourceLineNo">130</span><a name="line.130"></a>
+<span class="sourceLineNo">131</span>    public static final List&lt;Integer&gt; MARKERS = Collections.unmodifiableList(Arrays.asList(<a name="line.131"></a>
+<span class="sourceLineNo">132</span>            JPEG_APP0, JPEG_APP0_MARKER,<a name="line.132"></a>
+<span class="sourceLineNo">133</span>            JPEG_APP1_MARKER, JPEG_APP2_MARKER, JPEG_APP13_MARKER,<a name="line.133"></a>
+<span class="sourceLineNo">134</span>            JPEG_APP14_MARKER, JPEG_APP15_MARKER, JFIF_MARKER,<a name="line.134"></a>
+<span class="sourceLineNo">135</span>            SOF0_MARKER, SOF1_MARKER, SOF2_MARKER, SOF3_MARKER, DHT_MARKER,<a name="line.135"></a>
+<span class="sourceLineNo">136</span>            SOF5_MARKER, SOF6_MARKER, SOF7_MARKER, SOF8_MARKER, SOF9_MARKER,<a name="line.136"></a>
+<span class="sourceLineNo">137</span>            SOF10_MARKER, SOF11_MARKER, DAC_MARKER, SOF13_MARKER,<a name="line.137"></a>
+<span class="sourceLineNo">138</span>            SOF14_MARKER, SOF15_MARKER, EOI_MARKER, SOS_MARKER, DQT_MARKER,<a name="line.138"></a>
+<span class="sourceLineNo">139</span>            DNL_MARKER, COM_MARKER, DRI_MARKER, RST0_MARKER, RST1_MARKER, RST2_MARKER,<a name="line.139"></a>
+<span class="sourceLineNo">140</span>            RST3_MARKER, RST4_MARKER, RST5_MARKER, RST6_MARKER, RST7_MARKER ));<a name="line.140"></a>
+<span class="sourceLineNo">141</span><a name="line.141"></a>
+<span class="sourceLineNo">142</span>    public static final BinaryConstant ICC_PROFILE_LABEL = new BinaryConstant(<a name="line.142"></a>
+<span class="sourceLineNo">143</span>            new byte[] { 0x49, 0x43, 0x43, 0x5F, 0x50, 0x52, 0x4F, 0x46, 0x49,<a name="line.143"></a>
+<span class="sourceLineNo">144</span>                    0x4C, 0x45, 0x0 });<a name="line.144"></a>
+<span class="sourceLineNo">145</span><a name="line.145"></a>
+<span class="sourceLineNo">146</span>    public static final BinaryConstant PHOTOSHOP_IDENTIFICATION_STRING = new BinaryConstant(<a name="line.146"></a>
+<span class="sourceLineNo">147</span>            new byte[] { 0x50, // P<a name="line.147"></a>
+<span class="sourceLineNo">148</span>                    0x68, // h<a name="line.148"></a>
+<span class="sourceLineNo">149</span>                    0x6F, // o<a name="line.149"></a>
+<span class="sourceLineNo">150</span>                    0x74, // t<a name="line.150"></a>
+<span class="sourceLineNo">151</span>                    0x6F, // o<a name="line.151"></a>
+<span class="sourceLineNo">152</span>                    0x73, // s<a name="line.152"></a>
+<span class="sourceLineNo">153</span>                    0x68, // h<a name="line.153"></a>
+<span class="sourceLineNo">154</span>                    0x6F, // o<a name="line.154"></a>
+<span class="sourceLineNo">155</span>                    0x70, // p<a name="line.155"></a>
+<span class="sourceLineNo">156</span>                    0x20, //<a name="line.156"></a>
+<span class="sourceLineNo">157</span>                    0x33, // 3<a name="line.157"></a>
+<span class="sourceLineNo">158</span>                    0x2E, // .<a name="line.158"></a>
+<span class="sourceLineNo">159</span>                    0x30, // 0<a name="line.159"></a>
+<span class="sourceLineNo">160</span>                    0, });<a name="line.160"></a>
+<span class="sourceLineNo">161</span>    public static final int CONST_8BIM = BinaryFunctions.charsToQuad('8', 'B', 'I', 'M');<a name="line.161"></a>
+<span class="sourceLineNo">162</span><a name="line.162"></a>
+<span class="sourceLineNo">163</span>    private JpegConstants() {<a name="line.163"></a>
+<span class="sourceLineNo">164</span>    }<a name="line.164"></a>
+<span class="sourceLineNo">165</span>}<a name="line.165"></a>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</pre>
+</div>
+</body>
+</html>

@@ -1,0 +1,806 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="en">
+<head>
+<title>Source code</title>
+<link rel="stylesheet" type="text/css" href="../../../../../../../stylesheet.css" title="Style">
+</head>
+<body>
+<div class="sourceContainer">
+<pre><span class="sourceLineNo">001</span>/*<a name="line.1"></a>
+<span class="sourceLineNo">002</span> *  Licensed under the Apache License, Version 2.0 (the "License");<a name="line.2"></a>
+<span class="sourceLineNo">003</span> *  you may not use this file except in compliance with the License.<a name="line.3"></a>
+<span class="sourceLineNo">004</span> *  You may obtain a copy of the License at<a name="line.4"></a>
+<span class="sourceLineNo">005</span> *<a name="line.5"></a>
+<span class="sourceLineNo">006</span> *       http://www.apache.org/licenses/LICENSE-2.0<a name="line.6"></a>
+<span class="sourceLineNo">007</span> *<a name="line.7"></a>
+<span class="sourceLineNo">008</span> *  Unless required by applicable law or agreed to in writing, software<a name="line.8"></a>
+<span class="sourceLineNo">009</span> *  distributed under the License is distributed on an "AS IS" BASIS,<a name="line.9"></a>
+<span class="sourceLineNo">010</span> *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.<a name="line.10"></a>
+<span class="sourceLineNo">011</span> *  See the License for the specific language governing permissions and<a name="line.11"></a>
+<span class="sourceLineNo">012</span> *  limitations under the License.<a name="line.12"></a>
+<span class="sourceLineNo">013</span> */<a name="line.13"></a>
+<span class="sourceLineNo">014</span>package org.apache.commons.imaging.formats.xpm;<a name="line.14"></a>
+<span class="sourceLineNo">015</span><a name="line.15"></a>
+<span class="sourceLineNo">016</span>import static org.apache.commons.imaging.ImagingConstants.PARAM_KEY_FORMAT;<a name="line.16"></a>
+<span class="sourceLineNo">017</span><a name="line.17"></a>
+<span class="sourceLineNo">018</span>import java.awt.Dimension;<a name="line.18"></a>
+<span class="sourceLineNo">019</span>import java.awt.image.BufferedImage;<a name="line.19"></a>
+<span class="sourceLineNo">020</span>import java.awt.image.ColorModel;<a name="line.20"></a>
+<span class="sourceLineNo">021</span>import java.awt.image.DataBuffer;<a name="line.21"></a>
+<span class="sourceLineNo">022</span>import java.awt.image.DirectColorModel;<a name="line.22"></a>
+<span class="sourceLineNo">023</span>import java.awt.image.IndexColorModel;<a name="line.23"></a>
+<span class="sourceLineNo">024</span>import java.awt.image.Raster;<a name="line.24"></a>
+<span class="sourceLineNo">025</span>import java.awt.image.WritableRaster;<a name="line.25"></a>
+<span class="sourceLineNo">026</span>import java.io.BufferedReader;<a name="line.26"></a>
+<span class="sourceLineNo">027</span>import java.io.ByteArrayInputStream;<a name="line.27"></a>
+<span class="sourceLineNo">028</span>import java.io.ByteArrayOutputStream;<a name="line.28"></a>
+<span class="sourceLineNo">029</span>import java.io.IOException;<a name="line.29"></a>
+<span class="sourceLineNo">030</span>import java.io.InputStream;<a name="line.30"></a>
+<span class="sourceLineNo">031</span>import java.io.InputStreamReader;<a name="line.31"></a>
+<span class="sourceLineNo">032</span>import java.io.OutputStream;<a name="line.32"></a>
+<span class="sourceLineNo">033</span>import java.io.PrintWriter;<a name="line.33"></a>
+<span class="sourceLineNo">034</span>import java.nio.charset.StandardCharsets;<a name="line.34"></a>
+<span class="sourceLineNo">035</span>import java.util.ArrayList;<a name="line.35"></a>
+<span class="sourceLineNo">036</span>import java.util.Arrays;<a name="line.36"></a>
+<span class="sourceLineNo">037</span>import java.util.HashMap;<a name="line.37"></a>
+<span class="sourceLineNo">038</span>import java.util.Locale;<a name="line.38"></a>
+<span class="sourceLineNo">039</span>import java.util.Map;<a name="line.39"></a>
+<span class="sourceLineNo">040</span>import java.util.Map.Entry;<a name="line.40"></a>
+<span class="sourceLineNo">041</span>import java.util.Properties;<a name="line.41"></a>
+<span class="sourceLineNo">042</span>import java.util.UUID;<a name="line.42"></a>
+<span class="sourceLineNo">043</span><a name="line.43"></a>
+<span class="sourceLineNo">044</span>import org.apache.commons.imaging.ImageFormat;<a name="line.44"></a>
+<span class="sourceLineNo">045</span>import org.apache.commons.imaging.ImageFormats;<a name="line.45"></a>
+<span class="sourceLineNo">046</span>import org.apache.commons.imaging.ImageInfo;<a name="line.46"></a>
+<span class="sourceLineNo">047</span>import org.apache.commons.imaging.ImageParser;<a name="line.47"></a>
+<span class="sourceLineNo">048</span>import org.apache.commons.imaging.ImageReadException;<a name="line.48"></a>
+<span class="sourceLineNo">049</span>import org.apache.commons.imaging.ImageWriteException;<a name="line.49"></a>
+<span class="sourceLineNo">050</span>import org.apache.commons.imaging.common.BasicCParser;<a name="line.50"></a>
+<span class="sourceLineNo">051</span>import org.apache.commons.imaging.common.ImageMetadata;<a name="line.51"></a>
+<span class="sourceLineNo">052</span>import org.apache.commons.imaging.common.bytesource.ByteSource;<a name="line.52"></a>
+<span class="sourceLineNo">053</span>import org.apache.commons.imaging.palette.PaletteFactory;<a name="line.53"></a>
+<span class="sourceLineNo">054</span>import org.apache.commons.imaging.palette.SimplePalette;<a name="line.54"></a>
+<span class="sourceLineNo">055</span><a name="line.55"></a>
+<span class="sourceLineNo">056</span>public class XpmImageParser extends ImageParser {<a name="line.56"></a>
+<span class="sourceLineNo">057</span>    private static final String DEFAULT_EXTENSION = ".xpm";<a name="line.57"></a>
+<span class="sourceLineNo">058</span>    private static final String[] ACCEPTED_EXTENSIONS = { ".xpm", };<a name="line.58"></a>
+<span class="sourceLineNo">059</span>    private static Map&lt;String, Integer&gt; colorNames;<a name="line.59"></a>
+<span class="sourceLineNo">060</span>    private static final char[] WRITE_PALETTE = { ' ', '.', 'X', 'o', 'O', '+',<a name="line.60"></a>
+<span class="sourceLineNo">061</span>        '@', '#', '$', '%', '&amp;', '*', '=', '-', ';', ':', '&gt;', ',', '&lt;',<a name="line.61"></a>
+<span class="sourceLineNo">062</span>        '1', '2', '3', '4', '5', '6', '7', '8', '9', '0', 'q', 'w', 'e',<a name="line.62"></a>
+<span class="sourceLineNo">063</span>        'r', 't', 'y', 'u', 'i', 'p', 'a', 's', 'd', 'f', 'g', 'h', 'j',<a name="line.63"></a>
+<span class="sourceLineNo">064</span>        'k', 'l', 'z', 'x', 'c', 'v', 'b', 'n', 'm', 'M', 'N', 'B', 'V',<a name="line.64"></a>
+<span class="sourceLineNo">065</span>        'C', 'Z', 'A', 'S', 'D', 'F', 'G', 'H', 'J', 'K', 'L', 'P', 'I',<a name="line.65"></a>
+<span class="sourceLineNo">066</span>        'U', 'Y', 'T', 'R', 'E', 'W', 'Q', '!', '~', '^', '/', '(', ')',<a name="line.66"></a>
+<span class="sourceLineNo">067</span>        '_', '`', '\'', ']', '[', '{', '}', '|', };<a name="line.67"></a>
+<span class="sourceLineNo">068</span><a name="line.68"></a>
+<span class="sourceLineNo">069</span>    private static void loadColorNames() throws ImageReadException {<a name="line.69"></a>
+<span class="sourceLineNo">070</span>        synchronized (XpmImageParser.class) {<a name="line.70"></a>
+<span class="sourceLineNo">071</span>            if (colorNames != null) {<a name="line.71"></a>
+<span class="sourceLineNo">072</span>                return;<a name="line.72"></a>
+<span class="sourceLineNo">073</span>            }<a name="line.73"></a>
+<span class="sourceLineNo">074</span><a name="line.74"></a>
+<span class="sourceLineNo">075</span>            try {<a name="line.75"></a>
+<span class="sourceLineNo">076</span>                final InputStream rgbTxtStream =<a name="line.76"></a>
+<span class="sourceLineNo">077</span>                        XpmImageParser.class.getResourceAsStream("rgb.txt");<a name="line.77"></a>
+<span class="sourceLineNo">078</span>                if (rgbTxtStream == null) {<a name="line.78"></a>
+<span class="sourceLineNo">079</span>                    throw new ImageReadException("Couldn't find rgb.txt in our resources");<a name="line.79"></a>
+<span class="sourceLineNo">080</span>                }<a name="line.80"></a>
+<span class="sourceLineNo">081</span>                final Map&lt;String, Integer&gt; colors = new HashMap&lt;&gt;();<a name="line.81"></a>
+<span class="sourceLineNo">082</span>                try (InputStreamReader isReader = new InputStreamReader(rgbTxtStream, StandardCharsets.US_ASCII);<a name="line.82"></a>
+<span class="sourceLineNo">083</span>                        BufferedReader reader = new BufferedReader(isReader)) {<a name="line.83"></a>
+<span class="sourceLineNo">084</span>                    String line;<a name="line.84"></a>
+<span class="sourceLineNo">085</span>                    while ((line = reader.readLine()) != null) {<a name="line.85"></a>
+<span class="sourceLineNo">086</span>                        if (line.charAt(0) == '!') {<a name="line.86"></a>
+<span class="sourceLineNo">087</span>                            continue;<a name="line.87"></a>
+<span class="sourceLineNo">088</span>                        }<a name="line.88"></a>
+<span class="sourceLineNo">089</span>                        try {<a name="line.89"></a>
+<span class="sourceLineNo">090</span>                            final int red = Integer.parseInt(line.substring(0, 3).trim());<a name="line.90"></a>
+<span class="sourceLineNo">091</span>                            final int green = Integer.parseInt(line.substring(4, 7).trim());<a name="line.91"></a>
+<span class="sourceLineNo">092</span>                            final int blue = Integer.parseInt(line.substring(8, 11).trim());<a name="line.92"></a>
+<span class="sourceLineNo">093</span>                            final String colorName = line.substring(11).trim();<a name="line.93"></a>
+<span class="sourceLineNo">094</span>                            colors.put(colorName.toLowerCase(Locale.ENGLISH), 0xff000000 | (red &lt;&lt; 16)<a name="line.94"></a>
+<span class="sourceLineNo">095</span>                                    | (green &lt;&lt; 8) | blue);<a name="line.95"></a>
+<span class="sourceLineNo">096</span>                        } catch (final NumberFormatException nfe) {<a name="line.96"></a>
+<span class="sourceLineNo">097</span>                            throw new ImageReadException("Couldn't parse color in rgb.txt", nfe);<a name="line.97"></a>
+<span class="sourceLineNo">098</span>                        }<a name="line.98"></a>
+<span class="sourceLineNo">099</span>                    }<a name="line.99"></a>
+<span class="sourceLineNo">100</span>                }<a name="line.100"></a>
+<span class="sourceLineNo">101</span>                colorNames = colors;<a name="line.101"></a>
+<span class="sourceLineNo">102</span>            } catch (final IOException ioException) {<a name="line.102"></a>
+<span class="sourceLineNo">103</span>                throw new ImageReadException("Could not parse rgb.txt", ioException);<a name="line.103"></a>
+<span class="sourceLineNo">104</span>            }<a name="line.104"></a>
+<span class="sourceLineNo">105</span>        }<a name="line.105"></a>
+<span class="sourceLineNo">106</span>    }<a name="line.106"></a>
+<span class="sourceLineNo">107</span><a name="line.107"></a>
+<span class="sourceLineNo">108</span>    @Override<a name="line.108"></a>
+<span class="sourceLineNo">109</span>    public String getName() {<a name="line.109"></a>
+<span class="sourceLineNo">110</span>        return "X PixMap";<a name="line.110"></a>
+<span class="sourceLineNo">111</span>    }<a name="line.111"></a>
+<span class="sourceLineNo">112</span><a name="line.112"></a>
+<span class="sourceLineNo">113</span>    @Override<a name="line.113"></a>
+<span class="sourceLineNo">114</span>    public String getDefaultExtension() {<a name="line.114"></a>
+<span class="sourceLineNo">115</span>        return DEFAULT_EXTENSION;<a name="line.115"></a>
+<span class="sourceLineNo">116</span>    }<a name="line.116"></a>
+<span class="sourceLineNo">117</span><a name="line.117"></a>
+<span class="sourceLineNo">118</span>    @Override<a name="line.118"></a>
+<span class="sourceLineNo">119</span>    protected String[] getAcceptedExtensions() {<a name="line.119"></a>
+<span class="sourceLineNo">120</span>        return ACCEPTED_EXTENSIONS;<a name="line.120"></a>
+<span class="sourceLineNo">121</span>    }<a name="line.121"></a>
+<span class="sourceLineNo">122</span><a name="line.122"></a>
+<span class="sourceLineNo">123</span>    @Override<a name="line.123"></a>
+<span class="sourceLineNo">124</span>    protected ImageFormat[] getAcceptedTypes() {<a name="line.124"></a>
+<span class="sourceLineNo">125</span>        return new ImageFormat[] { ImageFormats.XPM, //<a name="line.125"></a>
+<span class="sourceLineNo">126</span>        };<a name="line.126"></a>
+<span class="sourceLineNo">127</span>    }<a name="line.127"></a>
+<span class="sourceLineNo">128</span><a name="line.128"></a>
+<span class="sourceLineNo">129</span>    @Override<a name="line.129"></a>
+<span class="sourceLineNo">130</span>    public ImageMetadata getMetadata(final ByteSource byteSource, final Map&lt;String, Object&gt; params)<a name="line.130"></a>
+<span class="sourceLineNo">131</span>            throws ImageReadException, IOException {<a name="line.131"></a>
+<span class="sourceLineNo">132</span>        return null;<a name="line.132"></a>
+<span class="sourceLineNo">133</span>    }<a name="line.133"></a>
+<span class="sourceLineNo">134</span><a name="line.134"></a>
+<span class="sourceLineNo">135</span>    @Override<a name="line.135"></a>
+<span class="sourceLineNo">136</span>    public ImageInfo getImageInfo(final ByteSource byteSource, final Map&lt;String, Object&gt; params)<a name="line.136"></a>
+<span class="sourceLineNo">137</span>            throws ImageReadException, IOException {<a name="line.137"></a>
+<span class="sourceLineNo">138</span>        final XpmHeader xpmHeader = readXpmHeader(byteSource);<a name="line.138"></a>
+<span class="sourceLineNo">139</span>        boolean transparent = false;<a name="line.139"></a>
+<span class="sourceLineNo">140</span>        ImageInfo.ColorType colorType = ImageInfo.ColorType.BW;<a name="line.140"></a>
+<span class="sourceLineNo">141</span>        for (final Entry&lt;Object, PaletteEntry&gt; entry : xpmHeader.palette.entrySet()) {<a name="line.141"></a>
+<span class="sourceLineNo">142</span>            final PaletteEntry paletteEntry = entry.getValue();<a name="line.142"></a>
+<span class="sourceLineNo">143</span>            if ((paletteEntry.getBestARGB() &amp; 0xff000000) != 0xff000000) {<a name="line.143"></a>
+<span class="sourceLineNo">144</span>                transparent = true;<a name="line.144"></a>
+<span class="sourceLineNo">145</span>            }<a name="line.145"></a>
+<span class="sourceLineNo">146</span>            if (paletteEntry.haveColor) {<a name="line.146"></a>
+<span class="sourceLineNo">147</span>                colorType = ImageInfo.ColorType.RGB;<a name="line.147"></a>
+<span class="sourceLineNo">148</span>            } else if (colorType != ImageInfo.ColorType.RGB<a name="line.148"></a>
+<span class="sourceLineNo">149</span>                    &amp;&amp; (paletteEntry.haveGray || paletteEntry.haveGray4Level)) {<a name="line.149"></a>
+<span class="sourceLineNo">150</span>                colorType = ImageInfo.ColorType.GRAYSCALE;<a name="line.150"></a>
+<span class="sourceLineNo">151</span>            }<a name="line.151"></a>
+<span class="sourceLineNo">152</span>        }<a name="line.152"></a>
+<span class="sourceLineNo">153</span>        return new ImageInfo("XPM version 3", xpmHeader.numCharsPerPixel * 8,<a name="line.153"></a>
+<span class="sourceLineNo">154</span>                new ArrayList&lt;String&gt;(), ImageFormats.XPM,<a name="line.154"></a>
+<span class="sourceLineNo">155</span>                "X PixMap", xpmHeader.height, "image/x-xpixmap", 1, 0, 0, 0, 0,<a name="line.155"></a>
+<span class="sourceLineNo">156</span>                xpmHeader.width, false, transparent, true, colorType,<a name="line.156"></a>
+<span class="sourceLineNo">157</span>                ImageInfo.CompressionAlgorithm.NONE);<a name="line.157"></a>
+<span class="sourceLineNo">158</span>    }<a name="line.158"></a>
+<span class="sourceLineNo">159</span><a name="line.159"></a>
+<span class="sourceLineNo">160</span>    @Override<a name="line.160"></a>
+<span class="sourceLineNo">161</span>    public Dimension getImageSize(final ByteSource byteSource, final Map&lt;String, Object&gt; params)<a name="line.161"></a>
+<span class="sourceLineNo">162</span>            throws ImageReadException, IOException {<a name="line.162"></a>
+<span class="sourceLineNo">163</span>        final XpmHeader xpmHeader = readXpmHeader(byteSource);<a name="line.163"></a>
+<span class="sourceLineNo">164</span>        return new Dimension(xpmHeader.width, xpmHeader.height);<a name="line.164"></a>
+<span class="sourceLineNo">165</span>    }<a name="line.165"></a>
+<span class="sourceLineNo">166</span><a name="line.166"></a>
+<span class="sourceLineNo">167</span>    @Override<a name="line.167"></a>
+<span class="sourceLineNo">168</span>    public byte[] getICCProfileBytes(final ByteSource byteSource, final Map&lt;String, Object&gt; params)<a name="line.168"></a>
+<span class="sourceLineNo">169</span>            throws ImageReadException, IOException {<a name="line.169"></a>
+<span class="sourceLineNo">170</span>        return null;<a name="line.170"></a>
+<span class="sourceLineNo">171</span>    }<a name="line.171"></a>
+<span class="sourceLineNo">172</span><a name="line.172"></a>
+<span class="sourceLineNo">173</span>    private static class XpmHeader {<a name="line.173"></a>
+<span class="sourceLineNo">174</span>        int width;<a name="line.174"></a>
+<span class="sourceLineNo">175</span>        int height;<a name="line.175"></a>
+<span class="sourceLineNo">176</span>        int numColors;<a name="line.176"></a>
+<span class="sourceLineNo">177</span>        int numCharsPerPixel;<a name="line.177"></a>
+<span class="sourceLineNo">178</span>        int xHotSpot = -1;<a name="line.178"></a>
+<span class="sourceLineNo">179</span>        int yHotSpot = -1;<a name="line.179"></a>
+<span class="sourceLineNo">180</span>        boolean xpmExt;<a name="line.180"></a>
+<span class="sourceLineNo">181</span><a name="line.181"></a>
+<span class="sourceLineNo">182</span>        Map&lt;Object, PaletteEntry&gt; palette = new HashMap&lt;&gt;();<a name="line.182"></a>
+<span class="sourceLineNo">183</span><a name="line.183"></a>
+<span class="sourceLineNo">184</span>        XpmHeader(final int width, final int height, final int numColors,<a name="line.184"></a>
+<span class="sourceLineNo">185</span>                final int numCharsPerPixel, final int xHotSpot, final int yHotSpot, final boolean xpmExt) {<a name="line.185"></a>
+<span class="sourceLineNo">186</span>            this.width = width;<a name="line.186"></a>
+<span class="sourceLineNo">187</span>            this.height = height;<a name="line.187"></a>
+<span class="sourceLineNo">188</span>            this.numColors = numColors;<a name="line.188"></a>
+<span class="sourceLineNo">189</span>            this.numCharsPerPixel = numCharsPerPixel;<a name="line.189"></a>
+<span class="sourceLineNo">190</span>            this.xHotSpot = xHotSpot;<a name="line.190"></a>
+<span class="sourceLineNo">191</span>            this.yHotSpot = yHotSpot;<a name="line.191"></a>
+<span class="sourceLineNo">192</span>            this.xpmExt = xpmExt;<a name="line.192"></a>
+<span class="sourceLineNo">193</span>        }<a name="line.193"></a>
+<span class="sourceLineNo">194</span><a name="line.194"></a>
+<span class="sourceLineNo">195</span>        public void dump(final PrintWriter pw) {<a name="line.195"></a>
+<span class="sourceLineNo">196</span>            pw.println("XpmHeader");<a name="line.196"></a>
+<span class="sourceLineNo">197</span>            pw.println("Width: " + width);<a name="line.197"></a>
+<span class="sourceLineNo">198</span>            pw.println("Height: " + height);<a name="line.198"></a>
+<span class="sourceLineNo">199</span>            pw.println("NumColors: " + numColors);<a name="line.199"></a>
+<span class="sourceLineNo">200</span>            pw.println("NumCharsPerPixel: " + numCharsPerPixel);<a name="line.200"></a>
+<span class="sourceLineNo">201</span>            if (xHotSpot != -1 &amp;&amp; yHotSpot != -1) {<a name="line.201"></a>
+<span class="sourceLineNo">202</span>                pw.println("X hotspot: " + xHotSpot);<a name="line.202"></a>
+<span class="sourceLineNo">203</span>                pw.println("Y hotspot: " + yHotSpot);<a name="line.203"></a>
+<span class="sourceLineNo">204</span>            }<a name="line.204"></a>
+<span class="sourceLineNo">205</span>            pw.println("XpmExt: " + xpmExt);<a name="line.205"></a>
+<span class="sourceLineNo">206</span>        }<a name="line.206"></a>
+<span class="sourceLineNo">207</span>    }<a name="line.207"></a>
+<span class="sourceLineNo">208</span><a name="line.208"></a>
+<span class="sourceLineNo">209</span>    private static class PaletteEntry {<a name="line.209"></a>
+<span class="sourceLineNo">210</span>        int index;<a name="line.210"></a>
+<span class="sourceLineNo">211</span>        boolean haveColor = false;<a name="line.211"></a>
+<span class="sourceLineNo">212</span>        int colorArgb;<a name="line.212"></a>
+<span class="sourceLineNo">213</span>        boolean haveGray = false;<a name="line.213"></a>
+<span class="sourceLineNo">214</span>        int grayArgb;<a name="line.214"></a>
+<span class="sourceLineNo">215</span>        boolean haveGray4Level = false;<a name="line.215"></a>
+<span class="sourceLineNo">216</span>        int gray4LevelArgb;<a name="line.216"></a>
+<span class="sourceLineNo">217</span>        boolean haveMono = false;<a name="line.217"></a>
+<span class="sourceLineNo">218</span>        int monoArgb;<a name="line.218"></a>
+<span class="sourceLineNo">219</span><a name="line.219"></a>
+<span class="sourceLineNo">220</span>        int getBestARGB() {<a name="line.220"></a>
+<span class="sourceLineNo">221</span>            if (haveColor) {<a name="line.221"></a>
+<span class="sourceLineNo">222</span>                return colorArgb;<a name="line.222"></a>
+<span class="sourceLineNo">223</span>            } else if (haveGray) {<a name="line.223"></a>
+<span class="sourceLineNo">224</span>                return grayArgb;<a name="line.224"></a>
+<span class="sourceLineNo">225</span>            } else if (haveGray4Level) {<a name="line.225"></a>
+<span class="sourceLineNo">226</span>                return gray4LevelArgb;<a name="line.226"></a>
+<span class="sourceLineNo">227</span>            } else if (haveMono) {<a name="line.227"></a>
+<span class="sourceLineNo">228</span>                return monoArgb;<a name="line.228"></a>
+<span class="sourceLineNo">229</span>            } else {<a name="line.229"></a>
+<span class="sourceLineNo">230</span>                return 0x00000000;<a name="line.230"></a>
+<span class="sourceLineNo">231</span>            }<a name="line.231"></a>
+<span class="sourceLineNo">232</span>        }<a name="line.232"></a>
+<span class="sourceLineNo">233</span>    }<a name="line.233"></a>
+<span class="sourceLineNo">234</span><a name="line.234"></a>
+<span class="sourceLineNo">235</span>    private static class XpmParseResult {<a name="line.235"></a>
+<span class="sourceLineNo">236</span>        XpmHeader xpmHeader;<a name="line.236"></a>
+<span class="sourceLineNo">237</span>        BasicCParser cParser;<a name="line.237"></a>
+<span class="sourceLineNo">238</span>    }<a name="line.238"></a>
+<span class="sourceLineNo">239</span><a name="line.239"></a>
+<span class="sourceLineNo">240</span>    private XpmHeader readXpmHeader(final ByteSource byteSource)<a name="line.240"></a>
+<span class="sourceLineNo">241</span>            throws ImageReadException, IOException {<a name="line.241"></a>
+<span class="sourceLineNo">242</span>        return parseXpmHeader(byteSource).xpmHeader;<a name="line.242"></a>
+<span class="sourceLineNo">243</span>    }<a name="line.243"></a>
+<span class="sourceLineNo">244</span><a name="line.244"></a>
+<span class="sourceLineNo">245</span>    private XpmParseResult parseXpmHeader(final ByteSource byteSource)<a name="line.245"></a>
+<span class="sourceLineNo">246</span>            throws ImageReadException, IOException {<a name="line.246"></a>
+<span class="sourceLineNo">247</span>        try (InputStream is = byteSource.getInputStream()) {<a name="line.247"></a>
+<span class="sourceLineNo">248</span>            final StringBuilder firstComment = new StringBuilder();<a name="line.248"></a>
+<span class="sourceLineNo">249</span>            final ByteArrayOutputStream preprocessedFile = BasicCParser.preprocess(<a name="line.249"></a>
+<span class="sourceLineNo">250</span>                    is, firstComment, null);<a name="line.250"></a>
+<span class="sourceLineNo">251</span>            if (!"XPM".equals(firstComment.toString().trim())) {<a name="line.251"></a>
+<span class="sourceLineNo">252</span>                throw new ImageReadException("Parsing XPM file failed, "<a name="line.252"></a>
+<span class="sourceLineNo">253</span>                        + "signature isn't '/* XPM */'");<a name="line.253"></a>
+<span class="sourceLineNo">254</span>            }<a name="line.254"></a>
+<span class="sourceLineNo">255</span><a name="line.255"></a>
+<span class="sourceLineNo">256</span>            final XpmParseResult xpmParseResult = new XpmParseResult();<a name="line.256"></a>
+<span class="sourceLineNo">257</span>            xpmParseResult.cParser = new BasicCParser(new ByteArrayInputStream(<a name="line.257"></a>
+<span class="sourceLineNo">258</span>                    preprocessedFile.toByteArray()));<a name="line.258"></a>
+<span class="sourceLineNo">259</span>            xpmParseResult.xpmHeader = parseXpmHeader(xpmParseResult.cParser);<a name="line.259"></a>
+<span class="sourceLineNo">260</span>            return xpmParseResult;<a name="line.260"></a>
+<span class="sourceLineNo">261</span>        }<a name="line.261"></a>
+<span class="sourceLineNo">262</span>    }<a name="line.262"></a>
+<span class="sourceLineNo">263</span><a name="line.263"></a>
+<span class="sourceLineNo">264</span>    private boolean parseNextString(final BasicCParser cParser,<a name="line.264"></a>
+<span class="sourceLineNo">265</span>            final StringBuilder stringBuilder) throws IOException, ImageReadException {<a name="line.265"></a>
+<span class="sourceLineNo">266</span>        stringBuilder.setLength(0);<a name="line.266"></a>
+<span class="sourceLineNo">267</span>        String token = cParser.nextToken();<a name="line.267"></a>
+<span class="sourceLineNo">268</span>        if (token.charAt(0) != '"') {<a name="line.268"></a>
+<span class="sourceLineNo">269</span>            throw new ImageReadException("Parsing XPM file failed, "<a name="line.269"></a>
+<span class="sourceLineNo">270</span>                    + "no string found where expected");<a name="line.270"></a>
+<span class="sourceLineNo">271</span>        }<a name="line.271"></a>
+<span class="sourceLineNo">272</span>        BasicCParser.unescapeString(stringBuilder, token);<a name="line.272"></a>
+<span class="sourceLineNo">273</span>        for (token = cParser.nextToken(); token.charAt(0) == '"'; token = cParser.nextToken()) {<a name="line.273"></a>
+<span class="sourceLineNo">274</span>            BasicCParser.unescapeString(stringBuilder, token);<a name="line.274"></a>
+<span class="sourceLineNo">275</span>        }<a name="line.275"></a>
+<span class="sourceLineNo">276</span>        if (",".equals(token)) {<a name="line.276"></a>
+<span class="sourceLineNo">277</span>            return true;<a name="line.277"></a>
+<span class="sourceLineNo">278</span>        } else if ("}".equals(token)) {<a name="line.278"></a>
+<span class="sourceLineNo">279</span>            return false;<a name="line.279"></a>
+<span class="sourceLineNo">280</span>        } else {<a name="line.280"></a>
+<span class="sourceLineNo">281</span>            throw new ImageReadException("Parsing XPM file failed, "<a name="line.281"></a>
+<span class="sourceLineNo">282</span>                    + "no ',' or '}' found where expected");<a name="line.282"></a>
+<span class="sourceLineNo">283</span>        }<a name="line.283"></a>
+<span class="sourceLineNo">284</span>    }<a name="line.284"></a>
+<span class="sourceLineNo">285</span><a name="line.285"></a>
+<span class="sourceLineNo">286</span>    private XpmHeader parseXpmValuesSection(final String row)<a name="line.286"></a>
+<span class="sourceLineNo">287</span>            throws ImageReadException {<a name="line.287"></a>
+<span class="sourceLineNo">288</span>        final String[] tokens = BasicCParser.tokenizeRow(row);<a name="line.288"></a>
+<span class="sourceLineNo">289</span>        if (tokens.length &lt; 4 || tokens.length &gt; 7) {<a name="line.289"></a>
+<span class="sourceLineNo">290</span>            throw new ImageReadException("Parsing XPM file failed, "<a name="line.290"></a>
+<span class="sourceLineNo">291</span>                    + "&lt;Values&gt; section has incorrect tokens");<a name="line.291"></a>
+<span class="sourceLineNo">292</span>        }<a name="line.292"></a>
+<span class="sourceLineNo">293</span>        try {<a name="line.293"></a>
+<span class="sourceLineNo">294</span>            final int width = Integer.parseInt(tokens[0]);<a name="line.294"></a>
+<span class="sourceLineNo">295</span>            final int height = Integer.parseInt(tokens[1]);<a name="line.295"></a>
+<span class="sourceLineNo">296</span>            final int numColors = Integer.parseInt(tokens[2]);<a name="line.296"></a>
+<span class="sourceLineNo">297</span>            final int numCharsPerPixel = Integer.parseInt(tokens[3]);<a name="line.297"></a>
+<span class="sourceLineNo">298</span>            int xHotSpot = -1;<a name="line.298"></a>
+<span class="sourceLineNo">299</span>            int yHotSpot = -1;<a name="line.299"></a>
+<span class="sourceLineNo">300</span>            boolean xpmExt = false;<a name="line.300"></a>
+<span class="sourceLineNo">301</span>            if (tokens.length &gt;= 6) {<a name="line.301"></a>
+<span class="sourceLineNo">302</span>                xHotSpot = Integer.parseInt(tokens[4]);<a name="line.302"></a>
+<span class="sourceLineNo">303</span>                yHotSpot = Integer.parseInt(tokens[5]);<a name="line.303"></a>
+<span class="sourceLineNo">304</span>            }<a name="line.304"></a>
+<span class="sourceLineNo">305</span>            if (tokens.length == 5 || tokens.length == 7) {<a name="line.305"></a>
+<span class="sourceLineNo">306</span>                if ("XPMEXT".equals(tokens[tokens.length - 1])) {<a name="line.306"></a>
+<span class="sourceLineNo">307</span>                    xpmExt = true;<a name="line.307"></a>
+<span class="sourceLineNo">308</span>                } else {<a name="line.308"></a>
+<span class="sourceLineNo">309</span>                    throw new ImageReadException("Parsing XPM file failed, "<a name="line.309"></a>
+<span class="sourceLineNo">310</span>                            + "can't parse &lt;Values&gt; section XPMEXT");<a name="line.310"></a>
+<span class="sourceLineNo">311</span>                }<a name="line.311"></a>
+<span class="sourceLineNo">312</span>            }<a name="line.312"></a>
+<span class="sourceLineNo">313</span>            return new XpmHeader(width, height, numColors, numCharsPerPixel,<a name="line.313"></a>
+<span class="sourceLineNo">314</span>                    xHotSpot, yHotSpot, xpmExt);<a name="line.314"></a>
+<span class="sourceLineNo">315</span>        } catch (final NumberFormatException nfe) {<a name="line.315"></a>
+<span class="sourceLineNo">316</span>            throw new ImageReadException("Parsing XPM file failed, "<a name="line.316"></a>
+<span class="sourceLineNo">317</span>                    + "error parsing &lt;Values&gt; section", nfe);<a name="line.317"></a>
+<span class="sourceLineNo">318</span>        }<a name="line.318"></a>
+<span class="sourceLineNo">319</span>    }<a name="line.319"></a>
+<span class="sourceLineNo">320</span><a name="line.320"></a>
+<span class="sourceLineNo">321</span>    private int parseColor(String color) throws ImageReadException {<a name="line.321"></a>
+<span class="sourceLineNo">322</span>        if (color.charAt(0) == '#') {<a name="line.322"></a>
+<span class="sourceLineNo">323</span>            color = color.substring(1);<a name="line.323"></a>
+<span class="sourceLineNo">324</span>            if (color.length() == 3) {<a name="line.324"></a>
+<span class="sourceLineNo">325</span>                final int red = Integer.parseInt(color.substring(0, 1), 16);<a name="line.325"></a>
+<span class="sourceLineNo">326</span>                final int green = Integer.parseInt(color.substring(1, 2), 16);<a name="line.326"></a>
+<span class="sourceLineNo">327</span>                final int blue = Integer.parseInt(color.substring(2, 3), 16);<a name="line.327"></a>
+<span class="sourceLineNo">328</span>                return 0xff000000 | (red &lt;&lt; 20) | (green &lt;&lt; 12) | (blue &lt;&lt; 4);<a name="line.328"></a>
+<span class="sourceLineNo">329</span>            } else if (color.length() == 6) {<a name="line.329"></a>
+<span class="sourceLineNo">330</span>                return 0xff000000 | Integer.parseInt(color, 16);<a name="line.330"></a>
+<span class="sourceLineNo">331</span>            } else if (color.length() == 9) {<a name="line.331"></a>
+<span class="sourceLineNo">332</span>                final int red = Integer.parseInt(color.substring(0, 1), 16);<a name="line.332"></a>
+<span class="sourceLineNo">333</span>                final int green = Integer.parseInt(color.substring(3, 4), 16);<a name="line.333"></a>
+<span class="sourceLineNo">334</span>                final int blue = Integer.parseInt(color.substring(6, 7), 16);<a name="line.334"></a>
+<span class="sourceLineNo">335</span>                return 0xff000000 | (red &lt;&lt; 16) | (green &lt;&lt; 8) | blue;<a name="line.335"></a>
+<span class="sourceLineNo">336</span>            } else if (color.length() == 12) {<a name="line.336"></a>
+<span class="sourceLineNo">337</span>                final int red = Integer.parseInt(color.substring(0, 1), 16);<a name="line.337"></a>
+<span class="sourceLineNo">338</span>                final int green = Integer.parseInt(color.substring(4, 5), 16);<a name="line.338"></a>
+<span class="sourceLineNo">339</span>                final int blue = Integer.parseInt(color.substring(8, 9), 16);<a name="line.339"></a>
+<span class="sourceLineNo">340</span>                return 0xff000000 | (red &lt;&lt; 16) | (green &lt;&lt; 8) | blue;<a name="line.340"></a>
+<span class="sourceLineNo">341</span>            } else if (color.length() == 24) {<a name="line.341"></a>
+<span class="sourceLineNo">342</span>                final int red = Integer.parseInt(color.substring(0, 1), 16);<a name="line.342"></a>
+<span class="sourceLineNo">343</span>                final int green = Integer.parseInt(color.substring(8, 9), 16);<a name="line.343"></a>
+<span class="sourceLineNo">344</span>                final int blue = Integer.parseInt(color.substring(16, 17), 16);<a name="line.344"></a>
+<span class="sourceLineNo">345</span>                return 0xff000000 | (red &lt;&lt; 16) | (green &lt;&lt; 8) | blue;<a name="line.345"></a>
+<span class="sourceLineNo">346</span>            } else {<a name="line.346"></a>
+<span class="sourceLineNo">347</span>                return 0x00000000;<a name="line.347"></a>
+<span class="sourceLineNo">348</span>            }<a name="line.348"></a>
+<span class="sourceLineNo">349</span>        } else if (color.charAt(0) == '%') {<a name="line.349"></a>
+<span class="sourceLineNo">350</span>            throw new ImageReadException("HSV colors are not implemented "<a name="line.350"></a>
+<span class="sourceLineNo">351</span>                    + "even in the XPM specification!");<a name="line.351"></a>
+<span class="sourceLineNo">352</span>        } else if ("None".equals(color)) {<a name="line.352"></a>
+<span class="sourceLineNo">353</span>            return 0x00000000;<a name="line.353"></a>
+<span class="sourceLineNo">354</span>        } else {<a name="line.354"></a>
+<span class="sourceLineNo">355</span>            loadColorNames();<a name="line.355"></a>
+<span class="sourceLineNo">356</span>            final String colorLowercase = color.toLowerCase(Locale.ENGLISH);<a name="line.356"></a>
+<span class="sourceLineNo">357</span>            if (colorNames.containsKey(colorLowercase)) {<a name="line.357"></a>
+<span class="sourceLineNo">358</span>                return colorNames.get(colorLowercase);<a name="line.358"></a>
+<span class="sourceLineNo">359</span>            }<a name="line.359"></a>
+<span class="sourceLineNo">360</span>            return 0x00000000;<a name="line.360"></a>
+<span class="sourceLineNo">361</span>        }<a name="line.361"></a>
+<span class="sourceLineNo">362</span>    }<a name="line.362"></a>
+<span class="sourceLineNo">363</span><a name="line.363"></a>
+<span class="sourceLineNo">364</span>    private void populatePaletteEntry(final PaletteEntry paletteEntry, final String key, final String color) throws ImageReadException {<a name="line.364"></a>
+<span class="sourceLineNo">365</span>        if ("m".equals(key)) {<a name="line.365"></a>
+<span class="sourceLineNo">366</span>            paletteEntry.monoArgb = parseColor(color);<a name="line.366"></a>
+<span class="sourceLineNo">367</span>            paletteEntry.haveMono = true;<a name="line.367"></a>
+<span class="sourceLineNo">368</span>        } else if ("g4".equals(key)) {<a name="line.368"></a>
+<span class="sourceLineNo">369</span>            paletteEntry.gray4LevelArgb = parseColor(color);<a name="line.369"></a>
+<span class="sourceLineNo">370</span>            paletteEntry.haveGray4Level = true;<a name="line.370"></a>
+<span class="sourceLineNo">371</span>        } else if ("g".equals(key)) {<a name="line.371"></a>
+<span class="sourceLineNo">372</span>            paletteEntry.grayArgb = parseColor(color);<a name="line.372"></a>
+<span class="sourceLineNo">373</span>            paletteEntry.haveGray = true;<a name="line.373"></a>
+<span class="sourceLineNo">374</span>        } else if ("s".equals(key)) {<a name="line.374"></a>
+<span class="sourceLineNo">375</span>            paletteEntry.colorArgb = parseColor(color);<a name="line.375"></a>
+<span class="sourceLineNo">376</span>            paletteEntry.haveColor = true;<a name="line.376"></a>
+<span class="sourceLineNo">377</span>        } else if ("c".equals(key)) {<a name="line.377"></a>
+<span class="sourceLineNo">378</span>            paletteEntry.colorArgb = parseColor(color);<a name="line.378"></a>
+<span class="sourceLineNo">379</span>            paletteEntry.haveColor = true;<a name="line.379"></a>
+<span class="sourceLineNo">380</span>        }<a name="line.380"></a>
+<span class="sourceLineNo">381</span>    }<a name="line.381"></a>
+<span class="sourceLineNo">382</span><a name="line.382"></a>
+<span class="sourceLineNo">383</span>    private void parsePaletteEntries(final XpmHeader xpmHeader, final BasicCParser cParser)<a name="line.383"></a>
+<span class="sourceLineNo">384</span>            throws IOException, ImageReadException {<a name="line.384"></a>
+<span class="sourceLineNo">385</span>        final StringBuilder row = new StringBuilder();<a name="line.385"></a>
+<span class="sourceLineNo">386</span>        for (int i = 0; i &lt; xpmHeader.numColors; i++) {<a name="line.386"></a>
+<span class="sourceLineNo">387</span>            row.setLength(0);<a name="line.387"></a>
+<span class="sourceLineNo">388</span>            final boolean hasMore = parseNextString(cParser, row);<a name="line.388"></a>
+<span class="sourceLineNo">389</span>            if (!hasMore) {<a name="line.389"></a>
+<span class="sourceLineNo">390</span>                throw new ImageReadException("Parsing XPM file failed, " + "file ended while reading palette");<a name="line.390"></a>
+<span class="sourceLineNo">391</span>            }<a name="line.391"></a>
+<span class="sourceLineNo">392</span>            final String name = row.substring(0, xpmHeader.numCharsPerPixel);<a name="line.392"></a>
+<span class="sourceLineNo">393</span>            final String[] tokens = BasicCParser.tokenizeRow(row.substring(xpmHeader.numCharsPerPixel));<a name="line.393"></a>
+<span class="sourceLineNo">394</span>            final PaletteEntry paletteEntry = new PaletteEntry();<a name="line.394"></a>
+<span class="sourceLineNo">395</span>            paletteEntry.index = i;<a name="line.395"></a>
+<span class="sourceLineNo">396</span>            int previousKeyIndex = Integer.MIN_VALUE;<a name="line.396"></a>
+<span class="sourceLineNo">397</span>            final StringBuilder colorBuffer = new StringBuilder();<a name="line.397"></a>
+<span class="sourceLineNo">398</span>            for (int j = 0; j &lt; tokens.length; j++) {<a name="line.398"></a>
+<span class="sourceLineNo">399</span>                final String token = tokens[j];<a name="line.399"></a>
+<span class="sourceLineNo">400</span>                boolean isKey = false;<a name="line.400"></a>
+<span class="sourceLineNo">401</span>                if (previousKeyIndex &lt; (j - 1)<a name="line.401"></a>
+<span class="sourceLineNo">402</span>                        &amp;&amp; "m".equals(token)<a name="line.402"></a>
+<span class="sourceLineNo">403</span>                        || "g4".equals(token)<a name="line.403"></a>
+<span class="sourceLineNo">404</span>                        || "g".equals(token)<a name="line.404"></a>
+<span class="sourceLineNo">405</span>                        || "c".equals(token)<a name="line.405"></a>
+<span class="sourceLineNo">406</span>                        || "s".equals(token)) {<a name="line.406"></a>
+<span class="sourceLineNo">407</span>                    isKey = true;<a name="line.407"></a>
+<span class="sourceLineNo">408</span>                }<a name="line.408"></a>
+<span class="sourceLineNo">409</span>                if (isKey) {<a name="line.409"></a>
+<span class="sourceLineNo">410</span>                    if (previousKeyIndex &gt;= 0) {<a name="line.410"></a>
+<span class="sourceLineNo">411</span>                        final String key = tokens[previousKeyIndex];<a name="line.411"></a>
+<span class="sourceLineNo">412</span>                        final String color = colorBuffer.toString();<a name="line.412"></a>
+<span class="sourceLineNo">413</span>                        colorBuffer.setLength(0);<a name="line.413"></a>
+<span class="sourceLineNo">414</span>                        populatePaletteEntry(paletteEntry, key, color);<a name="line.414"></a>
+<span class="sourceLineNo">415</span>                    }<a name="line.415"></a>
+<span class="sourceLineNo">416</span>                    previousKeyIndex = j;<a name="line.416"></a>
+<span class="sourceLineNo">417</span>                } else {<a name="line.417"></a>
+<span class="sourceLineNo">418</span>                    if (previousKeyIndex &lt; 0) {<a name="line.418"></a>
+<span class="sourceLineNo">419</span>                        break;<a name="line.419"></a>
+<span class="sourceLineNo">420</span>                    }<a name="line.420"></a>
+<span class="sourceLineNo">421</span>                    if (colorBuffer.length() &gt; 0) {<a name="line.421"></a>
+<span class="sourceLineNo">422</span>                        colorBuffer.append(' ');<a name="line.422"></a>
+<span class="sourceLineNo">423</span>                    }<a name="line.423"></a>
+<span class="sourceLineNo">424</span>                    colorBuffer.append(token);<a name="line.424"></a>
+<span class="sourceLineNo">425</span>                }<a name="line.425"></a>
+<span class="sourceLineNo">426</span>            }<a name="line.426"></a>
+<span class="sourceLineNo">427</span>            if (previousKeyIndex &gt;= 0 &amp;&amp; colorBuffer.length() &gt; 0) {<a name="line.427"></a>
+<span class="sourceLineNo">428</span>                final String key = tokens[previousKeyIndex];<a name="line.428"></a>
+<span class="sourceLineNo">429</span>                final String color = colorBuffer.toString();<a name="line.429"></a>
+<span class="sourceLineNo">430</span>                colorBuffer.setLength(0);<a name="line.430"></a>
+<span class="sourceLineNo">431</span>                populatePaletteEntry(paletteEntry, key, color);<a name="line.431"></a>
+<span class="sourceLineNo">432</span>            }<a name="line.432"></a>
+<span class="sourceLineNo">433</span>            xpmHeader.palette.put(name, paletteEntry);<a name="line.433"></a>
+<span class="sourceLineNo">434</span>        }<a name="line.434"></a>
+<span class="sourceLineNo">435</span>    }<a name="line.435"></a>
+<span class="sourceLineNo">436</span><a name="line.436"></a>
+<span class="sourceLineNo">437</span>    private XpmHeader parseXpmHeader(final BasicCParser cParser)<a name="line.437"></a>
+<span class="sourceLineNo">438</span>            throws ImageReadException, IOException {<a name="line.438"></a>
+<span class="sourceLineNo">439</span>        String name;<a name="line.439"></a>
+<span class="sourceLineNo">440</span>        String token;<a name="line.440"></a>
+<span class="sourceLineNo">441</span>        token = cParser.nextToken();<a name="line.441"></a>
+<span class="sourceLineNo">442</span>        if (!"static".equals(token)) {<a name="line.442"></a>
+<span class="sourceLineNo">443</span>            throw new ImageReadException(<a name="line.443"></a>
+<span class="sourceLineNo">444</span>                    "Parsing XPM file failed, no 'static' token");<a name="line.444"></a>
+<span class="sourceLineNo">445</span>        }<a name="line.445"></a>
+<span class="sourceLineNo">446</span>        token = cParser.nextToken();<a name="line.446"></a>
+<span class="sourceLineNo">447</span>        if (!"char".equals(token)) {<a name="line.447"></a>
+<span class="sourceLineNo">448</span>            throw new ImageReadException(<a name="line.448"></a>
+<span class="sourceLineNo">449</span>                    "Parsing XPM file failed, no 'char' token");<a name="line.449"></a>
+<span class="sourceLineNo">450</span>        }<a name="line.450"></a>
+<span class="sourceLineNo">451</span>        token = cParser.nextToken();<a name="line.451"></a>
+<span class="sourceLineNo">452</span>        if (!"*".equals(token)) {<a name="line.452"></a>
+<span class="sourceLineNo">453</span>            throw new ImageReadException(<a name="line.453"></a>
+<span class="sourceLineNo">454</span>                    "Parsing XPM file failed, no '*' token");<a name="line.454"></a>
+<span class="sourceLineNo">455</span>        }<a name="line.455"></a>
+<span class="sourceLineNo">456</span>        name = cParser.nextToken();<a name="line.456"></a>
+<span class="sourceLineNo">457</span>        if (name == null) {<a name="line.457"></a>
+<span class="sourceLineNo">458</span>            throw new ImageReadException(<a name="line.458"></a>
+<span class="sourceLineNo">459</span>                    "Parsing XPM file failed, no variable name");<a name="line.459"></a>
+<span class="sourceLineNo">460</span>        }<a name="line.460"></a>
+<span class="sourceLineNo">461</span>        if (name.charAt(0) != '_' &amp;&amp; !Character.isLetter(name.charAt(0))) {<a name="line.461"></a>
+<span class="sourceLineNo">462</span>            throw new ImageReadException(<a name="line.462"></a>
+<span class="sourceLineNo">463</span>                    "Parsing XPM file failed, variable name "<a name="line.463"></a>
+<span class="sourceLineNo">464</span>                            + "doesn't start with letter or underscore");<a name="line.464"></a>
+<span class="sourceLineNo">465</span>        }<a name="line.465"></a>
+<span class="sourceLineNo">466</span>        for (int i = 0; i &lt; name.length(); i++) {<a name="line.466"></a>
+<span class="sourceLineNo">467</span>            final char c = name.charAt(i);<a name="line.467"></a>
+<span class="sourceLineNo">468</span>            if (!Character.isLetterOrDigit(c) &amp;&amp; c != '_') {<a name="line.468"></a>
+<span class="sourceLineNo">469</span>                throw new ImageReadException(<a name="line.469"></a>
+<span class="sourceLineNo">470</span>                        "Parsing XPM file failed, variable name "<a name="line.470"></a>
+<span class="sourceLineNo">471</span>                                + "contains non-letter non-digit non-underscore");<a name="line.471"></a>
+<span class="sourceLineNo">472</span>            }<a name="line.472"></a>
+<span class="sourceLineNo">473</span>        }<a name="line.473"></a>
+<span class="sourceLineNo">474</span>        token = cParser.nextToken();<a name="line.474"></a>
+<span class="sourceLineNo">475</span>        if (!"[".equals(token)) {<a name="line.475"></a>
+<span class="sourceLineNo">476</span>            throw new ImageReadException(<a name="line.476"></a>
+<span class="sourceLineNo">477</span>                    "Parsing XPM file failed, no '[' token");<a name="line.477"></a>
+<span class="sourceLineNo">478</span>        }<a name="line.478"></a>
+<span class="sourceLineNo">479</span>        token = cParser.nextToken();<a name="line.479"></a>
+<span class="sourceLineNo">480</span>        if (!"]".equals(token)) {<a name="line.480"></a>
+<span class="sourceLineNo">481</span>            throw new ImageReadException(<a name="line.481"></a>
+<span class="sourceLineNo">482</span>                    "Parsing XPM file failed, no ']' token");<a name="line.482"></a>
+<span class="sourceLineNo">483</span>        }<a name="line.483"></a>
+<span class="sourceLineNo">484</span>        token = cParser.nextToken();<a name="line.484"></a>
+<span class="sourceLineNo">485</span>        if (!"=".equals(token)) {<a name="line.485"></a>
+<span class="sourceLineNo">486</span>            throw new ImageReadException(<a name="line.486"></a>
+<span class="sourceLineNo">487</span>                    "Parsing XPM file failed, no '=' token");<a name="line.487"></a>
+<span class="sourceLineNo">488</span>        }<a name="line.488"></a>
+<span class="sourceLineNo">489</span>        token = cParser.nextToken();<a name="line.489"></a>
+<span class="sourceLineNo">490</span>        if (!"{".equals(token)) {<a name="line.490"></a>
+<span class="sourceLineNo">491</span>            throw new ImageReadException(<a name="line.491"></a>
+<span class="sourceLineNo">492</span>                    "Parsing XPM file failed, no '{' token");<a name="line.492"></a>
+<span class="sourceLineNo">493</span>        }<a name="line.493"></a>
+<span class="sourceLineNo">494</span><a name="line.494"></a>
+<span class="sourceLineNo">495</span>        final StringBuilder row = new StringBuilder();<a name="line.495"></a>
+<span class="sourceLineNo">496</span>        final boolean hasMore = parseNextString(cParser, row);<a name="line.496"></a>
+<span class="sourceLineNo">497</span>        if (!hasMore) {<a name="line.497"></a>
+<span class="sourceLineNo">498</span>            throw new ImageReadException("Parsing XPM file failed, "<a name="line.498"></a>
+<span class="sourceLineNo">499</span>                    + "file too short");<a name="line.499"></a>
+<span class="sourceLineNo">500</span>        }<a name="line.500"></a>
+<span class="sourceLineNo">501</span>        final XpmHeader xpmHeader = parseXpmValuesSection(row.toString());<a name="line.501"></a>
+<span class="sourceLineNo">502</span>        parsePaletteEntries(xpmHeader, cParser);<a name="line.502"></a>
+<span class="sourceLineNo">503</span>        return xpmHeader;<a name="line.503"></a>
+<span class="sourceLineNo">504</span>    }<a name="line.504"></a>
+<span class="sourceLineNo">505</span><a name="line.505"></a>
+<span class="sourceLineNo">506</span>    private BufferedImage readXpmImage(final XpmHeader xpmHeader, final BasicCParser cParser)<a name="line.506"></a>
+<span class="sourceLineNo">507</span>            throws ImageReadException, IOException {<a name="line.507"></a>
+<span class="sourceLineNo">508</span>        ColorModel colorModel;<a name="line.508"></a>
+<span class="sourceLineNo">509</span>        WritableRaster raster;<a name="line.509"></a>
+<span class="sourceLineNo">510</span>        int bpp;<a name="line.510"></a>
+<span class="sourceLineNo">511</span>        if (xpmHeader.palette.size() &lt;= (1 &lt;&lt; 8)) {<a name="line.511"></a>
+<span class="sourceLineNo">512</span>            final int[] palette = new int[xpmHeader.palette.size()];<a name="line.512"></a>
+<span class="sourceLineNo">513</span>            for (final Entry&lt;Object, PaletteEntry&gt; entry : xpmHeader.palette.entrySet()) {<a name="line.513"></a>
+<span class="sourceLineNo">514</span>                final PaletteEntry paletteEntry = entry.getValue();<a name="line.514"></a>
+<span class="sourceLineNo">515</span>                palette[paletteEntry.index] = paletteEntry.getBestARGB();<a name="line.515"></a>
+<span class="sourceLineNo">516</span>            }<a name="line.516"></a>
+<span class="sourceLineNo">517</span>            colorModel = new IndexColorModel(8, xpmHeader.palette.size(),<a name="line.517"></a>
+<span class="sourceLineNo">518</span>                    palette, 0, true, -1, DataBuffer.TYPE_BYTE);<a name="line.518"></a>
+<span class="sourceLineNo">519</span>            raster = Raster.createInterleavedRaster(<a name="line.519"></a>
+<span class="sourceLineNo">520</span>                    DataBuffer.TYPE_BYTE, xpmHeader.width, xpmHeader.height, 1,<a name="line.520"></a>
+<span class="sourceLineNo">521</span>                    null);<a name="line.521"></a>
+<span class="sourceLineNo">522</span>            bpp = 8;<a name="line.522"></a>
+<span class="sourceLineNo">523</span>        } else if (xpmHeader.palette.size() &lt;= (1 &lt;&lt; 16)) {<a name="line.523"></a>
+<span class="sourceLineNo">524</span>            final int[] palette = new int[xpmHeader.palette.size()];<a name="line.524"></a>
+<span class="sourceLineNo">525</span>            for (final Entry&lt;Object, PaletteEntry&gt; entry : xpmHeader.palette.entrySet()) {<a name="line.525"></a>
+<span class="sourceLineNo">526</span>                final PaletteEntry paletteEntry = entry.getValue();<a name="line.526"></a>
+<span class="sourceLineNo">527</span>                palette[paletteEntry.index] = paletteEntry.getBestARGB();<a name="line.527"></a>
+<span class="sourceLineNo">528</span>            }<a name="line.528"></a>
+<span class="sourceLineNo">529</span>            colorModel = new IndexColorModel(16, xpmHeader.palette.size(),<a name="line.529"></a>
+<span class="sourceLineNo">530</span>                    palette, 0, true, -1, DataBuffer.TYPE_USHORT);<a name="line.530"></a>
+<span class="sourceLineNo">531</span>            raster = Raster.createInterleavedRaster(<a name="line.531"></a>
+<span class="sourceLineNo">532</span>                    DataBuffer.TYPE_USHORT, xpmHeader.width, xpmHeader.height,<a name="line.532"></a>
+<span class="sourceLineNo">533</span>                    1, null);<a name="line.533"></a>
+<span class="sourceLineNo">534</span>            bpp = 16;<a name="line.534"></a>
+<span class="sourceLineNo">535</span>        } else {<a name="line.535"></a>
+<span class="sourceLineNo">536</span>            colorModel = new DirectColorModel(32, 0x00ff0000, 0x0000ff00,<a name="line.536"></a>
+<span class="sourceLineNo">537</span>                    0x000000ff, 0xff000000);<a name="line.537"></a>
+<span class="sourceLineNo">538</span>            raster = Raster.createPackedRaster(DataBuffer.TYPE_INT,<a name="line.538"></a>
+<span class="sourceLineNo">539</span>                    xpmHeader.width, xpmHeader.height, new int[] { 0x00ff0000,<a name="line.539"></a>
+<span class="sourceLineNo">540</span>                            0x0000ff00, 0x000000ff, 0xff000000 }, null);<a name="line.540"></a>
+<span class="sourceLineNo">541</span>            bpp = 32;<a name="line.541"></a>
+<span class="sourceLineNo">542</span>        }<a name="line.542"></a>
+<span class="sourceLineNo">543</span><a name="line.543"></a>
+<span class="sourceLineNo">544</span>        final BufferedImage image = new BufferedImage(colorModel, raster,<a name="line.544"></a>
+<span class="sourceLineNo">545</span>                colorModel.isAlphaPremultiplied(), new Properties());<a name="line.545"></a>
+<span class="sourceLineNo">546</span>        final DataBuffer dataBuffer = raster.getDataBuffer();<a name="line.546"></a>
+<span class="sourceLineNo">547</span>        final StringBuilder row = new StringBuilder();<a name="line.547"></a>
+<span class="sourceLineNo">548</span>        boolean hasMore = true;<a name="line.548"></a>
+<span class="sourceLineNo">549</span>        for (int y = 0; y &lt; xpmHeader.height; y++) {<a name="line.549"></a>
+<span class="sourceLineNo">550</span>            row.setLength(0);<a name="line.550"></a>
+<span class="sourceLineNo">551</span>            hasMore = parseNextString(cParser, row);<a name="line.551"></a>
+<span class="sourceLineNo">552</span>            if (y &lt; (xpmHeader.height - 1) &amp;&amp; !hasMore) {<a name="line.552"></a>
+<span class="sourceLineNo">553</span>                throw new ImageReadException("Parsing XPM file failed, "<a name="line.553"></a>
+<span class="sourceLineNo">554</span>                        + "insufficient image rows in file");<a name="line.554"></a>
+<span class="sourceLineNo">555</span>            }<a name="line.555"></a>
+<span class="sourceLineNo">556</span>            final int rowOffset = y * xpmHeader.width;<a name="line.556"></a>
+<span class="sourceLineNo">557</span>            for (int x = 0; x &lt; xpmHeader.width; x++) {<a name="line.557"></a>
+<span class="sourceLineNo">558</span>                final String index = row.substring(x * xpmHeader.numCharsPerPixel,<a name="line.558"></a>
+<span class="sourceLineNo">559</span>                        (x + 1) * xpmHeader.numCharsPerPixel);<a name="line.559"></a>
+<span class="sourceLineNo">560</span>                final PaletteEntry paletteEntry = xpmHeader.palette.get(index);<a name="line.560"></a>
+<span class="sourceLineNo">561</span>                if (paletteEntry == null) {<a name="line.561"></a>
+<span class="sourceLineNo">562</span>                    throw new ImageReadException(<a name="line.562"></a>
+<span class="sourceLineNo">563</span>                            "No palette entry was defined " + "for " + index);<a name="line.563"></a>
+<span class="sourceLineNo">564</span>                }<a name="line.564"></a>
+<span class="sourceLineNo">565</span>                if (bpp &lt;= 16) {<a name="line.565"></a>
+<span class="sourceLineNo">566</span>                    dataBuffer.setElem(rowOffset + x, paletteEntry.index);<a name="line.566"></a>
+<span class="sourceLineNo">567</span>                } else {<a name="line.567"></a>
+<span class="sourceLineNo">568</span>                    dataBuffer.setElem(rowOffset + x,<a name="line.568"></a>
+<span class="sourceLineNo">569</span>                            paletteEntry.getBestARGB());<a name="line.569"></a>
+<span class="sourceLineNo">570</span>                }<a name="line.570"></a>
+<span class="sourceLineNo">571</span>            }<a name="line.571"></a>
+<span class="sourceLineNo">572</span>        }<a name="line.572"></a>
+<span class="sourceLineNo">573</span><a name="line.573"></a>
+<span class="sourceLineNo">574</span>        while (hasMore) {<a name="line.574"></a>
+<span class="sourceLineNo">575</span>            row.setLength(0);<a name="line.575"></a>
+<span class="sourceLineNo">576</span>            hasMore = parseNextString(cParser, row);<a name="line.576"></a>
+<span class="sourceLineNo">577</span>        }<a name="line.577"></a>
+<span class="sourceLineNo">578</span><a name="line.578"></a>
+<span class="sourceLineNo">579</span>        final String token = cParser.nextToken();<a name="line.579"></a>
+<span class="sourceLineNo">580</span>        if (!";".equals(token)) {<a name="line.580"></a>
+<span class="sourceLineNo">581</span>            throw new ImageReadException("Last token wasn't ';'");<a name="line.581"></a>
+<span class="sourceLineNo">582</span>        }<a name="line.582"></a>
+<span class="sourceLineNo">583</span><a name="line.583"></a>
+<span class="sourceLineNo">584</span>        return image;<a name="line.584"></a>
+<span class="sourceLineNo">585</span>    }<a name="line.585"></a>
+<span class="sourceLineNo">586</span><a name="line.586"></a>
+<span class="sourceLineNo">587</span>    @Override<a name="line.587"></a>
+<span class="sourceLineNo">588</span>    public boolean dumpImageFile(final PrintWriter pw, final ByteSource byteSource)<a name="line.588"></a>
+<span class="sourceLineNo">589</span>            throws ImageReadException, IOException {<a name="line.589"></a>
+<span class="sourceLineNo">590</span>        readXpmHeader(byteSource).dump(pw);<a name="line.590"></a>
+<span class="sourceLineNo">591</span>        return true;<a name="line.591"></a>
+<span class="sourceLineNo">592</span>    }<a name="line.592"></a>
+<span class="sourceLineNo">593</span><a name="line.593"></a>
+<span class="sourceLineNo">594</span>    @Override<a name="line.594"></a>
+<span class="sourceLineNo">595</span>    public final BufferedImage getBufferedImage(final ByteSource byteSource,<a name="line.595"></a>
+<span class="sourceLineNo">596</span>            final Map&lt;String, Object&gt; params) throws ImageReadException, IOException {<a name="line.596"></a>
+<span class="sourceLineNo">597</span>        final XpmParseResult result = parseXpmHeader(byteSource);<a name="line.597"></a>
+<span class="sourceLineNo">598</span>        return readXpmImage(result.xpmHeader, result.cParser);<a name="line.598"></a>
+<span class="sourceLineNo">599</span>    }<a name="line.599"></a>
+<span class="sourceLineNo">600</span><a name="line.600"></a>
+<span class="sourceLineNo">601</span>    private String randomName() {<a name="line.601"></a>
+<span class="sourceLineNo">602</span>        final UUID uuid = UUID.randomUUID();<a name="line.602"></a>
+<span class="sourceLineNo">603</span>        final StringBuilder stringBuilder = new StringBuilder("a");<a name="line.603"></a>
+<span class="sourceLineNo">604</span>        long bits = uuid.getMostSignificantBits();<a name="line.604"></a>
+<span class="sourceLineNo">605</span>        // Long.toHexString() breaks for very big numbers<a name="line.605"></a>
+<span class="sourceLineNo">606</span>        for (int i = 64 - 8; i &gt;= 0; i -= 8) {<a name="line.606"></a>
+<span class="sourceLineNo">607</span>            stringBuilder.append(Integer.toHexString((int) ((bits &gt;&gt; i) &amp; 0xff)));<a name="line.607"></a>
+<span class="sourceLineNo">608</span>        }<a name="line.608"></a>
+<span class="sourceLineNo">609</span>        bits = uuid.getLeastSignificantBits();<a name="line.609"></a>
+<span class="sourceLineNo">610</span>        for (int i = 64 - 8; i &gt;= 0; i -= 8) {<a name="line.610"></a>
+<span class="sourceLineNo">611</span>            stringBuilder.append(Integer.toHexString((int) ((bits &gt;&gt; i) &amp; 0xff)));<a name="line.611"></a>
+<span class="sourceLineNo">612</span>        }<a name="line.612"></a>
+<span class="sourceLineNo">613</span>        return stringBuilder.toString();<a name="line.613"></a>
+<span class="sourceLineNo">614</span>    }<a name="line.614"></a>
+<span class="sourceLineNo">615</span><a name="line.615"></a>
+<span class="sourceLineNo">616</span>    private String pixelsForIndex(int index, final int charsPerPixel) {<a name="line.616"></a>
+<span class="sourceLineNo">617</span>        final StringBuilder stringBuilder = new StringBuilder();<a name="line.617"></a>
+<span class="sourceLineNo">618</span>        int highestPower = 1;<a name="line.618"></a>
+<span class="sourceLineNo">619</span>        for (int i = 1; i &lt; charsPerPixel; i++) {<a name="line.619"></a>
+<span class="sourceLineNo">620</span>            highestPower *= WRITE_PALETTE.length;<a name="line.620"></a>
+<span class="sourceLineNo">621</span>        }<a name="line.621"></a>
+<span class="sourceLineNo">622</span>        for (int i = 0; i &lt; charsPerPixel; i++) {<a name="line.622"></a>
+<span class="sourceLineNo">623</span>            final int multiple = index / highestPower;<a name="line.623"></a>
+<span class="sourceLineNo">624</span>            index -= (multiple * highestPower);<a name="line.624"></a>
+<span class="sourceLineNo">625</span>            highestPower /= WRITE_PALETTE.length;<a name="line.625"></a>
+<span class="sourceLineNo">626</span>            stringBuilder.append(WRITE_PALETTE[multiple]);<a name="line.626"></a>
+<span class="sourceLineNo">627</span>        }<a name="line.627"></a>
+<span class="sourceLineNo">628</span>        return stringBuilder.toString();<a name="line.628"></a>
+<span class="sourceLineNo">629</span>    }<a name="line.629"></a>
+<span class="sourceLineNo">630</span><a name="line.630"></a>
+<span class="sourceLineNo">631</span>    private String toColor(final int color) {<a name="line.631"></a>
+<span class="sourceLineNo">632</span>        final String hex = Integer.toHexString(color);<a name="line.632"></a>
+<span class="sourceLineNo">633</span>        if (hex.length() &lt; 6) {<a name="line.633"></a>
+<span class="sourceLineNo">634</span>            final char[] zeroes = new char[6 - hex.length()];<a name="line.634"></a>
+<span class="sourceLineNo">635</span>            Arrays.fill(zeroes, '0');<a name="line.635"></a>
+<span class="sourceLineNo">636</span>            return "#" + new String(zeroes) + hex;<a name="line.636"></a>
+<span class="sourceLineNo">637</span>        }<a name="line.637"></a>
+<span class="sourceLineNo">638</span>        return "#" + hex;<a name="line.638"></a>
+<span class="sourceLineNo">639</span>    }<a name="line.639"></a>
+<span class="sourceLineNo">640</span><a name="line.640"></a>
+<span class="sourceLineNo">641</span>    @Override<a name="line.641"></a>
+<span class="sourceLineNo">642</span>    public void writeImage(final BufferedImage src, final OutputStream os, Map&lt;String, Object&gt; params)<a name="line.642"></a>
+<span class="sourceLineNo">643</span>            throws ImageWriteException, IOException {<a name="line.643"></a>
+<span class="sourceLineNo">644</span>        // make copy of params; we'll clear keys as we consume them.<a name="line.644"></a>
+<span class="sourceLineNo">645</span>        params = (params == null) ? new HashMap&lt;&gt;() : new HashMap&lt;&gt;(params);<a name="line.645"></a>
+<span class="sourceLineNo">646</span><a name="line.646"></a>
+<span class="sourceLineNo">647</span>        // clear format key.<a name="line.647"></a>
+<span class="sourceLineNo">648</span>        if (params.containsKey(PARAM_KEY_FORMAT)) {<a name="line.648"></a>
+<span class="sourceLineNo">649</span>            params.remove(PARAM_KEY_FORMAT);<a name="line.649"></a>
+<span class="sourceLineNo">650</span>        }<a name="line.650"></a>
+<span class="sourceLineNo">651</span><a name="line.651"></a>
+<span class="sourceLineNo">652</span>        if (!params.isEmpty()) {<a name="line.652"></a>
+<span class="sourceLineNo">653</span>            final Object firstKey = params.keySet().iterator().next();<a name="line.653"></a>
+<span class="sourceLineNo">654</span>            throw new ImageWriteException("Unknown parameter: " + firstKey);<a name="line.654"></a>
+<span class="sourceLineNo">655</span>        }<a name="line.655"></a>
+<span class="sourceLineNo">656</span><a name="line.656"></a>
+<span class="sourceLineNo">657</span>        final PaletteFactory paletteFactory = new PaletteFactory();<a name="line.657"></a>
+<span class="sourceLineNo">658</span>        boolean hasTransparency = false;<a name="line.658"></a>
+<span class="sourceLineNo">659</span>        if (paletteFactory.hasTransparency(src, 1)) {<a name="line.659"></a>
+<span class="sourceLineNo">660</span>            hasTransparency = true;<a name="line.660"></a>
+<span class="sourceLineNo">661</span>        }<a name="line.661"></a>
+<span class="sourceLineNo">662</span>        SimplePalette palette = null;<a name="line.662"></a>
+<span class="sourceLineNo">663</span>        int maxColors = WRITE_PALETTE.length;<a name="line.663"></a>
+<span class="sourceLineNo">664</span>        int charsPerPixel = 1;<a name="line.664"></a>
+<span class="sourceLineNo">665</span>        while (palette == null) {<a name="line.665"></a>
+<span class="sourceLineNo">666</span>            palette = paletteFactory.makeExactRgbPaletteSimple(src,<a name="line.666"></a>
+<span class="sourceLineNo">667</span>                    hasTransparency ? maxColors - 1 : maxColors);<a name="line.667"></a>
+<span class="sourceLineNo">668</span><a name="line.668"></a>
+<span class="sourceLineNo">669</span>            // leave the loop if numbers would go beyond Integer.MAX_VALUE to avoid infinite loops<a name="line.669"></a>
+<span class="sourceLineNo">670</span>            // test every operation from below if it would increase an int value beyond Integer.MAX_VALUE<a name="line.670"></a>
+<span class="sourceLineNo">671</span>            long nextMaxColors = maxColors * WRITE_PALETTE.length;<a name="line.671"></a>
+<span class="sourceLineNo">672</span>            long nextCharsPerPixel = charsPerPixel + 1;<a name="line.672"></a>
+<span class="sourceLineNo">673</span>            if (nextMaxColors &gt; Integer.MAX_VALUE) {<a name="line.673"></a>
+<span class="sourceLineNo">674</span>                throw new ImageWriteException("Xpm: Can't write images with more than Integer.MAX_VALUE colors.");<a name="line.674"></a>
+<span class="sourceLineNo">675</span>            }<a name="line.675"></a>
+<span class="sourceLineNo">676</span>            if (nextCharsPerPixel &gt; Integer.MAX_VALUE) {<a name="line.676"></a>
+<span class="sourceLineNo">677</span>                throw new ImageWriteException("Xpm: Can't write images with more than Integer.MAX_VALUE chars per pixel.");<a name="line.677"></a>
+<span class="sourceLineNo">678</span>            }<a name="line.678"></a>
+<span class="sourceLineNo">679</span>            // the code above makes sure that we never go beyond Integer.MAX_VALUE here<a name="line.679"></a>
+<span class="sourceLineNo">680</span>            if (palette == null) {<a name="line.680"></a>
+<span class="sourceLineNo">681</span>                maxColors *= WRITE_PALETTE.length;<a name="line.681"></a>
+<span class="sourceLineNo">682</span>                charsPerPixel++;<a name="line.682"></a>
+<span class="sourceLineNo">683</span>            }<a name="line.683"></a>
+<span class="sourceLineNo">684</span>        }<a name="line.684"></a>
+<span class="sourceLineNo">685</span>        int colors = palette.length();<a name="line.685"></a>
+<span class="sourceLineNo">686</span>        if (hasTransparency) {<a name="line.686"></a>
+<span class="sourceLineNo">687</span>            ++colors;<a name="line.687"></a>
+<span class="sourceLineNo">688</span>        }<a name="line.688"></a>
+<span class="sourceLineNo">689</span><a name="line.689"></a>
+<span class="sourceLineNo">690</span>        String line = "/* XPM */\n";<a name="line.690"></a>
+<span class="sourceLineNo">691</span>        os.write(line.getBytes(StandardCharsets.US_ASCII));<a name="line.691"></a>
+<span class="sourceLineNo">692</span>        line = "static char *" + randomName() + "[] = {\n";<a name="line.692"></a>
+<span class="sourceLineNo">693</span>        os.write(line.getBytes(StandardCharsets.US_ASCII));<a name="line.693"></a>
+<span class="sourceLineNo">694</span>        line = "\"" + src.getWidth() + " " + src.getHeight() + " " + colors<a name="line.694"></a>
+<span class="sourceLineNo">695</span>                + " " + charsPerPixel + "\",\n";<a name="line.695"></a>
+<span class="sourceLineNo">696</span>        os.write(line.getBytes(StandardCharsets.US_ASCII));<a name="line.696"></a>
+<span class="sourceLineNo">697</span><a name="line.697"></a>
+<span class="sourceLineNo">698</span>        for (int i = 0; i &lt; colors; i++) {<a name="line.698"></a>
+<span class="sourceLineNo">699</span>            String color;<a name="line.699"></a>
+<span class="sourceLineNo">700</span>            if (i &lt; palette.length()) {<a name="line.700"></a>
+<span class="sourceLineNo">701</span>                color = toColor(palette.getEntry(i));<a name="line.701"></a>
+<span class="sourceLineNo">702</span>            } else {<a name="line.702"></a>
+<span class="sourceLineNo">703</span>                color = "None";<a name="line.703"></a>
+<span class="sourceLineNo">704</span>            }<a name="line.704"></a>
+<span class="sourceLineNo">705</span>            line = "\"" + pixelsForIndex(i, charsPerPixel) + " c " + color<a name="line.705"></a>
+<span class="sourceLineNo">706</span>                    + "\",\n";<a name="line.706"></a>
+<span class="sourceLineNo">707</span>            os.write(line.getBytes(StandardCharsets.US_ASCII));<a name="line.707"></a>
+<span class="sourceLineNo">708</span>        }<a name="line.708"></a>
+<span class="sourceLineNo">709</span><a name="line.709"></a>
+<span class="sourceLineNo">710</span>        String separator = "";<a name="line.710"></a>
+<span class="sourceLineNo">711</span>        for (int y = 0; y &lt; src.getHeight(); y++) {<a name="line.711"></a>
+<span class="sourceLineNo">712</span>            os.write(separator.getBytes(StandardCharsets.US_ASCII));<a name="line.712"></a>
+<span class="sourceLineNo">713</span>            separator = ",\n";<a name="line.713"></a>
+<span class="sourceLineNo">714</span>            line = "\"";<a name="line.714"></a>
+<span class="sourceLineNo">715</span>            os.write(line.getBytes(StandardCharsets.US_ASCII));<a name="line.715"></a>
+<span class="sourceLineNo">716</span>            for (int x = 0; x &lt; src.getWidth(); x++) {<a name="line.716"></a>
+<span class="sourceLineNo">717</span>                final int argb = src.getRGB(x, y);<a name="line.717"></a>
+<span class="sourceLineNo">718</span>                if ((argb &amp; 0xff000000) == 0) {<a name="line.718"></a>
+<span class="sourceLineNo">719</span>                    line = pixelsForIndex(palette.length(), charsPerPixel);<a name="line.719"></a>
+<span class="sourceLineNo">720</span>                } else {<a name="line.720"></a>
+<span class="sourceLineNo">721</span>                    line = pixelsForIndex(<a name="line.721"></a>
+<span class="sourceLineNo">722</span>                            palette.getPaletteIndex(0xffffff &amp; argb),<a name="line.722"></a>
+<span class="sourceLineNo">723</span>                            charsPerPixel);<a name="line.723"></a>
+<span class="sourceLineNo">724</span>                }<a name="line.724"></a>
+<span class="sourceLineNo">725</span>                os.write(line.getBytes(StandardCharsets.US_ASCII));<a name="line.725"></a>
+<span class="sourceLineNo">726</span>            }<a name="line.726"></a>
+<span class="sourceLineNo">727</span>            line = "\"";<a name="line.727"></a>
+<span class="sourceLineNo">728</span>            os.write(line.getBytes(StandardCharsets.US_ASCII));<a name="line.728"></a>
+<span class="sourceLineNo">729</span>        }<a name="line.729"></a>
+<span class="sourceLineNo">730</span><a name="line.730"></a>
+<span class="sourceLineNo">731</span>        line = "\n};\n";<a name="line.731"></a>
+<span class="sourceLineNo">732</span>        os.write(line.getBytes(StandardCharsets.US_ASCII));<a name="line.732"></a>
+<span class="sourceLineNo">733</span>    }<a name="line.733"></a>
+<span class="sourceLineNo">734</span>}<a name="line.734"></a>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</pre>
+</div>
+</body>
+</html>
