@@ -233,8 +233,6 @@ public final class Query {
         // If not throw a PersismException
         Collection<PropertyInfo> allProperties = MetaData.getPropertyInfo(objectClass);
         if (properties.values().size() < allProperties.size()) {
-
-
             Set<PropertyInfo> missing = new HashSet<PropertyInfo>(allProperties.size());
             missing.addAll(allProperties);
             missing.removeAll(properties.values());

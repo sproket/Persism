@@ -17,28 +17,15 @@ public interface Persistable {
     /**
      * Saves the current state of the data object to later detect changes for SQL UPDATE statements.
      * Persism calls this method internally, you usually don't have to call this method yourself.
-     *
+     * @see PersistableObject for example implementation
      * @throws PersismException If an SQL or other exception occurs.
      */
-    default void saveReadState() throws PersismException {
-//        try {
-//            Collection<PropertyInfo> properties = MetaData.getPropertyInfo(getClass());
-//            holder.originalValue = getClass().newInstance();
-//            for (PropertyInfo propertyInfo : properties) {
-//
-//                // It's possible to have a read-only property in a class. We just ignore those
-//                if (propertyInfo.setter != null) {
-//                    propertyInfo.setter.invoke(holder.originalValue, propertyInfo.getter.invoke(this));
-//                }
-//            }
-//        } catch (IllegalAccessException | IllegalArgumentException | InstantiationException | InvocationTargetException e) {
-//            throw new PersismException(e);
-//        }
-    }
+    void saveReadState() throws PersismException;
 
     /**
      * Getter for the data object in it's original state. The state at the time it was read from the database.
      *
+     * @see PersistableObject for example implementation
      * @return The data object in it's original state.
      */
     Persistable getOriginalValue();

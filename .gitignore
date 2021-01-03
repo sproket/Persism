@@ -3,3 +3,4 @@ disttest/
 instrumented-classes/
 out/
 release/
+cobertura.ser

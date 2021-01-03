@@ -1,7 +1,5 @@
 package net.sf.persism;
 
-import com.sun.org.apache.xpath.internal.operations.Or;
-
 enum ConnectionTypes {
     Oracle("%", "\"", "\""),
     MSSQL(null, "[", "]"),

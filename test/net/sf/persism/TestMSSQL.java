@@ -1,9 +1,6 @@
 package net.sf.persism;
 
-/**
- * $RCSfile: $
- * $Revision: $
- * $Date: $
+/*
  * Created by IntelliJ IDEA.
  * User: DHoward
  * Date: 9/8/11
@@ -169,6 +166,30 @@ public class TestMSSQL extends BaseTest {
 
     }
 
+    public void testAllColumnsMappedException() {
+        boolean shouldHaveFailed = false;
+        try {
+            query.read(Contact.class, "select [identity] from Contacts");
+        } catch (PersismException e) {
+            shouldHaveFailed = true;
+            log.warn(e.getMessage(), e);
+            assertEquals("message should be ", "Object class net.sf.persism.dao.Contact was not properly initialized. Some properties not found in the queried columns. : [Company, Email, StateProvince, Address2, Lastname, PartnerID, Address1, City, Firstname, LastModified, Type, ZipPostalCode, Country, Division, DateAdded, ContactName]", e.getMessage());
+        }
+        assertEquals("should have failed", true, shouldHaveFailed);
+    }
+
+    public void testAdditionalPropertyNotMappedException() {
+        boolean shouldHaveFailed = false;
+        try {
+            query.readList(ContactFail.class, "select * from Contacts");
+        } catch (PersismException e) {
+            shouldHaveFailed = true;
+            log.warn(e.getMessage(), e);
+            assertEquals("message should be ", "Object class net.sf.persism.dao.ContactFail was not properly initialized. Some properties not found in the queried columns (fail).", e.getMessage());
+        }
+
+        assertEquals("should have failed", true, shouldHaveFailed);
+    }
 
     public void testCountQuery() {
 

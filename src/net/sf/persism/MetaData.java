@@ -451,7 +451,7 @@ final class MetaData {
         }
         try {
             return determineInsertStatement(object, connection);
-        } catch (InvocationTargetException | IllegalAccessException e) {
+        } catch (Exception e) {
             throw new PersismException(e);
         }
     }

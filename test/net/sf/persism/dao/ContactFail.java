@@ -1,10 +1,13 @@
 package net.sf.persism.dao;
 
+import net.sf.persism.annotations.TableName;
+
 import java.sql.Date;
 import java.util.Objects;
 import java.util.UUID;
-
-public final class Contact {
+// This version has an extra field to fail a unit test and exercise the exception
+@TableName("Contacts")
+public final class ContactFail {
     private UUID identity;
     private UUID partnerId;
     private String type;
@@ -160,11 +163,20 @@ public final class Contact {
         this.lastModified = lastModified;
     }
 
+    private boolean fail;
+    public boolean isFail() {
+        return fail;
+    }
+
+    public void setFail(boolean fail) {
+        this.fail = fail;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-        Contact contact = (Contact) o;
+        ContactFail contact = (ContactFail) o;
         return Objects.equals(identity, contact.identity) && Objects.equals(partnerId, contact.partnerId) && Objects.equals(type, contact.type) && Objects.equals(firstname, contact.firstname) && Objects.equals(lastname, contact.lastname) && Objects.equals(contactName, contact.contactName) && Objects.equals(company, contact.company) && Objects.equals(division, contact.division) && Objects.equals(email, contact.email) && Objects.equals(address1, contact.address1) && Objects.equals(address2, contact.address2) && Objects.equals(city, contact.city) && Objects.equals(stateProvince, contact.stateProvince) && Objects.equals(zipPostalCode, contact.zipPostalCode) && Objects.equals(country, contact.country) && Objects.equals(dateAdded, contact.dateAdded) && Objects.equals(lastModified, contact.lastModified);
     }
 

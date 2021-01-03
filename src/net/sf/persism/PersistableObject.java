@@ -25,7 +25,7 @@ public abstract class PersistableObject implements Persistable {
                     propertyInfo.setter.invoke(originalValue, propertyInfo.getter.invoke(this));
                 }
             }
-        } catch (IllegalAccessException | IllegalArgumentException | InstantiationException | InvocationTargetException e) {
+        } catch (Exception e) {
             throw new PersismException(e);
         }
     }

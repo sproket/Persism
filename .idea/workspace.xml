@@ -4,7 +4,55 @@
     <option name="ANALYZE_TEST_SOURCES" value="false" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="ae4eccaa-233f-45c5-91c7-c0a5a2b8b1e3" name="Default" comment="0.9.4b3 - Added support for delimiters for table and column names" />
+    <list default="true" id="ae4eccaa-233f-45c5-91c7-c0a5a2b8b1e3" name="Default" comment="0.9.4b3 - Added Image library and junit">
+      <change afterPath="$PROJECT_DIR$/test/net/sf/persism/dao/ContactFail.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.gitignore" beforeDir="false" afterPath="$PROJECT_DIR$/.gitignore" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/ant.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/ant.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/build.properties" beforeDir="false" afterPath="$PROJECT_DIR$/build.properties" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/cobertura.ser" beforeDir="false" afterPath="$PROJECT_DIR$/cobertura.ser" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/derby.log" beforeDir="false" afterPath="$PROJECT_DIR$/derby.log" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/distprod/log4j.properties" beforeDir="false" afterPath="$PROJECT_DIR$/distprod/log4j.properties" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/distprod/logback.xml" beforeDir="false" afterPath="$PROJECT_DIR$/distprod/logback.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/persism.log" beforeDir="false" afterPath="$PROJECT_DIR$/persism.log" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/release/license.txt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/release/persism-0.9.3-doc.jar" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/release/persism-0.9.3-src.jar" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/release/persism-0.9.3.jar" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/release/persism-0.9.3.zip" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/release/persism-build-0.9.3.zip" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/release/readme.txt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/reports/frame-sourcefiles-net.sf.persism.html" beforeDir="false" afterPath="$PROJECT_DIR$/reports/frame-sourcefiles-net.sf.persism.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/reports/frame-sourcefiles.html" beforeDir="false" afterPath="$PROJECT_DIR$/reports/frame-sourcefiles.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/reports/frame-summary-net.sf.persism.annotations.html" beforeDir="false" afterPath="$PROJECT_DIR$/reports/frame-summary-net.sf.persism.annotations.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/reports/frame-summary-net.sf.persism.html" beforeDir="false" afterPath="$PROJECT_DIR$/reports/frame-summary-net.sf.persism.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/reports/frame-summary.html" beforeDir="false" afterPath="$PROJECT_DIR$/reports/frame-summary.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/reports/net.sf.persism.ColumnInfo.html" beforeDir="false" afterPath="$PROJECT_DIR$/reports/net.sf.persism.ColumnInfo.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/reports/net.sf.persism.Command.html" beforeDir="false" afterPath="$PROJECT_DIR$/reports/net.sf.persism.Command.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/reports/net.sf.persism.Log.html" beforeDir="false" afterPath="$PROJECT_DIR$/reports/net.sf.persism.Log.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/reports/net.sf.persism.MetaData.html" beforeDir="false" afterPath="$PROJECT_DIR$/reports/net.sf.persism.MetaData.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/reports/net.sf.persism.PersismException.html" beforeDir="false" afterPath="$PROJECT_DIR$/reports/net.sf.persism.PersismException.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/reports/net.sf.persism.Persistable.html" beforeDir="false" afterPath="$PROJECT_DIR$/reports/net.sf.persism.Persistable.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/reports/net.sf.persism.PersistableObject.html" beforeDir="false" afterPath="$PROJECT_DIR$/reports/net.sf.persism.PersistableObject.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/reports/net.sf.persism.PropertyInfo.html" beforeDir="false" afterPath="$PROJECT_DIR$/reports/net.sf.persism.PropertyInfo.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/reports/net.sf.persism.Query.html" beforeDir="false" afterPath="$PROJECT_DIR$/reports/net.sf.persism.Query.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/reports/net.sf.persism.Result.html" beforeDir="false" afterPath="$PROJECT_DIR$/reports/net.sf.persism.Result.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/reports/net.sf.persism.ResultSet.html" beforeDir="false" afterPath="$PROJECT_DIR$/reports/net.sf.persism.ResultSet.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/reports/net.sf.persism.TableInfo.html" beforeDir="false" afterPath="$PROJECT_DIR$/reports/net.sf.persism.TableInfo.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/reports/net.sf.persism.Types.html" beforeDir="false" afterPath="$PROJECT_DIR$/reports/net.sf.persism.Types.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/reports/net.sf.persism.Util.html" beforeDir="false" afterPath="$PROJECT_DIR$/reports/net.sf.persism.Util.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/reports/net.sf.persism.annotations.Column.html" beforeDir="false" afterPath="$PROJECT_DIR$/reports/net.sf.persism.annotations.Column.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/reports/net.sf.persism.annotations.NotMapped.html" beforeDir="false" afterPath="$PROJECT_DIR$/reports/net.sf.persism.annotations.NotMapped.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/reports/net.sf.persism.annotations.QueryResult.html" beforeDir="false" afterPath="$PROJECT_DIR$/reports/net.sf.persism.annotations.QueryResult.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/reports/net.sf.persism.annotations.TableName.html" beforeDir="false" afterPath="$PROJECT_DIR$/reports/net.sf.persism.annotations.TableName.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/net/sf/persism/ConnectionTypes.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/net/sf/persism/ConnectionTypes.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/net/sf/persism/MetaData.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/net/sf/persism/MetaData.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/net/sf/persism/Persistable.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/net/sf/persism/Persistable.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/net/sf/persism/PersistableObject.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/net/sf/persism/PersistableObject.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/net/sf/persism/Query.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/net/sf/persism/Query.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/test/net/sf/persism/TestMSSQL.java" beforeDir="false" afterPath="$PROJECT_DIR$/test/net/sf/persism/TestMSSQL.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/test/net/sf/persism/dao/Contact.java" beforeDir="false" afterPath="$PROJECT_DIR$/test/net/sf/persism/dao/Contact.java" afterDir="false" />
+    </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -590,9 +638,6 @@
     <property name="settings.editor.selected.configurable" value="preferences.pluginManager" />
   </component>
   <component name="RecentsManager">
-    <key name="CopyClassDialog.RECENTS_KEY">
-      <recent name="net.sf.persism.dao" />
-    </key>
     <key name="CopyFile.RECENT_KEYS">
       <recent name="D:\Java\Projects\PINF\web" />
       <recent name="D:\Java\Projects\PINF\test" />
@@ -602,6 +647,9 @@
     <key name="MoveClassesOrPackagesDialog.RECENTS_KEY">
       <recent name="net.sf.persism.jdbc" />
       <recent name="net.sf.pinf.dao" />
+    </key>
+    <key name="CopyClassDialog.RECENTS_KEY">
+      <recent name="net.sf.persism.dao" />
     </key>
   </component>
   <component name="RunManager" selected="JUnit.AllTESTS">
@@ -662,43 +710,7 @@
         <option name="Make" enabled="true" />
       </method>
     </configuration>
-    <configuration default="true" type="ArquillianJUnit" factoryName="" nameIsGenerated="true">
-      <option name="arquillianRunConfiguration">
-        <value>
-          <option name="containerStateName" value="" />
-        </value>
-      </option>
-      <option name="TEST_OBJECT" value="class" />
-      <method v="2">
-        <option name="Make" enabled="true" />
-      </method>
-    </configuration>
-    <configuration name="AllTESTS" type="JUnit" factoryName="JUnit">
-      <module name="PINF" />
-      <option name="PACKAGE_NAME" value="net.sf.persism" />
-      <option name="MAIN_CLASS_NAME" value="net.sf.persism.AllTests" />
-      <option name="METHOD_NAME" value="" />
-      <option name="TEST_OBJECT" value="class" />
-      <option name="PARAMETERS" value="" />
-      <option name="WORKING_DIRECTORY" value="file://$PROJECT_DIR$" />
-      <option name="TEST_SEARCH_SCOPE">
-        <value defaultName="moduleWithDependencies" />
-      </option>
-      <RunnerSettings RunnerId="Cover" />
-      <RunnerSettings RunnerId="Debug">
-        <option name="DEBUG_PORT" value="" />
-        <option name="TRANSPORT" value="0" />
-        <option name="LOCAL" value="true" />
-      </RunnerSettings>
-      <RunnerSettings RunnerId="Run" />
-      <ConfigurationWrapper RunnerId="Cover" />
-      <ConfigurationWrapper RunnerId="Debug" />
-      <ConfigurationWrapper RunnerId="Run" />
-      <method v="2">
-        <option name="Make" enabled="true" />
-      </method>
-    </configuration>
-    <configuration name="TestH2.testClob" type="JUnit" factoryName="JUnit" temporary="true">
+    <configuration name="TestMSSQL.testAdditionalPropertyNotMappedException" type="JUnit" factoryName="JUnit" temporary="true" nameIsGenerated="true">
       <module name="PINF" />
       <extension name="coverage">
         <pattern>
@@ -707,22 +719,35 @@
         </pattern>
       </extension>
       <option name="PACKAGE_NAME" value="net.sf.persism" />
-      <option name="MAIN_CLASS_NAME" value="net.sf.persism.TestH2" />
-      <option name="METHOD_NAME" value="testClob" />
+      <option name="MAIN_CLASS_NAME" value="net.sf.persism.TestMSSQL" />
+      <option name="METHOD_NAME" value="testAdditionalPropertyNotMappedException" />
       <option name="TEST_OBJECT" value="method" />
       <option name="VM_PARAMETERS" />
       <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
       <option name="TEST_SEARCH_SCOPE">
         <value defaultName="moduleWithDependencies" />
       </option>
-      <RunnerSettings RunnerId="Debug">
-        <option name="DEBUG_PORT" value="" />
-        <option name="TRANSPORT" value="0" />
-        <option name="LOCAL" value="true" />
-      </RunnerSettings>
-      <RunnerSettings RunnerId="Run" />
-      <ConfigurationWrapper RunnerId="Debug" />
-      <ConfigurationWrapper RunnerId="Run" />
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="TestMSSQL.testAllColumnsMappedException" type="JUnit" factoryName="JUnit" temporary="true" nameIsGenerated="true">
+      <module name="PINF" />
+      <extension name="coverage">
+        <pattern>
+          <option name="PATTERN" value="net.sf.persism.*" />
+          <option name="ENABLED" value="true" />
+        </pattern>
+      </extension>
+      <option name="PACKAGE_NAME" value="net.sf.persism" />
+      <option name="MAIN_CLASS_NAME" value="net.sf.persism.TestMSSQL" />
+      <option name="METHOD_NAME" value="testAllColumnsMappedException" />
+      <option name="TEST_OBJECT" value="method" />
+      <option name="VM_PARAMETERS" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
+      <option name="TEST_SEARCH_SCOPE">
+        <value defaultName="moduleWithDependencies" />
+      </option>
       <method v="2">
         <option name="Make" enabled="true" />
       </method>
@@ -739,7 +764,7 @@
       <option name="MAIN_CLASS_NAME" value="net.sf.persism.TestMSSQL" />
       <option name="METHOD_NAME" value="testCreateTable" />
       <option name="TEST_OBJECT" value="method" />
-      <option name="VM_PARAMETERS" />
+      <option name="PARAMETERS" value="" />
       <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
       <option name="TEST_SEARCH_SCOPE">
         <value defaultName="moduleWithDependencies" />
@@ -759,27 +784,6 @@
       <option name="PACKAGE_NAME" value="net.sf.persism" />
       <option name="MAIN_CLASS_NAME" value="net.sf.persism.TestNorthwind" />
       <option name="METHOD_NAME" value="testBinaryImage" />
-      <option name="TEST_OBJECT" value="method" />
-      <option name="PARAMETERS" value="" />
-      <option name="WORKING_DIRECTORY" value="file://$PROJECT_DIR$" />
-      <option name="TEST_SEARCH_SCOPE">
-        <value defaultName="moduleWithDependencies" />
-      </option>
-      <method v="2">
-        <option name="Make" enabled="true" />
-      </method>
-    </configuration>
-    <configuration name="TestNorthwind.testQuery" type="JUnit" factoryName="JUnit" temporary="true" nameIsGenerated="true">
-      <module name="PINF" />
-      <extension name="coverage">
-        <pattern>
-          <option name="PATTERN" value="net.sf.persism.*" />
-          <option name="ENABLED" value="true" />
-        </pattern>
-      </extension>
-      <option name="PACKAGE_NAME" value="net.sf.persism" />
-      <option name="MAIN_CLASS_NAME" value="net.sf.persism.TestNorthwind" />
-      <option name="METHOD_NAME" value="testQuery" />
       <option name="TEST_OBJECT" value="method" />
       <option name="PARAMETERS" value="" />
       <option name="WORKING_DIRECTORY" value="file://$PROJECT_DIR$" />
@@ -824,19 +828,19 @@
     </configuration>
     <list>
       <item itemvalue="JUnit.AllTESTS" />
-      <item itemvalue="JUnit.TestH2.testClob" />
-      <item itemvalue="JUnit.TestMSSQL.testCreateTable" />
-      <item itemvalue="JUnit.TestNorthwind.testQuery" />
       <item itemvalue="JUnit.TestNorthwind.testBinaryImage" />
       <item itemvalue="JUnit.TestOracle" />
+      <item itemvalue="JUnit.TestMSSQL.testAllColumnsMappedException" />
+      <item itemvalue="JUnit.TestMSSQL.testCreateTable" />
+      <item itemvalue="JUnit.TestMSSQL.testAdditionalPropertyNotMappedException" />
     </list>
     <recent_temporary>
       <list>
+        <item itemvalue="JUnit.TestMSSQL.testAdditionalPropertyNotMappedException" />
+        <item itemvalue="JUnit.TestMSSQL.testAllColumnsMappedException" />
+        <item itemvalue="JUnit.TestMSSQL.testCreateTable" />
         <item itemvalue="JUnit.TestOracle" />
         <item itemvalue="JUnit.TestNorthwind.testBinaryImage" />
-        <item itemvalue="JUnit.TestNorthwind.testQuery" />
-        <item itemvalue="JUnit.TestH2.testClob" />
-        <item itemvalue="JUnit.TestMSSQL.testCreateTable" />
       </list>
     </recent_temporary>
   </component>
@@ -866,7 +870,8 @@
       <workItem from="1609673891314" duration="87000" />
       <workItem from="1609674736780" duration="6000" />
       <workItem from="1609674765341" duration="60000" />
-      <workItem from="1609674840089" duration="13338000" />
+      <workItem from="1609674840089" duration="17628000" />
+      <workItem from="1609706828561" duration="859000" />
     </task>
     <task id="LOCAL-00001" summary="Update now uses Persistable">
       <created>1333275659133</created>
@@ -1015,7 +1020,14 @@
       <option name="project" value="LOCAL" />
       <updated>1609702021211</updated>
     </task>
-    <option name="localTasksCounter" value="22" />
+    <task id="LOCAL-00022" summary="0.9.4b3 - Added Image library and junit">
+      <created>1609702693919</created>
+      <option name="number" value="00022" />
+      <option name="presentableId" value="LOCAL-00022" />
+      <option name="project" value="LOCAL" />
+      <updated>1609702693920</updated>
+    </task>
+    <option name="localTasksCounter" value="23" />
     <servers />
   </component>
   <component name="TodoView" selected-index="0">
@@ -1113,6 +1125,11 @@
             </State>
           </value>
         </entry>
+        <entry key="MAIN">
+          <value>
+            <State />
+          </value>
+        </entry>
       </map>
     </option>
     <option name="OPEN_GENERIC_TABS">
@@ -1120,6 +1137,7 @@
         <entry key="1" value="TOOL_WINDOW" />
       </map>
     </option>
+    <option name="oldMeFiltersMigrated" value="true" />
   </component>
   <component name="Vcs.Log.UiProperties">
     <option name="RECENTLY_FILTERED_USER_GROUPS">
@@ -1158,17 +1176,13 @@
     <MESSAGE value="0.9.4b1 - Initial commit." />
     <MESSAGE value="0.9.4b2 - Cleaned up unit-tests" />
     <MESSAGE value="0.9.4b3 - Added support for delimiters for table and column names" />
-    <option name="LAST_COMMIT_MESSAGE" value="0.9.4b3 - Added support for delimiters for table and column names" />
+    <MESSAGE value="0.9.4b3 - Added Image library and junit" />
+    <option name="LAST_COMMIT_MESSAGE" value="0.9.4b3 - Added Image library and junit" />
     <option name="MAKE_NEW_CHANGELIST_ACTIVE" value="true" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
       <breakpoints>
-        <line-breakpoint enabled="true" type="java-line">
-          <url>file://$PROJECT_DIR$/test/net/sf/persism/TestOracle.java</url>
-          <line>64</line>
-          <option name="timeStamp" value="1" />
-        </line-breakpoint>
         <line-breakpoint enabled="true" type="java-line">
           <url>file://$PROJECT_DIR$/test/net/sf/persism/TestMetaData.java</url>
           <line>29</line>
@@ -1185,6 +1199,14 @@
   <component name="XSLT-Support.FileAssociations.UIState">
     <expand />
     <select />
+  </component>
+  <component name="com.intellij.coverage.CoverageDataManagerImpl">
+    <SUITE FILE_PATH="coverage/PINF$TestMSSQL_testAllColumnsMappedException.ic" NAME="TestMSSQL.testAllColumnsMappedException Coverage Results" MODIFIED="1609704321968" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="idea" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false">
+      <FILTER>net.sf.persism.*</FILTER>
+    </SUITE>
+    <SUITE FILE_PATH="coverage/PINF$AllTESTS.ic" NAME="AllTESTS Coverage Results" MODIFIED="1609707420453" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="idea" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false">
+      <FILTER>net.sf.persism.*</FILTER>
+    </SUITE>
   </component>
   <component name="editorHistoryManager">
     <entry file="file://$PROJECT_DIR$/web/shit.html">
