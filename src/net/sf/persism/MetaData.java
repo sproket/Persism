@@ -169,11 +169,13 @@ final class MetaData {
         Statement st = null;
         ResultSet rs = null;
         Map<String, PropertyInfo> properties = getTableColumns(objectClass, connection);
+        String sd = connectionType.getKeywordStartDelimiter();
+        String ed = connectionType.getKeywordEndDelimiter();
 
         try {
 
             st = connection.createStatement();
-            rs = st.executeQuery("SELECT * FROM " + tableName + " WHERE 1=0");
+            rs = st.executeQuery("SELECT * FROM " + sd + tableName + ed + " WHERE 1=0");
 
             // Make sure primary keys sorted by column order in case we have more than 1
             // then we'll know the order to apply the parameters.

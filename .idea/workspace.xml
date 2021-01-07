@@ -7,75 +7,10 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="ae4eccaa-233f-45c5-91c7-c0a5a2b8b1e3" name="Default" comment="0.9.4b3 - Added Image library and junit">
-      <change afterPath="$PROJECT_DIR$/persism.2021-01-04.log" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/persism.2021-01-05.log" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/persism.2021-01-06.log" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.gitignore" beforeDir="false" afterPath="$PROJECT_DIR$/.gitignore" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/ant.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/ant.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/libraries/jtds.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/libraries/jtds.xml" afterDir="false" />
+    <list default="true" id="ae4eccaa-233f-45c5-91c7-c0a5a2b8b1e3" name="Default" comment="0.9.4b3 - Used clone for PersistableObject to hide MetaData class, cleaned up some code, added 1st tests for Threads">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/PINF.iml" beforeDir="false" afterPath="$PROJECT_DIR$/PINF.iml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/build.properties" beforeDir="false" afterPath="$PROJECT_DIR$/build.properties" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/derby.log" beforeDir="false" afterPath="$PROJECT_DIR$/derby.log" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/javadoc/allclasses-frame.html" beforeDir="false" afterPath="$PROJECT_DIR$/javadoc/allclasses-frame.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/javadoc/allclasses-noframe.html" beforeDir="false" afterPath="$PROJECT_DIR$/javadoc/allclasses-noframe.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/javadoc/constant-values.html" beforeDir="false" afterPath="$PROJECT_DIR$/javadoc/constant-values.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/javadoc/deprecated-list.html" beforeDir="false" afterPath="$PROJECT_DIR$/javadoc/deprecated-list.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/javadoc/help-doc.html" beforeDir="false" afterPath="$PROJECT_DIR$/javadoc/help-doc.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/javadoc/index-all.html" beforeDir="false" afterPath="$PROJECT_DIR$/javadoc/index-all.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/javadoc/index.html" beforeDir="false" afterPath="$PROJECT_DIR$/javadoc/index.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/javadoc/net/sf/persism/Command.html" beforeDir="false" afterPath="$PROJECT_DIR$/javadoc/net/sf/persism/Command.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/javadoc/net/sf/persism/PersismException.html" beforeDir="false" afterPath="$PROJECT_DIR$/javadoc/net/sf/persism/PersismException.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/javadoc/net/sf/persism/Persistable.html" beforeDir="false" afterPath="$PROJECT_DIR$/javadoc/net/sf/persism/Persistable.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/javadoc/net/sf/persism/PersistableObject.html" beforeDir="false" afterPath="$PROJECT_DIR$/javadoc/net/sf/persism/PersistableObject.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/javadoc/net/sf/persism/Query.html" beforeDir="false" afterPath="$PROJECT_DIR$/javadoc/net/sf/persism/Query.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/javadoc/net/sf/persism/ResultSet.html" beforeDir="false" afterPath="$PROJECT_DIR$/javadoc/net/sf/persism/ResultSet.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/javadoc/net/sf/persism/annotations/Column.html" beforeDir="false" afterPath="$PROJECT_DIR$/javadoc/net/sf/persism/annotations/Column.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/javadoc/net/sf/persism/annotations/NotMapped.html" beforeDir="false" afterPath="$PROJECT_DIR$/javadoc/net/sf/persism/annotations/NotMapped.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/javadoc/net/sf/persism/annotations/QueryResult.html" beforeDir="false" afterPath="$PROJECT_DIR$/javadoc/net/sf/persism/annotations/QueryResult.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/javadoc/net/sf/persism/annotations/TableName.html" beforeDir="false" afterPath="$PROJECT_DIR$/javadoc/net/sf/persism/annotations/TableName.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/javadoc/net/sf/persism/annotations/package-frame.html" beforeDir="false" afterPath="$PROJECT_DIR$/javadoc/net/sf/persism/annotations/package-frame.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/javadoc/net/sf/persism/annotations/package-summary.html" beforeDir="false" afterPath="$PROJECT_DIR$/javadoc/net/sf/persism/annotations/package-summary.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/javadoc/net/sf/persism/annotations/package-tree.html" beforeDir="false" afterPath="$PROJECT_DIR$/javadoc/net/sf/persism/annotations/package-tree.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/javadoc/net/sf/persism/package-frame.html" beforeDir="false" afterPath="$PROJECT_DIR$/javadoc/net/sf/persism/package-frame.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/javadoc/net/sf/persism/package-summary.html" beforeDir="false" afterPath="$PROJECT_DIR$/javadoc/net/sf/persism/package-summary.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/javadoc/net/sf/persism/package-tree.html" beforeDir="false" afterPath="$PROJECT_DIR$/javadoc/net/sf/persism/package-tree.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/javadoc/overview-frame.html" beforeDir="false" afterPath="$PROJECT_DIR$/javadoc/overview-frame.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/javadoc/overview-summary.html" beforeDir="false" afterPath="$PROJECT_DIR$/javadoc/overview-summary.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/javadoc/overview-tree.html" beforeDir="false" afterPath="$PROJECT_DIR$/javadoc/overview-tree.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/javadoc/serialized-form.html" beforeDir="false" afterPath="$PROJECT_DIR$/javadoc/serialized-form.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/javadoc/src-html/net/sf/persism/Command.html" beforeDir="false" afterPath="$PROJECT_DIR$/javadoc/src-html/net/sf/persism/Command.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/javadoc/src-html/net/sf/persism/Persistable.html" beforeDir="false" afterPath="$PROJECT_DIR$/javadoc/src-html/net/sf/persism/Persistable.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/javadoc/src-html/net/sf/persism/PersistableObject.html" beforeDir="false" afterPath="$PROJECT_DIR$/javadoc/src-html/net/sf/persism/PersistableObject.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/javadoc/src-html/net/sf/persism/Query.html" beforeDir="false" afterPath="$PROJECT_DIR$/javadoc/src-html/net/sf/persism/Query.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/javadoc/src-html/net/sf/persism/ResultSet.html" beforeDir="false" afterPath="$PROJECT_DIR$/javadoc/src-html/net/sf/persism/ResultSet.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/license.txt" beforeDir="false" afterPath="$PROJECT_DIR$/license.txt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/persism.2021-01-01.log" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/net/sf/persism/Command.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/net/sf/persism/Command.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/net/sf/persism/ConnectionTypes.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/net/sf/persism/ConnectionTypes.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/net/sf/persism/MetaData.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/net/sf/persism/MetaData.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/net/sf/persism/PersismException.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/net/sf/persism/PersismException.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/net/sf/persism/Persistable.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/net/sf/persism/Persistable.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/net/sf/persism/PersistableObject.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/net/sf/persism/PersistableObject.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/net/sf/persism/Query.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/net/sf/persism/Query.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/net/sf/persism/ResultSet.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/net/sf/persism/Util.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/net/sf/persism/Util.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/test/net/sf/persism/AllTests.java" beforeDir="false" afterPath="$PROJECT_DIR$/test/net/sf/persism/AllTests.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/test/net/sf/persism/BaseTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/test/net/sf/persism/BaseTest.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/test/net/sf/persism/TestMSSQL.java" beforeDir="false" afterPath="$PROJECT_DIR$/test/net/sf/persism/TestMSSQL.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/test/net/sf/persism/TestMiscellaneous.java" beforeDir="false" afterPath="$PROJECT_DIR$/test/net/sf/persism/TestMiscellaneous.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/test/net/sf/persism/TestNorthwind.java" beforeDir="false" afterPath="$PROJECT_DIR$/test/net/sf/persism/TestNorthwind.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/test/net/sf/persism/TestResultSet.java" beforeDir="false" afterPath="$PROJECT_DIR$/test/net/sf/persism/TestResultSet.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/test/net/sf/persism/dao/Contact.java" beforeDir="false" afterPath="$PROJECT_DIR$/test/net/sf/persism/dao/Contact.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/test/net/sf/persism/dao/ContactFail.java" beforeDir="false" afterPath="$PROJECT_DIR$/test/net/sf/persism/dao/ContactFail.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/test/net/sf/persism/dao/Customer.java" beforeDir="false" afterPath="$PROJECT_DIR$/test/net/sf/persism/dao/Customer.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/test/net/sf/persism/dao/DAOFactory.java" beforeDir="false" afterPath="$PROJECT_DIR$/test/net/sf/persism/dao/DAOFactory.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/test/net/sf/persism/dao/ORAOrder.java" beforeDir="false" afterPath="$PROJECT_DIR$/test/net/sf/persism/dao/OracleOrder.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/test/net/sf/persism/dao/Order.java" beforeDir="false" afterPath="$PROJECT_DIR$/test/net/sf/persism/dao/Order.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/test/net/sf/persism/dao/Procedure.java" beforeDir="false" afterPath="$PROJECT_DIR$/test/net/sf/persism/dao/Procedure.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/todo.txt" beforeDir="false" afterPath="$PROJECT_DIR$/todo.txt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/web/manual.html" beforeDir="false" afterPath="$PROJECT_DIR$/web/manual.html" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -685,7 +620,7 @@
       <recent name="net.sf.persism.dao" />
     </key>
   </component>
-  <component name="RunManager" selected="JUnit.TestMSSQL.testThreading">
+  <component name="RunManager" selected="JUnit.AllTESTS">
     <configuration default="true" type="AndroidRunConfigurationType" factoryName="Android Application">
       <module name="" />
       <option name="ACTIVITY_CLASS" value="" />
@@ -929,7 +864,7 @@
       <workItem from="1609932472840" duration="299000" />
       <workItem from="1609934072829" duration="1377000" />
       <workItem from="1610023478568" duration="136000" />
-      <workItem from="1610023631208" duration="7083000" />
+      <workItem from="1610023631208" duration="7570000" />
     </task>
     <task id="LOCAL-00001" summary="Update now uses Persistable">
       <created>1333275659133</created>
@@ -1092,7 +1027,14 @@
       <option name="project" value="LOCAL" />
       <updated>1609708011214</updated>
     </task>
-    <option name="localTasksCounter" value="24" />
+    <task id="LOCAL-00024" summary="0.9.4b3 - Used clone for PersistableObject to hide MetaData class, cleaned up some code, added 1st tests for Threads">
+      <created>1610040211851</created>
+      <option name="number" value="00024" />
+      <option name="presentableId" value="LOCAL-00024" />
+      <option name="project" value="LOCAL" />
+      <updated>1610040211851</updated>
+    </task>
+    <option name="localTasksCounter" value="25" />
     <servers />
   </component>
   <component name="TodoView" selected-index="0">
@@ -1243,7 +1185,8 @@
     <MESSAGE value="0.9.4b3 - Added support for delimiters for table and column names" />
     <MESSAGE value="0.9.4b3 - Added Image library and junit" />
     <MESSAGE value="1st stab at adding code coverage report (Java 8 not yet supported)" />
-    <option name="LAST_COMMIT_MESSAGE" value="1st stab at adding code coverage report (Java 8 not yet supported)" />
+    <MESSAGE value="0.9.4b3 - Used clone for PersistableObject to hide MetaData class, cleaned up some code, added 1st tests for Threads" />
+    <option name="LAST_COMMIT_MESSAGE" value="0.9.4b3 - Used clone for PersistableObject to hide MetaData class, cleaned up some code, added 1st tests for Threads" />
     <option name="MAKE_NEW_CHANGELIST_ACTIVE" value="true" />
   </component>
   <component name="XDebuggerManager">
