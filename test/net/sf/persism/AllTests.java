@@ -29,6 +29,7 @@ public class AllTests {
         theTestSuite.addTestSuite(TestTypes.class);
         theTestSuite.addTestSuite(TestNorthwind.class);
         theTestSuite.addTestSuite(TestPubs.class);
+        theTestSuite.addTestSuite(TestMiscellaneous.class);
 
 
         return theTestSuite;

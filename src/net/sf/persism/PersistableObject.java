@@ -10,27 +10,28 @@ import java.util.Collection;
  * @author Dan Howard
  * @since 9/15/11 7:14 AM
  */
-public abstract class PersistableObject implements Persistable {
+public abstract class PersistableObject<T> implements Persistable<T> {
 
-    Persistable originalValue = null;
+    private T originalValue = null;
 
     public final void saveReadState() throws PersismException {
-        try {
-            Collection<PropertyInfo> properties = MetaData.getPropertyInfo(getClass());
-            originalValue = getClass().newInstance();
-            for (PropertyInfo propertyInfo : properties) {
-
-                // It's possible to have a read-only property in a class. We just ignore those
-                if (propertyInfo.setter != null) {
-                    propertyInfo.setter.invoke(originalValue, propertyInfo.getter.invoke(this));
-                }
-            }
-        } catch (Exception e) {
-            throw new PersismException(e);
-        }
+        originalValue = clone();
     }
 
-    public final Persistable getOriginalValue() {
+    public final T getOriginalValue() {
         return originalValue;
+    }
+
+    /**
+     * Used for getting originalValue
+     * @return Clone of T
+     */
+    @Override
+    public final T clone()  {
+        try {
+            return (T)super.clone();
+        } catch (CloneNotSupportedException e) {
+            throw new PersismException(e.getMessage(), e);
+        }
     }
 }

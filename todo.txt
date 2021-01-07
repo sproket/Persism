@@ -70,13 +70,12 @@ https://persism.svn.sourceforge.net/svnroot/persism/
 GIT
 http://eikke.com/importing-a-git-tree-into-a-subversion-repository/
 
-Add feature to use delimiters around table and column names when constructing SQL statements
-MSSQL uses []
-MySQL uses ``
-Oracle uses ""
-Postgres uses ""
-
-
 
 ADD Firebird?
 Add Sybase?
+
+Back to Java 6 for instrumentation since it doesn't work under Java 8
+- Put back JTDS
+- Set Ant to 1.8.2
+
+Note for next release. Renamed Command executeSQL to execute

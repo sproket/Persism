@@ -1,10 +1,10 @@
 ----------------------------------------------------------------
-Sun Jan 03 15:57:14 EST 2021:
-Booting Derby version The Apache Software Foundation - Apache Derby - 10.8.2.2 - (1181258): instance a816c00e-0176-ca0a-0021-000005456850 
-on database directory C:\Users\Dan\pinfderby\pinfderby  with class loader sun.misc.Launcher$AppClassLoader@18b4aac2 
+Thu Jan 07 07:55:31 EST 2021:
+Booting Derby version The Apache Software Foundation - Apache Derby - 10.8.2.2 - (1181258): instance a816c00e-0176-dcea-7175-000006d3a728 
+on database directory C:\Users\Dan\pinfderby\pinfderby  with class loader sun.misc.Launcher$AppClassLoader@77cde100 
 Loaded from file:/C:/Users/Dan/IdeaProjects/PINF/libs/db-derby-10.8.2.2-lib/lib/derby.jar
-java.vendor=Oracle Corporation
-java.runtime.version=1.8.0_231-b11
+java.vendor=Sun Microsystems Inc.
+java.runtime.version=1.6.0_32-b05
 user.dir=C:\Users\Dan\IdeaProjects\PINF
 derby.system.home=null
 Database Class Loader started - derby.database.classpath=''

@@ -1,5 +1,6 @@
 package net.sf.persism.dao;
 
+import net.sf.persism.PersistableObject;
 import net.sf.persism.annotations.Column;
 import net.sf.persism.annotations.NotMapped;
 import net.sf.persism.annotations.TableName;
@@ -8,18 +9,13 @@ import java.math.BigDecimal;
 import java.util.Date;
 
 /**
- * $RCSfile: $
- * $Revision: $
- * $Date: $
- * Created by IntelliJ IDEA.
+ * Example extending PersistableObject
  * User: DHoward
  * Date: 9/8/11
  * Time: 6:16 AM
  */
 @TableName("EXAMCODE")
-public final class Procedure {
-
-    @SuppressWarnings("cow")
+public final class Procedure extends PersistableObject<Procedure> {
 
     @Column("ExamCode_No")
     private int examCodeNo;

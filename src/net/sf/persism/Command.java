@@ -1,13 +1,7 @@
 package net.sf.persism;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.InputStream;
-import java.io.ObjectOutputStream;
 import java.lang.reflect.Method;
 import java.sql.*;
-import java.sql.Date;
-import java.sql.Types;
 import java.util.*;
 
 /**
@@ -16,7 +10,7 @@ import java.util.*;
  * @author Dan Howard
  * @since 4/4/12 6:42 PM
  */
-public class Command {
+public final class Command {
 
     private static final Log log = Log.getLogger(Command.class);
 
@@ -27,7 +21,12 @@ public class Command {
 
     private Query query = null; // lazy load it - we may not need this object for all cases.
 
-    public Command(Connection connection) {
+    /**
+     *
+     * @param connection
+     * @throws PersismException
+     */
+    public Command(Connection connection) throws PersismException {
         this.connection = connection;
         init(connection);
     }
@@ -75,24 +74,20 @@ public class Command {
                 changedProperties = allProperties;
             }
 
-            int param = 1;
+            List<Object> params = new ArrayList<Object>(primaryKeys.size());
             for (String column : changedProperties.keySet()) {
                 if (!primaryKeys.contains(column)) {
                     Object value = allProperties.get(column).getter.invoke(object);
 
                     if (value != null) {
-//                        value = Util.convert(value, columns.get(column).columnType);
-
-                        if (value != null && value.getClass().isEnum()) {
+                        if (value.getClass().isEnum()) {
                             value = "" + value; // convert enum to string.
                         }
 
                         if (value instanceof java.util.Date) {
-
                             java.util.Date dt = (java.util.Date) value;
                             value = new Timestamp(dt.getTime());
                         }
-
 
                         if (value instanceof String) {
                             // check width
@@ -106,23 +101,19 @@ public class Command {
                             }
                         }
                     }
-                    st.setObject(param++, value);
+                    params.add(value);
                 }
             }
 
             for (String column : primaryKeys) {
-                st.setObject(param++, allProperties.get(column).getter.invoke(object));
+                params.add(allProperties.get(column).getter.invoke(object));
             }
+            Util.setParameters(st, params.toArray());
             int ret = st.executeUpdate();
             return ret;
+
         } catch (Exception e) {
-            try {
-                if (connection != null && !connection.getAutoCommit()) {
-                    connection.rollback();
-                }
-            } catch (SQLException e1) {
-                log.error(e1.getMessage(), e1);
-            }
+            Util.rollback(connection);
             throw new PersismException(e);
 
         } finally {
@@ -164,7 +155,7 @@ public class Command {
 
             boolean tableHasDefaultColumnValues = false;
 
-            int param = 1;
+            List<Object> params = new ArrayList<Object>();
             for (ColumnInfo column : columns.values()) {
 
                 PropertyInfo propertyInfo = properties.get(column.columnName);
@@ -185,20 +176,15 @@ public class Command {
 
 
                     Object value = propertyInfo.getter.invoke(object);
-                    if (log.isDebugEnabled()) {
-                        log.debug("param " + param + " value: " + value);
-                    }
 
                     if (value != null) {
 
-//                        value = Util.convert(value, column.columnType);             // todo null with Enum?
-
-                        if (value != null && value.getClass().isEnum()) {
+                        if (value.getClass().isEnum()) {
                             value = "" + value; // convert enum to string.
                         }
 
                         // sql.Date is a subclass so this would be true
-                        if (value instanceof java.util.Date ) {
+                        if (value instanceof java.util.Date) {
                             java.util.Date dt = (java.util.Date) value;
                             value = new Timestamp(dt.getTime());
                         }
@@ -214,23 +200,15 @@ public class Command {
                                 value = str;
                             }
                         }
-
-                        if (value instanceof UUID) {
-                            UUID uuid = (UUID) value;
-                            value = uuid;
-                        }
                     }
-                    if (value instanceof UUID) {
-                        st.setString(param++, value.toString());
-                    } else {
-                        st.setObject(param++, value);
-                    }
+                    params.add(value);
                 }
             }
 
             // https://forums.oracle.com/forums/thread.jspa?threadID=879222
             // http://download.oracle.com/javase/1.4.2/docs/guide/jdbc/getstart/statement.html
             //int ret = st.executeUpdate(insertStatement, Statement.RETURN_GENERATED_KEYS);
+            Util.setParameters(st, params.toArray());
             int ret = st.executeUpdate();
             if (log.isDebugEnabled()) {
                 log.debug("insert ret: " + ret);
@@ -270,14 +248,7 @@ public class Command {
 
             return ret;
         } catch (Exception e) {
-            try {
-                if (connection != null && !connection.getAutoCommit()) {
-                    connection.rollback();
-                }
-            } catch (SQLException e1) {
-                log.error(e1.getMessage(), e1);
-            }
-
+            Util.rollback(connection);
             throw new PersismException(e);
         } finally {
             Util.cleanup(st, rs);
@@ -299,7 +270,6 @@ public class Command {
             throw new PersismException("Cannot perform delete. " + metaData.getTableName(object.getClass()) + " has no primary keys.");
         }
 
-
         PreparedStatement st = null;
         try {
             String deleteStatement = metaData.getDeleteStatement(object, connection);
@@ -308,20 +278,16 @@ public class Command {
             // These keys should always be in sorted order.
             Map<String, PropertyInfo> columns = metaData.getTableColumns(object.getClass(), connection);
 
-            int param = 1;
+            List<Object> params = new ArrayList<Object>(primaryKeys.size());
             for (String column : primaryKeys) {
-                st.setObject(param++, columns.get(column).getter.invoke(object));
+                params.add(columns.get(column).getter.invoke(object));
             }
+            Util.setParameters(st, params.toArray());
             int ret = st.executeUpdate();
             return ret;
+
         } catch (Exception e) {
-            try {
-                if (connection != null && !connection.getAutoCommit()) {
-                    connection.rollback();
-                }
-            } catch (SQLException e1) {
-                log.error(e1.getMessage(), e1);
-            }
+            Util.rollback(connection);
             throw new PersismException(e);
 
         } finally {
@@ -335,7 +301,7 @@ public class Command {
      * @param sql
      * @param parameters
      */
-    public void executeSQL(String sql, Object... parameters) {
+    public void execute(String sql, Object... parameters) {
 
         Statement st = null;
 
@@ -346,13 +312,8 @@ public class Command {
                 st.execute(sql);
             } else {
                 st = connection.prepareStatement(sql);
-
                 PreparedStatement pst = (PreparedStatement) st;
-                int n = 1;
-                for (Object o : parameters) {
-                    pst.setObject(n, o);
-                    n++;
-                }
+                Util.setParameters(pst, parameters);
                 pst.execute();
             }
 
@@ -364,14 +325,18 @@ public class Command {
     }
 
 
-    // Not production only for testing for now.
-    protected final java.sql.ResultSet executeQuery(String sql, Object... parameters) {
+    /**
+     * Execute an arbut? Why bother? Why even put in Command?
+     * @param sql
+     * @param parameters
+     * @return
+     */
+     List<LinkedHashMap<String, Object>> query(String sql, Object... parameters) {
 
         Statement st = null;
-        java.sql.ResultSet rs = null;
+        ResultSet rs = null;
 
-        ResultSet result = new ResultSet();
-
+        List<LinkedHashMap<String, Object>> results = new ArrayList<LinkedHashMap<String, Object>>(32);
         try {
 
             if (parameters.length == 0) {
@@ -389,16 +354,25 @@ public class Command {
                 rs = pst.executeQuery();
             }
 
+
             while (rs.next()) {
-                result.add(rs);
+                LinkedHashMap<String, Object> map = new LinkedHashMap<String, Object>(32);
+                int n = rs.getMetaData().getColumnCount();
+                for (int j = 1; j <=n; j++) {
+                    map.put(rs.getMetaData().getColumnLabel(j), rs.getObject(j));
+                }
+                results.add(map);
             }
-
-
         } catch (SQLException e) {
             throw new PersismException(e);
         } finally {
             Util.cleanup(st, rs);
         }
-        return result;
+
+        return results;
+    }
+
+    MetaData getMetaData() {
+        return metaData;
     }
 }

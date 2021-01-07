@@ -3,12 +3,11 @@ package net.sf.persism;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
+import java.sql.*;
 import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Statement;
-import java.sql.Timestamp;
 import java.util.Date;
 import java.util.Properties;
+import java.util.UUID;
 
 /**
  * Comments for Util go here.
@@ -63,8 +62,33 @@ final class Util {
 
         return from;
     }
+    static void prepareParameters(PreparedStatement st, Object[] parameters) throws SQLException {
+    }
 
+    // Place code conversions here to prevent type exceptions on setObject
+    static void setParameters(PreparedStatement st, Object[] parameters) throws SQLException {
+        // todo did we not have a test for Character? FFS.
+        int n = 1;
+        for (Object o : parameters) {
+            if (o instanceof UUID) {
+                st.setString(n, o.toString());
+            } else {
+                st.setObject(n, o);
+            }
+            n++;
+        }
+    }
 
+    static void rollback(Connection con) {
+        try {
+            if (con != null && !con.getAutoCommit()) {
+                con.rollback();
+            }
+        } catch (SQLException e1) {
+            log.error(e1.getMessage(), e1);
+        }
+
+    }
     static void cleanup(Statement st, ResultSet rs) {
         try {
             if (rs != null) {

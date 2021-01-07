@@ -6,12 +6,13 @@ import java.util.Collection;
 /**
  * Interface for PersistableObject class. You can use this interface in situations where you can't or don't want
  * your data objects to inherit PersistableObject.
+ * TODO Example how to implement.
  *
  * @author Dan Howard
  * @see PersistableObject PersistableObject for implementation.
  * @since 10/8/11 9:51 AM
  */
-public interface Persistable {
+public interface Persistable<T> extends Cloneable {
 
 
     /**
@@ -28,5 +29,5 @@ public interface Persistable {
      * @see PersistableObject for example implementation
      * @return The data object in it's original state.
      */
-    Persistable getOriginalValue();
+    T getOriginalValue();
 }

@@ -28,7 +28,11 @@ public final class Query {
     // JUNIT
     MetaData metaData;
 
-    public Query(Connection connection) {
+    /**
+     * @param connection
+     * @throws PersismException
+     */
+    public Query(Connection connection) throws PersismException {
         this.connection = connection;
         init(connection);
     }
@@ -100,6 +104,10 @@ public final class Query {
         return list;
     }
 
+//    public <T> List<T> readList(Class<T> objectClass) throws PersismException {
+//        return readList(objectClass, metaData.getSelectStatement(objectClass, connection));
+//    }
+
     /**
      * Read an object from the database by it's primary key.
      * You should instantiate the object and set the primary key properties before calling this method.
@@ -163,7 +171,7 @@ public final class Query {
      * @param parameters  parameters to the query.
      * @param <T>
      * @return value read from the database
-     * @throws PersismException if something funny?
+     * @throws PersismException Well, this is a runtime exception so actually it could be anything really.
      */
     public <T> T read(Class<T> objectClass, String sql, Object... parameters) throws PersismException {
 
@@ -652,29 +660,19 @@ public final class Query {
 
 
     private Result exec(Result result, String sql, Object... parameters) throws SQLException {
-
         if (sql.toLowerCase().contains("select ")) {
             result.st = connection.prepareStatement(sql);
 
             PreparedStatement pst = (PreparedStatement) result.st;
-            int n = 1;
-            for (Object o : parameters) {
-                pst.setObject(n, o);
-                n++;
-            }
+            Util.setParameters(pst, parameters);
             result.rs = pst.executeQuery();
         } else {
             // todo unit tests need to cover this.
             result.st = connection.prepareCall("{call " + sql + "}");
 
             CallableStatement cst = (CallableStatement) result.st;
-
-            int n = 1;
-            for (Object o : parameters) {
-                cst.setObject(n, o);
-                n++;
-            }
-            cst.executeQuery();
+            Util.setParameters(cst, parameters);
+            result.rs = cst.executeQuery();
         }
         return result;
     }

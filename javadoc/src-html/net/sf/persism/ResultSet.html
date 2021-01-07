@@ -694,49 +694,68 @@
 <FONT color="green">691</FONT>            return false;<a name="line.691"></a>
 <FONT color="green">692</FONT>        }<a name="line.692"></a>
 <FONT color="green">693</FONT>    <a name="line.693"></a>
-<FONT color="green">694</FONT>        // JDBC 6? BELOW?<a name="line.694"></a>
-<FONT color="green">695</FONT>    //    public RowId getRowId(int columnIndex) throws SQLException {<a name="line.695"></a>
-<FONT color="green">696</FONT>    //        return null;<a name="line.696"></a>
-<FONT color="green">697</FONT>    //    }<a name="line.697"></a>
-<FONT color="green">698</FONT>    //<a name="line.698"></a>
-<FONT color="green">699</FONT>    //    public RowId getRowId(String columnLabel) throws SQLException {<a name="line.699"></a>
-<FONT color="green">700</FONT>    //        return null;<a name="line.700"></a>
-<FONT color="green">701</FONT>    //    }<a name="line.701"></a>
-<FONT color="green">702</FONT>    //<a name="line.702"></a>
-<FONT color="green">703</FONT>    //    public void updateRowId(int columnIndex, RowId x) throws SQLException {<a name="line.703"></a>
-<FONT color="green">704</FONT>    //    }<a name="line.704"></a>
-<FONT color="green">705</FONT>    //<a name="line.705"></a>
-<FONT color="green">706</FONT>    //    public void updateRowId(String columnLabel, RowId x) throws SQLException {<a name="line.706"></a>
-<FONT color="green">707</FONT>    //    }<a name="line.707"></a>
-<FONT color="green">708</FONT>    //<a name="line.708"></a>
-<FONT color="green">709</FONT>    //    public void updateNClob(int columnIndex, NClob nClob) throws SQLException {<a name="line.709"></a>
-<FONT color="green">710</FONT>    //    }<a name="line.710"></a>
-<FONT color="green">711</FONT>    //<a name="line.711"></a>
-<FONT color="green">712</FONT>    //    public void updateNClob(String columnLabel, NClob nClob) throws SQLException {<a name="line.712"></a>
-<FONT color="green">713</FONT>    //    }<a name="line.713"></a>
-<FONT color="green">714</FONT>    //<a name="line.714"></a>
-<FONT color="green">715</FONT>    //    public NClob getNClob(int columnIndex) throws SQLException {<a name="line.715"></a>
-<FONT color="green">716</FONT>    //        return null;<a name="line.716"></a>
-<FONT color="green">717</FONT>    //    }<a name="line.717"></a>
-<FONT color="green">718</FONT>    //<a name="line.718"></a>
-<FONT color="green">719</FONT>    //    public NClob getNClob(String columnLabel) throws SQLException {<a name="line.719"></a>
-<FONT color="green">720</FONT>    //        return null;<a name="line.720"></a>
-<FONT color="green">721</FONT>    //    }<a name="line.721"></a>
-<FONT color="green">722</FONT>    //<a name="line.722"></a>
-<FONT color="green">723</FONT>    //    public SQLXML getSQLXML(int columnIndex) throws SQLException {<a name="line.723"></a>
-<FONT color="green">724</FONT>    //        return null;<a name="line.724"></a>
-<FONT color="green">725</FONT>    //    }<a name="line.725"></a>
-<FONT color="green">726</FONT>    //<a name="line.726"></a>
-<FONT color="green">727</FONT>    //    public SQLXML getSQLXML(String columnLabel) throws SQLException {<a name="line.727"></a>
-<FONT color="green">728</FONT>    //        return null;<a name="line.728"></a>
-<FONT color="green">729</FONT>    //    }<a name="line.729"></a>
-<FONT color="green">730</FONT>    //<a name="line.730"></a>
-<FONT color="green">731</FONT>    //    public void updateSQLXML(int columnIndex, SQLXML xmlObject) throws SQLException {<a name="line.731"></a>
-<FONT color="green">732</FONT>    //    }<a name="line.732"></a>
-<FONT color="green">733</FONT>    //<a name="line.733"></a>
-<FONT color="green">734</FONT>    //    public void updateSQLXML(String columnLabel, SQLXML xmlObject) throws SQLException {<a name="line.734"></a>
-<FONT color="green">735</FONT>    //    }<a name="line.735"></a>
-<FONT color="green">736</FONT>    }<a name="line.736"></a>
+<FONT color="green">694</FONT>        @Override<a name="line.694"></a>
+<FONT color="green">695</FONT>        public RowId getRowId(int columnIndex) throws SQLException {<a name="line.695"></a>
+<FONT color="green">696</FONT>            return null;<a name="line.696"></a>
+<FONT color="green">697</FONT>        }<a name="line.697"></a>
+<FONT color="green">698</FONT>    <a name="line.698"></a>
+<FONT color="green">699</FONT>        @Override<a name="line.699"></a>
+<FONT color="green">700</FONT>        public RowId getRowId(String columnLabel) throws SQLException {<a name="line.700"></a>
+<FONT color="green">701</FONT>            return null;<a name="line.701"></a>
+<FONT color="green">702</FONT>        }<a name="line.702"></a>
+<FONT color="green">703</FONT>    <a name="line.703"></a>
+<FONT color="green">704</FONT>        @Override<a name="line.704"></a>
+<FONT color="green">705</FONT>        public void updateRowId(int columnIndex, RowId x) throws SQLException {<a name="line.705"></a>
+<FONT color="green">706</FONT>        }<a name="line.706"></a>
+<FONT color="green">707</FONT>    <a name="line.707"></a>
+<FONT color="green">708</FONT>        @Override<a name="line.708"></a>
+<FONT color="green">709</FONT>        public void updateRowId(String columnLabel, RowId x) throws SQLException {<a name="line.709"></a>
+<FONT color="green">710</FONT>        }<a name="line.710"></a>
+<FONT color="green">711</FONT>    <a name="line.711"></a>
+<FONT color="green">712</FONT>        @Override<a name="line.712"></a>
+<FONT color="green">713</FONT>        public void updateNClob(int columnIndex, NClob nClob) throws SQLException {<a name="line.713"></a>
+<FONT color="green">714</FONT>        }<a name="line.714"></a>
+<FONT color="green">715</FONT>    <a name="line.715"></a>
+<FONT color="green">716</FONT>        @Override<a name="line.716"></a>
+<FONT color="green">717</FONT>        public void updateNClob(String columnLabel, NClob nClob) throws SQLException {<a name="line.717"></a>
+<FONT color="green">718</FONT>        }<a name="line.718"></a>
+<FONT color="green">719</FONT>    <a name="line.719"></a>
+<FONT color="green">720</FONT>        @Override<a name="line.720"></a>
+<FONT color="green">721</FONT>        public NClob getNClob(int columnIndex) throws SQLException {<a name="line.721"></a>
+<FONT color="green">722</FONT>            return null;<a name="line.722"></a>
+<FONT color="green">723</FONT>        }<a name="line.723"></a>
+<FONT color="green">724</FONT>    <a name="line.724"></a>
+<FONT color="green">725</FONT>        @Override<a name="line.725"></a>
+<FONT color="green">726</FONT>        public NClob getNClob(String columnLabel) throws SQLException {<a name="line.726"></a>
+<FONT color="green">727</FONT>            return null;<a name="line.727"></a>
+<FONT color="green">728</FONT>        }<a name="line.728"></a>
+<FONT color="green">729</FONT>    <a name="line.729"></a>
+<FONT color="green">730</FONT>        @Override<a name="line.730"></a>
+<FONT color="green">731</FONT>        public SQLXML getSQLXML(int columnIndex) throws SQLException {<a name="line.731"></a>
+<FONT color="green">732</FONT>            return null;<a name="line.732"></a>
+<FONT color="green">733</FONT>        }<a name="line.733"></a>
+<FONT color="green">734</FONT>    <a name="line.734"></a>
+<FONT color="green">735</FONT>        @Override<a name="line.735"></a>
+<FONT color="green">736</FONT>        public SQLXML getSQLXML(String columnLabel) throws SQLException {<a name="line.736"></a>
+<FONT color="green">737</FONT>            return null;<a name="line.737"></a>
+<FONT color="green">738</FONT>        }<a name="line.738"></a>
+<FONT color="green">739</FONT>    <a name="line.739"></a>
+<FONT color="green">740</FONT>        @Override<a name="line.740"></a>
+<FONT color="green">741</FONT>        public void updateSQLXML(int columnIndex, SQLXML xmlObject) throws SQLException {<a name="line.741"></a>
+<FONT color="green">742</FONT>        }<a name="line.742"></a>
+<FONT color="green">743</FONT>    <a name="line.743"></a>
+<FONT color="green">744</FONT>        @Override<a name="line.744"></a>
+<FONT color="green">745</FONT>        public void updateSQLXML(String columnLabel, SQLXML xmlObject) throws SQLException {<a name="line.745"></a>
+<FONT color="green">746</FONT>        }<a name="line.746"></a>
+<FONT color="green">747</FONT>    <a name="line.747"></a>
+<FONT color="green">748</FONT>        public &lt;T&gt; T getObject(int columnIndex, Class&lt;T&gt; type) throws SQLException {<a name="line.748"></a>
+<FONT color="green">749</FONT>            return null;<a name="line.749"></a>
+<FONT color="green">750</FONT>        }<a name="line.750"></a>
+<FONT color="green">751</FONT>    <a name="line.751"></a>
+<FONT color="green">752</FONT>        public &lt;T&gt; T getObject(String columnLabel, Class&lt;T&gt; type) throws SQLException {<a name="line.752"></a>
+<FONT color="green">753</FONT>            return null;<a name="line.753"></a>
+<FONT color="green">754</FONT>        }<a name="line.754"></a>
+<FONT color="green">755</FONT>    }<a name="line.755"></a>
 
 
 

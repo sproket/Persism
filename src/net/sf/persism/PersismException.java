@@ -14,7 +14,7 @@ public class PersismException extends RuntimeException {
     }
 
     public PersismException(String message) {
-        super(message);
+        super(new Throwable(message));
     }
 
     public PersismException(String message, Throwable cause) {

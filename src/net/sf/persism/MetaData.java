@@ -59,8 +59,8 @@ final class MetaData {
     private MetaData(Connection con) throws SQLException {
 
         connectionType = ConnectionTypes.get(con.getMetaData().getURL());
-        if (connectionType == null) {
-            throw new PersismException("Unsupported connection type " + con.getMetaData().getURL());
+        if (connectionType == ConnectionTypes.Other) {
+            log.warn("Unknown connection type. Please contact Persism to add support for " + con.getMetaData().getDatabaseProductName());
         }
 
         populateTableList(con);
@@ -69,11 +69,10 @@ final class MetaData {
     static synchronized MetaData getInstance(Connection con) throws SQLException {
 
         String url = con.getMetaData().getURL();
-
         if (metaData.get(url) == null) {
             metaData.put(url, new MetaData(con));
         }
-        log.info("getting instance " + url);
+        log.info("MetaData getting instance " + url);
         return metaData.get(url);
     }
 
@@ -101,7 +100,11 @@ final class MetaData {
         try {
             st = connection.createStatement();
             // gives us real column names with case.
-            rs = st.executeQuery(new StringBuilder().append("SELECT * FROM ").append(sd).append(tableName).append(ed).append(" WHERE 1=0").toString());
+            String sql = new StringBuilder().append("SELECT * FROM ").append(sd).append(tableName).append(ed).append(" WHERE 1=0").toString();
+            if (log.isDebugEnabled()) {
+                log.debug("determineColumns: " + sql);
+            }
+            rs = st.executeQuery(sql);
             return determineColumns(objectClass, rs);
         } catch (SQLException e) {
             throw new PersismException(e);
@@ -163,12 +166,8 @@ final class MetaData {
             return columnInfoMap.get(objectClass);
         }
 
-        if (tableName.contains(" ")) {
-            tableName = "\"" + tableName + "\"";
-        }
-
         Statement st = null;
-        java.sql.ResultSet rs = null;
+        ResultSet rs = null;
         Map<String, PropertyInfo> properties = getTableColumns(objectClass, connection);
 
         try {
@@ -417,7 +416,11 @@ final class MetaData {
                 throw new PersismException("No Changes detected in " + object);
             }
             // Note we don't not add Persistable updates to updateStatementsMap since they will be different all the time.
-            return buildUpdateString(object, changedColumns.keySet().iterator(), connection);
+            String sql = buildUpdateString(object, changedColumns.keySet().iterator(), connection);
+            if (log.isDebugEnabled()) {
+                log.debug("getUpdateStatement for " + object.getClass() + " for changed fields is " + sql);
+            }
+            return sql;
         }
 
         if (updateStatementsMap.containsKey(object.getClass())) {
@@ -440,12 +443,28 @@ final class MetaData {
 
         // Store static update statement for future use.
         updateStatementsMap.put(object.getClass(), updateStatement);
+
+        if (log.isDebugEnabled()) {
+            log.debug("determineUpdateStatement for " + object.getClass() + " is " + updateStatement);
+        }
+
         return updateStatement;
     }
 
 
     String getInsertStatement(Object object, Connection connection) throws PersismException {
-        // Note this will not include columns unless they have the associated property.
+//        insertStatementsMap.computeIfAbsent(object.getClass(), key -> {
+//            String value = null;
+//            try {
+//                value = determineInsertStatement(object, connection);
+//            } catch (Exception e) {
+//                throw new PersismException(e);
+//            }
+//            return value;
+//        });
+//        return insertStatementsMap.get(object.getClass());
+
+//         Note this will not include columns unless they have the associated property.
         if (insertStatementsMap.containsKey(object.getClass())) {
             return insertStatementsMap.get(object.getClass());
         }
@@ -458,19 +477,18 @@ final class MetaData {
 
     private synchronized String determineInsertStatement(Object object, Connection connection) throws InvocationTargetException, IllegalAccessException {
 
+
         if (insertStatementsMap.containsKey(object.getClass())) {
             return insertStatementsMap.get(object.getClass());
         }
 
-        // TODO Create the insert statement. If the object is not extending PersistableObject then
-        // we can store it. Otherwise we need to always dynamically generate it.
+
         String tableName = getTableName(object.getClass(), connection);
         String sd = connectionType.getKeywordStartDelimiter();
         String ed = connectionType.getKeywordEndDelimiter();
 
         Map<String, ColumnInfo> columns = columnInfoMap.get(object.getClass());
         Map<String, PropertyInfo> properties = getTableColumns(object.getClass(), connection);
-
         StringBuilder sb = new StringBuilder();
         sb.append("INSERT INTO ").append(sd).append(tableName).append(ed).append(" (");
         String sep = "";
@@ -517,7 +535,7 @@ final class MetaData {
         insertStatement = sb.toString();
 
         if (log.isDebugEnabled()) {
-            log.debug("getInsertStatement for " + object.getClass() + " is " + insertStatement);
+            log.debug("determineInsertStatement for " + object.getClass() + " is " + insertStatement);
         }
 
         // Do not put this insert statement into the map if any columns have defaults.
@@ -598,7 +616,7 @@ final class MetaData {
         String selectStatement = sb.toString();
 
         if (log.isDebugEnabled()) {
-            log.debug("getSelectStatement for " + object.getClass() + " is " + selectStatement);
+            log.debug("determineSelectStatement for " + object.getClass() + " is " + selectStatement);
         }
 
         selectStatementsMap.put(object.getClass(), selectStatement);
@@ -648,16 +666,10 @@ final class MetaData {
         return sb.toString();
     }
 
-    /**
-     * @param persistable
-     * @param connection
-     * @return map of changed columns for a Persistable Object
-     * @throws PersismException for InvocationTargetException, IllegalAccessException from reflection or SQLException
-     */
-    public Map<String, PropertyInfo> getChangedColumns(Persistable persistable, Connection connection) throws PersismException {
+    Map<String, PropertyInfo> getChangedColumns(Persistable persistable, Connection connection) throws PersismException {
 
         try {
-            Persistable original = persistable.getOriginalValue();
+            Persistable original = (Persistable) persistable.getOriginalValue();
 
             Map<String, PropertyInfo> columns = getTableColumns(persistable.getClass(), connection);
             Map<String, PropertyInfo> changedColumns = new HashMap<String, PropertyInfo>(columns.keySet().size());
@@ -685,7 +697,7 @@ final class MetaData {
     }
 
 
-    public <T> Map<String, PropertyInfo> getQueryColumns(Class<T> objectClass, java.sql.ResultSet rs) throws PersismException {
+    <T> Map<String, PropertyInfo> getQueryColumns(Class<T> objectClass, java.sql.ResultSet rs) throws PersismException {
         // Queries are not mapped since it's possible multiple queries could be used against the same class
         try {
             return determineColumns(objectClass, rs);
@@ -695,14 +707,14 @@ final class MetaData {
     }
 
 
-    public <T> Map<String, ColumnInfo> getColumns(Class<T> objectClass, Connection connection) throws PersismException {
+    <T> Map<String, ColumnInfo> getColumns(Class<T> objectClass, Connection connection) throws PersismException {
         if (columnInfoMap.containsKey(objectClass)) {
             return columnInfoMap.get(objectClass);
         }
         return determineColumnInfo(objectClass, getTableName(objectClass), connection);
     }
 
-    public <T> Map<String, PropertyInfo> getTableColumns(Class<T> objectClass, Connection connection) throws PersismException {
+    <T> Map<String, PropertyInfo> getTableColumns(Class<T> objectClass, Connection connection) throws PersismException {
 
         if (propertyInfoMap.containsKey(objectClass)) {
             return propertyInfoMap.get(objectClass);
@@ -710,7 +722,7 @@ final class MetaData {
         return determineColumns(objectClass, getTableName(objectClass), connection);
     }
 
-    public <T> String getTableName(Class<T> objectClass) {
+    <T> String getTableName(Class<T> objectClass) {
 
         if (tableMap.containsKey(objectClass)) {
             return tableMap.get(objectClass);
@@ -831,7 +843,7 @@ final class MetaData {
         return guessedTables.get(0);
     }
 
-    public List<String> getPrimaryKeys(Class objectClass, Connection connection) throws PersismException {
+    List<String> getPrimaryKeys(Class objectClass, Connection connection) throws PersismException {
 
         // ensures meta data will be available
         String tableName = getTableName(objectClass, connection);
@@ -846,7 +858,7 @@ final class MetaData {
         return primaryKeys;
     }
 
-    // Currently only used by Insert so the only case tested here is getInt
+    // Currently only used by Insert so the only case tested here is getInt - Used to get the primary key value(s) after an insert.
     <T> T getTypedValue(Class<T> type, java.sql.ResultSet rs, int column) throws SQLException {
         Object value = null;
         String tmp;

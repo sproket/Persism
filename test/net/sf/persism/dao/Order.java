@@ -6,9 +6,8 @@ import net.sf.persism.annotations.Column;
 import java.util.Date;
 
 /**
- * $RCSfile: $
- * $Revision: $
- * $Date: $
+ * Example of extending PersistableObject without specifying the generic type.
+ * Works but IntelliJ warns you about it.
  * Created by IntelliJ IDEA.
  * User: DHoward
  * Date: 9/21/11
@@ -21,10 +20,6 @@ public class Order extends PersistableObject {
     private Date created;
     private String customerId;
     private boolean paid;
-
-
-    public Order() {
-    }
 
     public long getId() {
         return id;

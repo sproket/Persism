@@ -1,7 +1,10 @@
 package net.sf.persism.dao;
 
+import net.sf.persism.PersismException;
+import net.sf.persism.Persistable;
 import net.sf.persism.annotations.Column;
 
+import java.io.Serializable;
 import java.sql.Date;
 
 /**

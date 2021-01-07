@@ -1,16 +1,12 @@
-/**
- * Comments for TestUtil go here.
- * @author Dan Howard
- * @since 5/24/12 5:33 PM
- */
 package net.sf.persism;
 
 import junit.framework.TestCase;
-import net.sf.persism.dao.Postman;
 
-public class TestUtil extends TestCase {
+import java.sql.*;
 
-    private static final Log log = Log.getLogger(TestUtil.class);
+public class TestMiscellaneous extends TestCase {
+
+    private static final Log log = Log.getLogger(TestMiscellaneous.class);
 
     protected void setUp() throws Exception {
         super.setUp();
@@ -20,32 +16,15 @@ public class TestUtil extends TestCase {
         super.tearDown();
     }
 
-    public void testReplaceAll() {
-        String text = "this is a test";
-        text = Util.replaceAll(text,' ', '_');
-        log.info(text);
-    }
+    public void testUnknownConnection() throws Exception {
 
-
-    public void testCamel() {
+        Connection con = BaseTest.createMockConnection();
+        boolean shouldFail = false;
         try {
-            log.info(Util.camelToTitleCase("OrderDetails"));
-            log.info(Util.camelToTitleCase("orderDetailsFromJAVA"));
-
+            new Query(con);
         } catch (Exception e) {
-            log.error(e.getMessage(), e);
-            fail(e.getMessage());
+            shouldFail = true;
         }
-
-    }
-
-    public void testJunk() {
-        Postman postman = new Postman().
-                host("blah").
-                port(80).
-                user("x").
-                password("123");
-
-        log.info(postman);
+        assertTrue(shouldFail);
     }
 }

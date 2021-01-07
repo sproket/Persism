@@ -8,7 +8,9 @@ enum ConnectionTypes {
     H2(null, "\"", "\""),
     MySQL(null, "`", "`"),
     PostgreSQL(null, "\"", "\""),
-    SQLite(null, "[", "]");
+    SQLite(null, "[", "]"),
+    Other(null, "", "")
+    ;
 
     private String schemaPattern;
     private String keywordStartDelimiter;
@@ -56,7 +58,7 @@ enum ConnectionTypes {
         if (connectionUrl.startsWith("jdbc:postgresql")) {
             return PostgreSQL;
         }
-        return null;
+        return Other;
     }
 
     public String getSchemaPattern() {

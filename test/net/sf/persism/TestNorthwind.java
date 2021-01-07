@@ -27,6 +27,8 @@ public class TestNorthwind extends TestCase {
     protected void setUp() throws Exception {
         super.setUp();
 
+        // TODO JTDS 1.2.5 for Java 6 for now
+        // TODO JTDS 1.3.1 for Java 8 (see lib folder)s
         Properties props = new Properties();
         props.load(getClass().getResourceAsStream("/northwind.properties"));
         String driver = props.getProperty("database.driver");
@@ -233,9 +235,9 @@ public class TestNorthwind extends TestCase {
                 // remove orders and details for 'MOO'
                 List<Order> orders = query.readList(Order.class, "select * from orders where customerID=?", "MOO");
                 for (Order order : orders) {
-                    command.executeSQL("DELETE FROM \"ORDER Details\" WHERE OrderID=?", order.getOrderId());
+                    command.execute("DELETE FROM \"ORDER Details\" WHERE OrderID=?", order.getOrderId());
                 }
-                command.executeSQL("DELETE FROM ORDERS WHERE CustomerID=?", "MOO");
+                command.execute("DELETE FROM ORDERS WHERE CustomerID=?", "MOO");
             }
 
 
@@ -300,7 +302,7 @@ public class TestNorthwind extends TestCase {
 
         log.info("testQueryWithSpecificColumnsWhereCaseDoesNotMatch with : " + con.getMetaData().getURL());
 
-        command.executeSQL("DELETE FROM ORDERS WHERE CustomerID='MOO'");
+        command.execute("DELETE FROM ORDERS WHERE CustomerID='MOO'");
 
         Customer customer = new Customer();
         customer.setCompanyName("TEST");

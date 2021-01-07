@@ -3,4 +3,6 @@ disttest/
 instrumented-classes/
 out/
 release/
+javadoc/
+reports/
 cobertura.ser

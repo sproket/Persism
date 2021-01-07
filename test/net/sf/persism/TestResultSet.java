@@ -9,6 +9,9 @@ import junit.framework.TestCase;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 
 public class TestResultSet extends TestCase {
@@ -57,12 +60,15 @@ public class TestResultSet extends TestCase {
 	[Phone] [nvarchar](24) NULL,
 	[Fax] [nvarchar](24) NULL,
      */
-    public void testRead() {
+    public void testQueryWithMapResult() {
         try {
-            java.sql.ResultSet rs = command.executeQuery("select * from customers");
-            while (rs.next()) {
-                log.info(rs.getString("CustomerId") + " " + rs.getString("ContactNAME"));
+            List<LinkedHashMap<String, Object>> rs = command.query("select * from customers");
+            for (Map<String, Object> row : rs) {
+
+                log.info(row.get("CustomerID") + " " + row.get("ContactName")); // CASE SENSITIVE OR NULL! Glop idea anyway.
+
             }
+
         } catch (Exception e) {
             log.error(e.getMessage(), e);
             fail(e.getMessage());

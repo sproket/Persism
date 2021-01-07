@@ -31,5 +31,6 @@
     <orderEntry type="library" name="mysql" level="project" />
     <orderEntry type="library" name="postgresql" level="project" />
     <orderEntry type="library" name="commons-imaging-1.0-alpha2-javadoc" level="project" />
+    <orderEntry type="library" name="easymock" level="project" />
   </component>
 </module>

@@ -16,7 +16,7 @@ public class DAOFactory {
 
     public static Order newOrder(Connection con) throws SQLException {
         if (con.getMetaData().getDatabaseProductName().toUpperCase().contains("ORACLE")) {
-            return new ORAOrder();
+            return new OracleOrder();
         } else {
             return new Order();
         }

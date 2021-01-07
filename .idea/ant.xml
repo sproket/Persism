@@ -22,6 +22,7 @@
         <entry path="file://$PROJECT_DIR$/libs/cobertura-2.1.1/lib/slf4j-api-1.7.5.jar" />
         <entry path="file://$PROJECT_DIR$/libs/cobertura-2.1.1/coberturaFlush.war" />
       </additionalClassPath>
+      <antReference name="Apache Ant version 1.8.2" />
     </buildFile>
   </component>
 </project>

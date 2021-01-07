@@ -47,14 +47,17 @@ strings.</p>
 <p>You can also read a single object with a query string like this:</p>
 
 <p></p>
-<pre>Customer customer = new Customer(); query.readObject(customer, "select * from Customers where name = ?", "Fred");</pre>
+<pre>
+  Customer customer;
+  customer = query.read(Customer.class, "select * from Customers where name = ?", "Fred");
+  if (customer != null) {
+    // etc...
+  }
+</pre>
 
 <p></p>
 
-<p>This method returns true if the customer was found. Note you do this by
-pre-instantiating your object first. This allows you to control memory usage of
-your objects and you can re-use the same object if you need to run multiple
-queries.</p>
+<p>This method returns null if the customer was not found. </p>
 
 <p></p>
 
@@ -62,13 +65,17 @@ queries.</p>
 the Object's primary key. This way you do not need any SQL statement.</p>
 
 <p></p>
-<pre>Customer customer = new Customer();
-customer.setCustomerId(123); query.readObject(customer);</pre>
+<pre>
+  Customer customer = new Customer();
+  customer.setCustomerId(123);
+  query.read(customer);</pre>
 
 <p></p>
 
-<p>Again this method returns true to indicate the object was found and
-initialized.</p>
+<p>This method returns true to indicate the object was found and
+initialized. Note you do this by pre-instantiating your object first.
+  This allows you to control memory usage of your objects and you can re-use the same object
+  if you need to run multiple queries.</p>
 
 <p>The query object also contains methods to read primitive Java types by
 simply using them directly.</p>
@@ -80,7 +87,7 @@ simply using them directly.</p>
 updated in the database by a different user.</p>
 <pre>Customer customer = new Customer();
 customer.setCustomerId(123);
-query.readObject(customer);
+query.read(customer);
 customer.setSomething("vlah");
 query.refreshObject(customer);</pre>
 
