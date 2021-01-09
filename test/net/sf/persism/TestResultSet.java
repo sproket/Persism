@@ -20,9 +20,7 @@ public class TestResultSet extends TestCase {
 
 
     Connection con;
-    Query query;
-    Command command;
-
+    Session session;
 
     protected void setUp() throws Exception {
         super.setUp();
@@ -39,8 +37,7 @@ public class TestResultSet extends TestCase {
 
         con = new net.sf.log4jdbc.ConnectionSpy(con);
 
-        query = new Query(con);
-        command = new Command(con);
+        session = new Session(con);
     }
 
     protected void tearDown() throws Exception {
@@ -62,7 +59,7 @@ public class TestResultSet extends TestCase {
      */
     public void testQueryWithMapResult() {
         try {
-            List<LinkedHashMap<String, Object>> rs = command.query("select * from customers");
+            List<LinkedHashMap<String, Object>> rs = session.query("select * from customers");
             for (Map<String, Object> row : rs) {
 
                 log.info(row.get("CustomerID") + " " + row.get("ContactName")); // CASE SENSITIVE OR NULL! Glop idea anyway.

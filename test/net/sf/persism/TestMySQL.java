@@ -36,8 +36,7 @@ public class TestMySQL extends BaseTest {
 
         createTables();
 
-        query = new Query(con);
-        command = new Command(con);
+        session = new Session(con);
 
     }
 

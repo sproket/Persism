@@ -34,9 +34,7 @@ public class TestPostgreSQL extends BaseTest {
 
         createTables();
 
-        command = new Command(con);
-        query = new Query(con);
-
+        session = new Session(con);
     }
 
     protected void tearDown() throws Exception {
@@ -137,7 +135,7 @@ public class TestPostgreSQL extends BaseTest {
             Customer customer = new Customer();
             customer.setCustomerId("MOO");
             customer.setContactName("FRED");
-            command.insert(customer);
+            session.insert(customer);
             log.info(customer);
 
             assertNotNull(customer.getDateRegistered());

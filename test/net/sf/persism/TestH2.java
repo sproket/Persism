@@ -37,8 +37,7 @@ public class TestH2 extends BaseTest {
 
         createTables();
 
-        query = new Query(con);
-        command = new Command(con);
+        session = new Session(con);
     }
 
 
@@ -57,29 +56,29 @@ public class TestH2 extends BaseTest {
 
             log.info("testH2InsertAndReadBack BEFORE INSERT: " + order);
 
-            command.insert(order);
+            session.insert(order);
             assertTrue("order id > 0", order.getId() > 0);
 
             log.info("testH2InsertAndReadBack AFTER INSERT: " + order);
 
-            List<Order> list = query.readList(Order.class, "SELECT * FROM ORDERS");
+            List<Order> list = session.query(Order.class, "SELECT * FROM ORDERS");
             log.info(list);
             assertEquals("list should be 1", 1, list.size());
 
 
             order = DAOFactory.newOrder(con);
             order.setName("MOOO");
-            command.insert(order);
+            session.insert(order);
 
             order = DAOFactory.newOrder(con);
             order.setName("MEOW");
-            command.insert(order);
+            session.insert(order);
 
             order = DAOFactory.newOrder(con);
             order.setName("PHHHH");
-            command.insert(order);
+            session.insert(order);
 
-            list = query.readList(Order.class, "SELECT * FROM Orders ORDER BY ID");
+            list = session.query(Order.class, "SELECT * FROM Orders ORDER BY ID");
             assertEquals("list size s/b 4", 4, list.size());
             log.info(list);
 
@@ -124,7 +123,7 @@ public class TestH2 extends BaseTest {
         customer.setPostalCode("54321");
         customer.setRegion(Regions.East);
 
-        command.insert(customer);
+        session.insert(customer);
 
         Invoice invoice = new Invoice();
         invoice.setCustomerId("MOO");
@@ -133,11 +132,11 @@ public class TestH2 extends BaseTest {
         invoice.setTotal(new BigDecimal(invoice.getPrice() * invoice.getQuantity()));
         invoice.setPaid(true);
 
-        command.insert(invoice);
+        session.insert(invoice);
 
         assertTrue("Invoice ID > 0", invoice.getInvoiceId() > 0);
 
-        List<Invoice> invoices = query.readList(Invoice.class, "select * from invoices where customer_id=?", "MOO");
+        List<Invoice> invoices = session.query(Invoice.class, "select * from invoices where customer_id=?", "MOO");
         assertEquals("invoices s/b 1", 1, invoices.size());
 
         invoice = invoices.get(0);
@@ -173,7 +172,7 @@ public class TestH2 extends BaseTest {
         assertNull("date registered should be null", customer.getDateRegistered());
         assertNull("Country should be null", customer.getCountry());
 
-        command.insert(customer);
+        session.insert(customer);
 
         log.info("testColumnDefaults after: " + customer);
         assertNotNull("date registered should NOT be null", customer.getDateRegistered());
@@ -203,13 +202,13 @@ public class TestH2 extends BaseTest {
             Customer customer = new Customer();
             customer.setCustomerId("123");
             customer.setContactName("FRED");
-            command.insert(customer);
+            session.insert(customer);
 
 
-            query.read(customer);
+            session.fetch(customer);
 
             // look at meta data columsn
-            Map<String, ColumnInfo> columns = query.metaData.getColumns(Customer.class, con);
+            Map<String, ColumnInfo> columns = session.getMetaData().getColumns(Customer.class, con);
             for (ColumnInfo columnInfo : columns.values()) {
                 log.info(columnInfo);
                 assertNotNull("type should not be null", columnInfo.columnType);
@@ -221,16 +220,15 @@ public class TestH2 extends BaseTest {
             order.setCreated(new java.util.Date());
             order.setPaid(true);
 
-            command.insert(order);
-            query.read(order);
+            session.insert(order);
+            session.fetch(order);
 
             // look at meta data columsn
-            columns = query.metaData.getColumns(Order.class, con);
+            columns = session.getMetaData().getColumns(Order.class, con);
             for (ColumnInfo columnInfo : columns.values()) {
                 log.info(columnInfo);
                 assertNotNull("type should not be null", columnInfo.columnType);
             }
-
 
         } catch (SQLException e) {
             log.error(e.getMessage(), e);
@@ -284,17 +282,17 @@ public class TestH2 extends BaseTest {
         tmp.setCustomerName("one");
         tmp.setField4("field 4");
         tmp.setField5(new java.util.Date());
-        command.insert(tmp);
+        session.insert(tmp);
 
         tmp.setField4("field 5");
 
-        command.update(tmp);
+        session.update(tmp);
 
         boolean nullInsertFail = false;
         try {
             tmp = new TableMultiPrimary();
 
-            command.insert(tmp);
+            session.insert(tmp);
 
         } catch (Exception e) {
             assertTrue("contains NULL not allowed for column \"CUSTOMER_NAME\"", e.getMessage().contains("NULL not allowed for column \"CUSTOMER_NAME\""));
@@ -310,7 +308,7 @@ public class TestH2 extends BaseTest {
 
         log.info("BEFORE: " + tmp);
 
-        query.read(tmp);
+        session.fetch(tmp);
         assertNotNull("field 4 s/b null", tmp.getField4());
         assertNotNull("field 5 s/b null", tmp.getField5());
 
@@ -454,10 +452,10 @@ public class TestH2 extends BaseTest {
         sg.setTimeStamp(new Date());
         sg.setData("HJ LHLH H H                     ';lk ;lk ';l k                                K HLHLHH LH LH LH LHLHLHH LH H H H LH HHLGHLJHGHGFHGFGJFDGHFDHFDGJFDKGHDGJFDD KHGD KHG DKHDTG HKG DFGHK  GLJHG LJHG LJH GLJ");
 
-        command.insert(sg);
+        session.insert(sg);
 
         sg = null;
-        sg = query.read(SavedGame.class, "select * from SavedGames");
+        sg = session.fetch(SavedGame.class, "select * from SavedGames");
         log.info(sg.getData());
 
     }

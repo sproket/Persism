@@ -21,7 +21,7 @@ public class TestMiscellaneous extends TestCase {
         Connection con = BaseTest.createMockConnection();
         boolean shouldFail = false;
         try {
-            new Query(con);
+            new Session(con);
         } catch (Exception e) {
             shouldFail = true;
         }

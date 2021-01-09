@@ -21,8 +21,8 @@ public class TestNorthwind extends TestCase {
     private static final Log log = Log.getLogger(TestNorthwind.class);
 
     Connection con;
-    Query query;
-    Command command;
+
+    Session session;
 
     protected void setUp() throws Exception {
         super.setUp();
@@ -41,8 +41,7 @@ public class TestNorthwind extends TestCase {
 
         con = new net.sf.log4jdbc.ConnectionSpy(con);
 
-        query = new Query(con);
-        command = new Command(con);
+        session = new Session(con);
     }
 
     protected void tearDown() throws Exception {
@@ -52,7 +51,7 @@ public class TestNorthwind extends TestCase {
 
     public void testBinaryImage() {
         try {
-            List<Category> list = query.readList(Category.class, "select * from categories");
+            List<Category> list = session.query(Category.class, "select * from categories");
 
             for (Category cat : list) {
                 log.info(cat);
@@ -77,7 +76,7 @@ public class TestNorthwind extends TestCase {
 
             Customer customer = new Customer();
             customer.setCustomerId("XXYYZ");
-            command.delete(customer); // make sure this dup test is deleted
+            session.delete(customer); // make sure this dup test is deleted
 
 
             // Test insert before read
@@ -87,13 +86,13 @@ public class TestNorthwind extends TestCase {
 
             customer.setCompanyName("ABC INC");
             customer.setContactName("Barney Rubble");
-            command.insert(customer);
+            session.insert(customer);
 
             // test delete
-            command.delete(customer);
+            session.delete(customer);
 
 
-            List<Customer> list = query.readList(Customer.class, "select * from Customers");
+            List<Customer> list = session.query(Customer.class, "select * from Customers");
 
             for (Customer cust : list) {
                 log.info(cust);
@@ -116,20 +115,20 @@ public class TestNorthwind extends TestCase {
             customer.setContactName("Fred Flintstone");
 
             try {
-                command.insert(customer);
+                session.insert(customer);
             } catch (PersismException e) {
                 assertEquals("should have insert exception here", "java.sql.SQLException: Cannot insert the value NULL into column 'CustomerID', table 'Northwind.dbo.Customers'; column does not allow nulls. INSERT fails.", e.getMessage());
             }
 
             // Test customer duped key
             customer.setCustomerId("XXYYZ");
-            command.insert(customer); // should not fail
+            session.insert(customer); // should not fail
 
             // Test customer duped key
             boolean dupfail = false;
             try {
                 customer.setCustomerId("XXYYZ");
-                command.insert(customer); // this should fail
+                session.insert(customer); // this should fail
             } catch (PersismException e) {
                 dupfail = true;
                 log.info(e.getMessage());
@@ -159,7 +158,7 @@ public class TestNorthwind extends TestCase {
     public void testQuery() {
 
         long now = System.currentTimeMillis();
-        List<OrderView> list = query.readList(OrderView.class, ORDER_QUERY);
+        List<OrderView> list = session.query(OrderView.class, ORDER_QUERY);
         log.info("time to get list " + (System.currentTimeMillis() - now));
 
 
@@ -167,11 +166,11 @@ public class TestNorthwind extends TestCase {
         log.info("rows: " + list.size());
 
         now = System.currentTimeMillis();
-        list = query.readList(OrderView.class, ORDER_QUERY);
+        list = session.query(OrderView.class, ORDER_QUERY);
         log.info("time to get list " + (System.currentTimeMillis() - now));
 
         now = System.currentTimeMillis();
-        list = query.readList(OrderView.class, ORDER_QUERY);
+        list = session.query(OrderView.class, ORDER_QUERY);
         log.info("time to get list " + (System.currentTimeMillis() - now));
 
     }
@@ -218,7 +217,7 @@ public class TestNorthwind extends TestCase {
             Customer customer = new Customer();
             customer.setCustomerId("MOO");
 
-            if (!query.read(customer)) {
+            if (!session.fetch(customer)) {
                 customer.setCompanyName("TEST");
                 customer.setAddress("123 sesame street");
                 customer.setCity("city");
@@ -230,25 +229,25 @@ public class TestNorthwind extends TestCase {
                 customer.setPostalCode("54321");
                 customer.setRegion("East");
 
-                command.insert(customer);
+                session.insert(customer);
             } else {
                 // remove orders and details for 'MOO'
-                List<Order> orders = query.readList(Order.class, "select * from orders where customerID=?", "MOO");
+                List<Order> orders = session.query(Order.class, "select * from orders where customerID=?", "MOO");
                 for (Order order : orders) {
-                    command.execute("DELETE FROM \"ORDER Details\" WHERE OrderID=?", order.getOrderId());
+                    session.execute("DELETE FROM \"ORDER Details\" WHERE OrderID=?", order.getOrderId());
                 }
-                command.execute("DELETE FROM ORDERS WHERE CustomerID=?", "MOO");
+                session.execute("DELETE FROM ORDERS WHERE CustomerID=?", "MOO");
             }
 
 
             // Find employee to place this order
             // Leverling	Janet
-            Employee employee = query.read(Employee.class, "SELECT * FROM Employees WHERE LastName=? and FirstName=?", "Leverling", "Janet");
+            Employee employee = session.fetch(Employee.class, "SELECT * FROM Employees WHERE LastName=? and FirstName=?", "Leverling", "Janet");
 
             assertTrue("employee should be found ", employee != null && employee.getEmployeeId() > 0);
 
             // Find shipper
-            Shipper shipper = query.read(Shipper.class, "SELECT * FROM Shippers WHERE CompanyName=?", "Speedy Express");
+            Shipper shipper = session.fetch(Shipper.class, "SELECT * FROM Shippers WHERE CompanyName=?", "Speedy Express");
             assertTrue("Shipper should be found ", shipper != null && shipper.getShipperId() > 0);
 
 
@@ -264,9 +263,9 @@ public class TestNorthwind extends TestCase {
             order.setShipPostalCode("04132");
             order.setShipRegion("?");
 
-            command.insert(order);
+            session.insert(order);
 
-            List<Product> products = query.readList(Product.class, "select * from Products where ProductName like ?", "%Cranberry%");
+            List<Product> products = session.query(Product.class, "select * from Products where ProductName like ?", "%Cranberry%");
             assertEquals("should have 1", 1, products.size());
 
             Product product = products.get(0);
@@ -278,19 +277,19 @@ public class TestNorthwind extends TestCase {
             orderDetail.setQuantity(100);
             orderDetail.setUnitPrice(new BigDecimal("10.32"));
 
-            command.insert(orderDetail);
+            session.insert(orderDetail);
 
             // query back
 
             orderDetail.setDiscount(null);
             orderDetail.setQuantity(0);
             orderDetail.setUnitPrice(null);
-            query.read(orderDetail);
+            session.fetch(orderDetail);
             assertEquals("discount should be 0.23", "0.23", "" + orderDetail.getDiscount());
             assertEquals("quantity should be 100", 100, orderDetail.getQuantity());
             assertEquals("unit price should be 10.3200", "10.3200", "" + orderDetail.getUnitPrice());
 
-            assertEquals("delete should return 1", 1, command.delete(orderDetail));
+            assertEquals("delete should return 1", 1, session.delete(orderDetail));
         } catch (SQLException e) {
             log.error(e.getMessage(), e);
             fail(e.getMessage());
@@ -302,7 +301,7 @@ public class TestNorthwind extends TestCase {
 
         log.info("testQueryWithSpecificColumnsWhereCaseDoesNotMatch with : " + con.getMetaData().getURL());
 
-        command.execute("DELETE FROM ORDERS WHERE CustomerID='MOO'");
+        session.execute("DELETE FROM ORDERS WHERE CustomerID='MOO'");
 
         Customer customer = new Customer();
         customer.setCompanyName("TEST");
@@ -317,22 +316,22 @@ public class TestNorthwind extends TestCase {
         customer.setPostalCode("54321");
         customer.setRegion("East");
 
-        command.delete(customer); // i case it already exists.
-        command.insert(customer);
+        session.delete(customer); // i case it already exists.
+        session.insert(customer);
 
         customer.setRegion("North");
-        command.update(customer);
+        session.update(customer);
 
         customer.setRegion(null);
         assertEquals("customer region should be null", null, customer.getRegion());
 
         // read it back to make sure 'North' was set.
-        query.read(customer);
+        session.fetch(customer);
         assertEquals("customer region should be north", "North", customer.getRegion());
 
         boolean failOnMissingProperties = false;
         try {
-            query.readList(Customer.class, "SELECT Country from CUSTOMERS");
+            session.query(Customer.class, "SELECT Country from CUSTOMERS");
         } catch (Exception e) {
             log.info(e.getMessage());
             assertTrue("message should contain 'Customer was not properly initialized'", e.getMessage().contains("Customer was not properly initialized"));
@@ -341,7 +340,7 @@ public class TestNorthwind extends TestCase {
         assertTrue("Should not be able to read fields if there are missing properties", failOnMissingProperties);
 
         // Make sure all columns are NOT the CASE of the ones in the DB.
-        List<Customer> list = query.readList(Customer.class, "SELECT companyNAME, contacttitle, pHone, rEGion, postalCODE, FAX, ADDress, CUStomerid, conTacTname, coUntry, cIty from CuStOMeRS WHERE CustomerID='MOo'");
+        List<Customer> list = session.query(Customer.class, "SELECT companyNAME, contacttitle, pHone, rEGion, postalCODE, FAX, ADDress, CUStomerid, conTacTname, coUntry, cIty from CuStOMeRS WHERE CustomerID='MOo'");
 
         log.info(list);
         assertEquals("list should be 1", 1, list.size());

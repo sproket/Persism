@@ -1,9 +1,6 @@
 package net.sf.persism.annotations;
 
-/**
- * $RCSfile: $
- * $Revision: $
- * $Date: $
+/*
  * Created by IntelliJ IDEA.
  * User: DHoward
  * Date: 9/8/11
@@ -23,9 +20,6 @@ import java.lang.annotation.Target;
 @Target(ElementType.TYPE)
 public @interface TableName {
 
-    /**
-     * Name of the table mapped to the class.
-     */
     String value();
 
 }

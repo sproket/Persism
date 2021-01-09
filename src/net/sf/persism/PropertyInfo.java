@@ -6,9 +6,6 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * $RCSfile: $
- * $Revision: $
- * $Date: $
  * Created by IntelliJ IDEA.
  * User: DHoward
  * Date: 9/8/11

@@ -6,11 +6,11 @@ import java.util.*;
 
 /**
  * The Command object is used to perform updates in the databases with data objects.
- *
+ * @deprecated - see Session
  * @author Dan Howard
  * @since 4/4/12 6:42 PM
  */
-public final class Command {
+final class Command {
 
     private static final Log log = Log.getLogger(Command.class);
 

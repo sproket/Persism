@@ -2,91 +2,93 @@
 
 /* Copied from default - modified for Jolene & PINF */
 
+/* Broken in java 8 */
+
 /* Page background color */
-body {
-    background-color: whitesmoke; /*font-family: Verdana, Geneva, sans-serif;*/
-    font-family: "Lucida Sans Unicode", sans-serif;
-    font-size: smaller;
-}
+/*body {*/
+/*    background-color: whitesmoke; !*font-family: Verdana, Geneva, sans-serif;*!*/
+/*    font-family: "Lucida Sans Unicode", sans-serif;*/
+/*    font-size: smaller;*/
+/*}*/
 
-/* Headings */
-h1 {
-    font-size: 145%; /*font-family: Verdana, Geneva, sans-serif;*/
-    font-family: "Lucida Sans Unicode", sans-serif;
-}
+/*!* Headings *!*/
+/*h1 {*/
+/*    font-size: 145%; !*font-family: Verdana, Geneva, sans-serif;*!*/
+/*    font-family: "Lucida Sans Unicode", sans-serif;*/
+/*}*/
 
-a {
-    color: dimgray;
-    text-decoration: none;
-}
+/*a {*/
+/*    color: dimgray;*/
+/*    text-decoration: none;*/
+/*}*/
 
-a:hover {
-    color: black;
-    text-decoration: none;
-}
+/*a:hover {*/
+/*    color: black;*/
+/*    text-decoration: none;*/
+/*}*/
 
 /* Table colors */
-.TableHeadingColor {
-    background: dodgerblue;
-}
+/*.TableHeadingColor {*/
+/*    background: dodgerblue;*/
+/*}*/
 
-.TableSubHeadingColor {
-    background: whitesmoke;
-}
+/*.TableSubHeadingColor {*/
+/*    background: whitesmoke;*/
+/*}*/
 
-/* Light mauve */
-.TableRowColor {
-    background: azure;
-}
+/*!* Light mauve *!*/
+/*.TableRowColor {*/
+/*    background: azure;*/
+/*}*/
 
-/* White */
+/*!* White *!*/
 
-/* Font used in left-hand frame lists */
-.FrameTitleFont {
-    font-size: 100%; /*font-family: Verdana, Geneva, sans-serif;*/
-    font-family: "Lucida Sans Unicode", sans-serif;
-}
+/*!* Font used in left-hand frame lists *!*/
+/*.FrameTitleFont {*/
+/*    font-size: 100%; !*font-family: Verdana, Geneva, sans-serif;*!*/
+/*    font-family: "Lucida Sans Unicode", sans-serif;*/
+/*}*/
 
-.FrameHeadingFont {
-    font-size: 90%; /*font-family: Verdana, Geneva, sans-serif;*/
-    font-family: "Lucida Sans Unicode", sans-serif;
-}
+/*.FrameHeadingFont {*/
+/*    font-size: 90%; !*font-family: Verdana, Geneva, sans-serif;*!*/
+/*    font-family: "Lucida Sans Unicode", sans-serif;*/
+/*}*/
 
-.FrameItemFont {
-    font-size: 90%; /*font-family: Verdana, Geneva, sans-serif;*/
-    font-family: "Lucida Sans Unicode", sans-serif;
-}
+/*.FrameItemFont {*/
+/*    font-size: 90%; !*font-family: Verdana, Geneva, sans-serif;*!*/
+/*    font-family: "Lucida Sans Unicode", sans-serif;*/
+/*}*/
 
-/* Navigation bar fonts and colors */
-.NavBarCell1 {
-    background-color: dodgerblue;
-}
+/*!* Navigation bar fonts and colors *!*/
+/*.NavBarCell1 {*/
+/*    background-color: dodgerblue;*/
+/*}*/
 
-/* Light mauve */
-.NavBarCell1Rev {
-    background-color: dimgray;
-}
+/*!* Light mauve *!*/
+/*.NavBarCell1Rev {*/
+/*    background-color: dimgray;*/
+/*}*/
 
-.NavBarFont1 {
-/*font-family: Verdana, Geneva, sans-serif;*/
-    font-family: "Lucida Sans Unicode", sans-serif;
-    color: whitesmoke;
-}
+/*.NavBarFont1 {*/
+/*!*font-family: Verdana, Geneva, sans-serif;*!*/
+/*    font-family: "Lucida Sans Unicode", sans-serif;*/
+/*    color: whitesmoke;*/
+/*}*/
 
-.NavBarFont1Rev {
-/*font-family: Verdana, Geneva, sans-serif;*/
-    font-family: "Lucida Sans Unicode", sans-serif;
-    color: whitesmoke;
-}
+/*.NavBarFont1Rev {*/
+/*!*font-family: Verdana, Geneva, sans-serif;*!*/
+/*    font-family: "Lucida Sans Unicode", sans-serif;*/
+/*    color: whitesmoke;*/
+/*}*/
 
-.NavBarCell2 {
-    font-family: Verdana, Geneva, sans-serif;
-    background-color: lightgray;
-}
+/*.NavBarCell2 {*/
+/*    font-family: Verdana, Geneva, sans-serif;*/
+/*    background-color: lightgray;*/
+/*}*/
 
-.NavBarCell3 {
-/*font-family: Verdana, Geneva, sans-serif;*/
-    font-family: "Lucida Sans Unicode", sans-serif;
-    background-color: lightgray;
-}
+/*.NavBarCell3 {*/
+/*!*font-family: Verdana, Geneva, sans-serif;*!*/
+/*    font-family: "Lucida Sans Unicode", sans-serif;*/
+/*    background-color: lightgray;*/
+/*}*/
 

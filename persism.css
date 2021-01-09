@@ -2,6 +2,11 @@
 
 /* Copied from default - modified for Jolene & PINF */
 
+/*
+    Breaks Javadoc output for some reason
+    Removed reference from ANT.
+*/
+
 /* Page background color */
 body {
     background-color: whitesmoke; /*font-family: Verdana, Geneva, sans-serif;*/

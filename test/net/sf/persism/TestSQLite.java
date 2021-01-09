@@ -43,9 +43,7 @@ public class TestSQLite extends BaseTest {
 
         createTables();
 
-        query = new Query(con);
-
-        command = new Command(con);
+        session = new Session(con);
     }
 
 
@@ -60,24 +58,24 @@ public class TestSQLite extends BaseTest {
             Order order = DAOFactory.newOrder(con);
             order.setName("COW");
             order.setPaid(true);
-            command.insert(order);
+            session.insert(order);
             assertTrue("order id > 0", order.getId() > 0);
 
             assertTrue("paid", order.isPaid());
 
             order = DAOFactory.newOrder(con);
             order.setName("MOOO");
-            command.insert(order);
+            session.insert(order);
 
             order = DAOFactory.newOrder(con);
             order.setName("MEOW");
-            command.insert(order);
+            session.insert(order);
 
             order = DAOFactory.newOrder(con);
             order.setName("PHHHH");
-            command.insert(order);
+            session.insert(order);
 
-            List<Order> list = query.readList(Order.class, "SELECT * FROM Orders ORDER BY ID");
+            List<Order> list = session.query(Order.class, "SELECT * FROM Orders ORDER BY ID");
             assertEquals("list size s/b 4", 4, list.size());
 
             order = list.get(0);
@@ -115,7 +113,7 @@ public class TestSQLite extends BaseTest {
         // fail? It should?
         boolean nullKeyFail = false;
         try {
-            command.insert(customer);
+            session.insert(customer);
         } catch (PersismException e) {
             nullKeyFail = true;
             assertEquals("Should have constraint exception here", "java.sql.SQLException: [SQLITE_CONSTRAINT]  Abort due to constraint violation (Customers.Customer_ID may not be NULL)", e.getMessage());
@@ -123,7 +121,7 @@ public class TestSQLite extends BaseTest {
         assertTrue("null key should have failed", nullKeyFail);
 
         customer.setCustomerId("MOO");
-        command.insert(customer); // this should be ok now.
+        session.insert(customer); // this should be ok now.
 
         // insert a duplicate
         boolean dupFail = false;
@@ -132,7 +130,7 @@ public class TestSQLite extends BaseTest {
         customer2.setCompanyName("COW");
         customer2.setCustomerId("MOO");
         try {
-            command.insert(customer2);
+            session.insert(customer2);
         } catch (PersismException e) {
             dupFail = true;
             assertEquals("Should have constraint exception here", "java.sql.SQLException: [SQLITE_CONSTRAINT]  Abort due to constraint violation (column Customer_ID is not unique)", e.getMessage());
@@ -140,7 +138,7 @@ public class TestSQLite extends BaseTest {
 
         assertTrue("duplicate key should fail", dupFail);
 
-        List<Customer> list = query.readList(Customer.class, "select * from customers");
+        List<Customer> list = session.query(Customer.class, "select * from customers");
 
         assertEquals("list should have 1 customer", 1, list.size());
 
@@ -148,7 +146,7 @@ public class TestSQLite extends BaseTest {
 
         boolean notInitialized = false;
         try {
-            list = query.readList(Customer.class, "select Customer_ID from Customers");
+            list = session.query(Customer.class, "select Customer_ID from Customers");
         } catch (PersismException e) {
             log.warn(e.getMessage());
             assertTrue("exception should be Customer was not properly initialized", e.getMessage().startsWith("Object class net.sf.persism.dao.Customer was not properly initialized."));
@@ -161,16 +159,15 @@ public class TestSQLite extends BaseTest {
         customer.setDateRegistered(new java.sql.Date(System.currentTimeMillis()));
 
         log.info(customer.getDateRegistered());
-        command.update(customer);
+        session.update(customer);
 
-        assertTrue("customer found and read", query.read(customer));
-
+        assertTrue("customer found and read", session.fetch(customer));
 
         log.info(customer.getDateRegistered());
 
-        command.delete(customer);
+        session.delete(customer);
 
-        list = query.readList(Customer.class, "select * from customers");
+        list = session.query(Customer.class, "select * from customers");
 
         assertEquals("list should have 0 customers", 0, list.size());
 
@@ -184,7 +181,7 @@ public class TestSQLite extends BaseTest {
         log.info(customer.getDateRegistered());
         assertNull("dated reg should be null", customer.getDateRegistered());
 
-        command.insert(customer);
+        session.insert(customer);
 
 
 //         query.refreshObject(customer);
@@ -282,14 +279,14 @@ public class TestSQLite extends BaseTest {
             Customer customer = new Customer();
             customer.setCustomerId("123");
             customer.setContactName("FRED");
-            command.insert(customer);
+            session.insert(customer);
 
 
-            query.read(customer);
+            session.fetch(customer);
 
             // look at meta data columns
-            // Date and BIT come back as STRING? WTF?
-            Map<String, ColumnInfo> columns = query.metaData.getColumns(Customer.class, con);
+            // TODO Date and BIT come back as STRING? WTF? SQLITE?
+            Map<String, ColumnInfo> columns = session.getMetaData().getColumns(Customer.class, con);
             for (ColumnInfo columnInfo : columns.values()) {
                 log.info(columnInfo);
                 assertNotNull("type should not be null", columnInfo.columnType);
@@ -301,11 +298,11 @@ public class TestSQLite extends BaseTest {
             order.setCreated(new java.util.Date());
             order.setPaid(true);
 
-            command.insert(order);
-            query.read(order);
+            session.insert(order);
+            session.fetch(order);
 
             // look at meta data columsn
-            columns = query.metaData.getColumns(Order.class, con);
+            columns = session.getMetaData().getColumns(Order.class, con);
             for (ColumnInfo columnInfo : columns.values()) {
                 log.info(columnInfo);
                 assertNotNull("type should not be null", columnInfo.columnType);
@@ -356,9 +353,9 @@ public class TestSQLite extends BaseTest {
         junk.setName("JUNK");
 
         // This should work OK
-        command.insert(junk);
+        session.insert(junk);
 
-        query.read(junk);
+        session.fetch(junk);
 
 
         // todo Should we ever be able to change the ID?  It doesn't work doing that.
@@ -368,7 +365,7 @@ public class TestSQLite extends BaseTest {
 
 
         // this should work since we find primary key with annotation
-        command.update(junk);
+        session.update(junk);
 
     }
 

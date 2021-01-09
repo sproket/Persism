@@ -21,9 +21,7 @@ public class TestPubs extends TestCase {
     private static final Log log = Log.getLogger(TestPubs.class);
 
     Connection con;
-    Query query;
-    Command command;
-
+    Session session;
 
     protected void setUp() throws Exception {
         super.setUp();
@@ -40,8 +38,7 @@ public class TestPubs extends TestCase {
 
         con = new net.sf.log4jdbc.ConnectionSpy(con);
 
-        query = new Query(con);
-        command = new Command(con);
+        session = new Session(con);
 
     }
 
@@ -56,7 +53,7 @@ public class TestPubs extends TestCase {
         author.setAuthorId("888-11-8888"); // ID Needs to look like 999-99-9999 or constraint exception
 
         try {
-            if (!query.read(author)) {
+            if (!session.fetch(author)) {
                 author.setFirstName("Dan");
                 author.setLastName("Howard");
                 author.setAddress("123 Sesame Street");
@@ -65,7 +62,7 @@ public class TestPubs extends TestCase {
                 author.setPostalCode("45143");
                 author.setContract(true);
 
-                command.insert(author);
+                session.insert(author);
             }
 
 
@@ -87,38 +84,38 @@ public class TestPubs extends TestCase {
             author.setPostalCode("BLAH BLAH BLAH");
             boolean constraintFailed = false;
             try {
-                command.update(author); // should fail
+                session.update(author); // should fail
             } catch (PersismException e) {
                 constraintFailed = true;
                 assertTrue("should contain 'The UPDATE statement conflicted with the CHECK constraint'", e.getMessage().contains("The UPDATE statement conflicted with the CHECK constraint"));
             }
             assertTrue("phone constraint should fail", constraintFailed);
 
-            List<Author> list = query.readList(Author.class, "Select * From authors");
+            List<Author> list = session.query(Author.class, "Select * From authors");
             log.info(list.size());
 
         } catch (Exception e) {
             log.error(e.getMessage(), e);
             fail(e.getMessage());
         } finally {
-            command.delete(author);
+            session.delete(author);
         }
     }
 
     public void testJobTypes() {
-        List<JobType> jobs = query.readList(JobType.class, "select * from jobs");
+        List<JobType> jobs = session.query(JobType.class, "select * from jobs");
         log.info(jobs);
         log.info(jobs.size());
 
         JobType jobType = new JobType();
         jobType.setJobId(4);
         // JobType{jobId=4, description='Chief Financial Officier', minLevel=175, maxLevel=250},
-        assertTrue("should be found", query.read(jobType));
+        assertTrue("should be found", session.fetch(jobType));
 
         // lets fix the spelling error
         jobType.setDescription("Chief Financial Officer");
-        command.update(jobType);
-        assertTrue("should be found", query.read(jobType)); // dont need to do this. just testing reading again
+        session.update(jobType);
+        assertTrue("should be found", session.fetch(jobType)); // dont need to do this. just testing reading again
 
         assertEquals("description s/b ", "Chief Financial Officer", jobType.getDescription());
         assertEquals("min lvl s/b ", 175, jobType.getMinLevel());

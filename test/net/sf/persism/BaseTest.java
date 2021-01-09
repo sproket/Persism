@@ -24,9 +24,10 @@ public abstract class BaseTest extends TestCase {
     private static final Log log = Log.getLogger(BaseTest.class);
 
     Connection con;
-    Query query;
-    Command command;
 
+    Session session;
+
+    static boolean mssqlmode = true;
 
     @Override
     protected void setUp() throws Exception {
@@ -39,7 +40,7 @@ public abstract class BaseTest extends TestCase {
     @Override
     protected void tearDown() throws Exception {
         if (con != null) {
-            MetaData.removeInstance(con);
+            //MetaData.removeInstance(con);
             con.close();
         }
         super.tearDown();
@@ -76,12 +77,12 @@ public abstract class BaseTest extends TestCase {
         assertEquals("date of last order s/b", dateOfLastOrder, df.format(customer.getDateOfLastOrder()));
         assertEquals("date registration s/b", dateRegistered, df.format(customer.getDateRegistered()));
 
-        command.insert(customer);
+        session.insert(customer);
 
         Customer customer2 = new Customer();
         customer2.setCustomerId(customer.getCustomerId());
 
-        query.read(customer2);
+        session.fetch(customer2);
 
         assertEquals("date of last order s/b", dateOfLastOrder, df.format(customer2.getDateOfLastOrder()));
         assertEquals("date registration s/b", dateRegistered, df.format(customer2.getDateRegistered()));
@@ -111,14 +112,14 @@ public abstract class BaseTest extends TestCase {
             customer1.setPostalCode("54321");
             //customer1.setRegion(Regions.East);
 
-            command.delete(customer1); // in case it's already there.
-            command.insert(customer1);
+            session.delete(customer1); // in case it's already there.
+            session.insert(customer1);
 
             String id = customer1.getCustomerId();
 
             Customer customer2 = new Customer();
             customer2.setCustomerId(id);
-            query.read(customer2);
+            session.fetch(customer2);
 
             // todo readObject should fail if ID not found??? this test is useless, read returns boolean
             assertNotNull("cust should be found ", customer2);
@@ -132,7 +133,7 @@ public abstract class BaseTest extends TestCase {
             assertEquals("Customer 1 date registered should be null", null, customer1.getDateRegistered());
 
 
-            query.read(customer1);
+            session.fetch(customer1);
 
             assertEquals("Customer 1 country should be US ", "US", customer1.getCountry());
             // we cannot test long. Need to format a date and compare as string to the seconds or minutes because SQL does not store dates with exact accuracy
@@ -163,17 +164,17 @@ public abstract class BaseTest extends TestCase {
         customer.setPostalCode("54321");
         customer.setRegion(Regions.East);
 
-        command.delete(customer); // i case it already exists.
-        command.insert(customer);
+        session.delete(customer); // i case it already exists.
+        session.insert(customer);
 
         customer.setRegion(Regions.North);
-        command.update(customer);
+        session.update(customer);
 
 //
         boolean failOnMissingProperties = false;
 
         try {
-            query.readList(Customer.class, "SELECT Country from CUSTOMERS");
+            session.query(Customer.class, "SELECT Country from CUSTOMERS");
         } catch (Exception e) {
             log.error(e.getMessage(), e);
             assertTrue("message should contain 'Customer was not properly initialized'", e.getMessage().contains("Customer was not properly initialized"));
@@ -182,7 +183,7 @@ public abstract class BaseTest extends TestCase {
         assertTrue("Should not be able to read fields if there are missing properties", failOnMissingProperties);
 
         // Make sure all columns are NOT the CASE of the ones in the DB.
-        List<Customer> list = query.readList(Customer.class, "SELECT company_NAME, Date_Of_Last_ORDER, contact_title, pHone, rEGion, postal_CODE, FAX, DATE_Registered, ADDress, CUStomer_id, Contact_name, country, city from CUSTOMERS");
+        List<Customer> list = session.query(Customer.class, "SELECT company_NAME, Date_Of_Last_ORDER, contact_title, pHone, rEGion, postal_CODE, FAX, DATE_Registered, ADDress, CUStomer_id, Contact_name, country, city from CUSTOMERS");
 
         // TODO TEST java.lang.IllegalArgumentException: argument type mismatch. Column: rEGion Type of property: class net.sf.persism.dao.Regions - Type read: class java.lang.String VALUE: BC
         // Add a value outside the enum to reproduce this error. IT IS A GOOD ERROR - we WANT TO THROW THIS so a user knows they have a value outside the ENUM
@@ -204,12 +205,12 @@ public abstract class BaseTest extends TestCase {
             Customer c1 = new Customer();
             c1.setCustomerId("123");
             c1.setCompanyName("ABC INC");
-            command.insert(c1);
+            session.insert(c1);
 
             Customer c2 = new Customer();
             c2.setCustomerId("456");
             c2.setCompanyName("XYZ INC");
-            command.insert(c2);
+            session.insert(c2);
 
             Order order;
             order = DAOFactory.newOrder(con);
@@ -217,11 +218,11 @@ public abstract class BaseTest extends TestCase {
             order.setName("ORDER 1");
             order.setCreated(new java.sql.Date(System.currentTimeMillis()));
             order.setPaid(true);
-            command.insert(order);
+            session.insert(order);
 
             assertTrue("order # > 0", order.getId() > 0);
 
-            List<Order> orders = query.readList(Order.class, "select * from orders");
+            List<Order> orders = session.query(Order.class, "select * from orders");
             assertEquals("should have 1 order", 1, orders.size());
             assertTrue("order id s/b > 0", orders.get(0).getId() > 0);
 
@@ -229,24 +230,24 @@ public abstract class BaseTest extends TestCase {
             order.setCustomerId("123");
             order.setName("ORDER 2");
             order.setCreated(new java.sql.Date(System.currentTimeMillis()));
-            command.insert(order);
+            session.insert(order);
 
             order = DAOFactory.newOrder(con);
             order.setCustomerId("456");
             order.setName("ORDER 3");
             order.setCreated(new java.sql.Date(System.currentTimeMillis()));
-            command.insert(order);
+            session.insert(order);
 
             order = DAOFactory.newOrder(con);
             order.setCustomerId("456");
             order.setName("ORDER 4");
             order.setCreated(new java.sql.Date(System.currentTimeMillis()));
-            command.insert(order);
+            session.insert(order);
 
             String sql = sb.toString();
             log.info(sql);
 
-            List<CustomerOrder> results = query.readList(CustomerOrder.class, sql);
+            List<CustomerOrder> results = session.query(CustomerOrder.class, sql);
             log.info(results);
             assertEquals("size should be 4", 4, results.size());
 
@@ -283,40 +284,40 @@ public abstract class BaseTest extends TestCase {
         customer.setPostalCode("54321");
         customer.setRegion(Regions.East);
 
-        command.delete(customer); // i case it already exists.
-        command.insert(customer);
+        session.delete(customer); // i case it already exists.
+        session.insert(customer);
 
-        List<String> list = query.readList(String.class, "SELECT Country from CUSTOMERS");
+        List<String> list = session.query(String.class, "SELECT Country from CUSTOMERS");
 
         assertEquals("list should have 1", 1, list.size());
         assertEquals("String should be US", "US", list.get(0));
 
-        String country = query.read(String.class, "SELECT Country from CUSTOMERS");
+        String country = session.fetch(String.class, "SELECT Country from CUSTOMERS");
         assertEquals("String should be US", "US", country);
 
         country = "NOT US";
 
-        country = query.read(String.class, "SELECT Country from CUSTOMERS");
+        country = session.fetch(String.class, "SELECT Country from CUSTOMERS");
 
         assertEquals("String should be US", "US", country);
 
-        List<Date> dates = query.readList(Date.class, "select Date_Registered from Customers ");
+        List<Date> dates = session.query(Date.class, "select Date_Registered from Customers ");
         log.info(dates);
 
-        Date dt = query.read(Date.class, "select Date_Registered from Customers ");
+        Date dt = session.fetch(Date.class, "select Date_Registered from Customers ");
         log.info(dt);
 
         // Fails because there is no way to instantiate java.sql.Date - no default constructor.
-        List<java.sql.Date> sdates = query.readList(java.sql.Date.class, "select Date_Registered from Customers ");
+        List<java.sql.Date> sdates = session.query(java.sql.Date.class, "select Date_Registered from Customers ");
         log.info(sdates);
 
-        java.sql.Date sdt = query.read(java.sql.Date.class, "select Date_Registered from Customers ");
+        java.sql.Date sdt = session.fetch(java.sql.Date.class, "select Date_Registered from Customers ");
         log.info(sdt);
 
         // this should fail. We can't do simple read on a primitive
         boolean failed = false;
         try {
-            query.read(country);
+            session.fetch(country);
         } catch (PersismException e) {
             failed = true;
             assertEquals("message s/b 'Cannot read a primitive type object with this method.'", "Cannot read a primitive type object with this method.", e.getMessage());

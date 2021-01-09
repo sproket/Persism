@@ -7,7 +7,7 @@ package net.sf.persism;
  * Created by IntelliJ IDEA.
  * User: DHoward
  * Date: 9/21/11
- * Time: 2:31 PM 
+ * Time: 2:31 PM
  */
 
 import net.sf.persism.dao.DAOFactory;
@@ -28,6 +28,10 @@ public class TestOracle extends BaseTest {
     private static final Log log = Log.getLogger(TestOracle.class);
 
     protected void setUp() throws Exception {
+        // Turn off SQLMode for next MSSQL Test so it uses JTDS
+        BaseTest.mssqlmode = false;
+        MSSQLDataSource.removeInstance();
+
         super.setUp();
 
         Properties props = new Properties();
@@ -40,14 +44,13 @@ public class TestOracle extends BaseTest {
 
         Class.forName(driver);
 
-        con = DriverManager.getConnection(url, username, password);
-
-        con = new net.sf.log4jdbc.ConnectionSpy(con);
+//        con = DriverManager.getConnection(url, username, password);
+//        con = new net.sf.log4jdbc.ConnectionSpy(con);
+        con = OracleDataSource.getInstance().getConnection();
 
         createTables();
 
-        query = new Query(con);
-        command = new Command(con);
+        session = new Session(con);
     }
 
 
@@ -62,7 +65,7 @@ public class TestOracle extends BaseTest {
             Order order = DAOFactory.newOrder(con);
             order.setName("MOO");
 
-            command.insert(order);
+            session.insert(order);
             log.info(order);
             assertTrue("order # > 0", order.getId() > 0);
 
@@ -151,14 +154,6 @@ end;
                 " CONSTRAINT \"ORDERS_PK\" PRIMARY KEY (\"ID\") ENABLE" +
                 "   ) ");
 
-/*
-                " ROW_ID VARCHAR(30) NULL, " +
-                " Customer_ID VARCHAR(10) NULL, " +
-                " PAID BIT NULL, " +
-                " CREATED datetime " +
-
- */
-
         commands.add("CREATE SEQUENCE   \"ORDERS_SEQ\"  MINVALUE 1 MAXVALUE 9999999999999999999999999999 INCREMENT BY 1 START WITH 101 CACHE 20 NOORDER NOCYCLE");
 
         commands.add("CREATE trigger \"BI_ORDERS\" " +
@@ -199,28 +194,17 @@ end;
 
         commands.add("CREATE TABLE TESTTIMESTAMP ( NAME VARCHAR(10), TS TIMESTAMP DEFAULT CURRENT_TIMESTAMP ) ");
 
-        Statement st = null;
-        try {
+        try ( Statement st = con.createStatement() ) {
 
             for (String command : commands) {
                 log.info(command);
-                st = con.createStatement();
-                st.executeUpdate(command);
-                st.close();
-//                connection.commit();
-            }
-
-        } finally {
-            try {
-                if (st != null) {
-                    st.close();
+                try {
+                    st.executeUpdate(command);
+                } catch (Exception e) {
+                    log.warn(command + " -> " + e.getMessage());
                 }
-            } catch (SQLException e) {
-                log.error(e.getMessage(), e);
             }
         }
-
-
     }
 
     public void testCreateTable() {

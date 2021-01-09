@@ -43,9 +43,7 @@ public class TestDerby extends BaseTest {
 
         createTables();
 
-        query = new Query(con);
-
-        command = new Command(con);
+        session = new Session(con);
 
     }
 
@@ -85,14 +83,14 @@ public class TestDerby extends BaseTest {
             Customer customer = new Customer();
             customer.setCustomerId("123");
             customer.setContactName("FRED");
-            command.insert(customer);
+            session.insert(customer);
 
 
-            query.read(customer);
+            session.fetch(customer);
 
             // look at meta data columns
-            // Date and BIT come back as STRING? WTF?
-            Map<String, ColumnInfo> columns = query.metaData.getColumns(Customer.class, con);
+            // TODO Derby Date and BIT come back as STRING? WTF?
+            Map<String, ColumnInfo> columns = session.getMetaData().getColumns(Customer.class, con);
             for (ColumnInfo columnInfo : columns.values()) {
                 log.info(columnInfo);
                 assertNotNull("type should not be null", columnInfo.columnType);
@@ -104,11 +102,11 @@ public class TestDerby extends BaseTest {
             order.setCreated(new java.util.Date());
             order.setPaid(true);
 
-            command.insert(order);
-            query.read(order);
+            session.insert(order);
+            session.fetch(order);
 
             // look at meta data columsn
-            columns = query.metaData.getColumns(Order.class, con);
+            columns = session.getMetaData().getColumns(Order.class, con);
             for (ColumnInfo columnInfo : columns.values()) {
                 log.info(columnInfo);
                 assertNotNull("type should not be null", columnInfo.columnType);

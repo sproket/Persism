@@ -15,11 +15,11 @@ import java.util.Date;
 
 /**
  * Performs read operations from the database.
- *
+ * @deprecated see Session
  * @author Dan Howard
  * @since 9/8/11 6:07 AM
  */
-public final class Query {
+final class Query {
 
     private static final Log log = Log.getLogger(Query.class);
 

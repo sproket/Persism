@@ -8,10 +8,22 @@ package net.sf.persism;
  */
 
 import net.sf.persism.dao.*;
+import org.apache.commons.dbcp.ConnectionFactory;
+import org.apache.commons.dbcp.DriverManagerConnectionFactory;
+import org.apache.commons.dbcp.PoolableConnectionFactory;
+import org.apache.commons.dbcp.PoolingDataSource;
+import org.apache.commons.pool.impl.GenericObjectPool;
+import org.junit.AfterClass;
 
+import javax.sql.DataSource;
+import java.io.File;
+import java.io.InputStream;
 import java.sql.*;
 import java.sql.Date;
 import java.util.*;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 public class TestMSSQL extends BaseTest {
 
@@ -19,62 +31,49 @@ public class TestMSSQL extends BaseTest {
 
     protected void setUp() throws Exception {
         super.setUp();
-
-        //log.debug("SETUP DEBUG");
-        //log.warn("SETUP WARN");
-        //log.error("SETUP ERROR");
-        //log.error("SETUP ERROR", new Throwable());
-        // todo somehow test with JTDS and MSSQL drivers.
-        Properties props = new Properties();
-        //props.load(getClass().getResourceAsStream("/jtds.properties"));
-        props.load(getClass().getResourceAsStream("/mssql.properties"));
-        String driver = props.getProperty("database.driver");
-        String url = props.getProperty("database.url");
-        String username = props.getProperty("database.username");
-        String password = props.getProperty("database.password");
-        Class.forName(driver);
-        con = DriverManager.getConnection(url, username, password);
-
-        // con = new net.sf.log4jdbc.ConnectionSpy(con);
+        log.error("SQLMODE?" + BaseTest.mssqlmode);
+        con = MSSQLDataSource.getInstance().getConnection();
 
         createTables();
 
-        command = new Command(con);
-        query = new Query(con);
-
+        session = new Session(con);
     }
+
 
     protected void tearDown() throws Exception {
         Statement st = null;
+        st = con.createStatement();
         try {
-            st = con.createStatement();
             st.execute("TRUNCATE TABLE ORDERS");
+        } catch (SQLException e) {
+            log.error(e.getMessage(), e);
+        }
+        try {
             st.execute("TRUNCATE TABLE EXAMCODE");
         } catch (SQLException e) {
             log.error(e.getMessage(), e);
         } finally {
             UtilsForTests.cleanup(st, null);
         }
-
-        //super.tearDown();
+        super.tearDown();
     }
 
     public void testProcedure() {
 
         try {
-            query.readList(Procedure.class, "SELECT ExamCode_No, EXAMTYPE_NO, DESC_E FROM EXAMCODE");
+            session.query(Procedure.class, "SELECT ExamCode_No, EXAMTYPE_NO, DESC_E FROM EXAMCODE");
         } catch (PersismException e) {
             assertTrue("exception should be 'Object class net.sf.persism.dao.Procedure was not properly initialized.'", e.getMessage().startsWith("Object class net.sf.persism.dao.Procedure was not properly initialized"));
         }
 
 
         long now = System.currentTimeMillis();
-        List<Procedure> list = query.readList(Procedure.class, "SELECT * FROM EXAMCODE");
+        List<Procedure> list = session.query(Procedure.class, "SELECT * FROM EXAMCODE");
         log.info("time to read procs 1: " + (System.currentTimeMillis() - now));
         log.info(list.toString());
 
         now = System.currentTimeMillis();
-        list = query.readList(Procedure.class, "SELECT * FROM EXAMCODE");
+        list = session.query(Procedure.class, "SELECT * FROM EXAMCODE");
         log.info("time to read procs 2: " + (System.currentTimeMillis() - now));
 
         for (Procedure procedure : list) {
@@ -84,16 +83,29 @@ public class TestMSSQL extends BaseTest {
 
         Procedure proc1 = new Procedure();
         proc1.setDescription("COW");
-        command.insert(proc1);
+        session.insert(proc1);
+
+        assertTrue("proc1 should have an id? ", proc1.getExamCodeNo() > 0);
+
+        // test fetch
+        Procedure proc2 = session.fetch(Procedure.class, "select * from EXAMCODE WHERE ExamCode_No=?", 1);
+        assertNotNull("proc2 should be found ", proc2);
+
+        Procedure proc3 = session.fetch(Procedure.class, "select * from EXAMCODE WHERE ExamCode_No=?", -99);
+        assertNull("proc3 should NOT be found ", proc3);
+
+        Procedure proc4 = session.fetch(Procedure.class, 1);
+        assertNotNull("proc4 should be found ", proc4);
+
 
         now = System.currentTimeMillis();
-        list = query.readList(Procedure.class, "select * from EXAMCODE WHERE ExamCode_No=?", 1);
+        list = session.query(Procedure.class, "select * from EXAMCODE WHERE ExamCode_No=?", 1);
         log.info("time to read procs 3: " + (System.currentTimeMillis() - now));
         assertEquals("should only have 1 proc in the list", 1, list.size());
 
-        // todo test delete with mulitple primary keys
+        // todo test delete with multiple primary keys
         Procedure proc = list.get(0);
-        int result = command.delete(proc);
+        int result = session.delete(proc);
         assertEquals("Should be 1 for delete", 1, result);
     }
 
@@ -102,11 +114,11 @@ public class TestMSSQL extends BaseTest {
         //query = new Query(con);
         // todo use this kind to test a failure. This should fail because we are not initializing all room properties
         long now = System.currentTimeMillis();
-        List<Room> list = query.readList(Room.class, "SELECT Room_no, Desc_E, Intervals  FROM ROOMS");
+        List<Room> list = session.query(Room.class, "SELECT Room_no, Desc_E, Intervals, [Weird$#@]  FROM ROOMS");
         log.info("time to read rooms: " + (System.currentTimeMillis() - now) + " size: " + list.size());
 
         now = System.currentTimeMillis();
-        list = query.readList(Room.class, "SELECT Room_no, Desc_E, Intervals  FROM ROOMS");
+        list = session.query(Room.class, "SELECT Room_no, Desc_E, Intervals  FROM ROOMS");
         log.info("time to read rooms again: " + (System.currentTimeMillis() - now));
 
         now = System.currentTimeMillis();
@@ -146,14 +158,13 @@ public class TestMSSQL extends BaseTest {
 
     public void testQuery() {
 
-        // query = new Query(con);
         String sql;
         sql = "select top 10 ExamID, p.DESC_E ProcedureDescription, r.DESC_E RoomDescription, eXaMdAtE from exams " +
                 "left join EXAMCODE as p ON Exams.ExamCode_No = p.ExamCode_No " +
                 "left join ROOMS as r ON Exams.Room_No = r.Room_No ";
 
 
-        List<QueryResult> list = query.readList(QueryResult.class, sql);
+        List<QueryResult> list = session.query(QueryResult.class, sql);
         log.info(list.toString());
 
         // Try again changing case of some fields.
@@ -161,15 +172,22 @@ public class TestMSSQL extends BaseTest {
                 "left join EXAMCODE as p ON Exams.ExamCode_No = p.ExamCode_No " +
                 "left join ROOMS as r ON Exams.Room_No = r.Room_No ";
 
-        list = query.readList(QueryResult.class, sql);
+        list = session.query(QueryResult.class, sql);
         log.info(list.toString());
 
+        List<Integer> simpleList;
+        sql = "select top 10 ExamID from exams " +
+                "left join EXAMCODE as p ON Exams.ExamCode_No = p.ExamCode_No " +
+                "left join ROOMS as r ON Exams.Room_No = r.Room_No ";
+
+        simpleList = session.query(Integer.class, sql);
+        log.info(simpleList.toString());
     }
 
     public void testAllColumnsMappedException() {
         boolean shouldHaveFailed = false;
         try {
-            query.read(Contact.class, "select [identity] from Contacts");
+            session.fetch(Contact.class, "select [identity] from Contacts");
         } catch (PersismException e) {
             shouldHaveFailed = true;
             log.warn(e.getMessage(), e);
@@ -182,7 +200,7 @@ public class TestMSSQL extends BaseTest {
     public void testAdditionalPropertyNotMappedException() {
         boolean shouldHaveFailed = false;
         try {
-            query.readList(ContactFail.class, "select * from Contacts");
+            session.fetch(ContactFail.class, "select * from Contacts");
         } catch (PersismException e) {
             shouldHaveFailed = true;
             log.warn(e.getMessage(), e);
@@ -197,17 +215,17 @@ public class TestMSSQL extends BaseTest {
         String sql;
         sql = "select examdate from exams";
 
-        java.util.Date date = query.read(java.util.Date.class, sql);
+        java.util.Date date = session.fetch(java.util.Date.class, sql);
         log.info("" + date);
 
         sql = "select count(*) from exams";
-        int exams = query.read(Integer.class, sql);
+        int exams = session.fetch(Integer.class, sql);
         log.info("" + exams); // todo TEST COUNT > 0
 
         sql = "select count(*) from exams where examDate > ?";
         Date d = new Date(1997 - 1900, 2, 4);
         log.info("" + d);
-        exams = query.read(Integer.class, sql, d);
+        exams = session.fetch(Integer.class, sql, d);
         log.info("" + exams); // todo fix this test
     }
 
@@ -219,46 +237,46 @@ public class TestMSSQL extends BaseTest {
             Procedure proc1; // = query.readObject(Procedure.class, "select * from examcode where examcode_no=3");
             proc1 = new Procedure();
             proc1.setDescription("new proc");
-            command.insert(proc1);
+            session.insert(proc1);
 
             int examCodeNo = proc1.getExamCodeNo();
             assertTrue("examcode no > 0", examCodeNo > 0);
 
 
-            assertTrue("should get a proc for ?" + examCodeNo, query.read(proc1));
+            assertTrue("should get a proc for ?" + examCodeNo, session.fetch(proc1));
 
 
             Procedure proc2; // = query.readObject(Procedure.class, "select * from examcode where examcode_no=?", 3);
             proc2 = new Procedure();
             proc2.setExamCodeNo(examCodeNo);
-            query.read(proc2);
+            session.fetch(proc2);
 
             // todo useless test. Probably should test that all properties match up...
             assertEquals("both procs should be the same id: 3 ", proc1.getExamCodeNo(), proc2.getExamCodeNo());
 
             proc1.setDescription("JUNK JUNK JUNK");
 
-            log.info(command.getMetaData().getUpdateStatement(proc1, con));
-            command.update(proc1);
+            log.info(session.getMetaData().getUpdateStatement(proc1, con));
+            session.update(proc1);
 
 
             //proc2 = query.readObject(Procedure.class, "select * from examcode where examcode_no=3");
             proc2.setExamCodeNo(examCodeNo);
-            query.read(proc2);
+            session.fetch(proc2);
             assertEquals("should be JUNK JUNK JUNK", "JUNK JUNK JUNK", proc2.getDescription());
 
             Order order = DAOFactory.newOrder(con);
             order.setName("MOO");
-            command.insert(order);
+            session.insert(order);
 
-            List<Order> orders = query.readList(Order.class, "SELECT * FROM ORDERS");
+            List<Order> orders = session.query(Order.class, "SELECT * FROM ORDERS");
             assertEquals("size s/b 1", 1, orders.size());
 
             order = orders.get(0);
 
             order.setName("COW");
 
-            command.update(order);
+            session.update(order);
 
         } catch (Exception e) {
             log.error(e.getMessage(), e);
@@ -274,7 +292,7 @@ public class TestMSSQL extends BaseTest {
         procedure.setModalityId(2);
         procedure.setSomeDate(new java.util.Date());
 
-        command.insert(procedure);
+        session.insert(procedure);
         log.info("" + procedure);
         //asseertE
     }
@@ -306,7 +324,7 @@ public class TestMSSQL extends BaseTest {
 
     public void testContactWithKeyworkdFieldName() {
         try {
-            command.execute("DROP TABLE Contacts");
+            session.execute("DROP TABLE Contacts");
         } catch (Exception e) {
             log.warn(e);
         }
@@ -330,7 +348,7 @@ public class TestMSSQL extends BaseTest {
                 " [LastModified] [smalldatetime] NULL " +
                 " ) ";
 
-        command.execute(sql);
+        session.execute(sql);
 
         UUID id = UUID.randomUUID();
         Contact contact = new Contact();
@@ -347,14 +365,14 @@ public class TestMSSQL extends BaseTest {
         contact.setCity("Philly?");
         contact.setType("X");
         contact.setDateAdded(new Date(System.currentTimeMillis()));
-        command.insert(contact);
+        session.insert(contact);
 
-        System.out.println(query.readList(Contact.class, "select * from Contacts"));
+        System.out.println(session.query(Contact.class, "select * from Contacts"));
 
-        query.read(contact);
+        session.fetch(contact);
 
         contact.setDivision("DIVISION Y");
-        command.update(contact);
+        session.update(contact);
 
 
     }
@@ -472,26 +490,6 @@ public class TestMSSQL extends BaseTest {
             }
         }
     }
-// TODO testThreading
-//    public void testThreading() {
-//        List<Command> commands = new ArrayList<>(10);
-//        for (int j = 0; j < 10; j++) {
-//            commands.add(new Command(con));
-//        }
-//
-//        for (int j = 0; j < 10; j++) {
-//            final Command zark = commands.get(j);
-//            new Thread("Thread " + j) {
-//                @Override
-//                public void run() {
-//                    log.info(this.getName());
-//                    try {
-//                        zark.insert(new Object());
-//                    } catch (Exception e) {
-//                        log.error(e);
-//                    }
-//                }
-//            }.start();
-//        }
-//    }
+
+
 }

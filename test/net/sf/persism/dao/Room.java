@@ -23,6 +23,8 @@ public final class Room {
 
     private BigDecimal intervals;
 
+    private String weird;
+
     // //@NoColumn
     private String junk;
 
@@ -52,5 +54,17 @@ public final class Room {
 
     public String getJunk() {
         return junk;
+    }
+
+    public String getWeird() {
+        return weird;
+    }
+
+    public void setWeird(String weird) {
+        this.weird = weird;
+    }
+
+    public void setJunk(String junk) {
+        this.junk = junk;
     }
 }

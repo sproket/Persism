@@ -158,6 +158,7 @@
     <property name="coverage.report.dir" value="${project.basedir}/reports"/>
     <property name="instrumented.classes.dir" value="${project.basedir}/instrumented-classes"/>
     <property name="release.dir" value="${project.basedir}/release"/>
+    <property name="src.dir" value="${project.basedir}/src"/>
 
 
     <path id="persism.module.bootclasspath">
@@ -304,14 +305,23 @@
 
     <target name="javadoc" description="Generate Javadoc">
         <mkdir dir="${project.basedir}/javadoc"/>
+
+        <!--        stylesheetfile="${project.basedir}/persism.css"-->
+
         <javadoc
                 sourcepathref="persism.module.sourcepath"
-                stylesheetfile="${project.basedir}/persism.css"
                 destdir="${project.basedir}/javadoc"
                 linksource="true"
                 overview="overview.html"
                 doctitle="Persism API"
-                />
+                author="Daniel Howard"
+                description="DESCRRIOTIUONB?"
+                footer="FOOTER?"
+                group="GHROUPO?"
+                header="HEADER?"
+                windowtitle="Persism"
+        >
+        </javadoc>
     </target>
 
     <target name="release" depends="build, javadoc, instrument" description="build all">
