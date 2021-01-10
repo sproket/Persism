@@ -44,10 +44,16 @@ public class TestMSSQL extends BaseTest {
         Statement st = null;
         st = con.createStatement();
         try {
-            st.execute("TRUNCATE TABLE ORDERS");
+            st.execute("TRUNCATE TABLE Orders");
         } catch (SQLException e) {
             log.error(e.getMessage(), e);
         }
+        try {
+            st.execute("TRUNCATE TABLE Customers");
+        } catch (SQLException e) {
+            log.error(e.getMessage(), e);
+        }
+
         try {
             st.execute("TRUNCATE TABLE EXAMCODE");
         } catch (SQLException e) {
@@ -154,6 +160,40 @@ public class TestMSSQL extends BaseTest {
         // "list.add(new Date())" above were uncommented.
         String[] sl = list.toArray(new String[0]);
         log.info("Array of String has length " + sl.length + " " + Arrays.asList(sl));
+    }
+
+    public void testStoredProc() throws SQLException {
+
+        Customer c1 = new Customer();
+        c1.setCustomerId("123");
+        c1.setCompanyName("ABC INC");
+        session.insert(c1);
+
+        Customer c2 = new Customer();
+        c2.setCustomerId("456");
+        c2.setCompanyName("XYZ INC");
+        session.insert(c2);
+
+        Order order;
+        order = DAOFactory.newOrder(con);
+        order.setCustomerId("123");
+        order.setName("ORDER 1");
+        order.setCreated(new java.sql.Date(System.currentTimeMillis()));
+        order.setPaid(true);
+        session.insert(order);
+
+        order = DAOFactory.newOrder(con);
+        order.setCustomerId("123");
+        order.setName("ORDER 2");
+        order.setCreated(new java.sql.Date(System.currentTimeMillis()));
+        order.setPaid(false);
+        session.insert(order);
+
+        List<CustomerOrder> list = session.query(CustomerOrder.class, "[spCustomerOrders](?)", "123");
+        log.warn(list);
+        // Both forms should work - the 1st is a cleaner way but this should be supported
+        list = session.query(CustomerOrder.class, "{call [spCustomerOrders](?) }", "123");
+        log.warn(list);
     }
 
     public void testQuery() {
@@ -297,30 +337,6 @@ public class TestMSSQL extends BaseTest {
         //asseertE
     }
 
-    public void XtestREMOVE() {
-
-        // query = new Query(con);
-        try {
-            String[] removePatterns = {"exam_techimage_backup", "interp_dximage_backup"};
-            String[] types = {"TABLE"};
-            java.sql.ResultSet rs = con.getMetaData().getTables(null, null, null, types);
-            List<String> tablesToDrop = new ArrayList<String>(32);
-            while (rs.next()) {
-                String table = rs.getString("TABLE_NAME");
-                if (table.contains("exam_techimage_backup") || table.contains("interp_dximage_backup")) {
-                    tablesToDrop.add(table);
-                }
-            }
-            log.info("" + tablesToDrop);
-
-            Statement st = con.createStatement();
-            for (String table : tablesToDrop) {
-                st.execute("DROP TABLE " + table);
-            }
-        } catch (SQLException e) {
-            log.error(e.getMessage(), e);
-        }
-    }
 
     public void testContactWithKeyworkdFieldName() {
         try {

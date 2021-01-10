@@ -122,55 +122,60 @@ final class MetaData {
 
     // Should only be called IF the map does not contain the column meta information yet.
     // Version for Queries
-    private synchronized <T> Map<String, PropertyInfo> determineColumns(Class<T> objectClass, ResultSet rs) throws SQLException {
-
+    private synchronized <T> Map<String, PropertyInfo> determineColumns(Class<T> objectClass, ResultSet rs) {
         // double check map - note this could be called with a Query were we never have that in here
         if (propertyInfoMap.containsKey(objectClass)) {
             return propertyInfoMap.get(objectClass);
         }
 
-        ResultSetMetaData rsmd = rs.getMetaData();
-        Collection<PropertyInfo> properties = getPropertyInfo(objectClass);
+        try {
+            ResultSetMetaData rsmd = rs.getMetaData();
+            Collection<PropertyInfo> properties = getPropertyInfo(objectClass);
 
-        int columnCount = rsmd.getColumnCount();
-        Map<String, PropertyInfo> columns = new TreeMap<String, PropertyInfo>(String.CASE_INSENSITIVE_ORDER);
-        for (int j = 1; j <= columnCount; j++) {
-            String realColumnName = rsmd.getColumnLabel(j);
-            int length = rsmd.getColumnDisplaySize(j);
-            String columnName = realColumnName.toLowerCase().replace("_", "").replace(" ", "");
-            if (extraNameCharacters != null && !extraNameCharacters.isEmpty()) {
-                // also replace these characters
-                for (int x = 0; x < extraNameCharacters.length(); x++) {
-                    columnName = columnName.replace("" + extraNameCharacters.charAt(x), "");
+            int columnCount = rsmd.getColumnCount();
+            Map<String, PropertyInfo> columns = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
+            for (int j = 1; j <= columnCount; j++) {
+                String realColumnName = rsmd.getColumnLabel(j);
+                int length = rsmd.getColumnDisplaySize(j);
+                String columnName = realColumnName.toLowerCase().replace("_", "").replace(" ", "");
+                if (extraNameCharacters != null && !extraNameCharacters.isEmpty()) {
+                    // also replace these characters
+                    for (int x = 0; x < extraNameCharacters.length(); x++) {
+                        columnName = columnName.replace("" + extraNameCharacters.charAt(x), "");
+                    }
                 }
-            }
-            PropertyInfo foundProperty = null;
-            for (PropertyInfo propertyInfo : properties) {
-                String propertyName = propertyInfo.propertyName.toLowerCase().replace("_", "");
-                if (propertyName.equalsIgnoreCase(columnName)) {
-                    foundProperty = propertyInfo;
-                    break;
-                } else {
-                    // check annotation against column name
-                    Annotation annotation = propertyInfo.getAnnotation(Column.class);
-                    if (annotation != null) {
-                        if (((Column) annotation).value().equalsIgnoreCase(realColumnName)) {
-                            foundProperty = propertyInfo;
-                            break;
+                PropertyInfo foundProperty = null;
+                for (PropertyInfo propertyInfo : properties) {
+                    String propertyName = propertyInfo.propertyName.toLowerCase().replace("_", "");
+                    if (propertyName.equalsIgnoreCase(columnName)) {
+                        foundProperty = propertyInfo;
+                        break;
+                    } else {
+                        // check annotation against column name
+                        Annotation annotation = propertyInfo.getAnnotation(Column.class);
+                        if (annotation != null) {
+                            if (((Column) annotation).value().equalsIgnoreCase(realColumnName)) {
+                                foundProperty = propertyInfo;
+                                break;
+                            }
                         }
                     }
                 }
-            }
-            if (foundProperty != null) {
-                foundProperty.length = length;
-                columns.put(realColumnName, foundProperty);
-            } else {
-                log.warn("Property not found for column: " + realColumnName + " class: " + objectClass);
-            }
-        }
 
-        propertyInfoMap.put(objectClass, columns);
-        return columns;
+                if (foundProperty != null) {
+                    foundProperty.length = length;
+                    columns.put(realColumnName, foundProperty);
+                } else {
+                    log.warn("Property not found for column: " + realColumnName + " class: " + objectClass);
+                }
+            }
+
+            propertyInfoMap.put(objectClass, columns);
+            return columns;
+
+        } catch (SQLException e) {
+            throw new PersismException(e);
+        }
     }
 
     private synchronized <T> Map<String, ColumnInfo> determineColumnInfo(Class<T> objectClass, String tableName, Connection connection) {
@@ -710,17 +715,6 @@ final class MetaData {
         }
     }
 
-
-    <T> Map<String, PropertyInfo> getQueryColumns(Class<T> objectClass, ResultSet rs) throws PersismException {
-        // TODO Queries are not mapped since it's possible multiple queries could be used against the same class???
-        try {
-            return determineColumns(objectClass, rs);
-        } catch (SQLException e) {
-            throw new PersismException(e);
-        }
-    }
-
-
     <T> Map<String, ColumnInfo> getColumns(Class<T> objectClass, Connection connection) throws PersismException {
         if (columnInfoMap.containsKey(objectClass)) {
             return columnInfoMap.get(objectClass);
@@ -728,8 +722,15 @@ final class MetaData {
         return determineColumnInfo(objectClass, getTableName(objectClass), connection);
     }
 
-    <T> Map<String, PropertyInfo> getTableColumns(Class<T> objectClass, Connection connection) throws PersismException {
+    <T> Map<String, PropertyInfo> getQueryColumns(Class<T> objectClass, ResultSet rs) throws PersismException {
+        if (propertyInfoMap.containsKey(objectClass)) {
+            return propertyInfoMap.get(objectClass);
+        }
 
+        return determineColumns(objectClass, rs);
+    }
+
+    <T> Map<String, PropertyInfo> getTableColumns(Class<T> objectClass, Connection connection) throws PersismException {
         if (propertyInfoMap.containsKey(objectClass)) {
             return propertyInfoMap.get(objectClass);
         }

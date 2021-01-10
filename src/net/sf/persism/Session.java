@@ -347,7 +347,8 @@ public class Session {
         boolean readPrimitive = Types.getType(objectClass) != null;
 
         if (!readPrimitive && objectClass.getAnnotation(QueryResult.class) == null) {
-            metaData.getTableColumns(objectClass, connection); // TODO Make sure columns are initialized properly if this is a table WHY?
+            // Make sure columns are initialized if this is a table.
+            metaData.getTableColumns(objectClass, connection);
         }
 
         try {
@@ -559,15 +560,17 @@ public class Session {
      */
 
     private Result exec(Result result, String sql, Object... parameters) throws SQLException {
-        if (sql.toLowerCase().contains("select ")) {
+        if (sql.toLowerCase().startsWith("select ")) {
             result.st = connection.prepareStatement(sql);
 
             PreparedStatement pst = (PreparedStatement) result.st;
             Util.setParameters(pst, parameters);
             result.rs = pst.executeQuery();
         } else {
-            // todo unit tests need to cover this.
-            result.st = connection.prepareCall("{call " + sql + "}");
+            if (!sql.toLowerCase().startsWith("{call")) {
+                sql = "{call " + sql + "} ";
+            }
+            result.st = connection.prepareCall(sql);
 
             CallableStatement cst = (CallableStatement) result.st;
             Util.setParameters(cst, parameters);

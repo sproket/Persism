@@ -17,14 +17,6 @@ public class TestMiscellaneous extends TestCase {
     }
 
     public void testUnknownConnection() throws Exception {
-
-        Connection con = BaseTest.createMockConnection();
-        boolean shouldFail = false;
-        try {
-            new Session(con);
-        } catch (Exception e) {
-            shouldFail = true;
-        }
-        assertTrue(shouldFail);
+        // this no longer fails. We just do log warn
     }
 }
