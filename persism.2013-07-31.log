@@ -1,3 +1,0 @@
-INFO  Jul 31 06:35:36 net.sf.persism.TestMetaData - select * from people where (first_name = ? or last_name = ?) and address = ?
-INFO  Jul 31 06:35:36 net.sf.persism.TestMetaData - {address=[I@77fddc31, name=[I@3b835282}
-INFO  Jul 31 06:36:05 net.sf.persism.TestMetaData - select * from people where (first_name = ? or last_name = ?) and address = ?
