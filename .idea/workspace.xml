@@ -7,19 +7,9 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="ae4eccaa-233f-45c5-91c7-c0a5a2b8b1e3" name="Default" comment="0.9.4b3 - fixed tests">
-      <change afterPath="$PROJECT_DIR$/src/net/sf/persism/Session.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/test/net/sf/persism/MSSQLDataSource.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/test/net/sf/persism/OracleDataSource.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/test/pool.properties" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/compiler.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/compiler.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/libraries/junit.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/modules.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/modules.xml" afterDir="false" />
+    <list default="true" id="ae4eccaa-233f-45c5-91c7-c0a5a2b8b1e3" name="Default" comment="0.9.4b3 - Added extraNameCharacters to remove other chars from columns, tidy some sync, added overloads in MetaData and new Session, Session replaces Query and Command, Improved Unit tests for threading and added JTDS and MSSQL testing.">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/PINF.iml" beforeDir="false" afterPath="$PROJECT_DIR$/PINF.iml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/build.properties" beforeDir="false" afterPath="$PROJECT_DIR$/build.properties" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/build.xml" beforeDir="false" afterPath="$PROJECT_DIR$/build.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/derby.log" beforeDir="false" afterPath="$PROJECT_DIR$/derby.log" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/javadoc/allclasses-frame.html" beforeDir="false" afterPath="$PROJECT_DIR$/javadoc/allclasses-frame.html" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/javadoc/allclasses-noframe.html" beforeDir="false" afterPath="$PROJECT_DIR$/javadoc/allclasses-noframe.html" afterDir="false" />
@@ -28,11 +18,9 @@
       <change beforePath="$PROJECT_DIR$/javadoc/help-doc.html" beforeDir="false" afterPath="$PROJECT_DIR$/javadoc/help-doc.html" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/javadoc/index-all.html" beforeDir="false" afterPath="$PROJECT_DIR$/javadoc/index-all.html" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/javadoc/index.html" beforeDir="false" afterPath="$PROJECT_DIR$/javadoc/index.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/javadoc/net/sf/persism/Command.html" beforeDir="false" afterPath="$PROJECT_DIR$/javadoc/net/sf/persism/Command.html" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/javadoc/net/sf/persism/PersismException.html" beforeDir="false" afterPath="$PROJECT_DIR$/javadoc/net/sf/persism/PersismException.html" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/javadoc/net/sf/persism/Persistable.html" beforeDir="false" afterPath="$PROJECT_DIR$/javadoc/net/sf/persism/Persistable.html" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/javadoc/net/sf/persism/PersistableObject.html" beforeDir="false" afterPath="$PROJECT_DIR$/javadoc/net/sf/persism/PersistableObject.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/javadoc/net/sf/persism/Query.html" beforeDir="false" afterPath="$PROJECT_DIR$/javadoc/net/sf/persism/Query.html" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/javadoc/net/sf/persism/annotations/Column.html" beforeDir="false" afterPath="$PROJECT_DIR$/javadoc/net/sf/persism/annotations/Column.html" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/javadoc/net/sf/persism/annotations/NotMapped.html" beforeDir="false" afterPath="$PROJECT_DIR$/javadoc/net/sf/persism/annotations/NotMapped.html" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/javadoc/net/sf/persism/annotations/QueryResult.html" beforeDir="false" afterPath="$PROJECT_DIR$/javadoc/net/sf/persism/annotations/QueryResult.html" afterDir="false" />
@@ -46,43 +34,15 @@
       <change beforePath="$PROJECT_DIR$/javadoc/overview-frame.html" beforeDir="false" afterPath="$PROJECT_DIR$/javadoc/overview-frame.html" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/javadoc/overview-summary.html" beforeDir="false" afterPath="$PROJECT_DIR$/javadoc/overview-summary.html" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/javadoc/overview-tree.html" beforeDir="false" afterPath="$PROJECT_DIR$/javadoc/overview-tree.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/javadoc/persism.css" beforeDir="false" afterPath="$PROJECT_DIR$/javadoc/persism.css" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/javadoc/serialized-form.html" beforeDir="false" afterPath="$PROJECT_DIR$/javadoc/serialized-form.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/javadoc/src-html/net/sf/persism/Command.html" beforeDir="false" afterPath="$PROJECT_DIR$/javadoc/src-html/net/sf/persism/Command.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/javadoc/src-html/net/sf/persism/PersismException.html" beforeDir="false" afterPath="$PROJECT_DIR$/javadoc/src-html/net/sf/persism/PersismException.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/javadoc/src-html/net/sf/persism/Persistable.html" beforeDir="false" afterPath="$PROJECT_DIR$/javadoc/src-html/net/sf/persism/Persistable.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/javadoc/src-html/net/sf/persism/PersistableObject.html" beforeDir="false" afterPath="$PROJECT_DIR$/javadoc/src-html/net/sf/persism/PersistableObject.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/javadoc/src-html/net/sf/persism/Query.html" beforeDir="false" afterPath="$PROJECT_DIR$/javadoc/src-html/net/sf/persism/Query.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/javadoc/src-html/net/sf/persism/annotations/Column.html" beforeDir="false" afterPath="$PROJECT_DIR$/javadoc/src-html/net/sf/persism/annotations/Column.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/javadoc/src-html/net/sf/persism/annotations/NotMapped.html" beforeDir="false" afterPath="$PROJECT_DIR$/javadoc/src-html/net/sf/persism/annotations/NotMapped.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/javadoc/src-html/net/sf/persism/annotations/QueryResult.html" beforeDir="false" afterPath="$PROJECT_DIR$/javadoc/src-html/net/sf/persism/annotations/QueryResult.html" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/javadoc/src-html/net/sf/persism/annotations/TableName.html" beforeDir="false" afterPath="$PROJECT_DIR$/javadoc/src-html/net/sf/persism/annotations/TableName.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/persism.2013-03-30.log" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/persism.2013-03-31.log" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/persism.2013-07-31.log" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/persism.2014-11-16.log" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/persism.2016-01-20.log" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/persism.2021-01-03.log" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/persism.css" beforeDir="false" afterPath="$PROJECT_DIR$/persism.css" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/net/sf/persism/Command.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/net/sf/persism/Command.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/net/sf/persism/MetaData.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/net/sf/persism/MetaData.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/net/sf/persism/PropertyInfo.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/net/sf/persism/PropertyInfo.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/net/sf/persism/Query.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/net/sf/persism/Query.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/net/sf/persism/annotations/TableName.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/net/sf/persism/annotations/TableName.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/test/net/sf/persism/AllTests.java" beforeDir="false" afterPath="$PROJECT_DIR$/test/net/sf/persism/AllTests.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/test/net/sf/persism/BaseTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/test/net/sf/persism/BaseTest.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/test/net/sf/persism/TestDerby.java" beforeDir="false" afterPath="$PROJECT_DIR$/test/net/sf/persism/TestDerby.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/test/net/sf/persism/TestH2.java" beforeDir="false" afterPath="$PROJECT_DIR$/test/net/sf/persism/TestH2.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/test/net/sf/persism/TestMSSQL.java" beforeDir="false" afterPath="$PROJECT_DIR$/test/net/sf/persism/TestMSSQL.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/test/net/sf/persism/TestMiscellaneous.java" beforeDir="false" afterPath="$PROJECT_DIR$/test/net/sf/persism/TestMiscellaneous.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/test/net/sf/persism/TestMySQL.java" beforeDir="false" afterPath="$PROJECT_DIR$/test/net/sf/persism/TestMySQL.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/test/net/sf/persism/TestNorthwind.java" beforeDir="false" afterPath="$PROJECT_DIR$/test/net/sf/persism/TestNorthwind.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/test/net/sf/persism/TestOracle.java" beforeDir="false" afterPath="$PROJECT_DIR$/test/net/sf/persism/TestOracle.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/test/net/sf/persism/TestPostgreSQL.java" beforeDir="false" afterPath="$PROJECT_DIR$/test/net/sf/persism/TestPostgreSQL.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/test/net/sf/persism/TestPubs.java" beforeDir="false" afterPath="$PROJECT_DIR$/test/net/sf/persism/TestPubs.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/test/net/sf/persism/TestResultSet.java" beforeDir="false" afterPath="$PROJECT_DIR$/test/net/sf/persism/TestResultSet.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/test/net/sf/persism/TestSQLite.java" beforeDir="false" afterPath="$PROJECT_DIR$/test/net/sf/persism/TestSQLite.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/test/net/sf/persism/dao/Room.java" beforeDir="false" afterPath="$PROJECT_DIR$/test/net/sf/persism/dao/Room.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/net/sf/persism/Session.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/net/sf/persism/Session.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/net/sf/persism/annotations/Column.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/net/sf/persism/annotations/Column.java" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -930,7 +890,9 @@
       <workItem from="1610190436473" duration="417000" />
       <workItem from="1610190878447" duration="8028000" />
       <workItem from="1610222287243" duration="1263000" />
-      <workItem from="1610223570906" duration="1485000" />
+      <workItem from="1610223570906" duration="1662000" />
+      <workItem from="1610225331502" duration="987000" />
+      <workItem from="1610273541140" duration="2111000" />
     </task>
     <task id="LOCAL-00001" summary="Update now uses Persistable">
       <created>1333275659133</created>
@@ -1107,7 +1069,14 @@
       <option name="project" value="LOCAL" />
       <updated>1610040539906</updated>
     </task>
-    <option name="localTasksCounter" value="26" />
+    <task id="LOCAL-00026" summary="0.9.4b3 - Added extraNameCharacters to remove other chars from columns, tidy some sync, added overloads in MetaData and new Session, Session replaces Query and Command, Improved Unit tests for threading and added JTDS and MSSQL testing.">
+      <created>1610225157737</created>
+      <option name="number" value="00026" />
+      <option name="presentableId" value="LOCAL-00026" />
+      <option name="project" value="LOCAL" />
+      <updated>1610225157737</updated>
+    </task>
+    <option name="localTasksCounter" value="27" />
     <servers />
   </component>
   <component name="TodoView" selected-index="0">
@@ -1244,7 +1213,6 @@
     <option name="ADD_EXTERNAL_FILES_SILENTLY" value="true" />
     <option name="INCLUDE_TEXT_INTO_SHELF" value="false" />
     <option name="USE_COMMIT_MESSAGE_MARGIN" value="false" />
-    <MESSAGE value="SQLite, renamed to Persister" />
     <MESSAGE value="Added Types enum for fast finding types, fixed most tests, added connection url mapping for table names list (to support multiple connections), Peristable and PersistableObject" />
     <MESSAGE value="Update now uses Persistable" />
     <MESSAGE value="MEGA Refactor with new MetaData class - tests passed." />
@@ -1269,7 +1237,8 @@
     <MESSAGE value="1st stab at adding code coverage report (Java 8 not yet supported)" />
     <MESSAGE value="0.9.4b3 - Used clone for PersistableObject to hide MetaData class, cleaned up some code, added 1st tests for Threads" />
     <MESSAGE value="0.9.4b3 - fixed tests" />
-    <option name="LAST_COMMIT_MESSAGE" value="0.9.4b3 - fixed tests" />
+    <MESSAGE value="0.9.4b3 - Added extraNameCharacters to remove other chars from columns, tidy some sync, added overloads in MetaData and new Session, Session replaces Query and Command, Improved Unit tests for threading and added JTDS and MSSQL testing." />
+    <option name="LAST_COMMIT_MESSAGE" value="0.9.4b3 - Added extraNameCharacters to remove other chars from columns, tidy some sync, added overloads in MetaData and new Session, Session replaces Query and Command, Improved Unit tests for threading and added JTDS and MSSQL testing." />
     <option name="MAKE_NEW_CHANGELIST_ACTIVE" value="true" />
   </component>
   <component name="XDebuggerManager">
@@ -1287,7 +1256,7 @@
         </line-breakpoint>
         <line-breakpoint type="java-line">
           <url>file://$PROJECT_DIR$/src/net/sf/persism/Query.java</url>
-          <line>305</line>
+          <line>310</line>
           <option name="timeStamp" value="17" />
         </line-breakpoint>
         <line-breakpoint type="java-line">

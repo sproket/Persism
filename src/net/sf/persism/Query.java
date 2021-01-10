@@ -15,11 +15,12 @@ import java.util.Date;
 
 /**
  * Performs read operations from the database.
- * @deprecated see Session
+ * @deprecated this will be removed in 1.0
+ * @see net.sf.persism.Session
  * @author Dan Howard
  * @since 9/8/11 6:07 AM
  */
-final class Query {
+public final class Query {
 
     private static final Log log = Log.getLogger(Query.class);
 
@@ -29,7 +30,9 @@ final class Query {
     MetaData metaData;
 
     /**
+     * @deprecated
      * @param connection
+     * @see net.sf.persism.Session
      * @throws PersismException
      */
     public Query(Connection connection) throws PersismException {
@@ -38,7 +41,6 @@ final class Query {
     }
 
     private void init(Connection connection) {
-
         // place any DB specific properties here.
         try {
             metaData = MetaData.getInstance(connection);
@@ -49,8 +51,9 @@ final class Query {
 
     /**
      * Read a list of objects of the specified class using the specified SQL query and parameters.
-     * The type of the list can be Data Objects or native Java Objects.
-     *
+     * The type of the list can be Data Objects or native Java Objects or primitives.
+     * @deprecated
+     * @see net.sf.persism.Session#query(Class, String, Object...)
      * @param objectClass class of objects to return.
      * @param sql         query string to execute.
      * @param parameters  parameters to the query.
@@ -111,7 +114,8 @@ final class Query {
     /**
      * Read an object from the database by it's primary key.
      * You should instantiate the object and set the primary key properties before calling this method.
-     *
+     * @deprecated
+     * @see net.sf.persism.Session#fetch(Object)
      * @param object Data object to read from the database.
      * @return true if the object was found by the primary key.
      * @throws PersismException if something goes wrong.
@@ -163,8 +167,9 @@ final class Query {
     }
 
     /**
-     * Reads an object of the specified type from the database. The type can a be Data Object or a native Java Object.
-     *
+     * Reads an object of the specified type from the database. The type can be a Data Object or a native Java Object or primitive.
+     * @deprecated
+     * @see net.sf.persism.Session#fetch(Class, String, Object...)
      * @param objectClass Type of returned value
      * @param sql         query - this would usually be a select OR a select of a single column if the type is a primitive.
      *                    If this is a primitive type then this method will only look at the 1st column in the result.

@@ -9,12 +9,16 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.math.BigDecimal;
 import java.sql.*;
-import java.sql.Date;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
 
+/**
+ * Performs various read and write operations in the database.
+ * @author Dan Howard
+ * @since 1/8/2021
+ */
 public class Session {
 
     private static final Log log = Log.getLogger(Session.class);
@@ -24,8 +28,8 @@ public class Session {
     private MetaData metaData;
 
     /**
-     * @param connection
-     * @throws PersismException
+     * @param connection db connection
+     * @throws PersismException if something goes wrong
      */
     public Session(Connection connection) throws PersismException {
         this.connection = connection;
@@ -124,6 +128,7 @@ public class Session {
 
     /**
      * Inserts the data object in the database.
+     * The data object is refreshed with autoinc and other defaults that may exist.
      *
      * @param object the data object to insert.
      * @return usually 1 to indicate rows changed via JDBC.
@@ -133,7 +138,7 @@ public class Session {
         String insertStatement = metaData.getInsertStatement(object, connection);
 
         PreparedStatement st = null;
-        java.sql.ResultSet rs = null;
+        ResultSet rs = null;
 
         try {
             // These keys should always be in sorted order.
@@ -296,8 +301,8 @@ public class Session {
     /**
      * Execute an arbitrary SQL statement.
      *
-     * @param sql
-     * @param parameters
+     * @param sql sql string
+     * @param parameters parameters
      */
     public void execute(String sql, Object... parameters) {
 
@@ -324,14 +329,14 @@ public class Session {
 
     /**
      * Query for a list of objects of the specified class using the specified SQL query and parameters.
-     * The type of the list can be Data Objects or native Java Objects.
+     * The type of the list can be Data Objects or native Java Objects or primitives.
      *
-     * @param objectClass class of objects to return.s
+     * @param objectClass class of objects to return.
      * @param sql         query string to execute.
      * @param parameters  parameters to the query.
-     * @param <T>
+     * @param <T> Return type
      * @return a list of objects of the specified class using the specified SQL query and parameters.
-     * @throws PersismException
+     * @throws PersismException If something goes wrong you get a big stack trace.s
      */
     public <T> List<T> query(Class<T> objectClass, String sql, Object... parameters) throws PersismException {
         List<T> list = new ArrayList<T>(32);
@@ -375,7 +380,7 @@ public class Session {
     }
 
     /**
-     * Fetch an object from the database by it's primary key.
+     * Fetch an object from the database by it's primary key(s).
      * You should instantiate the object and set the primary key properties before calling this method.
      *
      * @param object Data object to read from the database.
@@ -425,13 +430,13 @@ public class Session {
     }
 
     /**
-     * TODO fetch an object by type and primary key(s) works but needs to create new instance! FFS
+     * Fetch an object from the database by primary key(s).
      *
-     * @param objectClass
-     * @param primaryKey
-     * @param <T>
-     * @return
-     * @throws PersismException
+     * @param objectClass class of objects to return
+     * @param primaryKey primary key value parameters
+     * @param <T> Return type
+     * @return new instance of T or null if not found
+     * @throws PersismException if something goes wrong
      */
     public <T> T fetch(Class<T> objectClass, Object... primaryKey) throws PersismException {
 
@@ -444,14 +449,14 @@ public class Session {
     }
 
     /**
-     * Fetch an object of the specified type from the database. The type can a be Data Object or a native Java Object.
+     * Fetch an object of the specified type from the database. The type can be a Data Object or a native Java Object or primitive.
      *
      * @param objectClass Type of returned value
      * @param sql         query - this would usually be a select OR a select of a single column if the type is a primitive.
      *                    If this is a primitive type then this method will only look at the 1st column in the result.
      * @param parameters  parameters to the query.
-     * @param <T>
-     * @return value read from the database
+     * @param <T> Return type
+     * @return value read from the database of type T or null if not found
      * @throws PersismException Well, this is a runtime exception so actually it could be anything really.
      */
     public <T> T fetch(Class<T> objectClass, String sql, Object... parameters) throws PersismException {

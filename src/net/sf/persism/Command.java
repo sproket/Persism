@@ -6,11 +6,12 @@ import java.util.*;
 
 /**
  * The Command object is used to perform updates in the databases with data objects.
- * @deprecated - see Session
+ * @deprecated this will be removed in 1.0
+ * @see net.sf.persism.Session
  * @author Dan Howard
  * @since 4/4/12 6:42 PM
  */
-final class Command {
+public final class Command {
 
     private static final Log log = Log.getLogger(Command.class);
 
@@ -22,7 +23,8 @@ final class Command {
     private Query query = null; // lazy load it - we may not need this object for all cases.
 
     /**
-     *
+     * @deprecated
+     * @see net.sf.persism.Session
      * @param connection
      * @throws PersismException
      */
@@ -43,7 +45,8 @@ final class Command {
 
     /**
      * Updates the data object in the database.
-     *
+     * @deprecated
+     * @see net.sf.persism.Session#update(Object)
      * @param object data object to update.
      * @return usually 1 to indicate rows changed via JDBC.
      * @throws PersismException Indicating the upcoming robot uprising.
@@ -123,7 +126,8 @@ final class Command {
 
     /**
      * Inserts the data object in the database.
-     *
+     * @deprecated
+     * @see net.sf.persism.Session#insert(Object)
      * @param object the data object to insert.
      * @return usually 1 to indicate rows changed via JDBC.
      * @throws PersismException When planet of the apes starts happening.
@@ -258,7 +262,8 @@ final class Command {
 
     /**
      * Deletes the data object object from the database.
-     *
+     * @deprecated
+     * @see net.sf.persism.Session#delete(Object)
      * @param object data object to delete
      * @return usually 1 to indicate rows changed via JDBC.
      * @throws PersismException Perhaps when asteroid 1999 RQ36 hits us?
@@ -297,7 +302,8 @@ final class Command {
 
     /**
      * Execute an arbitrary SQL statement.
-     *
+     * @deprecated
+     * @see net.sf.persism.Session#execute(String, Object...)
      * @param sql
      * @param parameters
      */
