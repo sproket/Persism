@@ -1,7 +1,7 @@
 package net.sf.persism.dao.pubs;
 
 import net.sf.persism.annotations.Column;
-import net.sf.persism.annotations.TableName;
+import net.sf.persism.annotations.Table;
 
 /**
  * Job descriptions
@@ -9,7 +9,7 @@ import net.sf.persism.annotations.TableName;
  * @author Dan Howard
  * @since 5/25/12 6:06 PM
  */
-@TableName("JobS")
+@Table(value = "JobS")
 public class JobType {
     /*
 	[job_id] [smallint] IDENTITY(1,1) NOT NULL,

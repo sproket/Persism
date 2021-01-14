@@ -1,7 +1,7 @@
 package net.sf.persism.dao.northwind;
 
 import net.sf.persism.annotations.NotMapped;
-import net.sf.persism.annotations.QueryResult;
+import net.sf.persism.annotations.Query;
 
 import java.math.BigDecimal;
 import java.util.Date;
@@ -12,7 +12,7 @@ import java.util.Date;
  * @author Dan Howard
  * @since 5/25/12 5:59 AM
  */
-@QueryResult
+@Query
 public class OrderView {
 
     private int orderId;

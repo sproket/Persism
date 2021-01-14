@@ -3,7 +3,7 @@ package net.sf.persism.dao;
 import net.sf.persism.PersistableObject;
 import net.sf.persism.annotations.Column;
 import net.sf.persism.annotations.NotMapped;
-import net.sf.persism.annotations.TableName;
+import net.sf.persism.annotations.Table;
 
 import java.math.BigDecimal;
 import java.util.Date;
@@ -14,7 +14,7 @@ import java.util.Date;
  * Date: 9/8/11
  * Time: 6:16 AM
  */
-@TableName("EXAMCODE")
+@Table("EXAMCODE")
 public final class Procedure extends PersistableObject<Procedure> {
 
     @Column(name = "ExamCode_No")

@@ -28,7 +28,6 @@
     </appender>
     <logger name="org" level="ERROR"/>
     <logger name="net.sf.persism" level="DEBUG"/>
-<!--    <logger name="net.sf.persism.Query" level="DEBUG"/>-->
     <logger name="net" level="ERROR"/>
 
     <logger name="jdbc.sqlonly" level="INFO"/>

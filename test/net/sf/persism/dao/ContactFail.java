@@ -1,11 +1,11 @@
 package net.sf.persism.dao;
 
-import net.sf.persism.annotations.TableName;
+import net.sf.persism.annotations.Table;
 
 import java.sql.Date;
 import java.util.UUID;
 // This version has an extra field to fail a unit test and exercise the exception
-@TableName("Contacts")
+@Table("Contacts")
 public final class ContactFail {
     private UUID identity;
     private UUID partnerId;

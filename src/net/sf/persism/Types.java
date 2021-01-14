@@ -63,10 +63,6 @@ enum Types {
         this.type = type;
     }
 
-    public Class getTypeClass() {
-        return type;
-    }
-
     public static <T> Types getType(Class<T> type) {
         for (Types t : values()) {
             if (t.type.equals(type)) {

@@ -5,12 +5,13 @@ package net.sf.persism;
  * $Revision: $
  * $Date: $
  * Created by IntelliJ IDEA.
- * User: DHoward
+ * User: DHowardf
  * Date: 9/21/11
  * Time: 2:31 PM
  */
 
 import net.sf.persism.dao.DAOFactory;
+import net.sf.persism.dao.OracleBit;
 import net.sf.persism.dao.OracleOrder;
 import net.sf.persism.dao.Order;
 import net.sf.persism.ddl.FieldDef;
@@ -67,10 +68,10 @@ public class TestOracle extends BaseTest {
             order.setName("MOO");
             order.setPaid(true);
             session.insert(order);
-            log.info(order);
+            log.info("inserted? " + order);
             assertTrue("order # > 0", order.getId() > 0);
 
-            order = DAOFactory.newOrder(con);
+            order =  DAOFactory.newOrder(con);
             order.setName("MOO2");
             order.setPaid(false);
             session.insert(order);
@@ -79,7 +80,7 @@ public class TestOracle extends BaseTest {
             order.setName("MOO3");
             session.insert(order);
 
-            log.info(session.query(Order.class, "select * from ORDERS"));
+            log.info("MOO:"  + session.query(Order.class, "select * from ORDERS"));
 
         } catch (Exception e) {
             log.error(e.getMessage(), e);
@@ -155,7 +156,23 @@ end;
             commands.add("DROP SEQUENCE ORDERS_SEQ");
         }
 
-        // TODO Oracle BIT?
+        if (UtilsForTests.isTableInDatabase("ORACLEBIT", con)) {
+            commands.add("DROP TABLE ORACLEBIT");
+        }
+
+        commands.add("CREATE TABLE  \"ORACLEBIT\" " +
+                "(\"ID\" INT, " +
+                "\"NAME\" VARCHAR2(50), " +
+                "\"ROW__ID\" VARCHAR2(10), " +
+                "\"CUSTOMER_ID\" VARCHAR(10), " +
+                "\"PAID\" NUMBER(3), " + // BIT TEST
+                "\"CREATED\" DATE, " +
+                "\"GARBAGE\" CHAR(1), " + // BIT TEST
+
+                " CONSTRAINT \"ORACLEBIT_PK\" PRIMARY KEY (\"ID\") ENABLE" +
+                "   ) ");
+
+
         // https://stackoverflow.com/questions/2426145/oracles-lack-of-a-bit-datatype-for-table-columns#2427016
         commands.add("CREATE TABLE  \"ORDERS\" " +
                 "(\"ID\" INT, " +
@@ -217,6 +234,56 @@ end;
                 st.executeUpdate(command);
             }
         }
+    }
+
+    public void testBits() {
+        OracleBit bt1 = new OracleBit();
+        bt1.setId(1);
+        bt1.setName("1");
+        bt1.setCustomerId("CUST ID");
+        bt1.setCreated(new Date(System.currentTimeMillis()));
+        bt1.setPaid(true);
+        bt1.setGarbage(true);
+
+        session.insert(bt1);
+
+        OracleBit test = new OracleBit();
+        test.setId(1);
+
+        assertTrue(session.fetch(test));
+        log.info(test);
+        assertTrue(test.isPaid());
+        assertTrue(test.isGarbage());
+
+        test = new OracleBit();
+        test.setId(2);
+        test.setName("2");
+        test.setCustomerId("CUST ID");
+        test.setCreated(new Date(System.currentTimeMillis()));
+        test.setPaid(false);
+        test.setGarbage(false);
+
+        session.insert(test);
+
+        assertTrue(session.fetch(test));
+        log.info(test);
+        assertFalse(test.isPaid());
+        assertFalse(test.isGarbage());
+
+        test = new OracleBit();
+        test.setId(3);
+        test.setName("3");
+        test.setCustomerId("CUST ID");
+        test.setCreated(new Date(System.currentTimeMillis()));
+
+        session.insert(test);
+
+        assertTrue(session.fetch(test));
+        log.info(test);
+        assertNull(test.isPaid());
+        assertNull(test.isGarbage());
+
+        // count 3 after from query
     }
 
     public void testCreateTable() {

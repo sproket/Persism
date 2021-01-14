@@ -7,7 +7,7 @@ import java.util.Map;
 /**
  * Class to hold results of connection.getDatabaseMetaData() result sets as maps
  * so we don't need to repeatedly call it.
- *
+ * Not used yet...s
  * @author Dan Howard
  * @since 5/5/12 5:26 AM
  */

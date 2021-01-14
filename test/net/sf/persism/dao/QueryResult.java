@@ -1,5 +1,7 @@
 package net.sf.persism.dao;
 
+import net.sf.persism.annotations.Query;
+
 import java.util.Date;
 
 /**
@@ -11,7 +13,7 @@ import java.util.Date;
  * Date: 9/14/11
  * Time: 7:30 AM
  */
-@net.sf.persism.annotations.QueryResult
+@Query
 public class QueryResult {
     private int examId;
     private String procedureDescription;

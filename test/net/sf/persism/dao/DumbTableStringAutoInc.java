@@ -2,7 +2,7 @@ package net.sf.persism.dao;
 
 import net.sf.persism.annotations.Column;
 
-public class DumbTableStringAutoInc {
+public final class DumbTableStringAutoInc {
     private String id;
 
     public String getId() {

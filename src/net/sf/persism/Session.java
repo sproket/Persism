@@ -1,6 +1,6 @@
 package net.sf.persism;
 
-import net.sf.persism.annotations.QueryResult;
+import net.sf.persism.annotations.Query;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -13,6 +13,7 @@ import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
+import java.util.Date;
 
 /**
  * Performs various read and write operations in the database.
@@ -229,9 +230,7 @@ public class Session {
                     Method setter = properties.get(column).setter;
 
                     if (setter != null) {
-                        // todo do we really need to type these? Maybe if the DB uses a GUID?
-                        // todo MAYBE ? read() need to be updated to be like getTypedValue - make a common call for either usage OR USE convert() ?
-                        Object value = metaData.getTypedValue(setter.getParameterTypes()[0], rs, 1);
+                        Object value = getTypedValueReturnedFromGeneratedKeys(setter.getParameterTypes()[0], rs);
 
                         if (log.isDebugEnabled()) {
                             log.debug(column + " generated " + value); // HERE!
@@ -347,7 +346,7 @@ public class Session {
         // If we know this type it means it's a primitive type. Not a DAO so we use a different rule to read those
         boolean readPrimitive = Types.getType(objectClass) != null;
 
-        if (!readPrimitive && objectClass.getAnnotation(QueryResult.class) == null) {
+        if (!readPrimitive && objectClass.getAnnotation(Query.class) == null) {
             // Make sure columns are initialized if this is a table.
             metaData.getTableColumns(objectClass, connection);
         }
@@ -465,7 +464,7 @@ public class Session {
         // If we know this type it means it's a primitive type. Not a DAO so we use a different rule to read those
         boolean readPrimitive = Types.getType(objectClass) != null;
 
-        if (!readPrimitive && objectClass.getAnnotation(QueryResult.class) == null) {
+        if (!readPrimitive && objectClass.getAnnotation(Query.class) == null) {
             // Make sure columns are initialized properly if this is a table  todo  why?
             metaData.getTableColumns(objectClass, connection);
         }
@@ -591,7 +590,7 @@ public class Session {
         assert Types.getType(objectClass) == null;
 
         Map<String, PropertyInfo> properties;
-        if (objectClass.getAnnotation(QueryResult.class) == null) {
+        if (objectClass.getAnnotation(Query.class) == null) {
             properties = metaData.getTableColumns(objectClass, connection);
         } else {
             properties = metaData.getQueryColumns(objectClass, rs);
@@ -691,7 +690,6 @@ public class Session {
     private Object read(ResultSet rs, int column, int sqlColumnType) throws SQLException, IOException {
         Object value;
         Types columnType = Types.convert(sqlColumnType); // note this could be null if we can't match a type
-        // return metaData.getTypedValue(columnType.getTypeClass(), rs, column);
 
         if (columnType != null) {
             switch (columnType) {
@@ -720,22 +718,29 @@ public class Session {
 //                    // todo ReaderType
 //                case EnumType:
 //                    // todo EnumType?
+                case IntegerType:
+                    value = rs.getObject(column) == null ? null : rs.getInt(column);
+                    break;
+                case LongType:
+                    value = rs.getObject(column) == null ? null : rs.getLong(column);
+                    break;
                 case UUIDType:
                     value = rs.getObject(column);
                     if (value != null) {
                         value = UUID.fromString("" + value);
                     }
                     break;
-                case floatType:
                 case FloatType:
-                    value = rs.getFloat(column);
+                    value = rs.getObject(column) == null ? null : rs.getFloat(column);
                     break;
-                case doubleType:
                 case DoubleType:
-                    value = rs.getDouble(column);
+                    value = rs.getObject(column) == null ? null : rs.getDouble(column);
                     break;
                 case DecimalType:
                     value = rs.getBigDecimal(column);
+                    break;
+                case TimeType:
+                    value = rs.getTime(column);
                     break;
                 default:
                     value = rs.getObject(column);
@@ -826,7 +831,7 @@ public class Session {
                     dbValue = ((BigDecimal) dbValue).intValue();
                     log.warn("Possible overflow column " + columnName + " - Property is Integer and column value is BigDecimal");
                 } else if (propertyType == Boolean.class || propertyType == boolean.class) {
-                    // BigDecimal to Boolean. Oracle (sigh) - todo probably we should have a Char to Boolean as well then (see TestOracle for links)
+                    // BigDecimal to Boolean. Oracle (sigh) - Additional for a Char to Boolean as then (see TestOracle for links)
                     dbValue = ((BigDecimal) dbValue).intValue() == 1;
                     log.warn("Possible overflow column " + columnName + " - Property is Boolean and column value is BigDecimal - seems a bit overkill?");
                 }
@@ -878,8 +883,25 @@ public class Session {
                     }
                 } else if (propertyType.equals(UUID.class)) {
                     dbValue = UUID.fromString("" + dbValue);
-                }
 
+                } else if (propertyType.isAssignableFrom(Boolean.class)) {
+                    // String to Boolean - true or 1 - otherwise false (or null)
+                    if (dbValue != null) {
+                        String bval = "" + dbValue;
+                        dbValue = (bval.equalsIgnoreCase("true") || bval.equals("1"));
+                    }
+
+                } else if (propertyType.isAssignableFrom(Time.class)) {
+                    // MSSQL works, JTDS returns Varchar in format below
+                    DateFormat df = new SimpleDateFormat("hh:mm:ss.SSSSS");
+                    try {
+                        Date d = df.parse(dbValue+"");
+                        dbValue = new Time(d.getTime());
+                    } catch (ParseException e) {
+                        String msg = e.getMessage() + ". Column: " + columnName + " Type of property: " + propertyType + " - Type read: " + dbValue.getClass() + " VALUE: " + dbValue;
+                        throw new PersismException(msg, e);
+                    }
+                }
                 break;
 
             case characterType:
@@ -935,5 +957,31 @@ public class Session {
         }
         return dbValue;
     }
+
+    private <T> T getTypedValueReturnedFromGeneratedKeys(Class<T> type, ResultSet rs) throws SQLException {
+
+        Object value = null;
+        Types types = Types.getType(type);
+
+        if (types == null) {
+            log.warn("Unhandled type " + type);
+            return (T) rs.getObject(1);
+        }
+
+        switch (types) {
+
+            case integerType:
+            case IntegerType:
+                value = rs.getInt(1);
+                break;
+
+            case longType:
+            case LongType:
+                value = rs.getLong(1);
+                break;
+        }
+        return (T) value;
+    }
+
 
 }

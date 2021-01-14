@@ -10,6 +10,8 @@ package net.sf.persism;
 import net.sf.persism.dao.*;
 import java.sql.*;
 import java.sql.Date;
+import java.time.Instant;
+import java.time.LocalTime;
 import java.util.*;
 
 public class TestMSSQL extends BaseTest {
@@ -17,7 +19,7 @@ public class TestMSSQL extends BaseTest {
     private static final Log log = Log.getLogger(TestMSSQL.class);
 
     protected void setUp() throws Exception {
-         //BaseTest.mssqlmode = false; // to run in JTDS MODE
+         // BaseTest.mssqlmode = false; // to run in JTDS MODE
         super.setUp();
         log.error("SQLMODE? " + BaseTest.mssqlmode);
         con = MSSQLDataSource.getInstance().getConnection();
@@ -60,7 +62,6 @@ public class TestMSSQL extends BaseTest {
         } catch (PersismException e) {
             assertTrue("exception should be 'Object class net.sf.persism.dao.Procedure was not properly initialized.'", e.getMessage().startsWith("Object class net.sf.persism.dao.Procedure was not properly initialized"));
         }
-
 
         long now = System.currentTimeMillis();
         List<Procedure> list = session.query(Procedure.class, "SELECT * FROM EXAMCODE");
@@ -179,10 +180,10 @@ public class TestMSSQL extends BaseTest {
         session.insert(order);
 
         List<CustomerOrder> list = session.query(CustomerOrder.class, "[spCustomerOrders](?)", "123");
-        log.warn(list);
+        log.info(list);
         // Both forms should work - the 1st is a cleaner way but this should be supported
         list = session.query(CustomerOrder.class, "{call [spCustomerOrders](?) }", "123");
-        log.warn(list);
+        log.info(list);
     }
 
     public void testQuery() {
@@ -364,6 +365,7 @@ public class TestMSSQL extends BaseTest {
                 " [LastModified] [smalldatetime] NULL, " +
                 " [Notes] [text] NULL, " +
                 " [AmountOwed] [float] NULL, " +
+                " [WhatTimeIsIt] [time](7) NULL, " +
                 "CONSTRAINT [PK_Contacts] PRIMARY KEY CLUSTERED " +
                 "  (" +
                 "   [identity] ASC " +
@@ -392,6 +394,7 @@ public class TestMSSQL extends BaseTest {
         contact.setDateAdded(new Date(System.currentTimeMillis()));
         contact.setAmountOwed(100.23f);
         contact.setNotes("B:AH B:AH VBLAH\r\n BLAH BLAY!");
+        contact.setWhatTimeIsIt(Time.valueOf(LocalTime.now()));
         session.insert(contact);
 
         log.info("contact after insert: " + contact);
@@ -414,10 +417,10 @@ public class TestMSSQL extends BaseTest {
         contact.setAmountOwed(100.23f);
         contact.setNotes("B:AH B:AH VBLAH\r\n BLAH BLAY!");
 
-        log.warn("BEFORE " + contact);
+        log.debug("BEFORE " + contact);
         // todo add test to make sure UUID doesn't get chganged.
         session.insert(contact);
-        log.warn("AFTER " + contact);
+        log.debug("AFTER " + contact);
 
         log.info(session.query(Contact.class, "select * from Contacts"));
 
@@ -426,7 +429,7 @@ public class TestMSSQL extends BaseTest {
         contact.setDivision("DIVISION Y");
         session.update(contact);
 
-        log.warn(contact.getNotes());
+        log.debug(contact.getNotes());
 
     }
 
@@ -519,7 +522,7 @@ public class TestMSSQL extends BaseTest {
 
     @Override
     protected void createTables() throws SQLException {
-        log.warn("createTables");
+        log.info("createTables");
         Statement st = null;
         List<String> commands = new ArrayList<String>(3);
 

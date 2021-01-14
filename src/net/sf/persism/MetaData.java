@@ -2,7 +2,7 @@ package net.sf.persism;
 
 import net.sf.persism.annotations.Column;
 import net.sf.persism.annotations.NotMapped;
-import net.sf.persism.annotations.TableName;
+import net.sf.persism.annotations.Table;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -766,9 +766,9 @@ final class MetaData {
 
         // todo NOTE that the annotation name may not match the case of the tablename in the DB.
         String tableName;
-        Annotation annotation = objectClass.getAnnotation(TableName.class);
+        Annotation annotation = objectClass.getAnnotation(Table.class);
         if (annotation != null) {
-            tableName = ((TableName) annotation).value();
+            tableName = ((Table) annotation).value();
         } else {
             tableName = guessTableName(objectClass);
         }
@@ -869,137 +869,5 @@ final class MetaData {
             }
         }
         return primaryKeys;
-    }
-
-    // Currently only used by Insert so the only case tested here is getInt - Used to get the primary key value(s) after an insert.
-    // TODO code similar to read method in Session. Should merge
-    <T> T getTypedValue(Class<T> type, ResultSet rs, int column) throws SQLException, IOException {
-        Object value = null;
-        String tmp;
-
-        Types types = Types.getType(type);
-
-        if (types == null) {
-            log.warn("Unhandled type " + type);
-            return (T) rs.getObject(column);
-        }
-
-        switch (types) {
-
-            case UUIDType:
-                value = rs.getString(column);
-                if (value != null) {
-                    value = UUID.fromString("" + value);
-                }
-                break;
-            case booleanType:
-                value = rs.getBoolean(column);
-                break;
-            case BooleanType:
-                value = rs.getBoolean(column);
-                break;
-            case byteType:
-                value = rs.getByte(column);
-                break;
-            case ByteType:
-                value = rs.getObject(column) == null ? null : rs.getByte(column);
-                break;
-            case shortType:
-                value = rs.getShort(column);
-                break;
-            case ShortType:
-                value = rs.getObject(column) == null ? null : rs.getShort(column);
-                break;
-            case integerType:
-                value = rs.getInt(column);
-                break;
-            case IntegerType:
-                value = rs.getObject(column) == null ? null : rs.getInt(column);
-                break;
-            case longType:
-                value = rs.getLong(column);
-                break;
-            case LongType:
-                value = rs.getObject(column) == null ? null : rs.getLong(column);
-                break;
-            case floatType:
-                value = rs.getFloat(column);
-                break;
-            case FloatType:
-                value = rs.getObject(column) == null ? null : rs.getFloat(column);
-                break;
-            case doubleType:
-                value = rs.getDouble(column);
-                break;
-            case DoubleType:
-                value = rs.getObject(column) == null ? null : rs.getDouble(column);
-                break;
-            case DecimalType:
-                value = rs.getObject(column) == null ? null : rs.getBigDecimal(column);
-                break;
-            case StringType:
-                value = rs.getString(column);
-                break;
-            case characterType:
-                tmp = rs.getString(column);
-                value = tmp == null || tmp.length() == 0 ? null : tmp.charAt(0);
-                break;
-            case CharacterType:
-                tmp = rs.getString(column);
-                value = tmp == null || tmp.length() == 0 ? null : tmp.charAt(0);
-                break;
-            case UtilDateType:
-                // todo can't this just use getDate as well?
-                //timestamp = rs.getTimestamp(column);
-                //value = (timestamp == null) ? null : new Date(timestamp.getTime());
-                value = rs.getDate(column);
-                break;
-            case SQLDateType:
-                value = rs.getDate(column);
-                break;
-            case TimeType:
-                value = rs.getTime(column);
-                break;
-            case TimestampType:
-                value = rs.getTimestamp(column);
-                break;
-            case byteArrayType:
-                value = rs.getBytes(column);
-                break;
-            case ByteArrayType:
-                value = rs.getBytes(column);
-                break;
-            case charArrayType:
-                tmp = rs.getString(column);
-                value = tmp == null ? null : tmp.toCharArray();
-                break;
-            case CharArrayType:
-                tmp = rs.getString(column);
-                value = tmp == null ? null : tmp.toCharArray();
-                break;
-            case ClobType:
-                value = rs.getClob(column);
-                InputStream in = ((Clob) value).getAsciiStream();
-                StringWriter write = new StringWriter();
-
-                int c = -1;
-                while ((c = in.read()) != -1) {
-                    write.write(c);
-                }
-                write.flush();
-                value = write.toString();
-
-                break;
-            case BlobType:
-                value = rs.getBlob(column);
-                break;
-            case InputStreamType:
-                value = rs.getBinaryStream(column);
-                break;
-            case ReaderType:
-                value = rs.getCharacterStream(column);
-                break;
-        }
-        return (T) value;
     }
 }

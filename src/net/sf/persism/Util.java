@@ -5,6 +5,7 @@ import java.io.InputStream;
 import java.net.URL;
 import java.sql.*;
 import java.sql.ResultSet;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.Properties;
 import java.util.UUID;
@@ -67,6 +68,9 @@ final class Util {
 
     // Place code conversions here to prevent type exceptions on setObject
     static void setParameters(PreparedStatement st, Object[] parameters) throws SQLException {
+        if (log.isDebugEnabled()) {
+            log.debug("PARAMS: " + Arrays.asList(parameters));
+        }
         // todo did we not have a test for Character? FFS.
         int n = 1;
         for (Object o : parameters) {

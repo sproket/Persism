@@ -1,7 +1,6 @@
 package net.sf.persism.dao;
 
-import net.sf.persism.annotations.*;
-import net.sf.persism.annotations.QueryResult;
+import net.sf.persism.annotations.Query;
 
 import java.util.Date;
 
@@ -11,7 +10,7 @@ import java.util.Date;
  * Date: 12-05-13
  * Time: 6:39 AM
  */
-@QueryResult
+@Query
 public class CustomerOrder {
 
     private String customerId;

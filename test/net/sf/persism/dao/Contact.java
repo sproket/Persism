@@ -5,6 +5,7 @@ import net.sf.persism.Persistable;
 import net.sf.persism.annotations.Column;
 
 import java.sql.Date;
+import java.sql.Time;
 import java.util.UUID;
 
 /**
@@ -33,6 +34,7 @@ public final class Contact implements Persistable<Contact> {
     private Date lastModified;
     private float amountOwed;
     private String notes;
+    private Time whatTimeIsIt;
 
     // for persistable
     private Contact originalValue;
@@ -181,6 +183,14 @@ public final class Contact implements Persistable<Contact> {
         this.amountOwed = amountOwed;
     }
 
+    public Time getWhatTimeIsIt() {
+        return whatTimeIsIt;
+    }
+
+    public void setWhatTimeIsIt(Time whatTimeIsIt) {
+        this.whatTimeIsIt = whatTimeIsIt;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) {
@@ -289,6 +299,9 @@ public final class Contact implements Persistable<Contact> {
                 ", country='" + country + '\'' +
                 ", dateAdded=" + dateAdded +
                 ", lastModified=" + lastModified +
+                ", amountOwed=" + amountOwed +
+                ", notes='" + notes + '\'' +
+                ", whatTimeIsIt=" + whatTimeIsIt +
                 '}';
     }
 
