@@ -20,13 +20,13 @@ public class JobType {
 
     private int jobId;
 
-    @Column("jOb_dESC")
+    @Column(name = "jOb_dESC")
     private String description;
 
-    @Column("min_lvl")
+    @Column(name = "min_lvl")
     private short minLevel;
 
-    @Column("max_lvl")
+    @Column(name = "max_lvl")
     private short maxLevel;
 
     public int getJobId() {

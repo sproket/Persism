@@ -8,6 +8,7 @@ import java.util.Date;
 /**
  * Example of extending PersistableObject without specifying the generic type.
  * Works but IntelliJ warns you about it.
+ * The usual way would be: class Order extends PersistableObject<Order>
  * Created by IntelliJ IDEA.
  * User: DHoward
  * Date: 9/21/11
@@ -19,7 +20,7 @@ public class Order extends PersistableObject {
     private String name;
     private Date created;
     private String customerId;
-    private boolean paid;
+    private Boolean paid;
 
     public long getId() {
         return id;
@@ -53,11 +54,11 @@ public class Order extends PersistableObject {
         this.customerId = customerId;
     }
 
-    public boolean isPaid() {
+    public Boolean isPaid() {
         return paid;
     }
 
-    public void setPaid(boolean paid) {
+    public void setPaid(Boolean paid) {
         this.paid = paid;
     }
 

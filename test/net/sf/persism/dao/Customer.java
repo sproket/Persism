@@ -15,7 +15,6 @@ import java.sql.Date;
  * @since 5/23/12 10:40 AM
  */
 public class Customer {
-
     private String customerId;
     private String companyName;
     private String contactName;

@@ -145,7 +145,7 @@ public final class Command {
 
             List<String> generatedKeys = new ArrayList<String>(4);
             for (ColumnInfo column : columns.values()) {
-                if (column.generated) {
+                if (column.autoIncrement) {
                     generatedKeys.add(column.columnName);
                 }
             }
@@ -165,7 +165,7 @@ public final class Command {
                 PropertyInfo propertyInfo = properties.get(column.columnName);
 
                 // todo is propertyInfo null ever? I don't think so. We only include columns where we know the property.
-                if (!column.generated) {
+                if (!column.autoIncrement) {
 
                     // TODO This condition is repeated 3 times. We need to rearrange this code.
                     // See MetaData getInsertStatement - Maybe we should return a new Object type for InsertStatement

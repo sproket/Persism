@@ -70,10 +70,6 @@ public class Invoice {
         return discount;
     }
 
-//    public void setDiscount(double discount) {
-//        this.discount = discount;
-//    }
-
     public boolean isPaid() {
         return paid;
     }
@@ -82,6 +78,9 @@ public class Invoice {
         this.paid = paid;
     }
 
+    public void setDiscount(double discount) {
+        this.discount = discount;
+    }
 
     public String getJunk1() {
         return junk1;
@@ -91,7 +90,7 @@ public class Invoice {
         this.junk1 = junk1;
     }
 
-    // Test for a calculated field. Should be ignored by Persism
+    // Test for a calculated field. Should be ignored by Persism because it's a read-only property.
     public String getJunk2() {
         if (junk2 == null) {
             junk2 = junk1 + " COW";

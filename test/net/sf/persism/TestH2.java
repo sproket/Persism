@@ -397,8 +397,9 @@ public class TestH2 extends BaseTest {
                 " Customer_ID varchar(10) NOT NULL, " +
                 " Paid BIT NOT NULL, " +
                 " Price NUMERIC(7,3) NOT NULL, " +
-                " Quantity INT NOT NULL, " +
-                " Total NUMERIC(10,3) NOT NULL " +
+                " Quantity NUMERIC(10) NOT NULL, " +
+                " Total NUMERIC(10,3) NOT NULL, " +
+                " Discount NUMERIC(10,3) NOT NULL " +
                 ") ");
 
 
@@ -424,6 +425,8 @@ public class TestH2 extends BaseTest {
                 " ID INT IDENTITY PRIMARY KEY, " +
                 " Name VARCHAR(100), " +
                 " Timestamp TIMESTAMP NULL, " +
+                " Gold REAL NULL, " +
+                " Silver REAL NULL, " +
                 " Data TEXT NULL ) ");
 
         Statement st = null;
@@ -445,46 +448,22 @@ public class TestH2 extends BaseTest {
         }
     }
 
-    public void testClob() throws SQLException {
-
+    public void testVariousTypes() throws SQLException {
+        // note Data is read as a CLOB
         SavedGame sg = new SavedGame();
         sg.setName("BLAH");
         sg.setTimeStamp(new Date());
         sg.setData("HJ LHLH H H                     ';lk ;lk ';l k                                K HLHLHH LH LH LH LHLHLHH LH H H H LH HHLGHLJHGHGFHGFGJFDGHFDHFDGJFDKGHDGJFDD KHGD KHG DKHDTG HKG DFGHK  GLJHG LJHG LJH GLJ");
 
+        sg.setGold(100.23f);
+        sg.setSilver(200);
         session.insert(sg);
 
         sg = null;
         sg = session.fetch(SavedGame.class, "select * from SavedGames");
-        log.info(sg.getData());
+        log.info("SAVED GOLD: " + sg.getGold());
+        log.info("SAVED SILVER: " + sg.getSilver());
 
-    }
-
-    private void createSavedGames() {
-
-
-        String sql = "CREATE TABLE SavedGames ( " +
-                " ID INT IDENTITY PRIMARY KEY, " +
-                " Name VARCHAR(100), " +
-                " Timestamp TIMESTAMP NULL, " +
-                " Data TEXT NULL ) ";
-
-        Statement st = null;
-        try {
-            st = con.createStatement();
-            st.execute(sql);
-
-        } catch (SQLException e) {
-            log.error(e.getMessage(), e);
-        } finally {
-            try {
-                if (st != null) {
-                    st.close();
-                }
-            } catch (SQLException e) {
-                log.error(e.getMessage(), e);
-            }
-        }
     }
 
 

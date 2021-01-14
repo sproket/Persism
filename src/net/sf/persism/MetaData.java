@@ -4,6 +4,9 @@ import net.sf.persism.annotations.Column;
 import net.sf.persism.annotations.NotMapped;
 import net.sf.persism.annotations.TableName;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.StringWriter;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
@@ -69,7 +72,6 @@ final class MetaData {
 
         DatabaseMetaData dmd = con.getMetaData();
         extraNameCharacters = dmd.getExtraNameCharacters();
-
         populateTableList(con);
     }
 
@@ -154,7 +156,7 @@ final class MetaData {
                         // check annotation against column name
                         Annotation annotation = propertyInfo.getAnnotation(Column.class);
                         if (annotation != null) {
-                            if (((Column) annotation).value().equalsIgnoreCase(realColumnName)) {
+                            if (((Column) annotation).name().equalsIgnoreCase(realColumnName)) {
                                 foundProperty = propertyInfo;
                                 break;
                             }
@@ -206,10 +208,11 @@ final class MetaData {
                 // only include columns where we have a property
                 if (properties.containsKey(rsMetaData.getColumnLabel(i))) {
                     ColumnInfo columnInfo = new ColumnInfo();
-
                     columnInfo.columnName = rsMetaData.getColumnLabel(i);
-                    columnInfo.generated = rsMetaData.isAutoIncrement(i);
-                    columnInfo.primary = columnInfo.generated;
+                    columnInfo.autoIncrement = rsMetaData.isAutoIncrement(i);
+                    columnInfo.primary = columnInfo.autoIncrement;
+                    columnInfo.sqlColumnType = rsMetaData.getColumnType(i);
+                    columnInfo.columnType = Types.convert(columnInfo.sqlColumnType);
 
                     if (!primaryKeyFound) {
                         primaryKeyFound = columnInfo.primary;
@@ -226,8 +229,13 @@ final class MetaData {
                             columnInfo.primary = true;
                         }
 
-                        if (((Column) annotation).generated()) {
-                            columnInfo.generated = true;
+                        if (((Column) annotation).autoIncrement()) {
+                            columnInfo.autoIncrement = true;
+                            if (!columnInfo.columnType.isCountable()) {
+                                columnInfo.autoIncrement = false;
+                                // TODO should this be a PersismException?
+                                log.warn("Column " + columnInfo.columnName + " is annotated as autoIncrement but is a non numeric type (" + columnInfo.columnType+") - Ignoring.");
+                            }
                         }
 
                         if (!primaryKeyFound) {
@@ -275,27 +283,12 @@ final class MetaData {
             }
 
             if (!primaryKeyFound) {
-                // check annotations. todo do we need this loop still?
-                for (String column : properties.keySet()) {
-                    PropertyInfo propertyInfo = properties.get(column);
-
-                    Annotation annotation = propertyInfo.getAnnotation(Column.class);
-                    if (annotation != null) {
-                        if (((Column) annotation).primary()) {
-                            primaryKeyFound = true;
-                            map.get(column).primary = true;
-                        }
-                    }
-
-                }
-            }
-
-            if (!primaryKeyFound) {
                 // Should we fail-fast? Actually no, we should not fail here.
                 // It's very possible the user has a table that they will never
                 // update, delete or select (by primary).
                 // They may only want to do read operations with specified queries and in that
                 // context we don't need any primary keys. (same with insert)
+                log.info("No primary key found for table " + tableName + ". This will fail on insert/update/delete.");
             }
 
             columnInfoMap.put(objectClass, map);
@@ -498,14 +491,14 @@ final class MetaData {
             StringBuilder sb = new StringBuilder();
             sb.append("INSERT INTO ").append(sd).append(tableName).append(ed).append(" (");
             String sep = "";
-            boolean columnsHaveDefaults = false;
+            boolean saveInMap = true;
 
             for (ColumnInfo column : columns.values()) {
-                if (!column.generated) {
+                if (!column.autoIncrement) {
 
                     if (column.hasDefault) {
 
-                        columnsHaveDefaults = true;
+                        saveInMap = false;
 
                         // Do not include if this column has a default and no value has been
                         // set on it's associated property.
@@ -521,7 +514,7 @@ final class MetaData {
             sb.append(") VALUES (");
             sep = "";
             for (ColumnInfo column : columns.values()) {
-                if (!column.generated) {
+                if (!column.autoIncrement) {
 
                     if (column.hasDefault) {
                         // Do not include if this column has a default and no value has been
@@ -544,10 +537,12 @@ final class MetaData {
                 log.debug("determineInsertStatement for " + object.getClass() + " is " + insertStatement);
             }
 
-            // Do not put this insert statement into the map if any columns have defaults.
-            // Because the insert statement is variable.
-            if (!columnsHaveDefaults) {
+            // Do not put this insert statement into the map if any columns have defaults. or primary key as string was
+            // set on object because the insert statement is variable.
+            if (saveInMap) {
                 insertStatementsMap.put(object.getClass(), insertStatement);
+            } else {
+                insertStatementsMap.remove(object.getClass()); // remove just in case
             }
 
             return insertStatement;
@@ -658,12 +653,8 @@ final class MetaData {
         String ed = connectionType.getKeywordEndDelimiter();
 
         List<String> primaryKeys = getPrimaryKeys(object.getClass(), connection);
-        if (primaryKeys.size() == 0) {
-            throw new PersismException("Could not find any primary key(s) for table " + tableName);
-        }
 
         StringBuilder sb = new StringBuilder();
-
         sb.setLength(0);
         sb.append("UPDATE ").append(sd).append(tableName).append(ed).append(" SET ");
         String sep = "";
@@ -672,8 +663,7 @@ final class MetaData {
         while (it.hasNext()) {
             String column = it.next();
             ColumnInfo columnInfo = columns.get(column);
-            // todo could it ever be null?
-            if (!columnInfo.generated && !columnInfo.primary) {
+            if (!columnInfo.autoIncrement && !columnInfo.primary) {
                 sb.append(sep).append(sd).append(column).append(ed).append(" = ?");
                 sep = ", ";
             }
@@ -693,6 +683,10 @@ final class MetaData {
             Persistable original = (Persistable) persistable.getOriginalValue();
 
             Map<String, PropertyInfo> columns = getTableColumns(persistable.getClass(), connection);
+            if (original == null) {
+                // Could happen in the case of cloning or other operation - so it's never read so it never sets original.
+                return columns;
+            }
             Map<String, PropertyInfo> changedColumns = new HashMap<String, PropertyInfo>(columns.keySet().size());
 
             for (String column : columns.keySet()) {
@@ -716,6 +710,8 @@ final class MetaData {
     }
 
     <T> Map<String, ColumnInfo> getColumns(Class<T> objectClass, Connection connection) throws PersismException {
+        // Realistically at this point this objectClass will always be in the map since it's defined early
+        // when we get the table name but I'll double check it for determineColumnInfo anyway.
         if (columnInfoMap.containsKey(objectClass)) {
             return columnInfoMap.get(objectClass);
         }
@@ -863,6 +859,8 @@ final class MetaData {
         // ensures meta data will be available
         String tableName = getTableName(objectClass, connection);
 
+        log.info("getPrimaryKeys for " + tableName);
+
         List<String> primaryKeys = new ArrayList<String>(4);
         Map<String, ColumnInfo> map = columnInfoMap.get(objectClass);
         for (ColumnInfo col : map.values()) {
@@ -874,7 +872,8 @@ final class MetaData {
     }
 
     // Currently only used by Insert so the only case tested here is getInt - Used to get the primary key value(s) after an insert.
-    <T> T getTypedValue(Class<T> type, java.sql.ResultSet rs, int column) throws SQLException {
+    // TODO code similar to read method in Session. Should merge
+    <T> T getTypedValue(Class<T> type, ResultSet rs, int column) throws SQLException, IOException {
         Object value = null;
         String tmp;
 
@@ -887,6 +886,12 @@ final class MetaData {
 
         switch (types) {
 
+            case UUIDType:
+                value = rs.getString(column);
+                if (value != null) {
+                    value = UUID.fromString("" + value);
+                }
+                break;
             case booleanType:
                 value = rs.getBoolean(column);
                 break;
@@ -929,7 +934,7 @@ final class MetaData {
             case DoubleType:
                 value = rs.getObject(column) == null ? null : rs.getDouble(column);
                 break;
-            case BigDecimalType:
+            case DecimalType:
                 value = rs.getObject(column) == null ? null : rs.getBigDecimal(column);
                 break;
             case StringType:
@@ -974,6 +979,16 @@ final class MetaData {
                 break;
             case ClobType:
                 value = rs.getClob(column);
+                InputStream in = ((Clob) value).getAsciiStream();
+                StringWriter write = new StringWriter();
+
+                int c = -1;
+                while ((c = in.read()) != -1) {
+                    write.write(c);
+                }
+                write.flush();
+                value = write.toString();
+
                 break;
             case BlobType:
                 value = rs.getBlob(column);

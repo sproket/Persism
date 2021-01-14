@@ -32,7 +32,7 @@ enum Types {
     FloatType(Float.class),
     doubleType(double.class),
     DoubleType(Double.class),
-    BigDecimalType(BigDecimal.class),
+    DecimalType(BigDecimal.class),
     StringType(String.class),
     characterType(char.class),
     CharacterType(Character.class),
@@ -63,6 +63,10 @@ enum Types {
         this.type = type;
     }
 
+    public Class getTypeClass() {
+        return type;
+    }
+
     public static <T> Types getType(Class<T> type) {
         for (Types t : values()) {
             if (t.type.equals(type)) {
@@ -73,7 +77,6 @@ enum Types {
     }
 
     public static Types convert(int sqlType) {
-
         Types result = null;
 
         switch (sqlType) {
@@ -87,7 +90,7 @@ enum Types {
 
             case java.sql.Types.NUMERIC:
             case java.sql.Types.DECIMAL:
-                result = BigDecimalType;
+                result = DecimalType;
                 break;
 
             case java.sql.Types.BIT:
@@ -112,6 +115,9 @@ enum Types {
                 break;
 
             case java.sql.Types.FLOAT:
+                result = FloatType;
+                break;
+
             case java.sql.Types.DOUBLE:
             case java.sql.Types.REAL:
                 result = DoubleType;
@@ -141,10 +147,22 @@ enum Types {
         }
 
         if (result == null) {
-            log.warn("SQL TYPE: " + sqlType + " not found ", new Throwable());
+            // Need this for converter
+            // https://stackoverflow.com/questions/36405320/using-the-datetimeoffset-datatype-with-jtds
+            if (sqlType == -155) {
+                // MSSQL type for DateTimeOffset
+                result = TimestampType;
+            } else {
+                log.warn("SQL TYPE: " + sqlType + " not found ", new Throwable());
+            }
         }
 
         return result;
+    }
+
+    public boolean isCountable() {
+        return this == IntegerType || this == integerType || this == LongType || this == longType
+                || this == ShortType || this == shortType || this == DoubleType || this == doubleType || this == DecimalType;
     }
 }
 

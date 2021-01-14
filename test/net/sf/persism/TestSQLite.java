@@ -65,6 +65,7 @@ public class TestSQLite extends BaseTest {
 
             order = DAOFactory.newOrder(con);
             order.setName("MOOO");
+            order.setPaid(false);
             session.insert(order);
 
             order = DAOFactory.newOrder(con);
@@ -89,6 +90,7 @@ public class TestSQLite extends BaseTest {
 
             order = list.get(2);
             assertEquals("name s/b MEOW", "MEOW", order.getName());
+            assertNull("paid s/b NULL", order.isPaid());
 
             order = list.get(3);
             assertEquals("name s/b PHHHH", "PHHHH", order.getName());
@@ -116,7 +118,7 @@ public class TestSQLite extends BaseTest {
             session.insert(customer);
         } catch (PersismException e) {
             nullKeyFail = true;
-            assertEquals("Should have constraint exception here", "java.sql.SQLException: [SQLITE_CONSTRAINT]  Abort due to constraint violation (Customers.Customer_ID may not be NULL)", e.getMessage());
+            assertEquals("Should have constraint exception here", "org.sqlite.SQLiteException: [SQLITE_CONSTRAINT_NOTNULL]  A NOT NULL constraint failed (NOT NULL constraint failed: Customers.Customer_ID)", e.getMessage());
         }
         assertTrue("null key should have failed", nullKeyFail);
 
@@ -133,7 +135,7 @@ public class TestSQLite extends BaseTest {
             session.insert(customer2);
         } catch (PersismException e) {
             dupFail = true;
-            assertEquals("Should have constraint exception here", "java.sql.SQLException: [SQLITE_CONSTRAINT]  Abort due to constraint violation (column Customer_ID is not unique)", e.getMessage());
+            assertEquals("Should have constraint exception here", "org.sqlite.SQLiteException: [SQLITE_CONSTRAINT_PRIMARYKEY]  A PRIMARY KEY constraint failed (UNIQUE constraint failed: Customers.Customer_ID)", e.getMessage());
         }
 
         assertTrue("duplicate key should fail", dupFail);
@@ -258,7 +260,7 @@ public class TestSQLite extends BaseTest {
     // TODO test copied from testH2 - need to move to common
     public void testTypes() {
         Statement st = null;
-        java.sql.ResultSet rs = null;
+        ResultSet rs = null;
 
         try {
 
@@ -301,7 +303,7 @@ public class TestSQLite extends BaseTest {
             session.insert(order);
             session.fetch(order);
 
-            // look at meta data columsn
+            // look at meta data columns
             columns = session.getMetaData().getColumns(Order.class, con);
             for (ColumnInfo columnInfo : columns.values()) {
                 log.info(columnInfo);
@@ -355,18 +357,20 @@ public class TestSQLite extends BaseTest {
         // This should work OK
         session.insert(junk);
 
-        session.fetch(junk);
+        log.warn(session.query(TableNoPrimary.class, "SELECT * FROM TableNoPrimary"));
 
+        boolean shouldFail = false;
 
-        // todo Should we ever be able to change the ID?  It doesn't work doing that.
-        junk.setName("JUNK2");
-        junk.setField4("MULP");
-
-
-
-        // this should work since we find primary key with annotation
-        session.update(junk);
-
+        junk.setName("NO WORKEE!");
+        try {
+            session.update(junk);
+        } catch (PersismException e) {
+            shouldFail = true;
+            assertEquals("Message s/b 'Cannot perform update. TABLENOPRIMARY has no primary keys.'",
+                    "Cannot perform update. TABLENOPRIMARY has no primary keys.",
+                    e.getMessage());
+        }
+        assertTrue(shouldFail);
     }
 
     public void testColumnDefaults() {

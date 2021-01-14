@@ -31,6 +31,8 @@ public final class Contact implements Persistable<Contact> {
     private String country;
     private Date dateAdded;
     private Date lastModified;
+    private float amountOwed;
+    private String notes;
 
     // for persistable
     private Contact originalValue;
@@ -171,6 +173,14 @@ public final class Contact implements Persistable<Contact> {
         this.lastModified = lastModified;
     }
 
+    public float getAmountOwed() {
+        return amountOwed;
+    }
+
+    public void setAmountOwed(float amountOwed) {
+        this.amountOwed = amountOwed;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) {
@@ -290,6 +300,14 @@ public final class Contact implements Persistable<Contact> {
     @Override
     public Contact getOriginalValue() {
         return originalValue;
+    }
+
+    public String getNotes() {
+        return notes;
+    }
+
+    public void setNotes(String notes) {
+        this.notes = notes;
     }
 
     @Override

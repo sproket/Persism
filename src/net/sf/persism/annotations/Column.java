@@ -25,17 +25,17 @@ public @interface Column {
      * It's only required if Persism cannot discover the column/property mapping on its own.
      * @return Name of the column mapped to the property.
      */
-    String value() default "";
+    String name() default "";
 
     /**
-     * Indicates if the column is generated in the database - like an auto increment field.
+     * Indicates if the column is an auto increment field.
      * This will tell Persism to exclude this column in
      * insert/update statements and to update the object with this value after an insert.
      * <p>
      * It's only required if Persism cannot detect this column attribute on its own.
-     * @return true if this column is generated.
+     * @return true if this column is autoIncrement.
      */
-    boolean generated() default false;
+    boolean autoIncrement() default false;
 
     /**
      * Indicates that this column is a primary key.

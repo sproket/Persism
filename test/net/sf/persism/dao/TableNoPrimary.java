@@ -12,7 +12,7 @@ import java.util.Date;
  */
 public class TableNoPrimary {
 
-    @Column(primary = true)
+    //@Column(primary = true)
     private int id;
 
     private String name;

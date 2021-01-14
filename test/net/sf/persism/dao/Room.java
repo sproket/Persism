@@ -15,10 +15,10 @@ import java.math.BigDecimal;
  */
 public final class Room {
 
-    @Column(value = "Room_No")
+    @Column(name = "Room_No")
     private int roomNo;
 
-    @Column(value = "Desc_E")
+    @Column(name = "Desc_E")
     private String description;
 
     private BigDecimal intervals;

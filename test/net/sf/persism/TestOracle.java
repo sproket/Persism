@@ -11,6 +11,7 @@ package net.sf.persism;
  */
 
 import net.sf.persism.dao.DAOFactory;
+import net.sf.persism.dao.OracleOrder;
 import net.sf.persism.dao.Order;
 import net.sf.persism.ddl.FieldDef;
 import net.sf.persism.ddl.TableDef;
@@ -64,10 +65,21 @@ public class TestOracle extends BaseTest {
 
             Order order = DAOFactory.newOrder(con);
             order.setName("MOO");
-
+            order.setPaid(true);
             session.insert(order);
             log.info(order);
             assertTrue("order # > 0", order.getId() > 0);
+
+            order = DAOFactory.newOrder(con);
+            order.setName("MOO2");
+            order.setPaid(false);
+            session.insert(order);
+
+            order = DAOFactory.newOrder(con);
+            order.setName("MOO3");
+            session.insert(order);
+
+            log.info(session.query(Order.class, "select * from ORDERS"));
 
         } catch (Exception e) {
             log.error(e.getMessage(), e);
@@ -143,12 +155,14 @@ end;
             commands.add("DROP SEQUENCE ORDERS_SEQ");
         }
 
+        // TODO Oracle BIT?
+        // https://stackoverflow.com/questions/2426145/oracles-lack-of-a-bit-datatype-for-table-columns#2427016
         commands.add("CREATE TABLE  \"ORDERS\" " +
                 "(\"ID\" INT, " +
                 "\"NAME\" VARCHAR2(50), " +
                 "\"ROW__ID\" VARCHAR2(10), " +
                 "\"CUSTOMER_ID\" VARCHAR(10), " +
-                "\"PAID\" NUMBER(1), " +
+                "\"PAID\" NUMBER(3), " +
                 "\"CREATED\" DATE, " +
 
                 " CONSTRAINT \"ORDERS_PK\" PRIMARY KEY (\"ID\") ENABLE" +
@@ -184,6 +198,8 @@ end;
                 " Fax VARCHAR(30) NULL, " +
                 " Date_Registered TIMESTAMP DEFAULT CURRENT_TIMESTAMP, " + // todo oracle timestamp results in a oracle specific class - FUCKEN ORACLE
                 //" Date_Registered DATE DEFAULT CURRENT_TIMESTAMP, " +
+                " SomeDouble NUMBER(38,2) NULL," +
+                " SomeInt NUMBER(38,2) NULL," +
                 " Date_Of_Last_Order DATE " +
                 ") ");
 
@@ -194,15 +210,11 @@ end;
 
         commands.add("CREATE TABLE TESTTIMESTAMP ( NAME VARCHAR(10), TS TIMESTAMP DEFAULT CURRENT_TIMESTAMP ) ");
 
-        try ( Statement st = con.createStatement() ) {
+        try (Statement st = con.createStatement()) {
 
             for (String command : commands) {
                 log.info(command);
-                try {
-                    st.executeUpdate(command);
-                } catch (Exception e) {
-                    log.warn(command + " -> " + e.getMessage());
-                }
+                st.executeUpdate(command);
             }
         }
     }

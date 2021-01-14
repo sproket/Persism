@@ -4,7 +4,7 @@ import net.sf.persism.annotations.Column;
 import net.sf.persism.annotations.TableName;
 
 /**
- * Oracle test for generating auto-inc.s
+ * Oracle test for generating auto-inc. Oracle does not detect auto inc so you have to spell it out...
  * Created by IntelliJ IDEA.
  * User: DHoward
  * Date: 9/21/11
@@ -14,8 +14,9 @@ import net.sf.persism.annotations.TableName;
 public final class OracleOrder extends Order {
 
     @Override
-    @Column(generated = true)
+    @Column(autoIncrement = true)
     public long getId() {
         return super.getId();
     }
+
 }

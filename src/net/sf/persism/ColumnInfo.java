@@ -16,8 +16,10 @@ final class ColumnInfo {
     // H2 - BIT - comes back NULL
     Types columnType;
 
+    int sqlColumnType;
+
     // indicates this column is generated. Only for Auto-Inc for now
-    boolean generated;
+    boolean autoIncrement;
 
     // Indicates this is primary key column
     boolean primary;
@@ -29,7 +31,8 @@ final class ColumnInfo {
         return "ColumnInfo{" +
                 "columnName='" + columnName + '\'' +
                 ", columnType=" + columnType +
-                ", generated=" + generated +
+                ", sqlColumnType=" + sqlColumnType +
+                ", autoIncrement=" + autoIncrement +
                 ", primary=" + primary +
                 ", hasDefault=" + hasDefault +
                 '}';

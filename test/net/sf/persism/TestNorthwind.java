@@ -285,7 +285,7 @@ public class TestNorthwind extends TestCase {
             orderDetail.setQuantity(0);
             orderDetail.setUnitPrice(null);
             session.fetch(orderDetail);
-            assertEquals("discount should be 0.23", "0.23", "" + orderDetail.getDiscount());
+            assertEquals("discount should be 0.23", "0.23", "" + orderDetail.getDiscount().setScale(2, BigDecimal.ROUND_HALF_EVEN));
             assertEquals("quantity should be 100", 100, orderDetail.getQuantity());
             assertEquals("unit price should be 10.3200", "10.3200", "" + orderDetail.getUnitPrice());
 

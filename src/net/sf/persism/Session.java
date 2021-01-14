@@ -16,6 +16,7 @@ import java.util.*;
 
 /**
  * Performs various read and write operations in the database.
+ *
  * @author Dan Howard
  * @since 1/8/2021
  */
@@ -145,9 +146,9 @@ public class Session {
             Map<String, PropertyInfo> properties = metaData.getTableColumns(object.getClass(), connection);
             Map<String, ColumnInfo> columns = metaData.getColumns(object.getClass(), connection);
 
-            List<String> generatedKeys = new ArrayList<String>(4);
+            List<String> generatedKeys = new ArrayList<String>(1);
             for (ColumnInfo column : columns.values()) {
-                if (column.generated) {
+                if (column.autoIncrement) {
                     generatedKeys.add(column.columnName);
                 }
             }
@@ -165,9 +166,7 @@ public class Session {
             for (ColumnInfo column : columns.values()) {
 
                 PropertyInfo propertyInfo = properties.get(column.columnName);
-
-                // todo is propertyInfo null ever? I don't think so. We only include columns where we know the property.
-                if (!column.generated) {
+                if (!column.autoIncrement) {
 
                     // TODO This condition is repeated 3 times. We need to rearrange this code.
                     // See MetaData getInsertStatement - Maybe we should return a new Object type for InsertStatement
@@ -231,9 +230,11 @@ public class Session {
 
                     if (setter != null) {
                         // todo do we really need to type these? Maybe if the DB uses a GUID?
+                        // todo MAYBE ? read() need to be updated to be like getTypedValue - make a common call for either usage OR USE convert() ?
                         Object value = metaData.getTypedValue(setter.getParameterTypes()[0], rs, 1);
+
                         if (log.isDebugEnabled()) {
-                            log.debug(column + " generated " + value);
+                            log.debug(column + " generated " + value); // HERE!
                             log.debug(setter);
                         }
                         setter.invoke(object, value);
@@ -301,7 +302,7 @@ public class Session {
     /**
      * Execute an arbitrary SQL statement.
      *
-     * @param sql sql string
+     * @param sql        sql string
      * @param parameters parameters
      */
     public void execute(String sql, Object... parameters) {
@@ -334,7 +335,7 @@ public class Session {
      * @param objectClass class of objects to return.
      * @param sql         query string to execute.
      * @param parameters  parameters to the query.
-     * @param <T> Return type
+     * @param <T>         Return type
      * @return a list of objects of the specified class using the specified SQL query and parameters.
      * @throws PersismException If something goes wrong you get a big stack trace.s
      */
@@ -434,8 +435,8 @@ public class Session {
      * Fetch an object from the database by primary key(s).
      *
      * @param objectClass class of objects to return
-     * @param primaryKey primary key value parameters
-     * @param <T> Return type
+     * @param primaryKey  primary key value parameters
+     * @param <T>         Return type
      * @return new instance of T or null if not found
      * @throws PersismException if something goes wrong
      */
@@ -456,7 +457,7 @@ public class Session {
      * @param sql         query - this would usually be a select OR a select of a single column if the type is a primitive.
      *                    If this is a primitive type then this method will only look at the 1st column in the result.
      * @param parameters  parameters to the query.
-     * @param <T> Return type
+     * @param <T>         Return type
      * @return value read from the database of type T or null if not found
      * @throws PersismException Well, this is a runtime exception so actually it could be anything really.
      */
@@ -500,6 +501,21 @@ public class Session {
     }
 
 
+    // Used for debugging for now
+    List<LinkedHashMap<String, Object>> query(ResultSet rs) throws SQLException {
+        List<LinkedHashMap<String, Object>> results = new ArrayList<LinkedHashMap<String, Object>>(32);
+
+        while (rs.next()) {
+            LinkedHashMap<String, Object> map = new LinkedHashMap<String, Object>(32);
+            int n = rs.getMetaData().getColumnCount();
+            for (int j = 1; j <= n; j++) {
+                map.put(rs.getMetaData().getColumnLabel(j), rs.getObject(j));
+            }
+            results.add(map);
+        }
+        return results;
+    }
+
     /**
      * Execute an arbut? Why bother? Why even put in Command?
      *
@@ -512,7 +528,6 @@ public class Session {
         Statement st = null;
         ResultSet rs = null;
 
-        List<LinkedHashMap<String, Object>> results = new ArrayList<LinkedHashMap<String, Object>>(32);
         try {
 
             if (parameters.length == 0) {
@@ -530,22 +545,12 @@ public class Session {
                 rs = pst.executeQuery();
             }
 
-
-            while (rs.next()) {
-                LinkedHashMap<String, Object> map = new LinkedHashMap<String, Object>(32);
-                int n = rs.getMetaData().getColumnCount();
-                for (int j = 1; j <= n; j++) {
-                    map.put(rs.getMetaData().getColumnLabel(j), rs.getObject(j));
-                }
-                results.add(map);
-            }
+            return query(rs);
         } catch (SQLException e) {
             throw new PersismException(e);
         } finally {
             Util.cleanup(st, rs);
         }
-
-        return results;
     }
 
     /*
@@ -612,7 +617,6 @@ public class Session {
             throw new PersismException("Object " + objectClass + " was not properly initialized. Some properties not found in the queried columns (" + sb + ").");
         }
 
-
         ResultSetMetaData rsmd = rs.getMetaData();
         int columnCount = rsmd.getColumnCount();
         List<String> foundColumns = new ArrayList<String>(columnCount);
@@ -661,8 +665,8 @@ public class Session {
     }
 
     private Object readPrimitive(ResultSet rs, int column, Class returnType) throws SQLException, IOException {
-        ResultSetMetaData resultSetMetaData = rs.getMetaData();
-        int sqlColumnType = resultSetMetaData.getColumnType(column);
+        ResultSetMetaData rsmd = rs.getMetaData();
+        int sqlColumnType = rsmd.getColumnType(column);
 
         Types columnType = Types.convert(sqlColumnType); // note this could be null if we can't match a type
         // Since there is no specific SQL column type for UUID we will use the return type to detect it.
@@ -671,9 +675,24 @@ public class Session {
             // it always returns a char or nvarchar so we'll just test and set it here. FFS.
             columnType = Types.UUIDType;
         }
-        String columnName = resultSetMetaData.getColumnLabel(column);
+        String columnName = rsmd.getColumnLabel(column);
 
+        Object value = read(rs, column, sqlColumnType);
+
+        // If value is null or column type is unknown - no need to try to convert anything.
+        if (value != null && columnType != null) {
+            value = convert(value, returnType, columnName);
+        }
+
+        return value;
+    }
+
+    // Make an educated guess read an object from the ResultSet to get the best Class type of the object
+    private Object read(ResultSet rs, int column, int sqlColumnType) throws SQLException, IOException {
         Object value;
+        Types columnType = Types.convert(sqlColumnType); // note this could be null if we can't match a type
+        // return metaData.getTypedValue(columnType.getTypeClass(), rs, column);
+
         if (columnType != null) {
             switch (columnType) {
 
@@ -693,14 +712,14 @@ public class Session {
                     write.flush();
                     value = write.toString();
                     break;
-                case BlobType:
-                    // todo BlobType
-                case InputStreamType:
-                    // todo InputStreamType
-                case ReaderType:
-                    // todo ReaderType
-                case EnumType:
-                    // todo EnumType?
+//                case BlobType:
+//                    // todo BlobType
+//                case InputStreamType:
+//                    // todo InputStreamType
+//                case ReaderType:
+//                    // todo ReaderType
+//                case EnumType:
+//                    // todo EnumType?
                 case UUIDType:
                     value = rs.getObject(column);
                     if (value != null) {
@@ -709,193 +728,212 @@ public class Session {
                     break;
                 case floatType:
                 case FloatType:
+                    value = rs.getFloat(column);
+                    break;
                 case doubleType:
                 case DoubleType:
-                    if (returnType.equals(java.math.BigDecimal.class)) {
-                        value = rs.getBigDecimal(column);
-                    } else if (returnType.equals(java.lang.Double.class)) {
-                        value = rs.getDouble(column);
-                    } else {
-                        value = rs.getFloat(column);
-                    }
+                    value = rs.getDouble(column);
                     break;
-
+                case DecimalType:
+                    value = rs.getBigDecimal(column);
+                    break;
                 default:
                     value = rs.getObject(column);
             }
 
         } else {
-            log.warn("Column type not known for SQL type " + sqlColumnType);
+            log.warn("Column type not known for SQL type " + sqlColumnType, new Throwable());
             value = rs.getObject(column);
-        }
-
-        // If value is null or column type is unknown - no need to try to convert anything.
-        if (value != null && columnType != null) {
-
-            Types valueType = Types.getType(value.getClass());
-
-            // try to convert or cast the value to the proper type.
-            // todo do code coverage for each specific type
-            switch (valueType) {
-
-                case booleanType:
-                case BooleanType:
-                    break;
-
-                case byteType:
-                case ByteType:
-                case shortType:
-                case ShortType:
-                case integerType:
-                case IntegerType:
-                    // int to bool
-                    if (returnType == Boolean.class || returnType == boolean.class) {
-                        value = (Integer.valueOf("" + value) == 0) ? false : true;
-                    }
-                    break;
-
-                case longType:
-                case LongType:
-                    // long to date
-                    if (returnType.isAssignableFrom(java.util.Date.class) || returnType.isAssignableFrom(java.sql.Date.class)) {
-                        long lval = Long.valueOf("" + value);
-
-                        if (returnType.equals(java.sql.Date.class)) {
-                            value = new java.sql.Date(lval);
-                        } else {
-                            value = new java.util.Date(lval);
-                        }
-                    } else if (returnType == Integer.class || returnType == int.class) {
-                        log.warn("Possible overflow column " + columnName + " - Property is INT and column value is LONG");
-                        value = Integer.parseInt("" + value);
-                    }
-
-                    break;
-
-                case floatType:
-                case FloatType:
-                    break;
-
-                case doubleType:
-                case DoubleType:
-                    // float or doubles to BigDecimal
-                    if (returnType == BigDecimal.class) {
-                        value = new BigDecimal("" + value);
-                    } else if (returnType == Float.class || returnType == float.class) {
-                        // todo add tests for this
-                        log.warn("Possible overflow column " + columnName + " - Property is FLOAT and column value is DOUBLE");
-                        value = Float.parseFloat("" + value);
-                    } else if (returnType == Integer.class || returnType == int.class) {
-                        log.warn("Possible overflow column " + columnName + " - Property is INT and column value is DOUBLE");
-                        String val = "" + value;
-                        if (val.contains(".")) {
-                            val = val.substring(0, val.indexOf("."));
-                        }
-                        value = Integer.parseInt(val);
-                    }
-                    break;
-
-                case BigDecimalType:
-                    // mostly oracle
-                    if (returnType == Float.class || returnType == float.class) {
-                        value = ((BigDecimal) value).floatValue();
-                    } else if (returnType == Double.class || returnType == double.class) {
-                        value = ((BigDecimal) value).doubleValue();
-                    } else if (returnType == Long.class || returnType == long.class) {
-                        value = ((BigDecimal) value).longValue();
-                    } else if (returnType == Integer.class || returnType == int.class) {
-                        value = ((BigDecimal) value).intValue();
-                    } else if (returnType == Boolean.class || returnType == boolean.class) {
-                        value = ((BigDecimal) value).intValue() == 1;
-                    }
-                    break;
-
-                case StringType:
-
-                    // Read a string but we want a date
-                    if (returnType.isAssignableFrom(java.util.Date.class) || returnType.isAssignableFrom(java.sql.Date.class)) {
-                        // This condition occurs in SQLite when you have a datetime with default annotated
-                        // the format returned is 2012-06-02 19:59:49
-                        java.util.Date dval = null;
-                        try {
-                            // Used for SQLite returning dates as Strings under some conditions
-                            DateFormat df = new SimpleDateFormat("yyyy-MM-DD hh:mm:ss");
-                            dval = df.parse("" + value);
-                        } catch (ParseException e) {
-                            String msg = e.getMessage() + ". Column: " + columnName + " Type of property: " + returnType + " - Type read: " + value.getClass() + " VALUE: " + value;
-                            throw new PersismException(msg, e);
-                        }
-
-                        if (returnType.equals(java.sql.Date.class)) {
-                            value = new java.sql.Date(dval.getTime());
-                        } else {
-                            value = dval;
-                        }
-
-                    } else if (returnType.isEnum()) {
-                        // If this is an enum do a case insensitive comparison
-                        Object[] enumConstants = returnType.getEnumConstants();
-                        for (Object element : enumConstants) {
-                            if (("" + value).equalsIgnoreCase(element.toString())) {
-                                value = element;
-                                break;
-                            }
-                        }
-                    }
-
-                    break;
-
-                case characterType:
-                case CharacterType:
-                    break;
-
-                case UtilDateType:
-                    break;
-                case SQLDateType:
-                    break;
-                case TimeType:
-                    break;
-
-                case TimestampType:
-                    if (returnType.isAssignableFrom(java.util.Date.class) || returnType.isAssignableFrom(java.sql.Date.class)) {
-                        if (returnType.equals(java.sql.Date.class)) {
-                            value = new java.sql.Date(((Timestamp) value).getTime());
-                        } else {
-                            value = new java.util.Date(((Timestamp) value).getTime());
-                        }
-                    } else {
-                        value = ((Timestamp) value).getTime();
-                    }
-
-                    break;
-
-                case byteArrayType:
-                    break;
-                case ByteArrayType:
-                    break;
-                case charArrayType:
-                    break;
-                case CharArrayType:
-                    break;
-                case ClobType:
-                    // Convert to string
-                    if (value != null) {
-                        value = "" + value;
-                    }
-                    break;
-                case BlobType:
-                    break;
-                case InputStreamType:
-                    break;
-                case ReaderType:
-                    break;
-                case EnumType:
-                    break;
-            }
         }
 
         return value;
     }
 
+    // Make a sensible conversion of the Value read from the DB and the property type defined on the Data class.
+    private Object convert(Object dbValue, Class propertyType, String columnName) {
+        Types valueType = Types.getType(dbValue.getClass());
+
+        // try to convert or cast the value to the proper type.
+        switch (valueType) {
+
+            case booleanType:
+            case BooleanType:
+                break;
+
+            case byteType:
+            case ByteType:
+            case shortType:
+            case ShortType:
+            case integerType:
+            case IntegerType:
+                // int to bool
+                if (propertyType == Boolean.class || propertyType == boolean.class) {
+                    dbValue = (Integer.valueOf("" + dbValue) == 0) ? false : true;
+                }
+                break;
+
+            case longType:
+            case LongType:
+                // long to date
+                if (propertyType.isAssignableFrom(java.util.Date.class) || propertyType.isAssignableFrom(java.sql.Date.class)) {
+                    long lval = Long.valueOf("" + dbValue);
+
+                    if (propertyType.equals(java.sql.Date.class)) {
+                        dbValue = new java.sql.Date(lval);
+                    } else {
+                        dbValue = new java.util.Date(lval);
+                    }
+                } else if (propertyType == Integer.class || propertyType == int.class) {
+                    log.warn("Possible overflow column " + columnName + " - Property is INT and column value is LONG");
+                    dbValue = Integer.parseInt("" + dbValue);
+                }
+
+                break;
+
+            case floatType:
+            case FloatType:
+                break;
+
+            case doubleType:
+            case DoubleType:
+                // float or doubles to BigDecimal
+                if (propertyType == BigDecimal.class) {
+                    dbValue = new BigDecimal("" + dbValue);
+                } else if (propertyType == Float.class || propertyType == float.class) {
+                    log.warn("Possible overflow column " + columnName + " - Property is FLOAT and column value is DOUBLE");
+                    dbValue = Float.parseFloat("" + dbValue);
+                } else if (propertyType == Integer.class || propertyType == int.class) {
+                    log.warn("Possible overflow column " + columnName + " - Property is INT and column value is DOUBLE");
+                    String val = "" + dbValue;
+                    if (val.contains(".")) {
+                        val = val.substring(0, val.indexOf("."));
+                    }
+                    dbValue = Integer.parseInt(val);
+                }
+                break;
+
+            case DecimalType:
+                if (propertyType == Float.class || propertyType == float.class) {
+                    dbValue = ((BigDecimal) dbValue).floatValue();
+                    log.warn("Possible overflow column " + columnName + " - Property is Float and column value is BigDecimal");
+                } else if (propertyType == Double.class || propertyType == double.class) {
+                    dbValue = ((BigDecimal) dbValue).doubleValue();
+                    log.warn("Possible overflow column " + columnName + " - Property is Double and column value is BigDecimal");
+                } else if (propertyType == Long.class || propertyType == long.class) {
+                    dbValue = ((BigDecimal) dbValue).longValue();
+                    log.warn("Possible overflow column " + columnName + " - Property is Long and column value is BigDecimal");
+                } else if (propertyType == Integer.class || propertyType == int.class) {
+                    dbValue = ((BigDecimal) dbValue).intValue();
+                    log.warn("Possible overflow column " + columnName + " - Property is Integer and column value is BigDecimal");
+                } else if (propertyType == Boolean.class || propertyType == boolean.class) {
+                    // BigDecimal to Boolean. Oracle (sigh) - todo probably we should have a Char to Boolean as well then (see TestOracle for links)
+                    dbValue = ((BigDecimal) dbValue).intValue() == 1;
+                    log.warn("Possible overflow column " + columnName + " - Property is Boolean and column value is BigDecimal - seems a bit overkill?");
+                }
+                break;
+
+            case StringType:
+
+                // Read a string but we want a date
+                if (propertyType.isAssignableFrom(java.util.Date.class) || propertyType.isAssignableFrom(java.sql.Date.class)) {
+                    // This condition occurs in SQLite when you have a datetime with default annotated
+                    // the format returned is 2012-06-02 19:59:49
+                    java.util.Date dval = null;
+                    try {
+                        // Used for SQLite returning dates as Strings under some conditions
+                        DateFormat df = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss");
+                        dval = df.parse("" + dbValue);
+                    } catch (ParseException e) {
+                        String msg = e.getMessage() + ". Column: " + columnName + " Type of property: " + propertyType + " - Type read: " + dbValue.getClass() + " VALUE: " + dbValue;
+                        throw new PersismException(msg, e);
+                    }
+
+                    if (propertyType.equals(java.sql.Date.class)) {
+                        dbValue = new java.sql.Date(dval.getTime());
+                    } else {
+                        dbValue = dval;
+                    }
+
+                } else if (propertyType.isAssignableFrom(java.sql.Timestamp.class)) {
+                    // String to timestamp?
+                    // value = new Timestamp()
+                    java.util.Date dval = null;
+                    DateFormat df = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss");
+                    try {
+                        dval = df.parse("" + dbValue);
+                        dbValue = new Timestamp(dval.getTime());
+                    } catch (ParseException e) {
+                        String msg = e.getMessage() + ". Column: " + columnName + " Type of property: " + propertyType + " - Type read: " + dbValue.getClass() + " VALUE: " + dbValue;
+                        throw new PersismException(msg, e);
+                    }
+
+                } else if (propertyType.isEnum()) {
+                    // If this is an enum do a case insensitive comparison
+                    Object[] enumConstants = propertyType.getEnumConstants();
+                    for (Object element : enumConstants) {
+                        if (("" + dbValue).equalsIgnoreCase(element.toString())) {
+                            dbValue = element;
+                            break;
+                        }
+                    }
+                } else if (propertyType.equals(UUID.class)) {
+                    dbValue = UUID.fromString("" + dbValue);
+                }
+
+                break;
+
+            case characterType:
+            case CharacterType:
+                break;
+
+            case UtilDateType:
+            case SQLDateType:
+                break;
+
+            case TimeType:
+                break;
+
+            case TimestampType:
+                if (propertyType.isAssignableFrom(java.util.Date.class) || propertyType.isAssignableFrom(java.sql.Date.class)) {
+                    if (propertyType.equals(java.sql.Date.class)) {
+                        dbValue = new java.sql.Date(((Timestamp) dbValue).getTime());
+                    } else {
+                        dbValue = new java.util.Date(((Timestamp) dbValue).getTime());
+                    }
+                } else if (propertyType.isAssignableFrom(java.sql.Timestamp.class)) {
+                    // Value is already a Timestamp - do nothing
+                } else {
+                    dbValue = ((Timestamp) dbValue).getTime();
+                }
+
+                break;
+
+            case byteArrayType:
+            case ByteArrayType:
+                break;
+
+            case charArrayType:
+            case CharArrayType:
+                break;
+
+            case ClobType:
+                // Convert to string
+                if (dbValue != null) {
+                    dbValue = "" + dbValue;
+                }
+                break;
+            case BlobType:
+                break;
+            case InputStreamType:
+                break;
+            case ReaderType:
+                break;
+            case EnumType:
+                break;
+            case UUIDType:
+                break;
+        }
+        return dbValue;
+    }
 
 }

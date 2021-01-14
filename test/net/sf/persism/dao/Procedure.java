@@ -17,19 +17,19 @@ import java.util.Date;
 @TableName("EXAMCODE")
 public final class Procedure extends PersistableObject<Procedure> {
 
-    @Column("ExamCode_No")
+    @Column(name = "ExamCode_No")
     private int examCodeNo;
 
-    @Column("Desc_E")
+    @Column(name = "Desc_E")
     private String description;
 
-    @Column("ExamType_No")
+    @Column(name = "ExamType_No")
     private int modalityId;
 
     private String professionalFeeCode;
     private String technicalFeeCode;
 
-    @Column(value = "AccompanyingExamCode_No", primary = false)
+    @Column(name = "AccompanyingExamCode_No", primary = false)
     private int accompanyingProcedureId;
 
     private BigDecimal points;

@@ -22,13 +22,13 @@ public class Author {
 	[contract] [bit] NOT NULL,
      */
 
-    @Column(value = "aU_iD") // fuck up case
+    @Column(name = "aU_iD") // fuck up case
     private String authorId;
 
-    @Column(value = "au_LNAME")
+    @Column(name = "au_LNAME")
     private String lastName;
 
-    @Column(value = "au_FNAME")
+    @Column(name = "au_FNAME")
     private String firstName;
 
     private String phone;
@@ -36,7 +36,7 @@ public class Author {
     private String city;
     private String state;
 
-    @Column(value = "zIp")
+    @Column(name = "zIp")
     private String postalCode;
 
     private boolean contract;

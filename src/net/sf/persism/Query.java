@@ -442,7 +442,7 @@ public final class Query {
                     }
                     break;
 
-                case BigDecimalType:
+                case DecimalType:
                     // mostly oracle
                     if (returnType == Float.class || returnType == float.class) {
                         value = ((BigDecimal) value).floatValue();
@@ -466,7 +466,7 @@ public final class Query {
                         Date dval = null;
                         try {
                             // Used for SQLite returning dates as Strings under some conditions
-                            DateFormat df = new SimpleDateFormat("yyyy-MM-DD hh:mm:ss");
+                            DateFormat df = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss");
                             dval = df.parse("" + value);
                         } catch (ParseException e) {
                             String msg = e.getMessage() + ". Column: " + columnName + " Type of property: " + returnType + " - Type read: " + value.getClass() + " VALUE: " + value;
@@ -613,7 +613,7 @@ public final class Query {
                 Date dval = null;
                 try {
                     // Used for SQLite returning dates as Strings under some conditions
-                    DateFormat df = new SimpleDateFormat("yyyy-MM-DD hh:mm:ss");
+                    DateFormat df = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss");
                     dval = df.parse("" + value);
                 } catch (ParseException e) {
                     String msg = e.getMessage() + ". Column: " + columnName + " Type of property: " + returnType + " - Type read: " + value.getClass() + " VALUE: " + value;

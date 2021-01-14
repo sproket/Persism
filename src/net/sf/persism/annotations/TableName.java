@@ -15,6 +15,7 @@ import java.lang.annotation.Target;
 /**
  * Defines the table name for a given class. This annotation is optional since Persism can detect the table name
  * from the class in most situations.
+ * todo rename to Table
  */
 @Retention(value = RetentionPolicy.RUNTIME)
 @Target(ElementType.TYPE)

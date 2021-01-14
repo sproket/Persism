@@ -8,31 +8,20 @@ package net.sf.persism;
  */
 
 import net.sf.persism.dao.*;
-import org.apache.commons.dbcp.ConnectionFactory;
-import org.apache.commons.dbcp.DriverManagerConnectionFactory;
-import org.apache.commons.dbcp.PoolableConnectionFactory;
-import org.apache.commons.dbcp.PoolingDataSource;
-import org.apache.commons.pool.impl.GenericObjectPool;
-import org.junit.AfterClass;
-
-import javax.sql.DataSource;
-import java.io.File;
-import java.io.InputStream;
 import java.sql.*;
 import java.sql.Date;
 import java.util.*;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 
 public class TestMSSQL extends BaseTest {
 
     private static final Log log = Log.getLogger(TestMSSQL.class);
 
     protected void setUp() throws Exception {
+         //BaseTest.mssqlmode = false; // to run in JTDS MODE
         super.setUp();
-        log.error("SQLMODE?" + BaseTest.mssqlmode);
+        log.error("SQLMODE? " + BaseTest.mssqlmode);
         con = MSSQLDataSource.getInstance().getConnection();
+        log.info("PRODUCT? " + con.getMetaData().getDriverName() + " - " + con.getMetaData().getDriverVersion());
 
         createTables();
 
@@ -338,12 +327,23 @@ public class TestMSSQL extends BaseTest {
     }
 
 
-    public void testContactWithKeyworkdFieldName() {
+    public void testTableWithKeyworkdFieldName() {
+        try {
+            session.execute("ALTER TABLE [Contacts] DROP CONSTRAINT [DF_Contacts_identity]");
+        } catch (Exception e) {
+            log.warn(e);
+        }
+        try {
+            session.execute("ALTER TABLE [Contacts] DROP CONSTRAINT [PK_Contacts]");
+        } catch (Exception e) {
+            log.warn(e);
+        }
         try {
             session.execute("DROP TABLE Contacts");
         } catch (Exception e) {
             log.warn(e);
         }
+
         String sql = "CREATE TABLE [dbo].[Contacts]( " +
                 " [identity] [uniqueidentifier] NOT NULL, " +
                 " [PartnerID] [uniqueidentifier] NULL, " +
@@ -361,14 +361,23 @@ public class TestMSSQL extends BaseTest {
                 " [ZipPostalCode] [varchar](10) NULL, " +
                 " [Country] [nvarchar](50) NULL, " +
                 " [DateAdded] [smalldatetime] NULL, " +
-                " [LastModified] [smalldatetime] NULL " +
-                " ) ";
+                " [LastModified] [smalldatetime] NULL, " +
+                " [Notes] [text] NULL, " +
+                " [AmountOwed] [float] NULL, " +
+                "CONSTRAINT [PK_Contacts] PRIMARY KEY CLUSTERED " +
+                "  (" +
+                "   [identity] ASC " +
+                "  ) WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY] " +
+                ") ON [PRIMARY] ";
 
         session.execute(sql);
 
-        UUID id = UUID.randomUUID();
+        sql = "ALTER TABLE [dbo].[Contacts] ADD  CONSTRAINT [DF_Contacts_identity]  DEFAULT (newid()) FOR [identity]";
+        session.execute(sql);
+
+        // Insert don't specify any GUID - WE HAVE TO.
         Contact contact = new Contact();
-        contact.setIdentity(id);
+        contact.setIdentity(UUID.randomUUID());
         contact.setFirstname("Fred");
         contact.setLastname("Flintstone");
         contact.setDivision("DIVISION X");
@@ -381,19 +390,50 @@ public class TestMSSQL extends BaseTest {
         contact.setCity("Philly?");
         contact.setType("X");
         contact.setDateAdded(new Date(System.currentTimeMillis()));
+        contact.setAmountOwed(100.23f);
+        contact.setNotes("B:AH B:AH VBLAH\r\n BLAH BLAY!");
         session.insert(contact);
 
-        System.out.println(session.query(Contact.class, "select * from Contacts"));
+        log.info("contact after insert: " + contact);
+
+        // Insert specify GUID
+        contact = new Contact();
+//        contact.setIdentity(UUID.randomUUID());
+        contact.setFirstname("Barney");
+        contact.setLastname("Rubble");
+        contact.setDivision("DIVISION X");
+        contact.setLastModified(new Date(System.currentTimeMillis() - 100000000l));
+        contact.setContactName("Fred Flintstone");
+        contact.setAddress1("123 Sesame Street");
+        contact.setAddress2("Appt #0 (garbage can)");
+        contact.setCompany("Grouch Inc");
+        contact.setCountry("US");
+        contact.setCity("Philly?");
+        contact.setType("X");
+        contact.setDateAdded(new Date(System.currentTimeMillis()));
+        contact.setAmountOwed(100.23f);
+        contact.setNotes("B:AH B:AH VBLAH\r\n BLAH BLAY!");
+
+        log.warn("BEFORE " + contact);
+        // todo add test to make sure UUID doesn't get chganged.
+        session.insert(contact);
+        log.warn("AFTER " + contact);
+
+        log.info(session.query(Contact.class, "select * from Contacts"));
 
         session.fetch(contact);
 
         contact.setDivision("DIVISION Y");
         session.update(contact);
 
+        log.warn(contact.getNotes());
 
     }
 
     public void testDetectAutoInc() {
+
+        DumbTableStringAutoInc dumb = new DumbTableStringAutoInc();
+        session.insert(dumb);
 
         // query = new Query(con);
         try {
@@ -409,6 +449,44 @@ public class TestMSSQL extends BaseTest {
             fail(e.getMessage());
         }
 
+    }
+
+    public void testDateTimeOffset() {
+        /*
+        Notes:
+            JTDS 1.2.5, 1.3.1 reads value as TimeStamp SQL TYPE 93
+            MSSQL Driver reads reads value as -155 Not defined in java.sql.Types !
+            See our Types class - we'll just check for that and set it as a TimeStamp to be consistent with JTDS
+
+            To convert back see.
+            https://stackoverflow.com/questions/36405320/using-the-datetimeoffset-datatype-with-jtds
+         */
+        try {
+
+
+            User user = new User();
+            user.setDepartment(2);
+            user.setName("test 1");
+            user.setTypeOfUser("X");
+            user.setStatus("Z");
+            user.setUserName("ABC");
+
+            session.insert(user);
+
+            log.info(user);
+
+//            user = new User();
+//            user.setDepartment(2);
+//            user.setName("test 2");
+//            user.setTypeOfUser("X");
+//            user.setStatus("Z");
+//            user.setUserName("XYZ");
+//            user.setSomeDate();
+
+        } catch (Exception e) {
+            log.error(e.getMessage(), e);
+            fail(e.getMessage());
+        }
     }
 
     // todo test against pinf-win machine instead.
@@ -489,6 +567,13 @@ public class TestMSSQL extends BaseTest {
                 " Field4 VARCHAR(30), " +
                 " Field5 DATETIME " +
                 ") ");
+
+        if (UtilsForTests.isTableInDatabase("DumbTableStringAutoInc", con)) {
+            commands.add("DROP TABLE DumbTableStringAutoInc");
+        }
+
+        commands.add("CREATE TABLE DumbTableStringAutoInc ( " +
+                " ID VARCHAR(10) )" );
 
         try {
             st = con.createStatement();
