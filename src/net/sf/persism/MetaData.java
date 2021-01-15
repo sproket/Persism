@@ -49,7 +49,7 @@ final class MetaData {
     //    private Map<Class, List<String>> primaryKeysMap = new ConcurrentHashMap<Class, List<String>>(32); // remove later maybe?
 
     // list of tables in the DB mapped to the connection URL string
-    private List<String> tableNames = new ArrayList<String>(32);
+    private Set<String> tableNames = new TreeSet<>(String.CASE_INSENSITIVE_ORDER);
 
     // Map of table names + meta data
     private Map<String, TableInfo> tableInfoMap = new ConcurrentHashMap<String, TableInfo>(32);
@@ -84,14 +84,6 @@ final class MetaData {
         log.info("MetaData getting instance " + url);
         return metaData.get(url);
     }
-
-    // Unit tests
-    static synchronized void removeInstance(Connection con) throws SQLException {
-        String url = con.getMetaData().getURL();
-        log.info("removing " + url);
-        metaData.remove(url);
-    }
-
 
     // Should only be called IF the map does not contain the column meta information yet.
     // Version for Tables
@@ -234,7 +226,7 @@ final class MetaData {
                             if (!columnInfo.columnType.isCountable()) {
                                 columnInfo.autoIncrement = false;
                                 // TODO should this be a PersismException?
-                                log.warn("Column " + columnInfo.columnName + " is annotated as autoIncrement but is a non numeric type (" + columnInfo.columnType+") - Ignoring.");
+                                log.warn("Column " + columnInfo.columnName + " is annotated as autoIncrement but is a non numeric type (" + columnInfo.columnType + ") - Ignoring.");
                             }
                         }
 
@@ -548,7 +540,7 @@ final class MetaData {
             return insertStatement;
 
         } catch (Exception e) {
-            throw new PersismException(e);
+            throw new PersismException(e.getMessage(), e);
         }
     }
 
@@ -766,79 +758,28 @@ final class MetaData {
 
         // todo NOTE that the annotation name may not match the case of the tablename in the DB.
         String tableName;
-        Annotation annotation = objectClass.getAnnotation(Table.class);
+        Table annotation = objectClass.getAnnotation(Table.class);
         if (annotation != null) {
-            tableName = ((Table) annotation).value();
+            tableName = annotation.value();
         } else {
             tableName = guessTableName(objectClass);
         }
         tableMap.put(objectClass, tableName);
-
-        // determine table meta data at this point
         return tableName;
     }
 
     // Returns the table name found in the DB in the same case as in the DB.
     // throws PersismException if we cannot guess any table name for this class.
     private <T> String guessTableName(Class<T> objectClass) throws PersismException {
-        List<String> guesses = new ArrayList<String>(6);
+        Set<String> guesses = new LinkedHashSet<>(6); // guess order is important
         List<String> guessedTables = new ArrayList<String>(6);
 
         String className = objectClass.getSimpleName();
 
-        { // this block is because 'guess' string is also used in the for loop below
-            String guess;
-            if (className.endsWith("y")) {
-                guess = className.substring(0, className.length() - 1) + "ies";
-                guesses.add(guess);
-
-                guess = Util.camelToTitleCase(guess);
-                if (!guesses.contains(guess)) {
-                    guesses.add(guess);
-                }
-
-                guess = Util.replaceAll(guess, ' ', '_');
-                if (!guesses.contains(guess)) {
-                    guesses.add(guess);
-                }
-            } else {
-                guess = className + "s";
-                guesses.add(guess);
-                guess = Util.camelToTitleCase(guess);
-                if (!guesses.contains(guess)) {
-                    guesses.add(guess);
-                }
-                guess = Util.replaceAll(guess, ' ', '_');
-                if (!guesses.contains(guess)) {
-                    guesses.add(guess);
-                }
-            }
-            guesses.add(className);
-            guess = Util.camelToTitleCase(className);
-            if (!guesses.contains(guess)) {
-                guesses.add(guess);
-            }
-            guess = Util.replaceAll(guess, ' ', '_');
-            if (!guesses.contains(guess)) {
-                guesses.add(guess);
-            }
-        }
-
-        boolean exactMatchFound = false;
-
+        addTableGuesses(className, guesses);
         for (String tableName : tableNames) {
-            if (exactMatchFound) {
-                break;
-            }
             for (String guess : guesses) {
                 if (guess.equalsIgnoreCase(tableName)) {
-                    guessedTables.clear();
-                    guessedTables.add(tableName);
-                    exactMatchFound = true;
-                    break; // exact match
-                }
-
-                if (tableName.toLowerCase().contains(guess)) {
                     guessedTables.add(tableName);
                 }
             }
@@ -850,8 +791,38 @@ final class MetaData {
         if (guessedTables.size() > 1) {
             throw new PersismException("Could not determine a table for type: " + objectClass.getName() + " Guesses were: " + guesses + " and we found multiple matching tables: " + guessedTables);
         }
-
         return guessedTables.get(0);
+    }
+
+    private void addTableGuesses(String className, Collection<String> guesses) {
+        // PascalCasing class name should make
+        // PascalCasing
+        // PascalCasings
+        // Pascal Casing
+        // Pascal Casings
+        // Pascal_Casing
+        // Pascal_Casings
+        // Order is important.
+
+        String guess;
+        String pluralClassName;
+
+        if (className.endsWith("y")) {
+            pluralClassName = className.substring(0, className.length() - 1) + "ies";
+        } else {
+            pluralClassName = className + "s";
+        }
+
+        guesses.add(className);
+        guesses.add(pluralClassName);
+
+        guess = Util.camelToTitleCase(className);
+        guesses.add(guess); // name with spaces
+        guesses.add(Util.replaceAll(guess, ' ', '_')); // name with spaces changed to _
+
+        guess = Util.camelToTitleCase(pluralClassName);
+        guesses.add(guess); // plural name with spaces
+        guesses.add(Util.replaceAll(guess, ' ', '_')); // plural name with spaces changed to _
     }
 
     List<String> getPrimaryKeys(Class objectClass, Connection connection) throws PersismException {

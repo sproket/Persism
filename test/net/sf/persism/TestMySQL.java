@@ -16,6 +16,7 @@ public class TestMySQL extends BaseTest {
 
     private static final Log log = Log.getLogger(TestMySQL.class);
 
+    // TODO same as MSSQL - add a flag to use mariadb driver - see downloads folder
     protected void setUp() throws Exception {
 
         super.setUp();

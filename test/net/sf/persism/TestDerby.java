@@ -21,9 +21,6 @@ public class TestDerby extends BaseTest {
     private static final Log log = Log.getLogger(TestDerby.class);
 
 
-    String home;
-
-
     @Override
     public void setUp() throws Exception {
         super.setUp();
@@ -32,7 +29,7 @@ public class TestDerby extends BaseTest {
         props.load(getClass().getResourceAsStream("/derby.properties"));
         Class.forName(props.getProperty("database.driver")).newInstance(); // derby needs new instance....
 
-        home = UtilsForTests.createHomeFolder("pinfderby");
+        String home = UtilsForTests.createHomeFolder("pinfderby");
         String url = UtilsForTests.replace(props.getProperty("database.url"), "{$home}", home);
         log.info(url);
 

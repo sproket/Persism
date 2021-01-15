@@ -1,31 +1,126 @@
 /**
  * Comments for TestMetaData go here.
+ *
  * @author Dan Howard
  * @since 7/31/13 6:31 AM
  */
 package net.sf.persism;
 
-import junit.framework.TestCase;
-
+import java.sql.DriverManager;
+import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.*;
 
-public class TestMetaData extends TestCase {
+public final class TestMetaData extends BaseTest {
     private static final Log log = Log.getLogger(TestMetaData.class);
 
     protected void setUp() throws Exception {
         super.setUp();
+
+        Properties props = new Properties();
+        props.load(getClass().getResourceAsStream("/derby.properties"));
+        Class.forName(props.getProperty("database.driver")).newInstance(); // derby needs new instance....
+
+        String home = UtilsForTests.createHomeFolder("pinfderby");
+        String url = UtilsForTests.replace(props.getProperty("database.url"), "{$home}", home);
+        log.info(url);
+
+        con = DriverManager.getConnection(url);
+
+        createTables();
+
+        session = new Session(con);
+
     }
 
     protected void tearDown() throws Exception {
         super.tearDown();
     }
 
+    @Override
+    protected void createTables() throws SQLException {
+        List<String> commands = new ArrayList<String>(12);
+        String sql;
+        if (UtilsForTests.isTableInDatabase("TestDerby", con)) {
+            sql = "DROP TABLE TestDerby";
+            commands.add(sql);
+        }
+        if (UtilsForTests.isTableInDatabase("Test_Derby", con)) {
+            sql = "DROP TABLE Test_Derby";
+            commands.add(sql);
+        }
+        if (UtilsForTests.isTableInDatabase("DB_TEST_DERBY", con)) {
+            sql = "DROP TABLE DB_TEST_DERBY";
+            commands.add(sql);
+        }
+
+        sql = "CREATE TABLE TestDerby ( " +
+                "ID INTEGER NOT NULL GENERATED ALWAYS AS IDENTITY (START WITH 1, INCREMENT BY 1) " +
+                ") ";
+
+        commands.add(sql);
+
+        sql = "CREATE TABLE Test_Derby ( " +
+                "ID INTEGER NOT NULL GENERATED ALWAYS AS IDENTITY (START WITH 1, INCREMENT BY 1) " +
+                ") ";
+
+        commands.add(sql);
+
+        sql = "CREATE TABLE DB_Test_Derby ( " +
+                "ID INTEGER NOT NULL GENERATED ALWAYS AS IDENTITY (START WITH 1, INCREMENT BY 1) " +
+                ") ";
+
+        commands.add(sql);
+
+
+        try (Statement st = con.createStatement()) {
+
+            for (String command : commands) {
+                st.execute(command);
+
+            }
+        }
+    }
+
+    public void testGuessing() throws SQLException {
+
+        // catch the 2 guess exceptions
+        /*
+            throw new PersismException("Could not determine a table for type: " + objectClass.getName() + " Guesses were: " + guesses);
+            throw new PersismException("Could not determine a table for type: " + objectClass.getName() + " Guesses were: " + guesses + " and we found multiple matching tables: " + guessedTables);
+         */
+        // Note I just picked 2 rando classes to try to use TestMetaData and TestDerby.
+        // It could be any old class that doesn't make sense to insert into a database.
+        boolean failed = false;
+        try {
+            session.insert(new TestMetaData());
+        } catch (PersismException e) {
+            failed = true;
+            assertEquals("Message s/b 'Could not determine a table for type: net.sf.persism.TestMetaData Guesses were: [TestMetaData, TestMetaDatas, Test Meta Data, Test_Meta_Data, Test Meta Datas, Test_Meta_Datas]'",
+                    "Could not determine a table for type: net.sf.persism.TestMetaData Guesses were: [TestMetaData, TestMetaDatas, Test Meta Data, Test_Meta_Data, Test Meta Datas, Test_Meta_Datas]",
+                    e.getMessage());
+        }
+        assertTrue(failed);
+
+        failed = false;
+        try {
+            session.insert(new TestDerby());
+        } catch (PersismException e) {
+            failed = true;
+            assertEquals("Message s/b 'Could not determine a table for type: net.sf.persism.TestDerby Guesses were: [TestDerby, TestDerbies, Test Derby, Test_Derby, Test Derbies, Test_Derbies] and we found multiple matching tables: [TEST_DERBY, TESTDERBY]'",
+                    "Could not determine a table for type: net.sf.persism.TestDerby Guesses were: [TestDerby, TestDerbies, Test Derby, Test_Derby, Test Derbies, Test_Derbies] and we found multiple matching tables: [TEST_DERBY, TESTDERBY]",
+                    e.getMessage());
+        }
+        assertTrue(failed);
+    }
+
+
     public void testNamedParams() {
         try {
-            HashMap indexMap=new HashMap();
+            HashMap indexMap = new HashMap();
 
             String query = "select * from people where (first_name = :name or last_name = :name) and address = :address";
-            String parsedQuery=parse(query, indexMap);
+            String parsedQuery = parse(query, indexMap);
             log.info(parsedQuery);
             log.info(indexMap);
 
@@ -33,6 +128,7 @@ public class TestMetaData extends TestCase {
             log.error(e.getMessage(), e);
             fail(e.getMessage());
         }
+
 
     }
 
@@ -50,7 +146,7 @@ public class TestMetaData extends TestCase {
      * @param paramMap map to hold parameter-index mappings
      * @return the parsed query
      */
-    static final String parse(String query, Map paramMap) {
+    static String parse(String query, Map paramMap) {
         // I was originally using regular expressions, but they didn't work well
         // for ignoring parameter-like strings inside quotes.
         int length = query.length();
@@ -111,5 +207,35 @@ public class TestMetaData extends TestCase {
         }
 
         return parsedQuery.toString();
+    }
+
+    @Override
+    public void testDates() {
+        // comes from BaseTest - we don't need it here
+    }
+
+    @Override
+    public void testStoredProcs() {
+        // comes from BaseTest - we don't need it here
+    }
+
+    @Override
+    public void testRefreshObject() {
+        // comes from BaseTest - we don't need it here
+    }
+
+    @Override
+    public void testQueryWithSpecificColumnsWhereCaseDoesNotMatch() throws SQLException {
+        // comes from BaseTest - we don't need it here
+    }
+
+    @Override
+    public void testQueryResult() {
+        // comes from BaseTest - we don't need it here
+    }
+
+    @Override
+    public void testReadPrimitive() {
+        // comes from BaseTest - we don't need it here
     }
 }

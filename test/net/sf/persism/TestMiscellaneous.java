@@ -1,8 +1,16 @@
 package net.sf.persism;
 
+import com.mysql.jdbc.Connection;
+import com.mysql.jdbc.ExceptionInterceptor;
+import com.mysql.jdbc.Extension;
+import com.mysql.jdbc.MySQLConnection;
 import junit.framework.TestCase;
 
 import java.sql.*;
+import java.util.Map;
+import java.util.Properties;
+import java.util.TimeZone;
+import java.util.concurrent.Executor;
 
 public class TestMiscellaneous extends TestCase {
 
@@ -16,7 +24,7 @@ public class TestMiscellaneous extends TestCase {
         super.tearDown();
     }
 
-    public void testUnknownConnection() throws Exception {
-        // this no longer fails. We just do log warn
+    public static void testSomething() {
+
     }
 }
