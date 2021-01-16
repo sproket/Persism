@@ -4,9 +4,6 @@ import net.sf.persism.annotations.Column;
 import net.sf.persism.annotations.NotMapped;
 import net.sf.persism.annotations.Table;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.StringWriter;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
@@ -424,7 +421,7 @@ final class MetaData {
             if (changedColumns.size() == 0) {
                 throw new PersismException("No Changes detected in " + object.getClass());
             }
-            // Note we don't not add Persistable updates to updateStatementsMap since they will be different all the time.
+            // Note we don't not add Persistable updates to updateStatementsMap since they will be different each time.
             String sql = buildUpdateString(object, changedColumns.keySet().iterator(), connection);
             if (log.isDebugEnabled()) {
                 log.debug("getUpdateStatement for " + object.getClass() + " for changed fields is " + sql);
@@ -529,8 +526,8 @@ final class MetaData {
                 log.debug("determineInsertStatement for " + object.getClass() + " is " + insertStatement);
             }
 
-            // Do not put this insert statement into the map if any columns have defaults. or primary key as string was
-            // set on object because the insert statement is variable.
+            // Do not put this insert statement into the map if any columns have defaults
+            // because the insert statement will vary by different instances of the data object.
             if (saveInMap) {
                 insertStatementsMap.put(object.getClass(), insertStatement);
             } else {
@@ -647,7 +644,6 @@ final class MetaData {
         List<String> primaryKeys = getPrimaryKeys(object.getClass(), connection);
 
         StringBuilder sb = new StringBuilder();
-        sb.setLength(0);
         sb.append("UPDATE ").append(sd).append(tableName).append(ed).append(" SET ");
         String sep = "";
 

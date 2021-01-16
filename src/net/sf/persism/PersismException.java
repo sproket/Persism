@@ -5,15 +5,17 @@ package net.sf.persism;
  *
  * @author Dan Howard
  * @since 9/8/11 6:41 AM
+ * @version %I%, %G%
+ *
  */
-public class PersismException extends RuntimeException {
+public final class PersismException extends RuntimeException {
 
     private static final long serialVersionUID = 3629404706918664936L;
 
-    public PersismException() {
+    private PersismException() {
     }
 
-    public PersismException(String message) {
+    public  PersismException(String message) {
         super(message, new Throwable(message));
     }
 
