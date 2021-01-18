@@ -1,5 +1,6 @@
 /**
  * Comments for TestH2 go here.
+ *
  * @author Dan Howard
  * @since 9/25/11 8:04 AM
  */
@@ -223,6 +224,16 @@ public class TestH2 extends BaseTest {
             session.insert(order);
             session.fetch(order);
 
+            Order order2 = DAOFactory.newOrder(con);
+            order2.setCustomerId("456");
+            order2.setName("name");
+            order2.setPaid(true);
+
+            assertNull("created is null", order2.getCreated());
+            session.insert(order2);
+
+            assertNotNull("created is not null", order2.getCreated());
+
             // look at meta data columsn
             columns = session.getMetaData().getColumns(Order.class, con);
             for (ColumnInfo columnInfo : columns.values()) {
@@ -247,12 +258,10 @@ public class TestH2 extends BaseTest {
         DatabaseMetaData dmd = null;
         try {
             dmd = con.getMetaData();
-//            rs = dmd.getColumns(null, null, "Orders", null);
-            rs = dmd.getColumns(null, null, "ORDERS", null); // TODO TABLE NAME IS CASE SENSITIVE!
 
+            // NOTE TABLE NAME IS CASE SENSITIVE in H2
+            rs = dmd.getColumns(null, null, "ORDERS", null);
             while (rs.next()) {
-
-
                 Object x = rs.getObject("COLUMN_DEFAULT");
                 log.info(rs.getObject("COLUMN_NAME") + " " + x);
                 if (x != null) {
@@ -274,46 +283,42 @@ public class TestH2 extends BaseTest {
         }
     }
 
-    // todo need to add tests with multiple fields generated maybe in MSSQL
-    // todo need to add a table where this is defined with annotations only
     public void testMultiPrimary() {
         TableMultiPrimary tmp = new TableMultiPrimary();
-        tmp.setId(1);
-        tmp.setCustomerName("one");
-        tmp.setField4("field 4");
-        tmp.setField5(new java.util.Date());
+        tmp.setOrderId(1);
+        tmp.setProductId(1);
+        tmp.setUnitPrice(10.23);
+        tmp.setQuantity((short) 10);
+        tmp.setDiscount(0);
         session.insert(tmp);
 
-        tmp.setField4("field 5");
+        tmp.setDiscount(0.25f);
 
         session.update(tmp);
+
+        List<TableMultiPrimary> list = session.query(TableMultiPrimary.class, "SELECT * FROM TableMultiPrimary");
+        log.info(list);
+
+        session.fetch(tmp);
+        session.delete(tmp);
 
         boolean nullInsertFail = false;
         try {
             tmp = new TableMultiPrimary();
-
+            session.insert(tmp);
+            session.insert(tmp);
+            session.insert(tmp);
+            session.insert(tmp);
             session.insert(tmp);
 
         } catch (Exception e) {
-            assertTrue("contains NULL not allowed for column \"CUSTOMER_NAME\"", e.getMessage().contains("NULL not allowed for column \"CUSTOMER_NAME\""));
+            log.error(e.getMessage());
+            assertTrue("message starts with 'Unique index or primary key violation: \"PRIMARY_KEY_E ON PUBLIC.TABLEMULTIPRIMARY(ORDERID, PRODUCTID)\"'",
+                    e.getMessage().startsWith("Unique index or primary key violation: \"PRIMARY_KEY_E ON PUBLIC.TABLEMULTIPRIMARY(ORDERID, PRODUCTID)\""));
             nullInsertFail = true;
         }
 
         assertTrue("nullInsertFail s/b true", nullInsertFail);
-
-        tmp.setId(1);
-        tmp.setCustomerName("one");
-        assertNull("field 4 s/b null", tmp.getField4());
-        assertNull("field 5 s/b null", tmp.getField5());
-
-        log.info("BEFORE: " + tmp);
-
-        session.fetch(tmp);
-        assertNotNull("field 4 s/b null", tmp.getField4());
-        assertNotNull("field 5 s/b null", tmp.getField5());
-
-        log.info("AFTER: " + tmp);
-
     }
 
     public void testColumnDef() {
@@ -355,15 +360,12 @@ public class TestH2 extends BaseTest {
             commands.add(sql);
         }
 
-        // TODO this does not work. Date is not returned after insert.
         sql = "CREATE TABLE Orders ( " +
                 " ID IDENTITY PRIMARY KEY, " +
                 " NAME VARCHAR(30) NULL, " +
                 " PAID BIT NULL, " +
                 " Customer_ID VARCHAR(10) NULL, " +
                 " Created TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL " +
-                //" Created DATETIME DEFAULT CURRENT_TIMESTAMP NOT NULL " +
-                //" Created DATETIME " + // working one
                 ") ";
 
         commands.add(sql);
@@ -413,13 +415,14 @@ public class TestH2 extends BaseTest {
         }
 
         commands.add("CREATE TABLE TABLEMULTIPRIMARY ( " +
-                " CUSTOMER_NAME VARCHAR(30) NOT NULL, " +
-                " Field4 VARCHAR(30), " +
-                " Field5 DATETIME, " +
-                " ID INT NOT NULL " +
+                " OrderID INT NOT NULL, " +
+                " ProductID INT NOT NULL, " +
+                " UnitPrice DECIMAL NOT NULL, " +
+                " Quantity SMALLINT NOT NULL, " +
+                " Discount REAL NOT NULL " +
                 ") ");
 
-        commands.add("ALTER TABLE TABLEMULTIPRIMARY ADD PRIMARY KEY (ID, CUSTOMER_NAME)");
+        commands.add("ALTER TABLE TABLEMULTIPRIMARY ADD PRIMARY KEY (OrderID, ProductID)");
 
 
         commands.add("CREATE TABLE SavedGames ( " +

@@ -213,7 +213,7 @@ end;
                 " Country VARCHAR(2) DEFAULT 'US' NOT NULL, " +
                 " Phone VARCHAR(30) NULL, " +
                 " Fax VARCHAR(30) NULL, " +
-                " Date_Registered TIMESTAMP DEFAULT CURRENT_TIMESTAMP, " + // todo oracle timestamp results in a oracle specific class - FUCKEN ORACLE
+                " Date_Registered TIMESTAMP DEFAULT CURRENT_TIMESTAMP, " +
                 //" Date_Registered DATE DEFAULT CURRENT_TIMESTAMP, " +
                 " SomeDouble NUMBER(38,2) NULL," +
                 " SomeInt NUMBER(38,2) NULL," +

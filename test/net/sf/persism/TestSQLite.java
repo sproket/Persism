@@ -257,13 +257,10 @@ public class TestSQLite extends BaseTest {
 
     // ResultSetMetaData can't determine types if there is no result? where 1=0 ?
     // http://groups.google.com/group/xerial/browse_thread/thread/2abbd5ed2ea0189?hl=en
-    // TODO test copied from testH2 - need to move to common
     public void testTypes() {
         Statement st = null;
         ResultSet rs = null;
-
         try {
-
             st = con.createStatement();
 
             DatabaseMetaData dbmd = con.getMetaData();
@@ -287,7 +284,6 @@ public class TestSQLite extends BaseTest {
             session.fetch(customer);
 
             // look at meta data columns
-            // TODO Date and BIT come back as STRING? WTF? SQLITE?
             Map<String, ColumnInfo> columns = session.getMetaData().getColumns(Customer.class, con);
             for (ColumnInfo columnInfo : columns.values()) {
                 log.info(columnInfo);
@@ -322,7 +318,7 @@ public class TestSQLite extends BaseTest {
 
     public void testExplain() {
         Statement st = null;
-        java.sql.ResultSet rs = null;
+        ResultSet rs = null;
 
         try {
 
@@ -451,8 +447,8 @@ public class TestSQLite extends BaseTest {
             commands.add("DROP TABLE TABLENOPRIMARY");
         }
 
-        // todo WHY TF does this not throw an exception?????
-        // TODO Need to review best practices for SQLite http://www.sqlite.org/datatype3.html
+        // WHY TF does this not throw an exception????? ANY TYPE?
+        // Need to review best practices for SQLite http://www.sqlite.org/datatype3.html
         commands.add("CREATE TABLE TABLENOPRIMARY ( " +
                 " ID INT, " +
                 " Name VARCHAR(30), " +

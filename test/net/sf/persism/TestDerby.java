@@ -49,16 +49,9 @@ public class TestDerby extends BaseTest {
         super.tearDown();
     }
 
-    public void testName() throws Exception {
-        log.info("cow");
-    }
-
-
-    // TODO test copied from testH2 - need to move to common
     public void testTypes() {
         Statement st = null;
-        java.sql.ResultSet rs = null;
-
+        ResultSet rs = null;
         try {
 
             st = con.createStatement();
@@ -66,8 +59,6 @@ public class TestDerby extends BaseTest {
             DatabaseMetaData dbmd = con.getMetaData();
             log.info(dbmd.getDatabaseProductName() + " " + dbmd.getDatabaseProductVersion());
 
-            //rs = st.executeQuery("SELECT count(*), * FROM Orders WHERE 1=0");
-            // todo query above does not work with Derby
             rs = st.executeQuery("SELECT * FROM Orders WHERE 1=0");
             log.info("FIRST? " + rs.next());
             // Grab all columns and make first pass to detect primary auto-inc
@@ -85,8 +76,6 @@ public class TestDerby extends BaseTest {
 
             session.fetch(customer);
 
-            // look at meta data columns
-            // TODO Derby Date and BIT come back as STRING? WTF?
             Map<String, ColumnInfo> columns = session.getMetaData().getColumns(Customer.class, con);
             for (ColumnInfo columnInfo : columns.values()) {
                 log.info(columnInfo);
@@ -101,6 +90,23 @@ public class TestDerby extends BaseTest {
 
             session.insert(order);
             session.fetch(order);
+
+            log.info("ORDER:" + order);
+            Order order2 = DAOFactory.newOrder(con);
+            order2.setCustomerId("123");
+            order2.setName("name");
+            order2.setPaid(true);
+            session.insert(order2);
+            session.fetch(order2);
+
+            assertNotNull("date should be defaulted?", order2.getCreated());
+
+
+            columns = session.getMetaData().getColumns(Order.class, con);
+            for (ColumnInfo columnInfo : columns.values()) {
+                log.info(columnInfo);
+                assertNotNull("type should not be null", columnInfo.columnType);
+            }
 
             // look at meta data columsn
             columns = session.getMetaData().getColumns(Order.class, con);
@@ -128,7 +134,6 @@ public class TestDerby extends BaseTest {
             commands.add(sql);
         }
 
-        // TODO this does not work. Date is not returned after insert.
         sql = "CREATE TABLE Orders ( " +
                 "ID INTEGER NOT NULL GENERATED ALWAYS AS IDENTITY (START WITH 1, INCREMENT BY 1), " +
                 " NAME VARCHAR(30), " +

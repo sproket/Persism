@@ -1,9 +1,13 @@
 /**
  * Comments for TestMySQL go here.
+ *
  * @author Dan Howard
  * @since 6/4/12 9:52 PM
  */
 package net.sf.persism;
+
+import net.sf.persism.dao.Customer;
+import net.sf.persism.dao.Regions;
 
 import java.sql.DriverManager;
 import java.sql.SQLException;
@@ -16,7 +20,7 @@ public class TestMySQL extends BaseTest {
 
     private static final Log log = Log.getLogger(TestMySQL.class);
 
-    // TODO same as MSSQL - add a flag to use mariadb driver - see downloads folder
+    // TODO same as MSSQL - add a flag to use mariadb driver - see downloads folder - Can't. Doesn't install on my win7 vm.
     protected void setUp() throws Exception {
 
         super.setUp();
@@ -105,12 +109,15 @@ public class TestMySQL extends BaseTest {
 
 
     public void testSomething() {
-        try {
-            //@todo write testcase for TestMySQL  
-        } catch (Exception e) {
-            log.error(e.getMessage(), e);
-            fail(e.getMessage());
-        }
+        Customer customer = new Customer();
+        customer.setCustomerId("123");
+        customer.setRegion(Regions.East);
+        customer.setStatus('1');
+        customer.setAddress("123 Sesame Street");
 
+        session.insert(customer);
+
+        List<Customer> customers = session.query(Customer.class, "SELECT * FROM CUSTOMERS");
+        log.info(customers);
     }
 }

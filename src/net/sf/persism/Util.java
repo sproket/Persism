@@ -28,7 +28,7 @@ final class Util {
         if (log.isDebugEnabled()) {
             log.debug("PARAMS: " + Arrays.asList(parameters));
         }
-        // todo did we not have a test for Character? FFS.
+
         int n = 1;
         for (Object o : parameters) {
             if (o instanceof UUID) {

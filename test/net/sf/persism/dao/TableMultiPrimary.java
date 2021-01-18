@@ -4,59 +4,66 @@ import java.util.Date;
 
 /**
  * Comments for TableMultiPrimary go here.
- *
+ * Similar to Northwind Order Detail - no autoinc instead OrderID and ProductID are primary.
  * @author danhoward
  * @since 12-05-21 6:19 AM
  */
-public class TableMultiPrimary {
 
-    private int id;
+public final class TableMultiPrimary {
+    private int orderId;
+    private int productId;
+    private double unitPrice;
+    private short quantity;
+    private float discount;
 
-    private String customerName;
-
-    private String field4;
-
-    private Date field5;
-
-    public int getId() {
-        return id;
+    public int getOrderId() {
+        return orderId;
     }
 
-    public void setId(int id) {
-        this.id = id;
+    public void setOrderId(int orderId) {
+        this.orderId = orderId;
     }
 
-    public String getCustomerName() {
-        return customerName;
+    public int getProductId() {
+        return productId;
     }
 
-    public void setCustomerName(String customerName) {
-        this.customerName = customerName;
+    public void setProductId(int productId) {
+        this.productId = productId;
     }
 
-    public String getField4() {
-        return field4;
+    public double getUnitPrice() {
+        return unitPrice;
     }
 
-    public void setField4(String field4) {
-        this.field4 = field4;
+    public void setUnitPrice(double unitPrice) {
+        this.unitPrice = unitPrice;
     }
 
-    public Date getField5() {
-        return field5;
+    public short getQuantity() {
+        return quantity;
     }
 
-    public void setField5(Date field5) {
-        this.field5 = field5;
+    public void setQuantity(short quantity) {
+        this.quantity = quantity;
+    }
+
+    public float getDiscount() {
+        return discount;
+    }
+
+    public void setDiscount(float discount) {
+        this.discount = discount;
     }
 
     @Override
     public String toString() {
         return "TableMultiPrimary{" +
-                "id=" + id +
-                ", customerName='" + customerName + '\'' +
-                ", field4='" + field4 + '\'' +
-                ", field5=" + field5 +
-                '}';
+                "orderId=" + orderId +
+                ", productId=" + productId +
+                ", unitPrice=" + unitPrice +
+                ", quantity=" + quantity +
+                ", discount=" + discount +
+                "}\n";
     }
 }

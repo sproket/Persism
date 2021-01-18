@@ -77,6 +77,7 @@ enum Types {
 
         switch (sqlType) {
             case java.sql.Types.CHAR:
+            case java.sql.Types.NCHAR:
             case java.sql.Types.VARCHAR:
             case java.sql.Types.LONGVARCHAR:
             case java.sql.Types.NVARCHAR:

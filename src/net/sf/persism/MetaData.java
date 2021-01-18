@@ -576,7 +576,7 @@ final class MetaData {
         String deleteStatement = sb.toString();
 
         if (log.isDebugEnabled()) {
-            log.debug("getDeleteStatement for " + object.getClass() + " is " + deleteStatement);
+            log.debug("determineDeleteStatement for " + object.getClass() + " is " + deleteStatement);
         }
 
         deleteStatementsMap.put(object.getClass(), deleteStatement);

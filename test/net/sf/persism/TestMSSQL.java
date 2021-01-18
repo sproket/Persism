@@ -9,6 +9,7 @@ package net.sf.persism;
 
 import net.sf.persism.dao.*;
 
+import java.math.BigDecimal;
 import java.sql.*;
 import java.sql.Date;
 import java.time.Instant;
@@ -100,22 +101,25 @@ public class TestMSSQL extends BaseTest {
         log.info("time to read procs 3: " + (System.currentTimeMillis() - now));
         assertEquals("should only have 1 proc in the list", 1, list.size());
 
-        // todo test delete with multiple primary keys
         Procedure proc = list.get(0);
         int result = session.delete(proc);
         assertEquals("Should be 1 for delete", 1, result);
     }
 
     public void testRoom() {
+        Room roomX = new Room();
+        roomX.setDescription("room 1");
+        roomX.setIntervals(new BigDecimal(10));
+        roomX.setWeird("werid?");
+        roomX.setJunk("junk");
+        session.insert(roomX);
 
-        //query = new Query(con);
-        // todo use this kind to test a failure. This should fail because we are not initializing all room properties
         long now = System.currentTimeMillis();
         List<Room> list = session.query(Room.class, "SELECT Room_no, Desc_E, Intervals, [Weird$#@]  FROM ROOMS");
         log.info("time to read rooms: " + (System.currentTimeMillis() - now) + " size: " + list.size());
 
         now = System.currentTimeMillis();
-        list = session.query(Room.class, "SELECT Room_no, Desc_E, Intervals  FROM ROOMS");
+        list = session.query(Room.class, "SELECT *  FROM ROOMS"); // Room_no, Desc_E, Intervals
         log.info("time to read rooms again: " + (System.currentTimeMillis() - now));
 
         now = System.currentTimeMillis();
@@ -153,11 +157,34 @@ public class TestMSSQL extends BaseTest {
         log.info("Array of String has length " + sl.length + " " + Arrays.asList(sl));
     }
 
+    public void testOutsideEnum() throws Exception {
+        String sql = "INSERT INTO [Customers] ([Customer_ID], [Company_Name], [Contact_Name], [Contact_Title], " +
+                "[Address], [City], [Region], [Postal_Code], [Country], [Phone], " +
+                "[Fax], [STATUS], [Date_Of_Last_Order]) VALUES ( ? ,  ? ,  ? ,  ? ,  ? ,  ? ,  ? ,  ? ,  ? ,  ? ,  ? ,  ? ,  ? )";
+
+        session.execute(sql, "X", "Name", "Contact", "Title", "Address", "City", "NOTAREGION", "CODe", "CA", "1", "2", "3", null);
+
+        boolean failed = false;
+        try {
+            Customer c1 = new Customer();
+            c1.setCustomerId("X");
+            session.fetch(c1);
+
+        } catch (Exception e) {
+            failed = true;
+            assertEquals("message s/b 'argument type mismatch Object class net.sf.persism.dao.Customer. Column: Region Type of property: class net.sf.persism.dao.Regions - Type read: class java.lang.String VALUE: NOTAREGION'",
+                    "argument type mismatch Object class net.sf.persism.dao.Customer. Column: Region Type of property: class net.sf.persism.dao.Regions - Type read: class java.lang.String VALUE: NOTAREGION",
+                    e.getMessage());
+        }
+        assertTrue(failed);
+    }
+
     public void testStoredProc() throws SQLException {
 
         Customer c1 = new Customer();
         c1.setCustomerId("123");
         c1.setCompanyName("ABC INC");
+        c1.setRegion(Regions.East);
         session.insert(c1);
 
         Customer c2 = new Customer();
@@ -251,13 +278,16 @@ public class TestMSSQL extends BaseTest {
 
         sql = "select count(*) from exams";
         int exams = session.fetch(Integer.class, sql);
-        log.info("" + exams); // todo TEST COUNT > 0
+        log.info("" + exams);
+        assertTrue("should be > 0", exams > 0);
 
         sql = "select count(*) from exams where examDate > ?";
         Date d = new Date(1997 - 1900, 2, 4);
         log.info("" + d);
         exams = session.fetch(Integer.class, sql, d);
-        log.info("" + exams); // todo fix this test
+        log.info("" + exams);
+        assertTrue("should be > 0", exams > 0);
+
     }
 
 
@@ -282,7 +312,6 @@ public class TestMSSQL extends BaseTest {
             proc2.setExamCodeNo(examCodeNo);
             session.fetch(proc2);
 
-            // todo useless test. Probably should test that all properties match up...
             assertEquals("both procs should be the same id: 3 ", proc1.getExamCodeNo(), proc2.getExamCodeNo());
 
             proc1.setDescription("JUNK JUNK JUNK");
@@ -503,19 +532,11 @@ public class TestMSSQL extends BaseTest {
         }
     }
 
-    // todo test against pinf-win machine instead.
     public void testNullPointerWithTableTypes() throws SQLException {
-//        persister = new Persister(con);
-        java.sql.ResultSet rs = null;
-        Statement st = null;
+        ResultSet rs = null;
         // NULL POINTER WITH
         // http://social.msdn.microsoft.com/Forums/en-US/sqldataaccess/thread/5c74094a-8506-4278-ac1c-f07d1bfdb266
         String[] tableTypes = {"TABLE"};
-        //st = con.createStatement();
-
-        //rs = st.executeQuery("SELECT 1");
-        //rs.close();
-
         rs = con.getMetaData().getTables(null, "%", null, tableTypes);
         while (rs.next()) {
             log.info(rs.getString("TABLE_NAME"));

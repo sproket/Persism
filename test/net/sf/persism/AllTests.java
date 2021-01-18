@@ -29,7 +29,6 @@ public class AllTests {
         theTestSuite.addTestSuite(TestPostgreSQL.class);
 
         theTestSuite.addTestSuite(TestMetaData.class);
-        theTestSuite.addTestSuite(TestTypes.class);
         theTestSuite.addTestSuite(TestNorthwind.class);
         theTestSuite.addTestSuite(TestPubs.class);
         theTestSuite.addTestSuite(TestMiscellaneous.class);

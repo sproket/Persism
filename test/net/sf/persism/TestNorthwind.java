@@ -28,8 +28,6 @@ public class TestNorthwind extends TestCase {
         super.setUp();
         //log.error(log.getLogName() + " " + log.getLogMode());
 
-        // TODO JTDS 1.2.5 for Java 6 for now
-        // TODO JTDS 1.3.1 for Java 8 (see lib folder)s
         Properties props = new Properties();
         props.load(getClass().getResourceAsStream("/northwind.properties"));
         String driver = props.getProperty("database.driver");

@@ -28,9 +28,6 @@ public abstract class BaseTest extends TestCase {
 
     @Override
     protected void setUp() throws Exception {
-
-        // todo review subclass setup methods. We probably don't need to do all that work between each test. Add a constructor for it instead and see how often they run then...
-
         super.setUp();
     }
 
@@ -120,7 +117,6 @@ public abstract class BaseTest extends TestCase {
             customer2.setCustomerId(id);
             session.fetch(customer2);
 
-            // todo readObject should fail if ID not found??? this test is useless, read returns boolean
             assertNotNull("cust should be found ", customer2);
 
             long dateRegistered = customer1.getDateRegistered().getTime();
@@ -183,9 +179,6 @@ public abstract class BaseTest extends TestCase {
 
         // Make sure all columns are NOT the CASE of the ones in the DB.
         List<Customer> list = session.query(Customer.class, "SELECT company_NAME, Date_Of_Last_ORDER, contact_title, pHone, rEGion, postal_CODE, FAX, DATE_Registered, ADDress, CUStomer_id, Contact_name, country, city, STATUS from CUSTOMERS");
-
-        // TODO TEST java.lang.IllegalArgumentException: argument type mismatch. Column: rEGion Type of property: class net.sf.persism.dao.Regions - Type read: class java.lang.String VALUE: BC
-        // Add a value outside the enum to reproduce this error. IT IS A GOOD ERROR - we WANT TO THROW THIS so a user knows they have a value outside the ENUM
 
         log.info(list);
         assertEquals("list should be 1", 1, list.size());

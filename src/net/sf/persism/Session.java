@@ -313,8 +313,10 @@ public class Session {
      */
     public void execute(String sql, Object... parameters) {
 
+        if (log.isDebugEnabled()) {
+            log.debug("execute: " + sql + " params: " + Arrays.asList(parameters));
+        }
         Statement st = null;
-
         try {
 
             if (parameters.length == 0) {
