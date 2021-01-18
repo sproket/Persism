@@ -26,6 +26,7 @@ public class TestNorthwind extends TestCase {
 
     protected void setUp() throws Exception {
         super.setUp();
+        //log.error(log.getLogName() + " " + log.getLogMode());
 
         // TODO JTDS 1.2.5 for Java 6 for now
         // TODO JTDS 1.3.1 for Java 8 (see lib folder)s
@@ -92,7 +93,7 @@ public class TestNorthwind extends TestCase {
             session.delete(customer);
 
 
-            List<Customer> list = session.query(Customer.class, "select * from Customers");
+            List<Customer> list = session.query(Customer.class, "select top 10 * from Customers");
 
             for (Customer cust : list) {
                 log.info(cust);
@@ -100,10 +101,10 @@ public class TestNorthwind extends TestCase {
 
 
             DatabaseMetaData dmd = con.getMetaData();
-            java.sql.ResultSet rs = dmd.getPrimaryKeys(null, null, "Customers");
+            ResultSet rs = dmd.getPrimaryKeys(null, null, "Customers");
 
             while (rs.next()) {
-                log.info(rs.getString("COLUMN_NAME"));
+                log.info("primary key(s) " + rs.getString("COLUMN_NAME"));
             }
             rs.close();
 
@@ -117,7 +118,7 @@ public class TestNorthwind extends TestCase {
             try {
                 session.insert(customer);
             } catch (PersismException e) {
-                assertEquals("should have insert exception here", "java.sql.SQLException: Cannot insert the value NULL into column 'CustomerID', table 'Northwind.dbo.Customers'; column does not allow nulls. INSERT fails.", e.getMessage());
+                assertEquals("should have insert exception here", "Cannot insert the value NULL into column 'CustomerID', table 'Northwind.dbo.Customers'; column does not allow nulls. INSERT fails.", e.getMessage());
             }
 
             // Test customer duped key
@@ -211,7 +212,21 @@ public class TestNorthwind extends TestCase {
             log.info("CATALOG getIdentifierQuoteString? " + dbmd.getIdentifierQuoteString());
             log.info("CATALOG getSearchStringEscape? " + dbmd.getSearchStringEscape());
             log.info("CATALOG getSQLKeywords? " + dbmd.getSQLKeywords());
-//            log.info("CATALOG autoCommitFailureClosesAllResultSets? " + dbmd.autoCommitFailureClosesAllResultSets()); // JDBC4?
+            // Throws java.lang.AbstractMethodError
+            // log.info("CATALOG autoCommitFailureClosesAllResultSets? " + dbmd.autoCommitFailureClosesAllResultSets()); // JDBC4? remove if compiling back in Java6
+
+            Customer wontWork = new Customer();
+            wontWork.setCompanyName("FAIL");
+            try {
+                if (!session.fetch(wontWork)) {
+                    session.insert(wontWork);
+                }
+
+            } catch (PersismException e) {
+                assertEquals("msg s/b 'Cannot insert the value NULL into column 'CustomerID', table 'Northwind.dbo.Customers'; column does not allow nulls. INSERT fails.'",
+                        "Cannot insert the value NULL into column 'CustomerID', table 'Northwind.dbo.Customers'; column does not allow nulls. INSERT fails.",
+                        e.getMessage());
+            }
 
             // Order Details
             Customer customer = new Customer();
@@ -289,6 +304,14 @@ public class TestNorthwind extends TestCase {
             assertEquals("quantity should be 100", 100, orderDetail.getQuantity());
             assertEquals("unit price should be 10.3200", "10.3200", "" + orderDetail.getUnitPrice());
 
+            orderDetail.setDiscount(BigDecimal.valueOf(.50d));
+            session.update(orderDetail);
+
+            orderDetail.setDiscount(null);
+            session.fetch(orderDetail);
+            assertEquals("discount should be 0.50", "0.50", "" + orderDetail.getDiscount().setScale(2, BigDecimal.ROUND_HALF_EVEN));
+
+
             assertEquals("delete should return 1", 1, session.delete(orderDetail));
         } catch (SQLException e) {
             log.error(e.getMessage(), e);
@@ -316,7 +339,7 @@ public class TestNorthwind extends TestCase {
         customer.setPostalCode("54321");
         customer.setRegion("East");
 
-        session.delete(customer); // i case it already exists.
+        session.delete(customer); // in case it already exists.
         session.insert(customer);
 
         customer.setRegion("North");

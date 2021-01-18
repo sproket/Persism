@@ -1,6 +1,6 @@
 package net.sf.persism.annotations;
 
-/**
+/*
  * Created by IntelliJ IDEA.
  * User: DHoward
  * Date: 9/8/11

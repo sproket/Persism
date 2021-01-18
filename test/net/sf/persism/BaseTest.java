@@ -4,14 +4,11 @@ import junit.framework.TestCase;
 import net.sf.persism.dao.*;
 
 import java.sql.*;
+import java.sql.Date;
 import java.sql.ResultSet;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
-import java.util.concurrent.Executor;
+import java.util.*;
 
 /**
  * Comments for BaseTest go here.
@@ -61,6 +58,7 @@ public abstract class BaseTest extends TestCase {
         customer.setPhone("phone");
         customer.setPostalCode("12345");
         customer.setRegion(Regions.East);
+        customer.setStatus('2');
         /*
 
          */
@@ -111,6 +109,7 @@ public abstract class BaseTest extends TestCase {
             customer1.setPhone("456-678-1234");
             customer1.setPostalCode("54321");
             //customer1.setRegion(Regions.East);
+            customer1.setStatus('2');
 
             session.delete(customer1); // in case it's already there.
             session.insert(customer1);
@@ -163,7 +162,7 @@ public abstract class BaseTest extends TestCase {
         customer.setPhone("456-678-1234");
         customer.setPostalCode("54321");
         customer.setRegion(Regions.East);
-
+        customer.setStatus('1');
         session.delete(customer); // i case it already exists.
         session.insert(customer);
 
@@ -183,7 +182,7 @@ public abstract class BaseTest extends TestCase {
         assertTrue("Should not be able to read fields if there are missing properties", failOnMissingProperties);
 
         // Make sure all columns are NOT the CASE of the ones in the DB.
-        List<Customer> list = session.query(Customer.class, "SELECT company_NAME, Date_Of_Last_ORDER, contact_title, pHone, rEGion, postal_CODE, FAX, DATE_Registered, ADDress, CUStomer_id, Contact_name, country, city from CUSTOMERS");
+        List<Customer> list = session.query(Customer.class, "SELECT company_NAME, Date_Of_Last_ORDER, contact_title, pHone, rEGion, postal_CODE, FAX, DATE_Registered, ADDress, CUStomer_id, Contact_name, country, city, STATUS from CUSTOMERS");
 
         // TODO TEST java.lang.IllegalArgumentException: argument type mismatch. Column: rEGion Type of property: class net.sf.persism.dao.Regions - Type read: class java.lang.String VALUE: BC
         // Add a value outside the enum to reproduce this error. IT IS A GOOD ERROR - we WANT TO THROW THIS so a user knows they have a value outside the ENUM
@@ -205,11 +204,13 @@ public abstract class BaseTest extends TestCase {
             Customer c1 = new Customer();
             c1.setCustomerId("123");
             c1.setCompanyName("ABC INC");
+            c1.setStatus('x');
             session.insert(c1);
 
             Customer c2 = new Customer();
             c2.setCustomerId("456");
             c2.setCompanyName("XYZ INC");
+            c2.setStatus('2');
             session.insert(c2);
 
             Order order;
@@ -283,6 +284,7 @@ public abstract class BaseTest extends TestCase {
         customer.setPhone("456-678-1234");
         customer.setPostalCode("54321");
         customer.setRegion(Regions.East);
+        customer.setStatus('2');
 
         session.delete(customer); // i case it already exists.
         session.insert(customer);
@@ -326,6 +328,49 @@ public abstract class BaseTest extends TestCase {
 
     }
 
+    public void XtestGetDbMetaData() throws SQLException {
+        DatabaseMetaData dmd = con.getMetaData();
+        log.info("GetDbMetaData for " + dmd.getDatabaseProductName());
+
+        String[] tableTypes = {"TABLE"};
+
+        ResultSetMetaData rsmd;
+        ResultSet rs;
+        // get attributes
+        //rs = dmd.getAttributes("", "", "", "");
+        List<String> tables = new ArrayList<>(32);
+        rs = dmd.getTables(null, session.getMetaData().connectionType.getSchemaPattern(), null, tableTypes);
+        rsmd = rs.getMetaData();
+        while (rs.next()) {
+            for (int i = 1; i <= rsmd.getColumnCount(); i++) {
+                log.info(rsmd.getColumnName(i) + " = " + rs.getObject(i));
+            }
+            tables.add(rs.getString("TABLE_NAME"));
+            log.info("----------");
+        }
+
+        for (String table : tables) {
+            log.info("Table " + table + " COLUMN INFO");
+            rs = dmd.getColumns(null, session.getMetaData().connectionType.getSchemaPattern(), table, null);
+            rsmd = rs.getMetaData();
+            while (rs.next()) {
+                for (int i = 1; i <= rsmd.getColumnCount(); i++) {
+                    log.info(rsmd.getColumnName(i) + " = " + rs.getObject(i));
+                }
+                log.info("----------");
+            }
+
+        }
+
+//        rs = dmd.getColumns("", session.getMetaData().connectionType.getSchemaPattern(), "", "");
+//        rsmd = rs.getMetaData();
+//        for (int i = 1; i<= rsmd.getColumnCount(); i++) {
+//            log.info(rsmd.getColumnName(i) + " = " + rs.getObject(i));
+//        }
+
+    }
+
     protected abstract void createTables() throws SQLException;
+
 
 }

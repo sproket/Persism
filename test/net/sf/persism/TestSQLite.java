@@ -118,7 +118,7 @@ public class TestSQLite extends BaseTest {
             session.insert(customer);
         } catch (PersismException e) {
             nullKeyFail = true;
-            assertEquals("Should have constraint exception here", "org.sqlite.SQLiteException: [SQLITE_CONSTRAINT_NOTNULL]  A NOT NULL constraint failed (NOT NULL constraint failed: Customers.Customer_ID)", e.getMessage());
+            assertEquals("Should have constraint exception here", "[SQLITE_CONSTRAINT_NOTNULL]  A NOT NULL constraint failed (NOT NULL constraint failed: Customers.Customer_ID)", e.getMessage());
         }
         assertTrue("null key should have failed", nullKeyFail);
 
@@ -135,7 +135,7 @@ public class TestSQLite extends BaseTest {
             session.insert(customer2);
         } catch (PersismException e) {
             dupFail = true;
-            assertEquals("Should have constraint exception here", "org.sqlite.SQLiteException: [SQLITE_CONSTRAINT_PRIMARYKEY]  A PRIMARY KEY constraint failed (UNIQUE constraint failed: Customers.Customer_ID)", e.getMessage());
+            assertEquals("Should have constraint exception here", "[SQLITE_CONSTRAINT_PRIMARYKEY]  A PRIMARY KEY constraint failed (UNIQUE constraint failed: Customers.Customer_ID)", e.getMessage());
         }
 
         assertTrue("duplicate key should fail", dupFail);
@@ -440,6 +440,7 @@ public class TestSQLite extends BaseTest {
                 " Postal_Code VARCHAR(10) NULL, " +
                 " Country VARCHAR(2) NULL, " +
                 " Phone VARCHAR(30) NULL, " +
+                " STATUS CHAR(1) NULL, " +
                 " Fax VARCHAR(30) NULL, " +
                // " Date_Registered datetime default CURRENT_TIMESTAMP, " +
                 " Date_Registered datetime default  (datetime('now','localtime')), " +

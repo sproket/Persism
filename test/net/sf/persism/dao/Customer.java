@@ -9,7 +9,6 @@ import java.sql.Date;
 
 /**
  * General customer class for database types.
- * todo long is not supported at the Bean level for dates
  *
  * @author Dan Howard
  * @since 5/23/12 10:40 AM
@@ -26,6 +25,7 @@ public class Customer {
     private String country;
     private String phone;
     private String fax;
+    private char status;
 
     @Column (hasDefault = true)
     private java.util.Date dateRegistered;
@@ -134,6 +134,14 @@ public class Customer {
 
     public void setDateOfLastOrder(java.sql.Date dateOfLastOrder) {
         this.dateOfLastOrder = dateOfLastOrder;
+    }
+
+    public char getStatus() {
+        return status;
+    }
+
+    public void setStatus(char status) {
+        this.status = status;
     }
 
     @Override

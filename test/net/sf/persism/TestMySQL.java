@@ -67,6 +67,7 @@ public class TestMySQL extends BaseTest {
                 " Region VARCHAR(10) NULL, " +
                 " Postal_Code VARCHAR(10) NULL, " +
                 " Country VARCHAR(2) NOT NULL DEFAULT 'US', " +
+                " STATUS CHAR(1) NULL, " +
                 " Phone VARCHAR(30) NULL, " +
                 " Fax VARCHAR(30) NULL, " +
                 " Date_Registered TIMESTAMP, " +

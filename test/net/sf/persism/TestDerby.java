@@ -155,6 +155,7 @@ public class TestDerby extends BaseTest {
                 " Country VARCHAR(2) NOT NULL DEFAULT 'US', " +
                 " Phone VARCHAR(30), " +
                 " Fax VARCHAR(30), " +
+                " STATUS CHAR(1), " +
                 " Date_Registered TIMESTAMP DEFAULT CURRENT_TIMESTAMP, " +
                 " Date_Of_Last_Order TIMESTAMP " +
                 ") ");

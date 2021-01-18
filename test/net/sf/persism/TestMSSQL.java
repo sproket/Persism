@@ -8,6 +8,7 @@ package net.sf.persism;
  */
 
 import net.sf.persism.dao.*;
+
 import java.sql.*;
 import java.sql.Date;
 import java.time.Instant;
@@ -19,7 +20,7 @@ public class TestMSSQL extends BaseTest {
     private static final Log log = Log.getLogger(TestMSSQL.class);
 
     protected void setUp() throws Exception {
-         // BaseTest.mssqlmode = false; // to run in JTDS MODE
+        // BaseTest.mssqlmode = false; // to run in JTDS MODE
         super.setUp();
         log.error("SQLMODE? " + BaseTest.mssqlmode);
         con = MSSQLDataSource.getInstance().getConnection();
@@ -90,7 +91,7 @@ public class TestMSSQL extends BaseTest {
         Procedure proc3 = session.fetch(Procedure.class, "select * from EXAMCODE WHERE ExamCode_No=?", -99);
         assertNull("proc3 should NOT be found ", proc3);
 
-        Procedure proc4 = session.fetch(Procedure.class, 1);
+        Procedure proc4 = session.fetch(Procedure.class, "select * from EXAMCODE WHERE ExamCode_No=?", 1);
         assertNotNull("proc4 should be found ", proc4);
 
 
@@ -286,7 +287,6 @@ public class TestMSSQL extends BaseTest {
 
             proc1.setDescription("JUNK JUNK JUNK");
 
-            log.info(session.getMetaData().getUpdateStatement(proc1, con));
             session.update(proc1);
 
 
@@ -328,7 +328,7 @@ public class TestMSSQL extends BaseTest {
     }
 
 
-    public void testTableWithKeyworkdFieldName() {
+    public void testContactTable() {
         try {
             session.execute("ALTER TABLE [Contacts] DROP CONSTRAINT [DF_Contacts_identity]");
         } catch (Exception e) {
@@ -377,7 +377,7 @@ public class TestMSSQL extends BaseTest {
         sql = "ALTER TABLE [dbo].[Contacts] ADD  CONSTRAINT [DF_Contacts_identity]  DEFAULT (newid()) FOR [identity]";
         session.execute(sql);
 
-        // Insert don't specify any GUID - WE HAVE TO.
+        // Insert specify GUID
         Contact contact = new Contact();
         contact.setIdentity(UUID.randomUUID());
         contact.setFirstname("Fred");
@@ -399,38 +399,49 @@ public class TestMSSQL extends BaseTest {
 
         log.info("contact after insert: " + contact);
 
-        // Insert specify GUID
-        contact = new Contact();
-//        contact.setIdentity(UUID.randomUUID());
-        contact.setFirstname("Barney");
-        contact.setLastname("Rubble");
-        contact.setDivision("DIVISION X");
-        contact.setLastModified(new Date(System.currentTimeMillis() - 100000000l));
-        contact.setContactName("Fred Flintstone");
-        contact.setAddress1("123 Sesame Street");
-        contact.setAddress2("Appt #0 (garbage can)");
-        contact.setCompany("Grouch Inc");
-        contact.setCountry("US");
-        contact.setCity("Philly?");
-        contact.setType("X");
-        contact.setDateAdded(new Date(System.currentTimeMillis()));
-        contact.setAmountOwed(100.23f);
-        contact.setNotes("B:AH B:AH VBLAH\r\n BLAH BLAY!");
-
-        log.debug("BEFORE " + contact);
-        // todo add test to make sure UUID doesn't get chganged.
-        session.insert(contact);
-        log.debug("AFTER " + contact);
-
-        log.info(session.query(Contact.class, "select * from Contacts"));
-
+        // Do this again to test that setting a change which doesn't actually change will throw the NoChangesDetectedForUpdateException (internally)
+        // We should see this in the logs "No properties changed. No update required for Object"
         session.fetch(contact);
-
-        contact.setDivision("DIVISION Y");
+        contact.setDivision("DIVISION X");
         session.update(contact);
 
-        log.debug(contact.getNotes());
 
+        // This case will not work.
+        Contact barney = new Contact();
+        //contact.setIdentity(UUID.randomUUID());
+        barney.setFirstname("Barney");
+        barney.setLastname("Rubble");
+        barney.setDivision("DIVISION X");
+        barney.setLastModified(new Date(System.currentTimeMillis() - 100000000l));
+        barney.setContactName("Fred Flintstone");
+        barney.setAddress1("123 Sesame Street");
+        barney.setAddress2("Appt #0 (garbage can)");
+        barney.setCompany("Grouch Inc");
+        barney.setCountry("US");
+        barney.setCity("Philly?");
+        barney.setType("X");
+        barney.setDateAdded(new Date(System.currentTimeMillis()));
+        barney.setAmountOwed(100.23f);
+        barney.setNotes("B:AH B:AH VBLAH\r\n BLAH BLAY!");
+
+        int count = session.query(Contact.class, "select * from Contacts").size();
+
+        boolean failed = false;
+        try {
+            session.insert(barney);
+        } catch (PersismException e) {
+            failed = true;
+            assertEquals("message s/b 'Non-auto inc generated primary keys are not supported. Please assign your primary key value before performing an insert.'",
+                    "Non-auto inc generated primary keys are not supported. Please assign your primary key value before performing an insert.",
+                    e.getMessage());
+        }
+        assertTrue(failed);
+
+        assertEquals("should have same count in Contacts",
+                count,
+                session.query(Contact.class, "select * from Contacts").size() );
+
+        log.info(session.query(Contact.class, "select * from Contacts"));
     }
 
     public void testDetectAutoInc() {
@@ -493,31 +504,22 @@ public class TestMSSQL extends BaseTest {
     }
 
     // todo test against pinf-win machine instead.
-    public void testNullPointerWithTableTypes() {
+    public void testNullPointerWithTableTypes() throws SQLException {
 //        persister = new Persister(con);
         java.sql.ResultSet rs = null;
         Statement st = null;
-        try {
-            // NULL POINTER WITH
-            // http://social.msdn.microsoft.com/Forums/en-US/sqldataaccess/thread/5c74094a-8506-4278-ac1c-f07d1bfdb266
-            String[] tableTypes = {"TABLE"};
-            //st = con.createStatement();
+        // NULL POINTER WITH
+        // http://social.msdn.microsoft.com/Forums/en-US/sqldataaccess/thread/5c74094a-8506-4278-ac1c-f07d1bfdb266
+        String[] tableTypes = {"TABLE"};
+        //st = con.createStatement();
 
-            //rs = st.executeQuery("SELECT 1");
-            //rs.close();
+        //rs = st.executeQuery("SELECT 1");
+        //rs.close();
 
-            rs = con.getMetaData().getTables(null, "%", null, tableTypes);
-            while (rs.next()) {
-                log.info(rs.getString("TABLE_NAME"));
-            }
-
-        } catch (SQLException e) {
-            throw new PersismException(e);
-
-        } finally {
-            Util.cleanup(st, rs);
+        rs = con.getMetaData().getTables(null, "%", null, tableTypes);
+        while (rs.next()) {
+            log.info(rs.getString("TABLE_NAME"));
         }
-
     }
 
     @Override
@@ -536,6 +538,7 @@ public class TestMSSQL extends BaseTest {
                 " ROW_ID VARCHAR(30) NULL, " +
                 " Customer_ID VARCHAR(10) NULL, " +
                 " PAID BIT NULL, " +
+                " STATUS CHAR(1) NULL, " +
                 " CREATED datetime " +
                 ") ");
 
@@ -556,6 +559,7 @@ public class TestMSSQL extends BaseTest {
                 " Country VARCHAR(2) NULL, " +
                 " Phone VARCHAR(30) NULL, " +
                 " Fax VARCHAR(30) NULL, " +
+                " STATUS CHAR(1) NULL, " +
                 " Date_Registered datetime default current_timestamp, " +
                 " Date_Of_Last_Order datetime " +
                 ") ");
@@ -576,7 +580,7 @@ public class TestMSSQL extends BaseTest {
         }
 
         commands.add("CREATE TABLE DumbTableStringAutoInc ( " +
-                " ID VARCHAR(10) )" );
+                " ID VARCHAR(10) )");
 
         try {
             st = con.createStatement();

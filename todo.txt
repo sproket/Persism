@@ -21,8 +21,6 @@ persevere
 tenacity
 persism! CHOSEN NOW MOVE ON.
 
-todo test stored proc calls - all read methods!
-
 // read a DAO by primary key and return true if found. Object should be not null. t cannot be null
 public boolean read(Object object) throws PersismException;
 
@@ -54,3 +52,14 @@ Back to Java 6 for instrumentation since it doesn't work under Java 8
 - Set Ant to 1.8.2
 
 Note for next release. Renamed Command executeSQL to execute
+
+NOPE this would be a downcast
+net.sf.persism.PersismException: argument type mismatch Object class com.thermallube.revision.models.SalesOrderAllocation. Column: AllocationType Type of property: byte - Type read: class java.lang.Short VALUE: 0
+
+TODO Handle X words Tax - Taxes, Fax - Faxes - plural rules
+
+todo     @Column(name = "IsCompound") - yeah we do a simple "is" check but I need to think about this. See determinePropertyInfo
+         private boolean compound; Find "Is" Columns so we don't need the annotation? OR just name the field isCompound - gets and sets seem to generate fine... BUT IT FAILS LOOKING FOR "compound" as the property name!s
+
+
+TODO DOCUMENTATION Example how to implement Persistable

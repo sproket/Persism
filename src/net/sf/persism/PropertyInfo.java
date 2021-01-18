@@ -23,4 +23,15 @@ final class PropertyInfo {
     Annotation getAnnotation(Class<? extends  Annotation> annotationClass) {
         return annotations.get(annotationClass);
     }
+
+    @Override
+    public String toString() {
+        return "PropertyInfo{" +
+                "propertyName='" + propertyName + '\'' +
+                ", getter=" + getter +
+                ", setter=" + setter +
+                ", length=" + length +
+                ", annotations=" + annotations +
+                '}';
+    }
 }

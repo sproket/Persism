@@ -384,6 +384,7 @@ public class TestH2 extends BaseTest {
                 " Country VARCHAR(2) NOT NULL DEFAULT 'US', " +
                 " Phone VARCHAR(30) NULL, " +
                 " Fax VARCHAR(30) NULL, " +
+                " Status CHAR(1) NULL, " +
                 " Date_Registered datetime default current_timestamp, " +
                 " Date_Of_Last_Order datetime " +
                 ") ");
@@ -458,6 +459,8 @@ public class TestH2 extends BaseTest {
         sg.setGold(100.23f);
         sg.setSilver(200);
         session.insert(sg);
+
+        int id = sg.getId();
 
         sg = null;
         sg = session.fetch(SavedGame.class, "select * from SavedGames");

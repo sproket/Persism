@@ -5,7 +5,6 @@ package net.sf.persism;
  *
  * @author Dan Howard
  * @since 9/8/11 6:41 AM
- * @version %I%, %G%
  *
  */
 public final class PersismException extends RuntimeException {
@@ -15,15 +14,12 @@ public final class PersismException extends RuntimeException {
     private PersismException() {
     }
 
-    public  PersismException(String message) {
-        super(message, new Throwable(message));
+    public PersismException(String message) {
+        this(message, new Throwable(message));
     }
 
     public PersismException(String message, Throwable cause) {
         super(message, cause);
     }
 
-    public PersismException(Throwable cause) {
-        super(cause);
-    }
 }

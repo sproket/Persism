@@ -31,25 +31,25 @@ final class MetaData {
     // table name for each class
     private Map<Class, String> tableMap = new ConcurrentHashMap<Class, String>(32);
 
-    // Table meta information for updates/inserts for each class
+    // SQL for updates/inserts/deletes/selects for each class
     private Map<Class, String> updateStatementsMap = new ConcurrentHashMap<Class, String>(32);
     private Map<Class, String> insertStatementsMap = new ConcurrentHashMap<Class, String>(32);
     private Map<Class, String> deleteStatementsMap = new ConcurrentHashMap<Class, String>(32);
     private Map<Class, String> selectStatementsMap = new ConcurrentHashMap<Class, String>(32);
 
     // Key is SQL with named params, Value is SQL with ?
-    private Map<String, String> sqlWitNamedParams = new ConcurrentHashMap<String, String>(32);
+    // private Map<String, String> sqlWitNamedParams = new ConcurrentHashMap<String, String>(32);
 
     // Key is SQL with named params, Value list of named params
-    private Map<String, List<String>> namedParams = new ConcurrentHashMap<String, List<String>>(32);
+    // private Map<String, List<String>> namedParams = new ConcurrentHashMap<String, List<String>>(32);
 
-    //    private Map<Class, List<String>> primaryKeysMap = new ConcurrentHashMap<Class, List<String>>(32); // remove later maybe?
+    // private Map<Class, List<String>> primaryKeysMap = new ConcurrentHashMap<Class, List<String>>(32); // remove later maybe?
 
-    // list of tables in the DB mapped to the connection URL string
+    // list of tables in the DB
     private Set<String> tableNames = new TreeSet<>(String.CASE_INSENSITIVE_ORDER);
 
     // Map of table names + meta data
-    private Map<String, TableInfo> tableInfoMap = new ConcurrentHashMap<String, TableInfo>(32);
+    // private Map<String, TableInfo> tableInfoMap = new ConcurrentHashMap<String, TableInfo>(32);
 
     private static final Map<String, MetaData> metaData = new ConcurrentHashMap<String, MetaData>(4);
 
@@ -60,7 +60,7 @@ final class MetaData {
 
     private MetaData(Connection con) throws SQLException {
 
-        log.info("MetaData CREATING instance [" + this + "] ");
+        log.debug("MetaData CREATING instance [" + this + "] ");
 
         connectionType = ConnectionTypes.get(con.getMetaData().getURL());
         if (connectionType == ConnectionTypes.Other) {
@@ -78,7 +78,7 @@ final class MetaData {
         if (metaData.get(url) == null) {
             metaData.put(url, new MetaData(con));
         }
-        log.info("MetaData getting instance " + url);
+        log.debug("MetaData getting instance " + url);
         return metaData.get(url);
     }
 
@@ -105,7 +105,7 @@ final class MetaData {
             rs = st.executeQuery(sql);
             return determineColumns(objectClass, rs);
         } catch (SQLException e) {
-            throw new PersismException(e);
+            throw new PersismException(e.getMessage(), e);
         } finally {
             Util.cleanup(st, rs);
         }
@@ -165,7 +165,7 @@ final class MetaData {
             return columns;
 
         } catch (SQLException e) {
-            throw new PersismException(e);
+            throw new PersismException(e.getMessage(), e);
         }
     }
 
@@ -222,7 +222,6 @@ final class MetaData {
                             columnInfo.autoIncrement = true;
                             if (!columnInfo.columnType.isCountable()) {
                                 columnInfo.autoIncrement = false;
-                                // TODO should this be a PersismException?
                                 log.warn("Column " + columnInfo.columnName + " is annotated as autoIncrement but is a non numeric type (" + columnInfo.columnType + ") - Ignoring.");
                             }
                         }
@@ -277,7 +276,7 @@ final class MetaData {
                 // update, delete or select (by primary).
                 // They may only want to do read operations with specified queries and in that
                 // context we don't need any primary keys. (same with insert)
-                log.info("No primary key found for table " + tableName + ". This will fail on insert/update/delete.");
+                log.warn("No primary key found for table " + tableName + ". Do not use with update/delete or add a primary key.");
             }
 
             columnInfoMap.put(objectClass, map);
@@ -285,23 +284,23 @@ final class MetaData {
             return map;
 
         } catch (SQLException e) {
-            throw new PersismException(e);
+            throw new PersismException(e.getMessage(), e);
         } finally {
             Util.cleanup(st, rs);
         }
     }
 
-    List<String> getNamedParameters(String sql) {
-        if (namedParams.containsKey(sql)) {
-            return namedParams.get(sql);
-        }
-
-        if (!sql.contains(":")) {
-            return Collections.emptyList();
-        }
-
-        return null;
-    }
+//    List<String> getNamedParameters(String sql) {
+//        if (namedParams.containsKey(sql)) {
+//            return namedParams.get(sql);
+//        }
+//
+//        if (!sql.contains(":")) {
+//            return Collections.emptyList();
+//        }
+//
+//        return null;
+//    }
 
     static <T> Collection<PropertyInfo> getPropertyInfo(Class<T> objectClass) {
         if (propertyMap.containsKey(objectClass)) {
@@ -407,19 +406,26 @@ final class MetaData {
             }
 
         } catch (SQLException e) {
-            throw new PersismException(e);
+            throw new PersismException(e.getMessage(), e);
 
         } finally {
             Util.cleanup(null, rs);
         }
     }
 
-    String getUpdateStatement(Object object, Connection connection) throws PersismException {
+    /**
+     *
+     * @param object
+     * @param connection
+     * @return sql update string
+     * @throws NoChangesDetectedForUpdateException if the data object implements Persistable and there are no changes detected
+     */
+    String getUpdateStatement(Object object, Connection connection) throws PersismException, NoChangesDetectedForUpdateException {
 
         if (object instanceof Persistable) {
             Map<String, PropertyInfo> changedColumns = getChangedColumns((Persistable) object, connection);
             if (changedColumns.size() == 0) {
-                throw new PersismException("No Changes detected in " + object.getClass());
+                throw new NoChangesDetectedForUpdateException();
             }
             // Note we don't not add Persistable updates to updateStatementsMap since they will be different each time.
             String sql = buildUpdateString(object, changedColumns.keySet().iterator(), connection);
@@ -585,13 +591,6 @@ final class MetaData {
         return determineSelectStatement(object, connection);
     }
 
-    String getSelectStatement(Class objectClass, Connection connection) {
-        if (selectStatementsMap.containsKey(objectClass)) {
-            return selectStatementsMap.get(objectClass);
-        }
-        return determineSelectStatement(objectClass, connection);
-    }
-
     private synchronized String determineSelectStatement(Object object, Connection connection) {
 
         if (selectStatementsMap.containsKey(object.getClass())) {
@@ -693,7 +692,7 @@ final class MetaData {
 
             return changedColumns;
         } catch (Exception e) {
-            throw new PersismException(e);
+            throw new PersismException(e.getMessage(), e);
         }
     }
 
@@ -752,7 +751,6 @@ final class MetaData {
             return tableMap.get(objectClass);
         }
 
-        // todo NOTE that the annotation name may not match the case of the tablename in the DB.
         String tableName;
         Table annotation = objectClass.getAnnotation(Table.class);
         if (annotation != null) {
@@ -826,7 +824,7 @@ final class MetaData {
         // ensures meta data will be available
         String tableName = getTableName(objectClass, connection);
 
-        log.info("getPrimaryKeys for " + tableName);
+        log.debug("getPrimaryKeys for " + tableName);
 
         List<String> primaryKeys = new ArrayList<String>(4);
         Map<String, ColumnInfo> map = columnInfoMap.get(objectClass);

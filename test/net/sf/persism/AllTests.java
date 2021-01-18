@@ -33,6 +33,7 @@ public class AllTests {
         theTestSuite.addTestSuite(TestNorthwind.class);
         theTestSuite.addTestSuite(TestPubs.class);
         theTestSuite.addTestSuite(TestMiscellaneous.class);
+        theTestSuite.addTestSuite(TestResultSet.class);
 
         return theTestSuite;
     }

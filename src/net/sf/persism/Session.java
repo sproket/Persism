@@ -29,6 +29,8 @@ public class Session {
 
     private MetaData metaData;
 
+    private static final List<String> warnings = new ArrayList<>(32);
+
     /**
      * @param connection db connection
      * @throws PersismException if something goes wrong
@@ -44,7 +46,7 @@ public class Session {
         try {
             metaData = MetaData.getInstance(connection);
         } catch (SQLException e) {
-            throw new PersismException(e);
+            throw new PersismException(e.getMessage(), e);
         }
     }
 
@@ -64,9 +66,11 @@ public class Session {
         PreparedStatement st = null;
         try {
 
-            String updateStatement = metaData.getUpdateStatement(object, connection);
-            if (updateStatement == null || updateStatement.trim().length() == 0) {
-                log.warn("No properties changed. No update required for Object: " + object + " class: " + object.getClass().getName());
+            String updateStatement = null;
+            try {
+                updateStatement = metaData.getUpdateStatement(object, connection);
+            } catch (NoChangesDetectedForUpdateException e) {
+                log.info("No properties changed. No update required for Object: " + object + " class: " + object.getClass().getName());
                 return 0;
             }
 
@@ -121,7 +125,7 @@ public class Session {
 
         } catch (Exception e) {
             Util.rollback(connection);
-            throw new PersismException(e);
+            throw new PersismException(e.getMessage(), e);
 
         } finally {
             Util.cleanup(st, null);
@@ -147,7 +151,7 @@ public class Session {
             Map<String, PropertyInfo> properties = metaData.getTableColumns(object.getClass(), connection);
             Map<String, ColumnInfo> columns = metaData.getColumns(object.getClass(), connection);
 
-            List<String> generatedKeys = new ArrayList<String>(1);
+            List<String> generatedKeys = new ArrayList<>(1);
             for (ColumnInfo column : columns.values()) {
                 if (column.autoIncrement) {
                     generatedKeys.add(column.columnName);
@@ -169,12 +173,16 @@ public class Session {
                 PropertyInfo propertyInfo = properties.get(column.columnName);
                 if (!column.autoIncrement) {
 
-                    // TODO This condition is repeated 3 times. We need to rearrange this code.
                     // See MetaData getInsertStatement - Maybe we should return a new Object type for InsertStatement
                     if (column.hasDefault) {
                         // Do not include if this column has a default and no value has been
                         // set on it's associated property.
                         if (properties.get(column.columnName).getter.invoke(object) == null) {
+
+                            if (column.primary) {
+                                throw new PersismException("Non-auto inc generated primary keys are not supported. Please assign your primary key value before performing an insert.");
+                            }
+
                             tableHasDefaultColumnValues = true;
                             continue;
                         }
@@ -219,27 +227,26 @@ public class Session {
             if (log.isDebugEnabled()) {
                 log.debug("insert ret: " + ret);
             }
+
             if (generatedKeys.size() > 0) {
                 rs = st.getGeneratedKeys();
-            }
+                for (String column : generatedKeys) {
+                    if (rs.next()) {
 
-            // TODO for now we can only support a single auto inc - need to test out other possible generated columns
-            for (String column : generatedKeys) {
-                if (rs.next()) {
+                        Method setter = properties.get(column).setter;
 
-                    Method setter = properties.get(column).setter;
+                        if (setter != null) {
+                            Object value = getTypedValueReturnedFromGeneratedKeys(setter.getParameterTypes()[0], rs);
 
-                    if (setter != null) {
-                        Object value = getTypedValueReturnedFromGeneratedKeys(setter.getParameterTypes()[0], rs);
+                            if (log.isDebugEnabled()) {
+                                log.debug(column + " generated " + value); // HERE!
+                                log.debug(setter);
+                            }
+                            setter.invoke(object, value);
 
-                        if (log.isDebugEnabled()) {
-                            log.debug(column + " generated " + value); // HERE!
-                            log.debug(setter);
+                        } else {
+                            log.warn("no setter found for column " + column);
                         }
-                        setter.invoke(object, value);
-
-                    } else {
-                        log.warn("no setter found for column " + column);
                     }
                 }
             }
@@ -252,7 +259,7 @@ public class Session {
             return ret;
         } catch (Exception e) {
             Util.rollback(connection);
-            throw new PersismException(e);
+            throw new PersismException(e.getMessage(), e);
         } finally {
             Util.cleanup(st, rs);
         }
@@ -291,7 +298,7 @@ public class Session {
 
         } catch (Exception e) {
             Util.rollback(connection);
-            throw new PersismException(e);
+            throw new PersismException(e.getMessage(), e);
 
         } finally {
             Util.cleanup(st, null);
@@ -321,7 +328,7 @@ public class Session {
             }
 
         } catch (SQLException e) {
-            throw new PersismException(e);
+            throw new PersismException(e.getMessage(), e);
         } finally {
             Util.cleanup(st, null);
         }
@@ -368,10 +375,10 @@ public class Session {
             }
 
         } catch (IllegalAccessException | InstantiationException | InvocationTargetException | IOException e) {
-            throw new PersismException(e);
+            throw new PersismException(e.getMessage(), e);
         } catch (SQLException e) {
             Util.rollback(connection);
-            throw new PersismException(e);
+            throw new PersismException(e.getMessage(), e);
         } finally {
             Util.cleanup(result.st, result.rs);
         }
@@ -411,8 +418,11 @@ public class Session {
                 PropertyInfo propertyInfo = properties.get(column);
                 params.add(propertyInfo.getter.invoke(object));
             }
-
-            exec(result, metaData.getSelectStatement(object, connection), params.toArray());
+            String sql = metaData.getSelectStatement(object, connection);
+            if (log.isDebugEnabled()) {
+                log.debug("FETCH " + sql + " PARAMS: " + params);
+            }
+            exec(result, sql, params.toArray());
 
             if (result.rs.next()) {
                 readObject(object, result.rs);
@@ -421,33 +431,35 @@ public class Session {
             return false;
 
         } catch (IllegalAccessException | InvocationTargetException | IOException e) {
-            throw new PersismException(e);
+            throw new PersismException(e.getMessage(), e);
         } catch (SQLException e) {
             Util.rollback(connection);
-            throw new PersismException(e);
+            throw new PersismException(e.getMessage(), e);
         } finally {
             Util.cleanup(result.st, result.rs);
         }
     }
 
-    /**
-     * Fetch an object from the database by primary key(s).
-     *
-     * @param objectClass class of objects to return
-     * @param primaryKey  primary key value parameters
-     * @param <T>         Return type
-     * @return new instance of T or null if not found
-     * @throws PersismException if something goes wrong
-     */
-    public <T> T fetch(Class<T> objectClass, Object... primaryKey) throws PersismException {
 
-        String select = metaData.getSelectStatement(objectClass, connection);
-
-        if (log.isDebugEnabled()) {
-            log.debug("fetch Class<T> objectClass, Object... primaryKey: SQL " + select);
-        }
-        return fetch(objectClass, select, primaryKey);
-    }
+// Method collides with other fetch methods - ambiguous.
+//    /**
+//     * Fetch an object from the database by primary key(s).
+//     *
+//     * @param objectClass class of objects to return
+//     * @param primaryKey  primary key value parameters
+//     * @param <T>         Return type
+//     * @return new instance of T or null if not found
+//     * @throws PersismException if something goes wrong
+//     */
+//    public <T> T fetch(Class<T> objectClass, Object... primaryKey) throws PersismException {
+//
+//        String select = metaData.getSelectStatement(objectClass, connection);
+//
+//        if (log.isDebugEnabled()) {
+//            log.debug("fetch Class<T> objectClass, Object... primaryKey: SQL " + select);
+//        }
+//        return fetch(objectClass, select, primaryKey);
+//    }
 
     /**
      * Fetch an object of the specified type from the database. The type can be a Data Object or a native Java Object or primitive.
@@ -463,11 +475,6 @@ public class Session {
     public <T> T fetch(Class<T> objectClass, String sql, Object... parameters) throws PersismException {
         // If we know this type it means it's a primitive type. Not a DAO so we use a different rule to read those
         boolean readPrimitive = Types.getType(objectClass) != null;
-
-        if (!readPrimitive && objectClass.getAnnotation(Query.class) == null) {
-            // Make sure columns are initialized properly if this is a table  todo  why?
-            metaData.getTableColumns(objectClass, connection);
-        }
 
         Result result = new Result();
         try {
@@ -489,11 +496,11 @@ public class Session {
             return null;
 
         } catch (IllegalAccessException | InvocationTargetException | InstantiationException | IOException e) {
-            throw new PersismException(e);
+            throw new PersismException(e.getMessage(), e);
 
         } catch (SQLException e) {
             Util.rollback(connection);
-            throw new PersismException(e);
+            throw new PersismException(e.getMessage(), e);
         } finally {
             Util.cleanup(result.st, result.rs);
         }
@@ -546,7 +553,7 @@ public class Session {
 
             return query(rs);
         } catch (SQLException e) {
-            throw new PersismException(e);
+            throw new PersismException(e.getMessage(), e);
         } finally {
             Util.cleanup(st, rs);
         }
@@ -615,7 +622,6 @@ public class Session {
 
             throw new PersismException("Object " + objectClass + " was not properly initialized. Some properties not found in the queried columns (" + sb + ").");
         }
-
         ResultSetMetaData rsmd = rs.getMetaData();
         int columnCount = rsmd.getColumnCount();
         List<String> foundColumns = new ArrayList<String>(columnCount);
@@ -717,18 +723,12 @@ public class Session {
 //                case ReaderType:
 //                    // todo ReaderType
 //                case EnumType:
-//                    // todo EnumType?
+//                    // todo EnumType - no SQL type for that
                 case IntegerType:
                     value = rs.getObject(column) == null ? null : rs.getInt(column);
                     break;
                 case LongType:
                     value = rs.getObject(column) == null ? null : rs.getLong(column);
-                    break;
-                case UUIDType:
-                    value = rs.getObject(column);
-                    if (value != null) {
-                        value = UUID.fromString("" + value);
-                    }
                     break;
                 case FloatType:
                     value = rs.getObject(column) == null ? null : rs.getFloat(column);
@@ -780,7 +780,7 @@ public class Session {
             case longType:
             case LongType:
                 // long to date
-                if (propertyType.isAssignableFrom(java.util.Date.class) || propertyType.isAssignableFrom(java.sql.Date.class)) {
+                if (propertyType.equals(java.util.Date.class) || propertyType.equals(java.sql.Date.class)) {
                     long lval = Long.valueOf("" + dbValue);
 
                     if (propertyType.equals(java.sql.Date.class)) {
@@ -789,7 +789,7 @@ public class Session {
                         dbValue = new java.util.Date(lval);
                     }
                 } else if (propertyType == Integer.class || propertyType == int.class) {
-                    log.warn("Possible overflow column " + columnName + " - Property is INT and column value is LONG");
+                    warnOverflow("Possible overflow column " + columnName + " - Property is INT and column value is LONG");
                     dbValue = Integer.parseInt("" + dbValue);
                 }
 
@@ -805,10 +805,10 @@ public class Session {
                 if (propertyType == BigDecimal.class) {
                     dbValue = new BigDecimal("" + dbValue);
                 } else if (propertyType == Float.class || propertyType == float.class) {
-                    log.warn("Possible overflow column " + columnName + " - Property is FLOAT and column value is DOUBLE");
+                    warnOverflow("Possible overflow column " + columnName + " - Property is FLOAT and column value is DOUBLE");
                     dbValue = Float.parseFloat("" + dbValue);
                 } else if (propertyType == Integer.class || propertyType == int.class) {
-                    log.warn("Possible overflow column " + columnName + " - Property is INT and column value is DOUBLE");
+                    warnOverflow("Possible overflow column " + columnName + " - Property is INT and column value is DOUBLE");
                     String val = "" + dbValue;
                     if (val.contains(".")) {
                         val = val.substring(0, val.indexOf("."));
@@ -820,27 +820,27 @@ public class Session {
             case DecimalType:
                 if (propertyType == Float.class || propertyType == float.class) {
                     dbValue = ((BigDecimal) dbValue).floatValue();
-                    log.warn("Possible overflow column " + columnName + " - Property is Float and column value is BigDecimal");
+                    warnOverflow("Possible overflow column " + columnName + " - Property is Float and column value is BigDecimal");
                 } else if (propertyType == Double.class || propertyType == double.class) {
                     dbValue = ((BigDecimal) dbValue).doubleValue();
-                    log.warn("Possible overflow column " + columnName + " - Property is Double and column value is BigDecimal");
+                    warnOverflow("Possible overflow column " + columnName + " - Property is Double and column value is BigDecimal");
                 } else if (propertyType == Long.class || propertyType == long.class) {
                     dbValue = ((BigDecimal) dbValue).longValue();
-                    log.warn("Possible overflow column " + columnName + " - Property is Long and column value is BigDecimal");
+                    warnOverflow("Possible overflow column " + columnName + " - Property is Long and column value is BigDecimal");
                 } else if (propertyType == Integer.class || propertyType == int.class) {
                     dbValue = ((BigDecimal) dbValue).intValue();
-                    log.warn("Possible overflow column " + columnName + " - Property is Integer and column value is BigDecimal");
+                    warnOverflow("Possible overflow column " + columnName + " - Property is Integer and column value is BigDecimal");
                 } else if (propertyType == Boolean.class || propertyType == boolean.class) {
                     // BigDecimal to Boolean. Oracle (sigh) - Additional for a Char to Boolean as then (see TestOracle for links)
                     dbValue = ((BigDecimal) dbValue).intValue() == 1;
-                    log.warn("Possible overflow column " + columnName + " - Property is Boolean and column value is BigDecimal - seems a bit overkill?");
+                    warnOverflow("Possible overflow column " + columnName + " - Property is Boolean and column value is BigDecimal - seems a bit overkill?");
                 }
                 break;
 
             case StringType:
 
                 // Read a string but we want a date
-                if (propertyType.isAssignableFrom(java.util.Date.class) || propertyType.isAssignableFrom(java.sql.Date.class)) {
+                if (propertyType.equals(java.util.Date.class) || propertyType.equals(java.sql.Date.class)) {
                     // This condition occurs in SQLite when you have a datetime with default annotated
                     // the format returned is 2012-06-02 19:59:49
                     java.util.Date dval = null;
@@ -859,7 +859,7 @@ public class Session {
                         dbValue = dval;
                     }
 
-                } else if (propertyType.isAssignableFrom(java.sql.Timestamp.class)) {
+                } else if (propertyType.equals(java.sql.Timestamp.class)) {
                     // String to timestamp?
                     // value = new Timestamp()
                     java.util.Date dval = null;
@@ -884,22 +884,27 @@ public class Session {
                 } else if (propertyType.equals(UUID.class)) {
                     dbValue = UUID.fromString("" + dbValue);
 
-                } else if (propertyType.isAssignableFrom(Boolean.class)) {
+                } else if (propertyType.equals(Boolean.class) || propertyType.equals(boolean.class)) {
                     // String to Boolean - true or 1 - otherwise false (or null)
                     if (dbValue != null) {
                         String bval = "" + dbValue;
                         dbValue = (bval.equalsIgnoreCase("true") || bval.equals("1"));
                     }
 
-                } else if (propertyType.isAssignableFrom(Time.class)) {
+                } else if (propertyType.equals(Time.class)) {
                     // MSSQL works, JTDS returns Varchar in format below
                     DateFormat df = new SimpleDateFormat("hh:mm:ss.SSSSS");
                     try {
-                        Date d = df.parse(dbValue+"");
+                        Date d = df.parse(dbValue + "");
                         dbValue = new Time(d.getTime());
                     } catch (ParseException e) {
                         String msg = e.getMessage() + ". Column: " + columnName + " Type of property: " + propertyType + " - Type read: " + dbValue.getClass() + " VALUE: " + dbValue;
                         throw new PersismException(msg, e);
+                    }
+                } else if (propertyType.equals(Character.class) || propertyType.equals(char.class)) {
+                    String s = ""+dbValue;
+                    if (s.length() > 0) {
+                        dbValue = s.charAt(0);
                     }
                 }
                 break;
@@ -910,24 +915,20 @@ public class Session {
 
             case UtilDateType:
             case SQLDateType:
-                break;
-
-            case TimeType:
+                // todo maybe add check for property type = long. Same with TimestampType
                 break;
 
             case TimestampType:
-                if (propertyType.isAssignableFrom(java.util.Date.class) || propertyType.isAssignableFrom(java.sql.Date.class)) {
+                if (propertyType.equals(java.util.Date.class) || propertyType.equals(java.sql.Date.class)) {
                     if (propertyType.equals(java.sql.Date.class)) {
-                        dbValue = new java.sql.Date(((Timestamp) dbValue).getTime());
+                        dbValue = new java.sql.Date(((Date) dbValue).getTime());
                     } else {
-                        dbValue = new java.util.Date(((Timestamp) dbValue).getTime());
+                        dbValue = new java.util.Date(((Date) dbValue).getTime());
                     }
-                } else if (propertyType.isAssignableFrom(java.sql.Timestamp.class)) {
-                    // Value is already a Timestamp - do nothing
-                } else {
-                    dbValue = ((Timestamp) dbValue).getTime();
                 }
+                break;
 
+            case TimeType:
                 break;
 
             case byteArrayType:
@@ -983,5 +984,12 @@ public class Session {
         return (T) value;
     }
 
+    // Prevent duplicate "Possible overflow column" messages
+    private static void warnOverflow(String message) {
+        if (!warnings.contains(message)) {
+            warnings.add(message);
+            log.warn(message);
+        }
+    }
 
 }

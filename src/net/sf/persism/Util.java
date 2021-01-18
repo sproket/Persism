@@ -23,49 +23,6 @@ final class Util {
     private Util() {
     }
 
-    // Performs a possible conversion of types if there's a case
-    // or leaves the original object alone.
-    static Object convert(Object from, Types to) {
-        assert from != null;
-        assert to != null;
-
-        if (from.getClass().isEnum() && to == Types.StringType || to == Types.CharacterType) {
-            return "" + from;
-        }
-
-        if (from instanceof java.util.Date) {
-
-            switch (to) {
-                case TimestampType:
-                    return new Timestamp(((Date) from).getTime());
-
-                case LongType:
-                    return ((Date) from).getTime();
-
-                case SQLDateType:
-                    return new java.sql.Date(((Date) from).getTime());
-            }
-        }
-
-        if (from instanceof Long) {
-            switch (to) {
-                case TimestampType:
-                    return new Timestamp((Long) from);
-
-                case SQLDateType:
-                    return new java.sql.Date((Long) from);
-
-                case UtilDateType:
-                    return new java.util.Date((Long) from);
-            }
-
-        }
-
-        return from;
-    }
-    static void prepareParameters(PreparedStatement st, Object[] parameters) throws SQLException {
-    }
-
     // Place code conversions here to prevent type exceptions on setObject
     static void setParameters(PreparedStatement st, Object[] parameters) throws SQLException {
         if (log.isDebugEnabled()) {
@@ -76,6 +33,8 @@ final class Util {
         for (Object o : parameters) {
             if (o instanceof UUID) {
                 st.setString(n, o.toString());
+            } else if (o instanceof Character) {
+                st.setObject(n,""+o);
             } else {
                 st.setObject(n, o);
             }
@@ -127,22 +86,6 @@ final class Util {
         } catch (SQLException sqlex) {
         }
         return false;
-    }
-
-
-    public static String getProperty(String key) {
-        Properties properties = new Properties();
-        URL resource = Util.class.getResource("/persism.properties");
-        if (resource != null) {
-            try {
-                InputStream is = resource.openStream();
-                properties.load(is);
-                is.close();
-            } catch (IOException e) {
-                log.error(e.getMessage(), e);
-            }
-        }
-        return properties.getProperty(key);
     }
 
     public static String camelToTitleCase(String text) {

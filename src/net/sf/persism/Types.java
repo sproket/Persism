@@ -157,7 +157,7 @@ enum Types {
     }
 
     public boolean isCountable() {
-        return this == IntegerType || this == integerType || this == LongType || this == longType
+        return this == IntegerType || this == integerType || this == LongType || this == longType || this == byteType || this == ByteType
                 || this == ShortType || this == shortType || this == DoubleType || this == doubleType || this == DecimalType;
     }
 }

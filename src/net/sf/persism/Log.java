@@ -164,4 +164,12 @@ final class Log {
                 java.util.logging.Logger.getLogger(logName).log(Level.SEVERE, "" + message, t);
         }
     }
+
+    public LogMode getLogMode() {
+        return logMode;
+    }
+
+    public String getLogName() {
+        return logName;
+    }
 }

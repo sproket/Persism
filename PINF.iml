@@ -23,8 +23,6 @@
     <orderEntry type="library" name="oracle" level="project" />
     <orderEntry type="library" name="H2" level="project" />
     <orderEntry type="library" name="sqlite" level="project" />
-    <orderEntry type="library" name="log4j" level="project" />
-    <orderEntry type="library" name="logback" level="project" />
     <orderEntry type="library" name="log4jdbc" level="project" />
     <orderEntry type="library" name="derby" level="project" />
     <orderEntry type="library" name="mssql" level="project" />
@@ -35,5 +33,7 @@
     <orderEntry type="library" name="junit" level="project" />
     <orderEntry type="library" name="commons-dbcp-1.4" level="project" />
     <orderEntry type="library" name="commons-pool-1.5.4-javadoc" level="project" />
+    <orderEntry type="library" name="logback" level="project" />
+    <orderEntry type="library" name="log4j" level="project" />
   </component>
 </module>

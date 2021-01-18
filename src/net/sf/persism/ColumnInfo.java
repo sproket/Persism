@@ -11,7 +11,6 @@ final class ColumnInfo {
 
     String columnName;
 
-    // TODO Not used. It has some weird results - was looking at using this to make smarter conversions.
     // SQLite - Date - comes back as StringType
     // H2 - BIT - comes back NULL
     Types columnType;

@@ -133,6 +133,10 @@
         <pathelement location="${basedir}/libs/postgresql/postgresql-9.1-902.jdbc4.jar"/>
     </path>
 
+    <path id="library.pool.classpath">
+        <pathelement location="${basedir}/libs/commons-pool-1.5.4/commons-pool-1.5.4.jar"/>
+        <pathelement location="${basedir}/libs/commons-dbcp-1.4/commons-dbcp-1.4.jar"/>
+    </path>
 
     <!-- Global Libraries -->
 
@@ -175,6 +179,7 @@
         <path refid="library.mysql.classpath"/>
         <path refid="library.postgresql.classpath"/>
         <path refid="library.logging.classpath"/>
+        <path refid="library.pool.classpath"/>
     </path>
 
     <path id="persism.runtime.production.module.classpath">
@@ -187,6 +192,7 @@
         <path refid="library.mysql.classpath"/>
         <path refid="library.postgresql.classpath"/>
         <path refid="library.logging.classpath"/>
+        <path refid="library.pool.classpath"/>
     </path>
 
     <path id="persism.module.classpath">
@@ -194,6 +200,7 @@
         <pathelement location="${prod.dist.dir}"/>
         <path refid="library.junit.classpath"/>
         <path refid="library.logging.classpath"/>
+        <path refid="library.pool.classpath"/>
 
         <path refid="library.jtds.classpath"/>
         <path refid="library.oracle.classpath"/>
@@ -210,6 +217,7 @@
         <pathelement location="${prod.dist.dir}"/>
         <path refid="library.junit.classpath"/>
         <path refid="library.logging.classpath"/>
+        <path refid="library.pool.classpath"/>
 
         <path refid="library.jtds.classpath"/>
         <path refid="library.oracle.classpath"/>
@@ -324,7 +332,7 @@
         </javadoc>
     </target>
 
-    <target name="release" depends="build, javadoc, instrument" description="build all">
+    <target name="release" depends="build, javadoc" description="build all">
         <tstamp/>
 
         <mkdir dir="${release.dir}"/>
@@ -340,7 +348,10 @@
                 </section>
             </manifest>
 
-            <fileset dir="${prod.dist.dir}"/>
+            <fileset dir="${prod.dist.dir}">
+                <!-- package html files-->
+                <exclude name="**/*package.html"/>
+            </fileset>
         </jar>
 
         <jar destfile="${release.dir}/persism-${release.version}-src.jar">

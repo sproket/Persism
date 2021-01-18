@@ -217,6 +217,7 @@ end;
                 //" Date_Registered DATE DEFAULT CURRENT_TIMESTAMP, " +
                 " SomeDouble NUMBER(38,2) NULL," +
                 " SomeInt NUMBER(38,2) NULL," +
+                " STATUS CHAR(1) NULL, " +
                 " Date_Of_Last_Order DATE " +
                 ") ");
 

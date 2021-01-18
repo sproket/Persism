@@ -20,10 +20,10 @@ public class OrderDetail {
 	[Discount] [real] NOT NULL,
      */
 
-    @Column(primary = true)
+    //@Column(primary = true)
     private int orderId;
 
-    @Column(primary = true)
+    //@Column(primary = true)
     private int productId;
 
     private BigDecimal unitPrice;

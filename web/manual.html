@@ -1,198 +1,132 @@
-<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
-        "http://www.w3.org/TR/html4/loose.dtd">
-<html>
-<head>
-  <meta http-equiv="content-type" content="text/html; charset=iso-8859-1">
-  <title>New</title>
-  <meta name="generator" content="Amaya, see http://www.w3.org/Amaya/">
-  <link rel="stylesheet" type="text/css" href="css/menu.css">
-  <link rel="stylesheet" type="text/css" href="css/default.css">
-</head>
-
-<body>
-<h1>Persism Manual</h1>
-
-<p></p>
-
-<h2>Getting started</h2>
-
-<p>Download Persism here and add it your project.</p>
-
-<p></p>
-
-<h2>Using the Query Object</h2>
-
-<p></p>
-
-<p>Persism uses a standard Connection object so all you need to do is Create
-the object passing in the Connection.</p>
-<pre>Query query = new Query(connection);</pre>
-
-<p>With the query object you can then run queries to retrieve lists of
-objects:</p>
-
-<p></p>
-<pre>List&lt;Customer&gt; list = query.readList(Customer.class,"select * from Customers where name = ?", "Fred");</pre>
-
-<p></p>
-
-<p>Note that generics are in place here. If you try reading a list of a
-mismatched type, you'll get a compiler error. Note also that the query follows
-the best practice of using parametrized queryes. You can specify any number of
-parameters you like and you can also use stored procedures instead of query
-strings.</p>
-
-<p></p>
-
-<p>You can also read a single object with a query string like this:</p>
-
-<p></p>
-<pre>
-  Customer customer;
-  customer = query.read(Customer.class, "select * from Customers where name = ?", "Fred");
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<HTML>
+<HEAD>
+	<META HTTP-EQUIV="CONTENT-TYPE" CONTENT="text/html; charset=windows-1252">
+	<TITLE>New</TITLE>
+	<META NAME="GENERATOR" CONTENT="OpenOffice 4.1.8  (Win32)">
+	<META NAME="CREATED" CONTENT="0;0">
+	<META NAME="CHANGEDBY" CONTENT="Dan Howard">
+	<META NAME="CHANGED" CONTENT="20210115;15120244">
+	<STYLE TYPE="text/css">
+	<!--
+		H1 { margin-left: 0.1in; margin-right: 0.1in; margin-bottom: 0.04in; border: none; padding: 0in; color: #1e90ff; font-style: normal }
+		P { margin-left: 0.1in; margin-right: 0.1in; color: #2f4f4f; font-family: "Lucida Sans Unicode", sans-serif; font-style: normal; font-weight: normal }
+		H2 { margin-left: 0.1in; margin-right: 0.1in; margin-bottom: 0.04in; border: none; padding: 0in; color: #1e90ff }
+		H2.western { font-style: normal }
+		H2.cjk { font-family: "SimSun"; font-style: normal }
+		H2.ctl { font-family: "Lucida Sans"; font-style: normal }
+		PRE { margin-left: 0.1in; margin-right: 0.1in; margin-top: 0.1in; margin-bottom: 0.13in; background: #f5f5f5; border-top: none; border-bottom: 1px solid #0000ff; border-left: none; border-right: 1px solid #0000ff; padding-top: 0in; padding-bottom: 0.02in; padding-left: 0in; padding-right: 0.02in; color: #2f4f4f; font-family: "Lucida Console"; font-style: normal; font-weight: normal }
+		A:link { color: #00bfff; background: #00bfff; text-decoration: none }
+		CODE { font-family: "Lucida Console"; font-style: normal; font-weight: normal }
+		A:visited { color: #00bfff; background: #00bfff; text-decoration: none }
+	-->
+	</STYLE>
+</HEAD>
+<BODY LANG="en-US" TEXT="#2f4f4f" LINK="#00bfff" VLINK="#00bfff" BGCOLOR="#f5f5f5" DIR="LTR" STYLE="border: none; padding: 0in">
+<H1>Persism Manual 
+</H1>
+<H2 CLASS="western">Getting started</H2>
+<P>Download Persism here and add it your project.</P>
+<P>Persism uses a standard Connection object so all you need to do is
+Create the object passing in the Connection.</P>
+<PRE>Session session = new Session(connection);</PRE><H2 CLASS="western">
+Querying Data</H2>
+<P>With the session object you can then run queries to retrieve lists
+of objects:</P>
+<PRE>List&lt;Customer&gt; list = session.query(Customer.class,&quot;select * from Customers where name = ?&quot;, &quot;Fred&quot;);</PRE><P>
+Note that generics are in place here. If you try reading a list of a
+mismatched type, you'll get a compiler error. Note also that the
+query follows the best practice of using parameterized queries. You
+can specify any number of parameters you like and you can also use
+stored procedures instead of query strings.</P>
+<P>You can also read a single object with a query string like this:</P>
+<PRE>  Customer customer;
+  customer = session.query(Customer.class, &quot;select * from Customers where name = ?&quot;, &quot;Fred&quot;);
+// or   customer = session.query(Customer.class, &quot;sp_FindCustomer(?)&rdquo;, &quot;Fred&quot;);
   if (customer != null) {
     // etc...
-  }
-</pre>
-
-<p></p>
-
-<p>This method returns null if the customer was not found. </p>
-
-<p></p>
-
-<p>You can also quickly initialize an Object from the database by specifying
-the Object's primary key. This way you do not need any SQL statement.</p>
-
-<p></p>
-<pre>
-  Customer customer = new Customer();
+  }</PRE><P>
+This method returns null if the customer was not found. 
+</P>
+<P>You can also quickly initialize an Object from the database by
+specifying the Object's primary key. This way you do not need any SQL
+statement.</P>
+<PRE>  Customer customer = new Customer();
   customer.setCustomerId(123);
-  query.read(customer);</pre>
-
-<p></p>
-
-<p>This method returns true to indicate the object was found and
+  session.fetch(customer);</PRE><P>
+This method returns true to indicate the object was found and
 initialized. Note you do this by pre-instantiating your object first.
-  This allows you to control memory usage of your objects and you can re-use the same object
-  if you need to run multiple queries.</p>
-
-<p>The query object also contains methods to read primitive Java types by
-simply using them directly.</p>
-<pre>    String result = query.read(String.class, "select Name from Customers where ID = ?", 10);</pre>
-
-<p></p>
-
-<p>Objects may also be refreshed if you you have situations where an object is
-updated in the database by a different user.</p>
-<pre>Customer customer = new Customer();
+This allows you to control memory usage of your objects and you can
+re-use the same object if you need to run multiple queries.</P>
+<P>The query can also return primitive Java types by simply using
+them directly.</P>
+<PRE>  String result = session.query(String.class, &quot;select Name from Customers where ID = ?&quot;, 10);</PRE><H2 CLASS="western">
+Updating Data</H2>
+<P>With the session object you can perform insert, update and delete
+with data objects and also use execute for arbitrary SQL statements.</P>
+<P>To perform an operation simply use the appropriate method.</P>
+<PRE>Customer customer = new Customer();
 customer.setCustomerId(123);
-query.read(customer);
-customer.setSomething("vlah");
-query.refreshObject(customer);</pre>
+customer.setCustomerName(&quot;Fred&quot;);
+customer.setAddress(&quot;123 Sesame Street&quot;);
 
-<p></p>
+session.insert(customer); // insert new Customer
 
-<h2>Using the Command Object</h2>
-
-<p>The Command object is similar to the Query in that it uses a standard
-Connection for its constructor but unlike the Query, The Command object is used
-for performing updates to the database (updates, inserts and deletes).</p>
-<pre>Command command = new Command(connection);</pre>
-
-<p>To perform an operation simply use the appropriate method.</p>
-<pre>Customer customer = new Customer();
-customer.setCustomerId(123);
-customer.setCustomerName("Fred");
-customer.setAddress("123 Sesame Street");
-
-command.insert(customer);
-
-customer.setCustomerName("Barney");
-command.update(customer);
-
-command.delete(customer);</pre>
-
-<p>Persism will use the primary keys for the <code>update</code> and
-<code>delete</code> methods and will set the primary keys for you if they are
-generated when you do an <code>insert</code>. Persism will usually
-auto-discover the primary keys so you usually do not have to specify them in
-your POJO. Persisms will also set defaults to properites if they were not
-defined and there's a default defined for that mapped column in the
-database.</p>
-
-<h2>Writing Data Objects (POJOs)</h2>
-
-<p></p>
-
-<p>Persism follows the usual JavaBean convention for data objects. In most
-situations a simple POJO class is all you will need.</p>
-
-<p>** Example Customer **</p>
-
-<p>Persism uses annotation in situations where it can't discover the mapping
-for you.</p>
-
-<p>Persism uses the following annotations for the class:</p>
-
-<p>Table - used to specify the table name in the database.</p>
-
-<p>Query - used to specify that this class represents the result of a query. Ie
-there is no single table associated with it.</p>
-
-<p>Persism uses the following annotations for properties:</p>
-
-<p>Column - used to specify the column name and whether or not the column is
-primary and/or generated. The 3 parameters are optional.</p>
-
-<p>NoColumn - used to specify that this property has no matching column. Ie
-that it's a calculated value and not read from the database.</p>
-
-<p>You can specify these annotations on the class field or on the getter or
-setter. Note that NoColumn is not required if your property has a getter only.
-Persism understands that a read-only property would not be in the database.</p>
-
-<h2>Mapping Rules for Tables</h2>
-
-<p>Persism uses the following rules to discover the table name in the database
-for your class. (All case insensitive)</p>
-
-<p>1 - Looks for a match on class name </p>
-
-<p>2 - Looks for a match on plural class name</p>
-
-<p>3 - Looks for a single table containing class name</p>
-
-<p>4 - Looks for a single table containg plural class name</p>
-
-<p>So for a class called Customer, the following would all be valid table names
-that Persism would discover.</p>
-
-<p>CUSTOMER</p>
-
-<p>CUSTOMERS</p>
-
-<p>TBL_CUSTOMER</p>
-
-<p>CUSTOMERS_TABLE</p>
-
-<p>Note also that Persism is smart enough to understand multi-name tables for
-example the class OrderDetail and OrderDetails would match "Order Details" in
-the database.</p>
-
-<h2>Mapping Rules for Columns</h2>
-
-<p>Persism matches the property names to the column names ignoring case and
-ignoring special characters like space and underscore.</p>
-
-<p>So for example a property called customerId would match:</p>
-
-<p>Customer_ID</p>
-
-<p>Customer ID</p>
-
-<p>CustomerID</p>
-
-<p>In the database.</p>
-</body>
-</html>
+customer.setCustomerName(&quot;Barney&quot;);
+command.update(customer); // Update Customer
+command.delete(customer); // Delete Customer
+</PRE><P>
+Persism will use the primary keys for the <CODE>update</CODE> and
+<CODE>delete</CODE> methods and will set the primary keys for you if
+they are generated when you do an <CODE>insert</CODE>. Persism will
+usually auto-discover the primary keys so you usually do not have to
+specify them in your POJO. Persisms will also set defaults to
+properties if they were not defined and there's a default defined for
+that mapped column in the database.</P>
+<H2 CLASS="western">Writing Data Objects (POJOs)</H2>
+<P>Persism follows the usual JavaBean convention for data objects. In
+most situations a simple POJO class is all you will need.</P>
+<P>** <B>TODO </B>Example Customer OR Multi-name table &hellip;. **</P>
+<P>Persism uses annotation in situations where it can't discover the
+mapping for you.</P>
+<P>Persism uses the following annotations for the class:</P>
+<P>Table - used to specify the table name in the database.</P>
+<P>Query - used to specify that this class represents the result of a
+query. Ie there is no single table associated with it.</P>
+<P>Persism uses the following annotations for properties:</P>
+<P>Column - used to specify the column name and whether or not the
+column is primary and/or generated. The 3 parameters are optional.</P>
+<P>NoColumn - used to specify that this property has no matching
+column. Ie that it's a calculated value and not read from the
+database.</P>
+<P>You can specify these annotations on the class field or on the
+getter or setter. Note that NoColumn is not required if your property
+has a getter only. Persism understands that a read-only property
+would not be in the database.</P>
+<H2 CLASS="western">Mapping Rules for Tables</H2>
+<P>Persism uses the following rules to discover the table name in the
+database for your class. (All case insensitive)</P>
+<P>1 - Looks for a match on class name 
+</P>
+<P>2 - Looks for a match on plural class name</P>
+<P>3 - Looks for a single table containing class name</P>
+<P>4 <STRIKE>- Looks for a single table containg plural class name</STRIKE></P>
+<P>So for a class called Customer, the following would all be valid
+table names that Persism would discover.</P>
+<P>CUSTOMER</P>
+<P>CUSTOMERS</P>
+<P>TBL_CUSTOMER</P>
+<P>CUSTOMERS_TABLE</P>
+<P>Note also that Persism is smart enough to understand multi-name
+tables for example the class OrderDetail and OrderDetails would match
+&quot;Order Details&quot; in the database.</P>
+<H2 CLASS="western">Mapping Rules for Columns</H2>
+<P>Persism matches the property names to the column names ignoring
+case and ignoring special characters like space and underscore.</P>
+<P>So for example a property called customerId would match:</P>
+<P>Customer_ID</P>
+<P>Customer ID</P>
+<P>CustomerID</P>
+<P>In the database.</P>
+</BODY>
+</HTML>

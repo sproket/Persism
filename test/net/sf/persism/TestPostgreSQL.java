@@ -79,6 +79,7 @@ public class TestPostgreSQL extends BaseTest {
                 " Country VARCHAR(2) NOT NULL DEFAULT 'US', " +
                 " Phone VARCHAR(30) NULL, " +
                 " Fax VARCHAR(30) NULL, " +
+                " STATUS CHAR(1), " +
                 " Date_Registered TIMESTAMP with time zone DEFAULT CURRENT_TIMESTAMP NOT NULL, " +
                 " Date_Of_Last_Order  TIMESTAMP with time zone " +
                 ") ");
@@ -135,6 +136,7 @@ public class TestPostgreSQL extends BaseTest {
             Customer customer = new Customer();
             customer.setCustomerId("MOO");
             customer.setContactName("FRED");
+            customer.setStatus('1');
             session.insert(customer);
             log.info(customer);
 
