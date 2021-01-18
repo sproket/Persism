@@ -1,0 +1,146 @@
+
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html id="htmlId">
+<head>
+  <title>Coverage Report :: TableInfo</title>
+  <style type="text/css">
+    @import "../../.css/coverage.css";
+  </style>
+</head>
+
+<body>
+<div class="header"></div>
+
+<div class="content">
+<div class="breadCrumbs">
+    [ <a href="../../index.html">all classes</a> ]
+    [ <a href="../index.html">net.sf.persism</a> ]
+</div>
+
+<h1>Coverage Summary for Class: TableInfo (net.sf.persism)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">TableInfo</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/ 1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/ 1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/ 3)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<div class="sourceCode"><i>1</i>&nbsp;package net.sf.persism;
+<i>2</i>&nbsp;
+<i>3</i>&nbsp;import java.util.ArrayList;
+<i>4</i>&nbsp;import java.util.List;
+<i>5</i>&nbsp;import java.util.Map;
+<i>6</i>&nbsp;
+<i>7</i>&nbsp;/**
+<i>8</i>&nbsp; * Class to hold results of connection.getDatabaseMetaData() result sets as maps
+<i>9</i>&nbsp; * so we don&#39;t need to repeatedly call it.
+<i>10</i>&nbsp; * Not used yet...s
+<i>11</i>&nbsp; * @author Dan Howard
+<i>12</i>&nbsp; * @since 5/5/12 5:26 AM
+<i>13</i>&nbsp; */
+<b class="nc"><i>14</i>&nbsp;final class TableInfo {</b>
+<i>15</i>&nbsp;
+<i>16</i>&nbsp;    /*
+<i>17</i>&nbsp;     TABLE_CAT String =&gt; table catalog (may be null)
+<i>18</i>&nbsp;     TABLE_SCHEM String =&gt; table schema (may be null)
+<i>19</i>&nbsp;     TABLE_NAME String =&gt; table name
+<i>20</i>&nbsp;     COLUMN_NAME String =&gt; column name
+<i>21</i>&nbsp;     KEY_SEQ short =&gt; sequence number within primary key( a value of 1 represents the first column of the primary key, a value of 2 would represent the second column within the primary key).
+<i>22</i>&nbsp;     PK_NAME String =&gt; primary key name (may be null)
+<i>23</i>&nbsp;     */
+<b class="nc"><i>24</i>&nbsp;    List&lt;Map&lt;String, Object&gt;&gt; primaryKeys = new ArrayList&lt;Map&lt;String, Object&gt;&gt;(4);</b>
+<i>25</i>&nbsp;
+<i>26</i>&nbsp;
+<i>27</i>&nbsp;    /*
+<i>28</i>&nbsp;    TABLE_CAT String =&gt; table catalog (may be null)
+<i>29</i>&nbsp;    TABLE_SCHEM String =&gt; table schema (may be null)
+<i>30</i>&nbsp;    TABLE_NAME String =&gt; table name
+<i>31</i>&nbsp;    COLUMN_NAME String =&gt; column name
+<i>32</i>&nbsp;    DATA_TYPE int =&gt; SQL type from java.sql.Types
+<i>33</i>&nbsp;    TYPE_NAME String =&gt; Data source dependent type name, for a UDT the type name is fully qualified
+<i>34</i>&nbsp;    COLUMN_SIZE int =&gt; column size.
+<i>35</i>&nbsp;    BUFFER_LENGTH is not used.
+<i>36</i>&nbsp;    DECIMAL_DIGITS int =&gt; the number of fractional digits. Null is returned for data types where DECIMAL_DIGITS is not applicable.
+<i>37</i>&nbsp;    NUM_PREC_RADIX int =&gt; Radix (typically either 10 or 2)
+<i>38</i>&nbsp;    NULLABLE int =&gt; is NULL allowed.
+<i>39</i>&nbsp;        columnNoNulls - might not allow NULL values
+<i>40</i>&nbsp;        columnNullable - definitely allows NULL values
+<i>41</i>&nbsp;        columnNullableUnknown - nullability unknown
+<i>42</i>&nbsp;    REMARKS String =&gt; comment describing column (may be null)
+<i>43</i>&nbsp;    COLUMN_DEF String =&gt; default value for the column, which should be interpreted as a string when the value is enclosed in single quotes (may be null)
+<i>44</i>&nbsp;    SQL_DATA_TYPE int =&gt; unused
+<i>45</i>&nbsp;    SQL_DATETIME_SUB int =&gt; unused
+<i>46</i>&nbsp;    CHAR_OCTET_LENGTH int =&gt; for char types the maximum number of bytes in the column
+<i>47</i>&nbsp;    ORDINAL_POSITION int =&gt; index of column in table (starting at 1)
+<i>48</i>&nbsp;    IS_NULLABLE String =&gt; ISO rules are used to determine the nullability for a column.
+<i>49</i>&nbsp;        YES --- if the parameter can include NULLs
+<i>50</i>&nbsp;        NO --- if the parameter cannot include NULLs
+<i>51</i>&nbsp;        empty string --- if the nullability for the parameter is unknown
+<i>52</i>&nbsp;    SCOPE_CATLOG String =&gt; catalog of table that is the scope of a reference attribute (null if DATA_TYPE isn&#39;t REF)
+<i>53</i>&nbsp;    SCOPE_SCHEMA String =&gt; schema of table that is the scope of a reference attribute (null if the DATA_TYPE isn&#39;t REF)
+<i>54</i>&nbsp;    SCOPE_TABLE String =&gt; table name that this the scope of a reference attribure (null if the DATA_TYPE isn&#39;t REF)
+<i>55</i>&nbsp;    SOURCE_DATA_TYPE short =&gt; source type of a distinct type or user-generated Ref type, SQL type from java.sql.Types (null if DATA_TYPE isn&#39;t DISTINCT or user-generated REF)
+<i>56</i>&nbsp;    * IS_AUTOINCREMENT String =&gt; Indicates whether this column is auto incremented MAY NOT EXIST - DEPENDS ON JDBC VERSION
+<i>57</i>&nbsp;        YES --- if the column is auto incremented
+<i>58</i>&nbsp;        NO --- if the column is not auto incremented
+<i>59</i>&nbsp;        empty string --- if it cannot be determined whether the column is auto incremented parameter is unknown
+<i>60</i>&nbsp;     */
+<b class="nc"><i>61</i>&nbsp;    List&lt;Map&lt;String, Object&gt;&gt; columns = new ArrayList&lt;Map&lt;String, Object&gt;&gt;(4);</b>
+<i>62</i>&nbsp;
+<i>63</i>&nbsp;}
+</div>
+</div>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2021-01-18 14:39</div>
+</div>
+</body>
+</html>

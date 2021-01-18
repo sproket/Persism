@@ -1,0 +1,79 @@
+
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html id="htmlId">
+<head>
+  <title>Coverage Report :: Persistable</title>
+  <style type="text/css">
+    @import "../../.css/coverage.css";
+  </style>
+</head>
+
+<body>
+<div class="header"></div>
+
+<div class="content">
+<div class="breadCrumbs">
+    [ <a href="../../index.html">all classes</a> ]
+    [ <a href="../index.html">net.sf.persism</a> ]
+</div>
+
+<h1>Coverage Summary for Class: Persistable (net.sf.persism)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+</tr>
+<tr>
+  <td class="name">Persistable</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<div class="sourceCode"><i>1</i>&nbsp;package net.sf.persism;
+<i>2</i>&nbsp;
+<i>3</i>&nbsp;import java.lang.reflect.InvocationTargetException;
+<i>4</i>&nbsp;import java.util.Collection;
+<i>5</i>&nbsp;
+<i>6</i>&nbsp;/**
+<i>7</i>&nbsp; * Interface for PersistableObject class. You can use this interface in situations where you can&#39;t or don&#39;t want
+<i>8</i>&nbsp; * your data objects to inherit PersistableObject.
+<i>9</i>&nbsp; *
+<i>10</i>&nbsp; * @author Dan Howard
+<i>11</i>&nbsp; * @see PersistableObject PersistableObject for implementation.
+<i>12</i>&nbsp; * @since 10/8/11 9:51 AM
+<i>13</i>&nbsp; */
+<i>14</i>&nbsp;public interface Persistable&lt;T&gt; extends Cloneable {
+<i>15</i>&nbsp;
+<i>16</i>&nbsp;
+<i>17</i>&nbsp;    /**
+<i>18</i>&nbsp;     * Saves the current state of the data object to later detect changes for SQL UPDATE statements.
+<i>19</i>&nbsp;     * Persism calls this method internally, you usually don&#39;t have to call this method yourself.
+<i>20</i>&nbsp;     * @see PersistableObject for example implementation
+<i>21</i>&nbsp;     * @throws PersismException If an SQL or other exception occurs.
+<i>22</i>&nbsp;     */
+<i>23</i>&nbsp;    void saveReadState() throws PersismException;
+<i>24</i>&nbsp;
+<i>25</i>&nbsp;    /**
+<i>26</i>&nbsp;     * Getter for the data object in it&#39;s original state. The state at the time it was read from the database.
+<i>27</i>&nbsp;     *
+<i>28</i>&nbsp;     * @see PersistableObject for example implementation
+<i>29</i>&nbsp;     * @return The data object in it&#39;s original state.
+<i>30</i>&nbsp;     */
+<i>31</i>&nbsp;    T getOriginalValue();
+<i>32</i>&nbsp;}
+</div>
+</div>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2021-01-18 14:39</div>
+</div>
+</body>
+</html>
