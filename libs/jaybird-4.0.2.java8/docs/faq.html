@@ -1,0 +1,723 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang xml:lang>
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <title>Jaybird Frequently Asked Questions</title>
+  <style>
+    code{white-space: pre-wrap;}
+    span.smallcaps{font-variant: small-caps;}
+    span.underline{text-decoration: underline;}
+    div.column{display: inline-block; vertical-align: top; width: 50%;}
+    div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+    ul.task-list{list-style: none;}
+    pre > code.sourceCode { white-space: pre; position: relative; }
+    pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+    pre > code.sourceCode > span:empty { height: 1.2em; }
+    code.sourceCode > span { color: inherit; text-decoration: inherit; }
+    div.sourceCode { margin: 1em 0; }
+    pre.sourceCode { margin: 0; }
+    @media screen {
+    div.sourceCode { overflow: auto; }
+    }
+    @media print {
+    pre > code.sourceCode { white-space: pre-wrap; }
+    pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+    }
+    pre.numberSource code
+      { counter-reset: source-line 0; }
+    pre.numberSource code > span
+      { position: relative; left: -4em; counter-increment: source-line; }
+    pre.numberSource code > span > a:first-child::before
+      { content: counter(source-line);
+        position: relative; left: -1em; text-align: right; vertical-align: baseline;
+        border: none; display: inline-block;
+        -webkit-touch-callout: none; -webkit-user-select: none;
+        -khtml-user-select: none; -moz-user-select: none;
+        -ms-user-select: none; user-select: none;
+        padding: 0 4px; width: 4em;
+        color: #aaaaaa;
+      }
+    pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
+    div.sourceCode
+      {   }
+    @media screen {
+    pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+    }
+    code span.al { color: #ff0000; font-weight: bold; } /* Alert */
+    code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+    code span.at { color: #7d9029; } /* Attribute */
+    code span.bn { color: #40a070; } /* BaseN */
+    code span.bu { } /* BuiltIn */
+    code span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+    code span.ch { color: #4070a0; } /* Char */
+    code span.cn { color: #880000; } /* Constant */
+    code span.co { color: #60a0b0; font-style: italic; } /* Comment */
+    code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+    code span.do { color: #ba2121; font-style: italic; } /* Documentation */
+    code span.dt { color: #902000; } /* DataType */
+    code span.dv { color: #40a070; } /* DecVal */
+    code span.er { color: #ff0000; font-weight: bold; } /* Error */
+    code span.ex { } /* Extension */
+    code span.fl { color: #40a070; } /* Float */
+    code span.fu { color: #06287e; } /* Function */
+    code span.im { } /* Import */
+    code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+    code span.kw { color: #007020; font-weight: bold; } /* Keyword */
+    code span.op { color: #666666; } /* Operator */
+    code span.ot { color: #007020; } /* Other */
+    code span.pp { color: #bc7a00; } /* Preprocessor */
+    code span.sc { color: #4070a0; } /* SpecialChar */
+    code span.ss { color: #bb6688; } /* SpecialString */
+    code span.st { color: #4070a0; } /* String */
+    code span.va { color: #19177c; } /* Variable */
+    code span.vs { color: #4070a0; } /* VerbatimString */
+    code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+  </style>
+  <style type="text/css">html {
+padding: 0 1.5em;
+}
+body {
+max-width: 55.5em;
+margin: 0 auto;
+}
+table td {
+vertical-align: text-top;
+}
+table tr:nth-child(even) {
+background-color: #f2f2f2
+}
+table thead th {
+border-bottom: 1px solid black;
+}</style>
+  <!--[if lt IE 9]>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/html5shiv/3.7.3/html5shiv-printshiv.min.js"></script>
+  <![endif]-->
+</head>
+<body>
+<header id="title-block-header">
+<h1 class="title">Jaybird Frequently Asked Questions</h1>
+</header>
+<nav id="TOC" role="doc-toc">
+<ul>
+<li><a href="#jaybird"><span class="toc-section-number">1</span> Jaybird</a>
+<ul>
+<li><a href="#where-do-i-get-jaybird"><span class="toc-section-number">1.1</span> Where do I get Jaybird?</a>
+<ul>
+<li><a href="#maven"><span class="toc-section-number">1.1.1</span> Maven</a></li>
+<li><a href="#download"><span class="toc-section-number">1.1.2</span> Download</a></li>
+</ul></li>
+<li><a href="#where-can-i-get-the-sourcecode"><span class="toc-section-number">1.2</span> Where can I get the sourcecode?</a></li>
+<li><a href="#how-is-jaybird-licensed"><span class="toc-section-number">1.3</span> How is Jaybird licensed?</a>
+<ul>
+<li><a href="#which-version-of-the-lgpl-applies"><span class="toc-section-number">1.3.1</span> Which version of the LGPL applies?</a></li>
+</ul></li>
+<li><a href="#which-java-versions-are-supported"><span class="toc-section-number">1.4</span> Which Java versions are supported?</a>
+<ul>
+<li><a href="#what-is-the-java-9-module-name-for-jaybird"><span class="toc-section-number">1.4.1</span> What is the Java 9 module name for Jaybird?</a></li>
+</ul></li>
+<li><a href="#which-firebird-versions-are-supported"><span class="toc-section-number">1.5</span> Which Firebird versions are supported?</a></li>
+<li><a href="#can-jaybird-connect-to-interbase"><span class="toc-section-number">1.6</span> Can Jaybird connect to Interbase?</a></li>
+</ul></li>
+<li><a href="#documentation-and-support"><span class="toc-section-number">2</span> Documentation and Support</a>
+<ul>
+<li><a href="#where-to-get-more-information-on-jaybird"><span class="toc-section-number">2.1</span> Where to get more information on Jaybird</a></li>
+<li><a href="#where-to-get-help"><span class="toc-section-number">2.2</span> Where to get help</a></li>
+<li><a href="#contributing"><span class="toc-section-number">2.3</span> Contributing</a></li>
+<li><a href="#reporting-bugs"><span class="toc-section-number">2.4</span> Reporting Bugs</a></li>
+</ul></li>
+<li><a href="#connecting-to-firebird"><span class="toc-section-number">3</span> Connecting to Firebird</a>
+<ul>
+<li><a href="#jdbc-urls-java.sql.drivermanager"><span class="toc-section-number">3.1</span> JDBC URLs (<code>java.sql.DriverManager</code>)</a>
+<ul>
+<li><a href="#pure-java-default"><span class="toc-section-number">3.1.1</span> Pure Java (default)</a></li>
+<li><a href="#open-officelibre-office-pure-java"><span class="toc-section-number">3.1.2</span> Open Office/Libre Office (Pure Java)</a></li>
+<li><a href="#native-using-firebird-client-library"><span class="toc-section-number">3.1.3</span> Native (using Firebird client library)</a></li>
+<li><a href="#embedded-server"><span class="toc-section-number">3.1.4</span> Embedded Server</a></li>
+</ul></li>
+<li><a href="#character-sets"><span class="toc-section-number">3.2</span> Character sets</a>
+<ul>
+<li><a href="#how-can-i-specify-the-connection-character-set"><span class="toc-section-number">3.2.1</span> How can I specify the connection character set?</a></li>
+<li><a href="#how-does-character-set-none-work"><span class="toc-section-number">3.2.2</span> How does character set <code>NONE</code> work?</a></li>
+<li><a href="#what-happens-if-no-connection-character-set-is-specified"><span class="toc-section-number">3.2.3</span> What happens if no connection character set is specified?</a></li>
+<li><a href="#how-can-i-solve-the-error-connection-rejected-no-connection-character-set-specified"><span class="toc-section-number">3.2.4</span> How can I solve the error &quot;Connection rejected: No connection character set specified&quot;</a></li>
+</ul></li>
+<li><a href="#how-can-i-enable-the-windows-tcp-loopback-fast-path-introduced-in-firebird-3.0.2"><span class="toc-section-number">3.3</span> How can I enable the Windows &quot;TCP Loopback Fast Path&quot; introduced in Firebird 3.0.2?</a></li>
+<li><a href="#common-connection-errors"><span class="toc-section-number">3.4</span> Common connection errors</a>
+<ul>
+<li><a href="#your-user-name-and-password-are-not-defined.-ask-your-database-administrator-to-set-up-a-firebird-login.-335544472"><span class="toc-section-number">3.4.1</span> Your user name and password are not defined. Ask your database administrator to set up a Firebird login. (335544472)</a></li>
+<li><a href="#incompatible-wire-encryption-levels-requested-on-client-and-server-335545064"><span class="toc-section-number">3.4.2</span> Incompatible wire encryption levels requested on client and server (335545064)</a></li>
+<li><a href="#connection-rejected-by-remote-interface-335544421"><span class="toc-section-number">3.4.3</span> connection rejected by remote interface (335544421)</a></li>
+<li><a href="#error-occurred-during-login-please-check-server-firebird.log-for-details-335545106"><span class="toc-section-number">3.4.4</span> Error occurred during login, please check server firebird.log for details (335545106)</a></li>
+<li><a href="#encryption-key-did-not-meet-algorithm-requirements-of-symmetricarc4-337248282"><span class="toc-section-number">3.4.5</span> Encryption key did not meet algorithm requirements of Symmetric/Arc4 (337248282)</a></li>
+</ul></li>
+</ul></li>
+<li><a href="#jdbc-support"><span class="toc-section-number">4</span> JDBC Support</a>
+<ul>
+<li><a href="#how-much-of-jdbc-is-supported-by-jaybird"><span class="toc-section-number">4.1</span> How much of JDBC is supported by Jaybird?</a></li>
+<li><a href="#what-parts-of-jdbc-are-not-supported-by-jaybird"><span class="toc-section-number">4.2</span> What parts of JDBC are NOT supported by Jaybird?</a></li>
+</ul></li>
+<li><a href="#features"><span class="toc-section-number">5</span> Features</a>
+<ul>
+<li><a href="#does-jaybird-support-connection-pooling"><span class="toc-section-number">5.1</span> Does Jaybird support connection pooling?</a></li>
+</ul></li>
+<li><a href="#compatibility-notes"><span class="toc-section-number">6</span> Compatibility notes</a>
+<ul>
+<li><a href="#wildfly"><span class="toc-section-number">6.1</span> Wildfly</a></li>
+</ul></li>
+</ul>
+</nav>
+<section id="jaybird" class="level1" data-number="1">
+<h1 data-number="1"><span class="header-section-number">1</span> Jaybird</h1>
+<section id="where-do-i-get-jaybird" class="level2" data-number="1.1">
+<h2 data-number="1.1"><span class="header-section-number">1.1</span> Where do I get Jaybird?</h2>
+<section id="maven" class="level3" data-number="1.1.1">
+<h3 data-number="1.1.1"><span class="header-section-number">1.1.1</span> Maven</h3>
+<!-- TODO Hidden for now
+#### Jaybird 5 ####
+
+Jaybird 5 is in development and not yet available from Maven central:
+
+Groupid: `org.firebirdsql.jdbc`, \
+Artifactid: `jaybird`, \
+Version: `5.0.0.javaXX` (where `XX` is `7`, `8` or `11`)
+
+For backwards compatibility, we also provide a Maven relocation artifact with
+artifact id `jaybird-XX` (with `XX` `jdk17`, `jdk18` or `java11`. However, we
+recommend switching to the `jaybird` artifact.
+
+For example, for Java 8:
+
+~~~ {.xml}
+<dependency>
+    <groupId>org.firebirdsql.jdbc</groupId>
+    <artifactId>jaybird</artifactId>
+    <version>4.0.1.java8</version>
+</dependency>
+~~~
+
+If you want to use Type 2 support (native, local or embedded), you need to 
+explicitly include JNA 5.5.0 as a dependency:
+
+~~~ {.xml}
+<dependency>
+    <groupId>net.java.dev.jna</groupId>
+    <artifactId>jna</artifactId>
+    <version>5.5.0</version>
+</dependency>
+~~~
+-->
+<section id="jaybird-4" class="level4" data-number="1.1.1.1">
+<h4 data-number="1.1.1.1"><span class="header-section-number">1.1.1.1</span> Jaybird 4</h4>
+<p>Jaybird 4 is available from Maven central:</p>
+<p>Groupid: <code>org.firebirdsql.jdbc</code>,<br />
+Artifactid: <code>jaybird</code>,<br />
+Version: <code>4.0.2.javaXX</code> (where <code>XX</code> is <code>7</code>, <code>8</code> or <code>11</code>)</p>
+<p>For backwards compatibility, we also provide a Maven relocation artifact with artifact id <code>jaybird-XX</code> (with <code>XX</code> <code>jdk17</code>, <code>jdk18</code> or <code>java11</code>. However, we recommend switching to the <code>jaybird</code> artifact.</p>
+<p>For example, for Java 8:</p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode xml"><code class="sourceCode xml"><span id="cb1-1"><a href="#cb1-1"></a><span class="kw">&lt;dependency&gt;</span></span>
+<span id="cb1-2"><a href="#cb1-2"></a>    <span class="kw">&lt;groupId&gt;</span>org.firebirdsql.jdbc<span class="kw">&lt;/groupId&gt;</span></span>
+<span id="cb1-3"><a href="#cb1-3"></a>    <span class="kw">&lt;artifactId&gt;</span>jaybird<span class="kw">&lt;/artifactId&gt;</span></span>
+<span id="cb1-4"><a href="#cb1-4"></a>    <span class="kw">&lt;version&gt;</span>4.0.2.java8<span class="kw">&lt;/version&gt;</span></span>
+<span id="cb1-5"><a href="#cb1-5"></a><span class="kw">&lt;/dependency&gt;</span></span></code></pre></div>
+<p>If your application is deployed to a Java EE application server, you will need to exclude the <code>javax.resource:connector-api</code> dependency, and add it as a provided dependency:</p>
+<div class="sourceCode" id="cb2"><pre class="sourceCode xml"><code class="sourceCode xml"><span id="cb2-1"><a href="#cb2-1"></a><span class="kw">&lt;dependency&gt;</span></span>
+<span id="cb2-2"><a href="#cb2-2"></a>    <span class="kw">&lt;groupId&gt;</span>org.firebirdsql.jdbc<span class="kw">&lt;/groupId&gt;</span></span>
+<span id="cb2-3"><a href="#cb2-3"></a>    <span class="kw">&lt;artifactId&gt;</span>jaybird<span class="kw">&lt;/artifactId&gt;</span></span>
+<span id="cb2-4"><a href="#cb2-4"></a>    <span class="kw">&lt;version&gt;</span>4.0.2.java8<span class="kw">&lt;/version&gt;</span></span>
+<span id="cb2-5"><a href="#cb2-5"></a>    <span class="kw">&lt;exclusions&gt;</span></span>
+<span id="cb2-6"><a href="#cb2-6"></a>        <span class="kw">&lt;exclusion&gt;</span></span>
+<span id="cb2-7"><a href="#cb2-7"></a>            <span class="kw">&lt;groupId&gt;</span>javax.resource<span class="kw">&lt;/groupId&gt;</span></span>
+<span id="cb2-8"><a href="#cb2-8"></a>            <span class="kw">&lt;artifactId&gt;</span>connector-api<span class="kw">&lt;/artifactId&gt;</span></span>
+<span id="cb2-9"><a href="#cb2-9"></a>        <span class="kw">&lt;/exclusion&gt;</span></span>
+<span id="cb2-10"><a href="#cb2-10"></a>    <span class="kw">&lt;/exclusions&gt;</span></span>
+<span id="cb2-11"><a href="#cb2-11"></a><span class="kw">&lt;/dependency&gt;</span></span>
+<span id="cb2-12"><a href="#cb2-12"></a><span class="kw">&lt;dependency&gt;</span></span>
+<span id="cb2-13"><a href="#cb2-13"></a>    <span class="kw">&lt;groupId&gt;</span>javax.resource<span class="kw">&lt;/groupId&gt;</span></span>
+<span id="cb2-14"><a href="#cb2-14"></a>    <span class="kw">&lt;artifactId&gt;</span>connector-api<span class="kw">&lt;/artifactId&gt;</span></span>
+<span id="cb2-15"><a href="#cb2-15"></a>    <span class="kw">&lt;version&gt;</span>1.5<span class="kw">&lt;/version&gt;</span></span>
+<span id="cb2-16"><a href="#cb2-16"></a>    <span class="kw">&lt;scope&gt;</span>provided<span class="kw">&lt;/scope&gt;</span></span>
+<span id="cb2-17"><a href="#cb2-17"></a><span class="kw">&lt;/dependency&gt;</span></span></code></pre></div>
+<p>If you want to use Type 2 support (native, local or embedded), you need to explicitly include JNA 5.5.0 as a dependency:</p>
+<div class="sourceCode" id="cb3"><pre class="sourceCode xml"><code class="sourceCode xml"><span id="cb3-1"><a href="#cb3-1"></a><span class="kw">&lt;dependency&gt;</span></span>
+<span id="cb3-2"><a href="#cb3-2"></a>    <span class="kw">&lt;groupId&gt;</span>net.java.dev.jna<span class="kw">&lt;/groupId&gt;</span></span>
+<span id="cb3-3"><a href="#cb3-3"></a>    <span class="kw">&lt;artifactId&gt;</span>jna<span class="kw">&lt;/artifactId&gt;</span></span>
+<span id="cb3-4"><a href="#cb3-4"></a>    <span class="kw">&lt;version&gt;</span>5.5.0<span class="kw">&lt;/version&gt;</span></span>
+<span id="cb3-5"><a href="#cb3-5"></a><span class="kw">&lt;/dependency&gt;</span></span></code></pre></div>
+</section>
+<section id="jaybird-3.0" class="level4" data-number="1.1.1.2">
+<h4 data-number="1.1.1.2"><span class="header-section-number">1.1.1.2</span> Jaybird 3.0</h4>
+<!-- For GitHub markdown compatibility -->
+<p><a name="jaybird-3.0"></a></p>
+<p>Jaybird 3.0 is currently maintained, but we recommend upgrading to Jaybird 4.</p>
+<p>Jaybird 3.0 is available from Maven central:</p>
+<p>Groupid: <code>org.firebirdsql.jdbc</code>,<br />
+Artifactid: <code>jaybird-XX</code> (where <code>XX</code> is <code>jdk17</code> or <code>jdk18</code>)<br />
+Version: <code>3.0.10</code></p>
+<p>For ease of use, we also provide a Maven relocation artifact with artifact id <code>jaybird</code>. For Jaybird 3 this relocation artifact points to <code>jaybird-jdk18</code>.</p>
+<p>For example, for Java 8:</p>
+<div class="sourceCode" id="cb4"><pre class="sourceCode xml"><code class="sourceCode xml"><span id="cb4-1"><a href="#cb4-1"></a><span class="kw">&lt;dependency&gt;</span></span>
+<span id="cb4-2"><a href="#cb4-2"></a>    <span class="kw">&lt;groupId&gt;</span>org.firebirdsql.jdbc<span class="kw">&lt;/groupId&gt;</span></span>
+<span id="cb4-3"><a href="#cb4-3"></a>    <span class="kw">&lt;artifactId&gt;</span>jaybird-jdk18<span class="kw">&lt;/artifactId&gt;</span></span>
+<span id="cb4-4"><a href="#cb4-4"></a>    <span class="kw">&lt;version&gt;</span>3.0.10<span class="kw">&lt;/version&gt;</span></span>
+<span id="cb4-5"><a href="#cb4-5"></a><span class="kw">&lt;/dependency&gt;</span></span></code></pre></div>
+<p>If your application is deployed to a Java EE application server, you will need to exclude the <code>javax.resource:connector-api</code> dependency, and add it as a provided dependency:</p>
+<div class="sourceCode" id="cb5"><pre class="sourceCode xml"><code class="sourceCode xml"><span id="cb5-1"><a href="#cb5-1"></a><span class="kw">&lt;dependency&gt;</span></span>
+<span id="cb5-2"><a href="#cb5-2"></a>    <span class="kw">&lt;groupId&gt;</span>org.firebirdsql.jdbc<span class="kw">&lt;/groupId&gt;</span></span>
+<span id="cb5-3"><a href="#cb5-3"></a>    <span class="kw">&lt;artifactId&gt;</span>jaybird-jdk18<span class="kw">&lt;/artifactId&gt;</span></span>
+<span id="cb5-4"><a href="#cb5-4"></a>    <span class="kw">&lt;version&gt;</span>3.0.10<span class="kw">&lt;/version&gt;</span></span>
+<span id="cb5-5"><a href="#cb5-5"></a>    <span class="kw">&lt;exclusions&gt;</span></span>
+<span id="cb5-6"><a href="#cb5-6"></a>        <span class="kw">&lt;exclusion&gt;</span></span>
+<span id="cb5-7"><a href="#cb5-7"></a>            <span class="kw">&lt;groupId&gt;</span>javax.resource<span class="kw">&lt;/groupId&gt;</span></span>
+<span id="cb5-8"><a href="#cb5-8"></a>            <span class="kw">&lt;artifactId&gt;</span>connector-api<span class="kw">&lt;/artifactId&gt;</span></span>
+<span id="cb5-9"><a href="#cb5-9"></a>        <span class="kw">&lt;/exclusion&gt;</span></span>
+<span id="cb5-10"><a href="#cb5-10"></a>    <span class="kw">&lt;/exclusions&gt;</span></span>
+<span id="cb5-11"><a href="#cb5-11"></a><span class="kw">&lt;/dependency&gt;</span></span>
+<span id="cb5-12"><a href="#cb5-12"></a><span class="kw">&lt;dependency&gt;</span></span>
+<span id="cb5-13"><a href="#cb5-13"></a>    <span class="kw">&lt;groupId&gt;</span>javax.resource<span class="kw">&lt;/groupId&gt;</span></span>
+<span id="cb5-14"><a href="#cb5-14"></a>    <span class="kw">&lt;artifactId&gt;</span>connector-api<span class="kw">&lt;/artifactId&gt;</span></span>
+<span id="cb5-15"><a href="#cb5-15"></a>    <span class="kw">&lt;version&gt;</span>1.5<span class="kw">&lt;/version&gt;</span></span>
+<span id="cb5-16"><a href="#cb5-16"></a>    <span class="kw">&lt;scope&gt;</span>provided<span class="kw">&lt;/scope&gt;</span></span>
+<span id="cb5-17"><a href="#cb5-17"></a><span class="kw">&lt;/dependency&gt;</span></span></code></pre></div>
+<p>If you want to use Type 2 support (native, local or embedded), you need to explicitly include JNA 4.4.0 as a dependency:</p>
+<div class="sourceCode" id="cb6"><pre class="sourceCode xml"><code class="sourceCode xml"><span id="cb6-1"><a href="#cb6-1"></a><span class="kw">&lt;dependency&gt;</span></span>
+<span id="cb6-2"><a href="#cb6-2"></a>    <span class="kw">&lt;groupId&gt;</span>net.java.dev.jna<span class="kw">&lt;/groupId&gt;</span></span>
+<span id="cb6-3"><a href="#cb6-3"></a>    <span class="kw">&lt;artifactId&gt;</span>jna<span class="kw">&lt;/artifactId&gt;</span></span>
+<span id="cb6-4"><a href="#cb6-4"></a>    <span class="kw">&lt;version&gt;</span>4.4.0<span class="kw">&lt;/version&gt;</span></span>
+<span id="cb6-5"><a href="#cb6-5"></a><span class="kw">&lt;/dependency&gt;</span></span></code></pre></div>
+</section>
+<section id="jaybird-2.2" class="level4" data-number="1.1.1.3">
+<h4 data-number="1.1.1.3"><span class="header-section-number">1.1.1.3</span> Jaybird 2.2</h4>
+<p>Jaybird 2.2 is end-of-life. We recommend upgrading to Jaybird 4.</p>
+<p>Jaybird 2.2 is available on Maven, with a separate artifact for each supported Java version.</p>
+<p>Groupid: <code>org.firebirdsql.jdbc</code>,<br />
+Artifactid: <code>jaybird-XX</code> (where <code>XX</code> is <code>jdk16</code>, <code>jdk17</code> or <code>jdk18</code>)<br />
+Version: <code>2.2.15</code></p>
+<p>For ease of use, we also provide a Maven relocation artifact with artifact id <code>jaybird</code>. For Jaybird 2.2 this relocation artifact points to <code>jaybird-jdk17</code>.</p>
+<p>For example:</p>
+<div class="sourceCode" id="cb7"><pre class="sourceCode xml"><code class="sourceCode xml"><span id="cb7-1"><a href="#cb7-1"></a><span class="kw">&lt;dependency&gt;</span></span>
+<span id="cb7-2"><a href="#cb7-2"></a>    <span class="kw">&lt;groupId&gt;</span>org.firebirdsql.jdbc<span class="kw">&lt;/groupId&gt;</span></span>
+<span id="cb7-3"><a href="#cb7-3"></a>    <span class="kw">&lt;artifactId&gt;</span>jaybird-jdk18<span class="kw">&lt;/artifactId&gt;</span></span>
+<span id="cb7-4"><a href="#cb7-4"></a>    <span class="kw">&lt;version&gt;</span>2.2.15<span class="kw">&lt;/version&gt;</span></span>
+<span id="cb7-5"><a href="#cb7-5"></a><span class="kw">&lt;/dependency&gt;</span></span></code></pre></div>
+<p>When deploying to a JavaEE environment, exclude the <code>javax.resource connector-api</code> dependency as this will be provided by the application server.</p>
+</section>
+</section>
+<section id="download" class="level3" data-number="1.1.2">
+<h3 data-number="1.1.2"><span class="header-section-number">1.1.2</span> Download</h3>
+<p>Firebird can be downloaded from the Firebird website, under Downloads, <a href="https://www.firebirdsql.org/en/jdbc-driver/">JDBC Driver</a>.</p>
+<p>Alternatively, you can go directly to GitHub and download Jaybird from the <a href="https://github.com/FirebirdSQL/jaybird/releases">jaybird releases</a>.</p>
+</section>
+</section>
+<section id="where-can-i-get-the-sourcecode" class="level2" data-number="1.2">
+<h2 data-number="1.2"><span class="header-section-number">1.2</span> Where can I get the sourcecode?</h2>
+<p>All Jaybird distribution zips contain a <code>jaybird-&lt;version&gt;-sources.zip</code> with the sources used for that specific version. The full Jaybird sourcecode is also available from GitHub in the jaybird repository:</p>
+<p><a href="https://github.com/FirebirdSQL/jaybird">https://github.com/FirebirdSQL/jaybird</a></p>
+<p>Each release is also tagged in the repository.</p>
+</section>
+<section id="how-is-jaybird-licensed" class="level2" data-number="1.3">
+<h2 data-number="1.3"><span class="header-section-number">1.3</span> How is Jaybird licensed?</h2>
+<p>Jaybird JDBC driver is distributed under the GNU Lesser General Public License (LGPL). Text of the license can be obtained from <a href="http://www.gnu.org/copyleft/lesser.html">http://www.gnu.org/copyleft/lesser.html</a>.</p>
+<p>Using Jaybird (by importing Jaybird&#39;s public interfaces in your Java code), and extending Jaybird by subclassing or implementation of an extension interface (but not abstract or concrete class) is considered by the authors of Jaybird to be dynamic linking. Hence our interpretation of the LGPL is that the use of the unmodified Jaybird source does not affect the license of your application code.</p>
+<p>Even more, all extension interfaces to which an application might want to link are released under dual LGPL/modified BSD license. Latter is basically &quot;AS IS&quot; license that allows any kind of use of that source code. Jaybird should be viewed as an implementation of that interfaces and the LGPL section for dynamic linking is applicable in this case.</p>
+<section id="which-version-of-the-lgpl-applies" class="level3" data-number="1.3.1">
+<h3 data-number="1.3.1"><span class="header-section-number">1.3.1</span> Which version of the LGPL applies?</h3>
+<p>Current releases of Jaybird do not explicitly specify an LGPL version. This means that you can choose which version applies. Future versions of Jaybird may specify an explicit version, or be released under a different license.</p>
+</section>
+</section>
+<section id="which-java-versions-are-supported" class="level2" data-number="1.4">
+<h2 data-number="1.4"><span class="header-section-number">1.4</span> Which Java versions are supported?</h2>
+<p>Jaybird 4 supports Java 7, 8, 11 and 15. Support for Java 9 and higher is limited to the latest LTS and current latest release, but in practice Jaybird should work on all Java 9+ versions.</p>
+<p>Jaybird 4 is the last version to support Java 7, support will be dropped with Jaybird 5. Java 8 support may be dropped from Jaybird 5 as well depending on the actual release timeline.</p>
+<p>Jaybird 3.0 supports Java 7 and 8 and has basic support for Java 9 and higher using the Java 8 version of the driver. Support for Java 9 and higher is limited to the latest LTS and current latest release, but in practice Jaybird should work on all Java 9+ versions.</p>
+<p>Jaybird 2.2 supports Java 6, 7 and 8.</p>
+<p>Jaybird 2.2.4 added basic support for Java 8 (JDBC 4.2), although not all JDBC 4.2 features are supported or fully implemented.</p>
+<p>Jaybird 2.2.7 is the last version to support Java 5, support has been dropped with Jaybird 2.2.8.</p>
+<p>Jaybird 2.2 is the last version to support Java 6, support has been dropped with Jaybird 3.0.</p>
+<section id="what-is-the-java-9-module-name-for-jaybird" class="level3" data-number="1.4.1">
+<h3 data-number="1.4.1"><span class="header-section-number">1.4.1</span> What is the Java 9 module name for Jaybird?</h3>
+<p>Jaybird itself is not (yet) modularized. To ensure a stable module name, Jaybird, since 2.2.14 and 3.0.3, declares the automatic module name <code>org.firebirdsql.jaybird</code>.</p>
+</section>
+</section>
+<section id="which-firebird-versions-are-supported" class="level2" data-number="1.5">
+<h2 data-number="1.5"><span class="header-section-number">1.5</span> Which Firebird versions are supported?</h2>
+<p>Jaybird 4 supports Firebird version 2.5 and higher, and introduces support for Firebird 4 types <code>DECLOAT</code>, extended precision of <code>NUMERIC</code> and <code>DECIMAL</code>, and time zone types (<code>TIME WITH TIME ZONE</code> and <code>TIMESTAMP WITH TIME ZONE</code>).</p>
+<p>Jaybird 3 supports Firebird versions 2.0 and higher. Support for Firebird 4 is limited to the Firebird 3 feature set.</p>
+<p>Jaybird 3 is the last version to support Firebird 2.0 and 2.1. Future versions of Jaybird are not guaranteed to work with version 2.1 and earlier.</p>
+<p>Jaybird 2.2 supports all Firebird versions 1.0 and higher. Jaybird 2.2.4 added support for new features of Firebird 3 (eg <code>BOOLEAN</code> support). Support for Firebird 4 is limited to the Firebird 3 feature set.</p>
+<p>Jaybird 2.2 is the last version to support Firebird 1.0 and 1.5. Future versions of Jaybird are not guaranteed to work with these versions.</p>
+</section>
+<section id="can-jaybird-connect-to-interbase" class="level2" data-number="1.6">
+<h2 data-number="1.6"><span class="header-section-number">1.6</span> Can Jaybird connect to Interbase?</h2>
+<p>Jaybird does not support Interbase, and as far as we know connecting to Interbase 6.0 and later will fail due to Firebird specific changes in the implementation.</p>
+</section>
+</section>
+<section id="documentation-and-support" class="level1" data-number="2">
+<h1 data-number="2"><span class="header-section-number">2</span> Documentation and Support</h1>
+<section id="where-to-get-more-information-on-jaybird" class="level2" data-number="2.1">
+<h2 data-number="2.1"><span class="header-section-number">2.1</span> Where to get more information on Jaybird</h2>
+<p>Apart from this FAQ, you can get additional information from:</p>
+<ul>
+<li><a href="https://github.com/FirebirdSQL/jaybird/wiki/">Jaybird wiki</a></li>
+<li><a href="https://firebirdsql.github.io/jaybird-manual/jaybird_manual.html">Jaybird JDBC Driver Java Programmer’s Manual</a> (HTML, <a href="https://firebirdsql.github.io/jaybird-manual/jaybird_manual.pdf">PDF version</a>) (covers Jaybird 2.2 and higher, work in progress)</li>
+<li><a href="https://www.firebirdsql.org/file/documentation/drivers_documentation/Jaybird_2_1_JDBC_driver_manual.pdf">Jaybird 2.1 JDBC driver - Java Programmers Manual</a> (PDF)</li>
+<li><a href="https://www.firebirdsql.org/en/devel-jdbc-driver/">Firebird Website: Development, JDBC Driver</a></li>
+</ul>
+<p>For version specific details, consult the release notes</p>
+<ul>
+<li><a href="https://www.firebirdsql.org/file/documentation/drivers_documentation/java/4.0.x/release_notes.html">Jaybird 4.0.x release notes</a></li>
+<li><a href="https://www.firebirdsql.org/file/documentation/drivers_documentation/java/3.0.x/release_notes.html">Jaybird 3.0.x release notes</a></li>
+<li><a href="https://www.firebirdsql.org/file/documentation/drivers_documentation/java/2.2.x/release_notes.html">Jaybird 2.2.x release notes</a></li>
+</ul>
+</section>
+<section id="where-to-get-help" class="level2" data-number="2.2">
+<h2 data-number="2.2"><span class="header-section-number">2.2</span> Where to get help</h2>
+<ul>
+<li><p>On <a href="https://stackoverflow.com/">Stack Overflow</a>, please tag your questions with <em>jaybird</em> and <em>firebird</em></p></li>
+<li><p>The <a href="https://groups.google.com/g/firebird-java">Firebird-Java group</a> and corresponding mailing list firebird-java@googlegroups.com</p>
+<p>You can subscribe to the mailing list by sending an email to <a href="mailto:firebird-java+subscribe@googlegroups.com">firebird-java+subscribe@googlegroups.com</a></p></li>
+<li><p>Looking for professional support of Jaybird? Jaybird is now part of the <a href="https://tidelift.com/subscription/pkg/maven-org-firebirdsql-jdbc-jaybird?utm_source=maven-org-firebirdsql-jdbc-jaybird&amp;utm_medium=referral&amp;utm_campaign=docs">Tidelift subscription</a>.</p></li>
+<li><p>The <a href="https://www.firebirdsql.org">Firebird project home page</a></p></li>
+<li><p>Firebird support and other <a href="https://www.firebirdsql.org/en/mailing-lists/">Firebird mailing lists</a> for questions not directly related to Jaybird and java.</p></li>
+</ul>
+</section>
+<section id="contributing" class="level2" data-number="2.3">
+<h2 data-number="2.3"><span class="header-section-number">2.3</span> Contributing</h2>
+<p>There are several ways you can contribute to Jaybird or Firebird in general:</p>
+<ul>
+<li>Participate on the mailing lists (see <a href="https://www.firebirdsql.org/en/mailing-lists/" class="uri">https://www.firebirdsql.org/en/mailing-lists/</a>)</li>
+<li>Report bugs or submit patches on the tracker (see <a href="#reporting-bugs">Reporting Bugs</a>)</li>
+<li>Create pull requests on GitHub (<a href="https://github.com/FirebirdSQL/jaybird" class="uri">https://github.com/FirebirdSQL/jaybird</a>)</li>
+<li>Become a developer (for Jaybird contact us on firebird-java, for Firebird in general, use the Firebird-devel mailing list)</li>
+<li>Donate to the Firebird Foundation (see <a href="https://www.firebirdsql.org/en/donate/" class="uri">https://www.firebirdsql.org/en/donate/</a>)</li>
+<li>Become a paying member or sponsor of the Firebird Foundation (see <a href="https://www.firebirdsql.org/en/firebird-foundation/" class="uri">https://www.firebirdsql.org/en/firebird-foundation/</a>)</li>
+</ul>
+</section>
+<section id="reporting-bugs" class="level2" data-number="2.4">
+<h2 data-number="2.4"><span class="header-section-number">2.4</span> Reporting Bugs</h2>
+<p>The developers follow the <a href="https://groups.google.com/g/firebird-java">firebird-java Google Group</a>. Join the list and post information about suspected bugs. List members may be able to help out to determine if it is an actual bug, provide a workaround and get you going again, whereas bug fixes might take a while.</p>
+<p>You can report bugs in the Firebird bug tracker, project <a href="http://tracker.firebirdsql.org/browse/JDBC">&quot;Java Client (Jaybird)&quot;</a></p>
+<p>When reporting bugs, please provide a minimal, but complete reproduction, including databases and sourcecode to reproduce the problem. Patches to fix bugs are also appreciated. Make sure the patch is against a recent master version of the code. You can also fork the jaybird repository and create pull requests.</p>
+</section>
+</section>
+<section id="connecting-to-firebird" class="level1" data-number="3">
+<h1 data-number="3"><span class="header-section-number">3</span> Connecting to Firebird</h1>
+<section id="jdbc-urls-java.sql.drivermanager" class="level2" data-number="3.1">
+<h2 data-number="3.1"><span class="header-section-number">3.1</span> JDBC URLs (<code>java.sql.DriverManager</code>)</h2>
+<section id="pure-java-default" class="level3" data-number="3.1.1">
+<h3 data-number="3.1.1"><span class="header-section-number">3.1.1</span> Pure Java (default)</h3>
+<p>Default URL format:</p>
+<pre><code>jdbc:firebirdsql://host[:port]/&lt;database&gt;</code></pre>
+<p>This will connect to the database using the Type 4 JDBC driver using the Java implementation of the Firebird wire-protocol. This is best suited for client-server applications with dedicated database server. Port can be omitted (default value is <code>3050</code>), host name must be present.</p>
+<p>The <code>&lt;host&gt;</code> part is either the hostname, the IPv4 address, or the IPv6 address in brackets (eg <code>[::1]</code>). Use of IPv6 address literals is only supported in Jaybird 3 or newer with Firebird 3 or newer.</p>
+<p>The <code>&lt;database&gt;</code> part should be replaced with the database alias or the path to the database. In general it is advisable to use database aliases instead of the path of the database file as it hides implementation details like file locations and OS type.</p>
+<p>On Linux the root <code>/</code> should be included in the path. A database located on <code>/opt/firebird/db.fdb</code> should use (note the double slash after port!):</p>
+<pre><code>jdbc:firebirdsql://host:port//opt/firebird/db.fdb</code></pre>
+<p>Deprecated, but still supported legacy URL format:</p>
+<pre><code>jdbc:firebirdsql:host[/port]:&lt;database&gt;</code></pre>
+<p>The legacy URL format does not support IPv6 address literals.</p>
+<p>Jaybird 4 and higher also support:</p>
+<pre><code>jdbc:firebird://host[:port]/&lt;database&gt;
+jdbc:firebird:host[/port]:&lt;database&gt;</code></pre>
+</section>
+<section id="open-officelibre-office-pure-java" class="level3" data-number="3.1.2">
+<h3 data-number="3.1.2"><span class="header-section-number">3.1.2</span> Open Office/Libre Office (Pure Java)</h3>
+<p>Jaybird can be used together with OpenOffice and Libre Office Base. To address some compatibility issues (and differences in interpretation of JDBC specifications) a separate subprotocol is used:</p>
+<pre><code>jdbc:firebirdsql:oo://host[:port]/&lt;database&gt;</code></pre>
+<p>Jaybird 4 and higher also support:</p>
+<pre><code>jdbc:firebird:oo://host[:port]/&lt;database&gt;</code></pre>
+</section>
+<section id="native-using-firebird-client-library" class="level3" data-number="3.1.3">
+<h3 data-number="3.1.3"><span class="header-section-number">3.1.3</span> Native (using Firebird client library)</h3>
+<p>Default URL format:</p>
+<pre><code>jdbc:firebirdsql:native://host[:port]/&lt;database&gt;</code></pre>
+<p>Legacy URL format:</p>
+<pre><code>jdbc:firebirdsql:native:host[/port]:&lt;database&gt;</code></pre>
+<p>Type 2 driver, will connect to the database using client library (<code>fbclient.dll</code> on Windows, and <code>libfbclient.so</code> on Linux). Requires correct installation of the client library and - for Jaybird 2.2 or earlier - the Jaybird native library, or - for Jaybird 3.0 - the JNA jar file.</p>
+<pre><code>jdbc:firebirdsql:local:&lt;database&gt;</code></pre>
+<p>Type 2 driver in local mode. Uses client library as in previous case, however will not use socket communication, but rather access database directly. Requires correct installation of the client library and - for Jaybird 2.2 or earlier - the Jaybird native library, or - for Jaybird 3.0 - the JNA jar file.</p>
+<p>Jaybird 4 and higher also support:</p>
+<pre><code>jdbc:firebird:native://host[:port]/&lt;database&gt;
+jdbc:firebird:native:host[/port]:&lt;database&gt;
+jdbc:firebird:local:&lt;database&gt;</code></pre>
+</section>
+<section id="embedded-server" class="level3" data-number="3.1.4">
+<h3 data-number="3.1.4"><span class="header-section-number">3.1.4</span> Embedded Server</h3>
+<pre><code>jdbc:firebirdsql:embedded:&lt;database&gt;</code></pre>
+<p>Similar to the Firebird client library, however <code>fbembed.dll</code> on Windows and <code>libfbembed.so</code> on Linux are used, falling back to <code>fbclient.dll</code>/<code>libfbclient.so</code> under the assumption it provides Embedded functionality. Requires correctly installed and configured Firebird embedded library and - for Jaybird 2.2 or earlier - the Jaybird native library, or - for Jaybird 3.0 - the JNA jar file.</p>
+<p>Jaybird 4 and higher also support:</p>
+<pre><code>jdbc:firebird:embedded:&lt;database&gt;</code></pre>
+</section>
+</section>
+<section id="character-sets" class="level2" data-number="3.2">
+<h2 data-number="3.2"><span class="header-section-number">3.2</span> Character sets</h2>
+<section id="how-can-i-specify-the-connection-character-set" class="level3" data-number="3.2.1">
+<h3 data-number="3.2.1"><span class="header-section-number">3.2.1</span> How can I specify the connection character set?</h3>
+<p>Jaybird provides two connection properties to specify the connection character set:</p>
+<ul>
+<li><p><code>charSet</code> with a Java character set name (alias: <code>localEncoding</code>)</p>
+<p>The Java character set name must map to an equivalent Firebird character set.</p></li>
+<li><p><code>encoding</code> with a Firebird character set name (alias: <code>lc_ctype</code>)</p>
+<p>The Firebird character set name - except <code>NONE</code> - must map to an equivalent Java character set.</p></li>
+</ul>
+<p>For most applications, use only one of these two properties.</p>
+<p>For special situations it is possible to specify both <code>charSet</code> and <code>encoding</code> to convert/reinterpret a character set into another character set, this is usually only necessary to fix data problems.</p>
+<p>To phrase differently:</p>
+<ul>
+<li><p><code>encoding=&lt;firebird charset&gt;</code>: use connection encoding <code>&lt;firebird charset&gt;</code> and interpret in the equivalent Java character set</p></li>
+<li><p><code>charSet=&lt;java charset&gt;</code>: use Firebird equivalent of <code>&lt;java charset&gt;</code> as connection encoding and interpret in <java charset></p></li>
+<li><p><code>encoding=&lt;firebird charset&gt;&amp;charSet=&lt;java charset&gt;</code>: use connection encoding <code>&lt;firebird charset&gt;</code>, but interpret in <code>&lt;java charset&gt;</code></p></li>
+</ul>
+<p>The handling of Firebird character set <code>NONE</code> is slightly different, see below.</p>
+</section>
+<section id="how-does-character-set-none-work" class="level3" data-number="3.2.2">
+<h3 data-number="3.2.2"><span class="header-section-number">3.2.2</span> How does character set <code>NONE</code> work?</h3>
+<p>The Firebird character set <code>NONE</code> is a special case, it essentially means &quot;no character set&quot;. You can store anything in it, but conversions to or from this character set are not defined.</p>
+<p>Using character set <code>NONE</code> can result in incorrect character set handling when the database is used from different locales.</p>
+<p>When used as a connection character set, Jaybird handles <code>NONE</code> as follows:</p>
+<section id="none-jaybird3" class="level4" data-number="3.2.2.1">
+<h4 data-number="3.2.2.1"><span class="header-section-number">3.2.2.1</span> Jaybird 3.0 and higher</h4>
+<!-- For GitHub markdown compatibility -->
+<p><a href="none-jaybird3"></a></p>
+<ul>
+<li><p><code>encoding=NONE</code> means connection encoding <code>NONE</code> and interpret columns with character set <code>NONE</code> using the default JVM encoding, and interpret columns with an explicit character set in their equivalent Java character set</p></li>
+<li><p><code>encoding=NONE&amp;charSet=ISO-8859-1</code> the same, but instead of the JVM default, use <code>ISO-8859-1</code></p></li>
+</ul>
+</section>
+<section id="none-jaybird2-2" class="level4" data-number="3.2.2.2">
+<h4 data-number="3.2.2.2"><span class="header-section-number">3.2.2.2</span> Jaybird 2.2 and earlier</h4>
+<!-- For GitHub markdown compatibility -->
+<p><a href="none-jaybird2-2"></a></p>
+<ul>
+<li><p><code>encoding=NONE</code> means use connection encoding <code>NONE</code> and interpret everything using the default JVM encoding</p></li>
+<li><p><code>encoding=NONE&amp;charSet=ISO-8859-1</code> the same, but instead of the JVM default, use <code>ISO-8859-1</code></p></li>
+</ul>
+</section>
+</section>
+<section id="what-happens-if-no-connection-character-set-is-specified" class="level3" data-number="3.2.3">
+<h3 data-number="3.2.3"><span class="header-section-number">3.2.3</span> What happens if no connection character set is specified?</h3>
+<p>When no character set has been specified explicitly, Jaybird 2.2 and earlier, and Jaybird 3.0.2 and higher default to connection character set <code>NONE</code>. See <a href="#how-does-character-set-none-work">How does character set <code>NONE</code> work?</a> for details on character set <code>NONE</code>.</p>
+<p>Jaybird 3.0.0 and 3.0.1, however, will reject the connection, see <a href="#how-can-i-solve-the-error-connection-rejected-no-connection-character-set-specified">How can I solve the error &quot;Connection rejected: No connection character set specified&quot;</a>.</p>
+<p>In Jaybird 3 it is possible to override the default connection character set by specifying system property <code>org.firebirdsql.jdbc.defaultConnectionEncoding</code> with a valid Firebird character set name.</p>
+<p>Jaybird 3.0.2 introduces the system property <code>org.firebirdsql.jdbc.requireConnectionEncoding</code>, which - when set to <code>true</code> - will reject connections without a character set (which was the default behavior in Jaybird 3.0.0 and 3.0.1).</p>
+</section>
+<section id="how-can-i-solve-the-error-connection-rejected-no-connection-character-set-specified" class="level3" data-number="3.2.4">
+<h3 data-number="3.2.4"><span class="header-section-number">3.2.4</span> How can I solve the error &quot;Connection rejected: No connection character set specified&quot;</h3>
+<p>If no character set has been set, Jaybird 3 will reject the connection with an <code>SQLNonTransientConnectionException</code> with message <em>&quot;Connection rejected: No connection character set specified (property lc_ctype, encoding, charSet or localEncoding). Please specify a connection character set (eg property charSet=utf-8) or consult the Jaybird documentation for more information.&quot;</em></p>
+<p>In Jaybird 3.0.0 and 3.0.1 this error will be thrown if the character set has not been set explicitly. In Jaybird 3.0.2 and higher this error will only be thrown if system property <code>org.firebirdsql.jdbc.requireConnectionEncoding</code> has been set to <code>true</code>.</p>
+<p>To address this error, you can set the default connection character set using one of the following options:</p>
+<ul>
+<li><p>Use connection property <code>encoding</code> (alias: <code>lc_ctype</code>) with a Firebird character set name.</p>
+<p>Use <code>encoding=NONE</code> for the default behavior (with some caveats, see <a href="#how-does-character-set-none-work">How does character set <code>NONE</code> work?</a>).</p></li>
+<li><p>Use connection property <code>charSet</code> (alias: <code>localEncoding</code>) with a Java character set name.</p></li>
+<li><p>Use a combination of <code>encoding</code> and <code>charSet</code>, if you want to reinterpret a Firebird character set in a Java character set other than the default mapping.</p></li>
+<li><p>By providing a default Firebird character set with system property <code>org.firebirdsql.jdbc.defaultConnectionEncoding</code>. Jaybird will apply the specified character set as the default when no character set is specified in the connection properties.</p>
+<p>This property only supports Firebird character set names.</p>
+<p>Use <code>-Dorg.firebirdsql.jdbc.defaultConnectionEncoding=NONE</code> to revert to the default behavior (with some caveats, see <a href="#how-does-character-set-none-work">How does character set <code>NONE</code> work?</a>). With Jaybird 3.0.2 or higher, it is better to just not set system property <code>org.firebirdsql.jdbc.requireConnectionEncoding</code> if you want to apply <code>NONE</code>.</p></li>
+</ul>
+</section>
+</section>
+<section id="how-can-i-enable-the-windows-tcp-loopback-fast-path-introduced-in-firebird-3.0.2" class="level2" data-number="3.3">
+<h2 data-number="3.3"><span class="header-section-number">3.3</span> How can I enable the Windows &quot;TCP Loopback Fast Path&quot; introduced in Firebird 3.0.2?</h2>
+<p>Firebird 3.0.2 adds support for &quot;TCP Loopback Fast Path&quot; (<code>SIO_LOOPBACK_FAST_PATH</code> socket option). This is available in Windows 8 / Windows Server 2012 and higher. This feature enables performance optimizations when connecting through localhost (127.0.0.1 / ::1). It requires support on both client and server side.</p>
+<p>Java support for &quot;TCP Loopback Fast Path&quot; was introduced in Java 8 update 60, it can be enabled by specifying the system property <code>jdk.net.useFastTcpLoopback</code> with value <code>true</code> (e.g. specify <code>-Djdk.net.useFastTcpLoopback=true</code> in your Java commandline).</p>
+<p>Unfortunately, Java only has an &#39;all-or-nothing&#39; support for the &quot;TCP Loopback Fast Path&quot;, so Jaybird cannot enable this for you: you must specify this property on JVM startup. On the other hand, this has the benefit that this works for all Jaybird versions, as long as you use Java 8 update 60 or higher (and Firebird 3.0.2 or higher).</p>
+</section>
+<section id="common-connection-errors" class="level2" data-number="3.4">
+<h2 data-number="3.4"><span class="header-section-number">3.4</span> Common connection errors</h2>
+<section id="your-user-name-and-password-are-not-defined.-ask-your-database-administrator-to-set-up-a-firebird-login.-335544472" class="level3" data-number="3.4.1">
+<h3 data-number="3.4.1"><span class="header-section-number">3.4.1</span> Your user name and password are not defined. Ask your database administrator to set up a Firebird login. (335544472)</h3>
+<p>This error means that the user does not exist, or that the specified password is not correct.</p>
+<p>When connecting to Firebird 3 and higher, this error can also mean that the user does exist (with that password), but not for the authentication plugins tried for this connection.</p>
+<p>For example, Jaybird 2.2.x and earlier only support legacy authentication, if you try to login as a user created for SRP authentication, you will get the same error.</p>
+</section>
+<section id="incompatible-wire-encryption-levels-requested-on-client-and-server-335545064" class="level3" data-number="3.4.2">
+<h3 data-number="3.4.2"><span class="header-section-number">3.4.2</span> Incompatible wire encryption levels requested on client and server (335545064)</h3>
+<p>With Jaybird 3.0.0 - 3.0.3 connecting to Firebird 3 or higher, this usually means that the setting <code>WireCrypt</code> is set to its (default) value of <code>Required</code>.</p>
+<p>Upgrade to Jaybird 3.0.4 or higher, or relax this setting (in <code>firebird.conf</code>) to <code>WireCrypt = Enabled</code>.</p>
+<p>See also <a href="https://github.com/FirebirdSQL/jaybird/wiki/Jaybird-and-Firebird-3">Jaybird Wiki - Jaybird and Firebird 3</a></p>
+<p>With Jaybird 3.0.4 or higher, or Jaybird 4, this error means that you have requested a connection with a mismatch in encryption settings. For example, you specified connection property <code>wireCrypt=required</code> while Firebird is set to <code>WireCrypt = Disabled</code> (or vice versa).</p>
+</section>
+<section id="connection-rejected-by-remote-interface-335544421" class="level3" data-number="3.4.3">
+<h3 data-number="3.4.3"><span class="header-section-number">3.4.3</span> connection rejected by remote interface (335544421)</h3>
+<p>In general this error means that Jaybird requested a connection with properties not supported by Firebird. It can have other causes than described below.</p>
+<section id="cause-username-or-password-is-null" class="level4" data-number="3.4.3.1">
+<h4 data-number="3.4.3.1"><span class="header-section-number">3.4.3.1</span> Cause: username or password is null</h4>
+<p>With Jaybird 3 and higher connecting to Firebird 3 or higher, leaving username or password null will lead to Jaybird not trying any authentication plugin, and as a result, Firebird will reject the connection.</p>
+<p>With Firebird 2.5 and earlier, or Jaybird 2.2, this situation will normally yield error <em>&quot;Your user name and password are not defined. Ask your database administrator to set up a Firebird login.&quot;</em>.</p>
+</section>
+<section id="cause-wirecrypt-required" class="level4" data-number="3.4.3.2">
+<h4 data-number="3.4.3.2"><span class="header-section-number">3.4.3.2</span> Cause: wirecrypt required</h4>
+<p>With Jaybird 2.2.x connecting to Firebird 3 or higher, this usually means that the setting <code>WireCrypt</code> is set to its (default) value of <code>Required</code>.</p>
+<p>Relax this setting (in <code>firebird.conf</code>) to <code>WireCrypt = Enabled</code>.</p>
+<p>See also <a href="https://github.com/FirebirdSQL/jaybird/wiki/Jaybird-and-Firebird-3">Jaybird Wiki - Jaybird and Firebird 3</a></p>
+<p>Make sure you check the other settings mentioned in that article, otherwise you&#39;ll get the next error.</p>
+</section>
+</section>
+<section id="error-occurred-during-login-please-check-server-firebird.log-for-details-335545106" class="level3" data-number="3.4.4">
+<h3 data-number="3.4.4"><span class="header-section-number">3.4.4</span> Error occurred during login, please check server firebird.log for details (335545106)</h3>
+<p>If the logging contains something like</p>
+<pre><code>SERVER  Sat Oct 28 10:07:26 2017
+    Authentication error
+    No matching plugins on server</code></pre>
+<p>with Jaybird 2.2.x connecting to Firebird 3 or higher, this means that the setting <code>AuthServer</code> does not include the <code>Legacy_Auth</code> plugin.</p>
+<p>Enable <code>Legacy_Auth</code> (in <code>firebird.conf</code>) by adding this value to the property <code>AuthServer</code>, for example: <code>AuthServer = Srp, Legacy_Auth</code>.</p>
+<p>With Jaybird 4 and higher this can also mean that none of the default authentication plugins, or those specified using connection property <code>authPlugins</code>, are listed in the <code>AuthServer</code> setting. Either revise the Firebird configuration, or explicitly configure connection property <code>authPlugins</code> with authentication plugins that are configured in Firebird.</p>
+<p>You also need to make sure your user is created with the legacy user manager, see <a href="https://github.com/FirebirdSQL/jaybird/wiki/Jaybird-and-Firebird-3">Jaybird Wiki - Jaybird and Firebird 3</a> for details.</p>
+</section>
+<section id="encryption-key-did-not-meet-algorithm-requirements-of-symmetricarc4-337248282" class="level3" data-number="3.4.5">
+<h3 data-number="3.4.5"><span class="header-section-number">3.4.5</span> Encryption key did not meet algorithm requirements of Symmetric/Arc4 (337248282)</h3>
+<p>If the exception cause is <em>java.security.InvalidKeyException: Illegal key size or default parameters</em>, this means that your Java install applies a security policy that does not allow ARCFOUR with a 160 bit encryption key.</p>
+<p>If <code>wireCrypt=ENABLED</code> (the default), this is just logged as a warning. The connection will succeed, but it does mean that the connection will not be encrypted. If <code>wireCrypt=REQUIRED</code>, this is thrown as an exception, and the connection will fail.</p>
+<p>This could indicate that your Java version applies the limited strength Cryptographic Jurisdiction Policy (this was the default in Java 8 Update 152 and earlier), or has been explicitly configured to apply the limited policy, or has a custom security policy to restrict the cryptographic key size.</p>
+<p>Solutions and workarounds:</p>
+<ul>
+<li>Apply the unlimited Cryptographic Jurisdiction Policy, see <a href="https://stackoverflow.com/a/3864276/466862">this Stack Overflow answer</a></li>
+<li>Relax your custom security policy to allow 160 bit keys for ARCFOUR</li>
+<li>Disable wire encryption for Firebird by setting <code>WireCrypt = Disabled</code> in <code>firebird.conf</code></li>
+<li>Set <code>wireCrypt=DISABLED</code> in the connection properties</li>
+</ul>
+<p>Be aware that the first two options may have legal implications depending on the local law in your country regarding cryptography.</p>
+</section>
+</section>
+</section>
+<section id="jdbc-support" class="level1" data-number="4">
+<h1 data-number="4"><span class="header-section-number">4</span> JDBC Support</h1>
+<section id="how-much-of-jdbc-is-supported-by-jaybird" class="level2" data-number="4.1">
+<h2 data-number="4.1"><span class="header-section-number">4.1</span> How much of JDBC is supported by Jaybird?</h2>
+<p><strong>WARNING</strong> The information in this section is not 100% up-to-date</p>
+<p>Jaybird 3 follows the JDBC 4.3 specification with some features and methods not implemented as they are not supported by Firebird.</p>
+<p>Implemented features:</p>
+<ul>
+<li>Most useful JDBC functionality (&quot;useful&quot; in the opinion of the developers).</li>
+<li>XA transactions with true two phase commit when used via <code>javax.sql.XADataSource</code> implementation.</li>
+<li><code>ObjectFactory</code> implementation for use in environments with JNDI but no <code>TransactionManager</code>.</li>
+<li><code>DataSource</code> implementations without pooling.</li>
+<li>Complete access to all Firebird database parameter block and transaction parameter block settings.</li>
+<li>JMX mbean for database management (so far just database create and drop).</li>
+</ul>
+</section>
+<section id="what-parts-of-jdbc-are-not-supported-by-jaybird" class="level2" data-number="4.2">
+<h2 data-number="4.2"><span class="header-section-number">4.2</span> What parts of JDBC are NOT supported by Jaybird?</h2>
+<p><strong>WARNING</strong> The information in this section is outdated</p>
+<p>The following optional features are NOT supported:</p>
+<p>The following optional features and the methods that support it are not implemented:</p>
+<ul>
+<li>Ref and Array types.
+<ul>
+<li><code>java.sql.PreparedStatement</code>
+<ul>
+<li><code>setRef(int i, Ref x)</code></li>
+<li><code>setArray(int i, Array x)</code></li>
+</ul></li>
+<li><code>java.sql.ResultSet</code>
+<ul>
+<li><code>getArray(int i)</code></li>
+<li><code>getArray(String columnName)</code></li>
+<li><code>getRef(int i)</code></li>
+<li><code>getRef(String columnName)</code></li>
+</ul></li>
+</ul></li>
+<li>User Defined Types/Type Maps.
+<ul>
+<li><code>java.sql.ResultSet</code>
+<ul>
+<li><code>getObject(int i, java.util.Map map)</code></li>
+<li><code>getObject(String columnName, java.util.Map map)</code></li>
+</ul></li>
+<li><code>java.sql.Connection</code>
+<ul>
+<li><code>getTypeMap()</code></li>
+<li><code>setTypeMap(java.util.Map map)</code></li>
+</ul></li>
+</ul></li>
+</ul>
+<p>Excluding the unsupported features, the following methods are not yet implemented:</p>
+<ul>
+<li><code>java.sql.Blob</code>
+<ul>
+<li><code>length()</code></li>
+<li><code>getBytes(long pos, int length)</code></li>
+<li><code>position(byte pattern[], long start)</code></li>
+<li><code>position(Blob pattern, long start)</code></li>
+</ul></li>
+</ul>
+<p>The following methods are implemented, but do not work as expected:</p>
+<ul>
+<li><code>java.sql.Statement</code>
+<ul>
+<li><code>get/setMaxFieldSize</code> does nothing</li>
+<li><code>get/setQueryTimeout</code> does nothing</li>
+</ul></li>
+<li><code>java.sql.PreparedStatement</code>
+<ul>
+<li><code>setObject(index,object,type)</code> This method is implemented but behaves as <code>setObject(index,object)</code></li>
+<li><code>setObject(index,object,type,scale)</code> This method is implemented but behaves as <code>setObject(index,object)</code></li>
+</ul></li>
+<li><code>java.sql.CallableStatement</code>
+<ul>
+<li><code>getBigDecimal(index,scale)</code> This method is implemented but behaves as <code>getBigDecimal(index)</code>. The method is deprecated, and we suggest to use <code>getBigDecimal(index)</code> and adjust the scale of the returned <code>BigDecimal</code> using <code>BigDecimal.setScale(newScale,roundingMode)</code></li>
+</ul></li>
+<li><code>java.sql.ResultSetMetaData</code>
+<ul>
+<li><code>isReadOnly(i)</code> always returns false</li>
+<li><code>isWritable(i)</code> always returns true</li>
+<li><code>isDefinitivelyWritable(i)</code> always returns true</li>
+</ul></li>
+<li><code>java.sql.ResultSet</code>
+<ul>
+<li><code>getBigDecimal(index,scale)</code> This method is implemented but behaves as <code>getBigDecimal(index)</code>. The method is deprecated, and we suggest to use <code>getBigDecimal(index)</code> and adjust the scale of the returned <code>BigDecimal</code> using <code>BigDecimal.setScale(newScale,roundingMode)</code></li>
+</ul></li>
+</ul>
+</section>
+</section>
+<section id="features" class="level1" data-number="5">
+<h1 data-number="5"><span class="header-section-number">5</span> Features</h1>
+<section id="does-jaybird-support-connection-pooling" class="level2" data-number="5.1">
+<h2 data-number="5.1"><span class="header-section-number">5.1</span> Does Jaybird support connection pooling?</h2>
+<p>Jaybird itself no longer provides connection pooling. Earlier versions had a <code>DataSource</code> implementation with connection pooling, but this implementation had severe bugs. This implementation (and all other classes in <code>org.firebirdsql.pool</code>) was deprecated in 2.2 and dropped in 3.0.</p>
+<p>Jaybird provides a basic <code>DataSource</code> implementation and a <code>ConnectionPoolDataSource</code> implementation. Contrary to its name the latter <strong>does not provide a connection pool</strong>, but is intended to be used by a connection pool (as implemented in an application server) to create connections <em>for</em> the connection pool.</p>
+<p>If your application is built on a Java EE application server, we suggest you use the connection pooling provided by the application server using the <code>javax.sql.ConnectionPoolDataSource</code> implementation <code>org.firebirdsql.ds.FBConnectionPoolDataSource</code>, or using the <code>javax.sql.XADataSource</code> implementation <code>org.firebirdsql.ds.FBXADataSource</code>.</p>
+<p>If you develop standalone applications, or you use an application server without connection pooling, we suggest you use third-party libraries like:</p>
+<ul>
+<li><a href="https://github.com/brettwooldridge/HikariCP">HikariCP</a></li>
+<li><a href="https://www.mchange.com/projects/c3p0/">c3p0</a></li>
+<li><a href="http://commons.apache.org/proper/commons-dbcp/">Apache DBCP</a></li>
+</ul>
+</section>
+</section>
+<section id="compatibility-notes" class="level1" data-number="6">
+<h1 data-number="6"><span class="header-section-number">6</span> Compatibility notes</h1>
+<section id="wildfly" class="level2" data-number="6.1">
+<h2 data-number="6.1"><span class="header-section-number">6.1</span> Wildfly</h2>
+<p>The minimal <code>module.xml</code> to use Jaybird 3 under Wildfly is:</p>
+<div class="sourceCode" id="cb21"><pre class="sourceCode xml"><code class="sourceCode xml"><span id="cb21-1"><a href="#cb21-1"></a><span class="kw">&lt;?xml</span> version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;<span class="kw">?&gt;</span></span>
+<span id="cb21-2"><a href="#cb21-2"></a><span class="kw">&lt;module</span><span class="ot"> xmlns=</span><span class="st">&quot;urn:jboss:module:1.0&quot;</span><span class="ot"> name=</span><span class="st">&quot;org.firebirdsql&quot;</span><span class="kw">&gt;</span></span>
+<span id="cb21-3"><a href="#cb21-3"></a>  <span class="kw">&lt;resources&gt;</span></span>
+<span id="cb21-4"><a href="#cb21-4"></a>    <span class="kw">&lt;resource-root</span><span class="ot"> path=</span><span class="st">&quot;jaybird-3.0.x.jar&quot;</span><span class="kw">/&gt;</span></span>
+<span id="cb21-5"><a href="#cb21-5"></a>  <span class="kw">&lt;/resources&gt;</span></span>
+<span id="cb21-6"><a href="#cb21-6"></a>  <span class="kw">&lt;dependencies&gt;</span></span>
+<span id="cb21-7"><a href="#cb21-7"></a>    <span class="kw">&lt;module</span><span class="ot"> name=</span><span class="st">&quot;javax.api&quot;</span><span class="kw">/&gt;</span></span>
+<span id="cb21-8"><a href="#cb21-8"></a>    <span class="kw">&lt;module</span><span class="ot"> name=</span><span class="st">&quot;javax.transaction.api&quot;</span><span class="kw">/&gt;</span></span>
+<span id="cb21-9"><a href="#cb21-9"></a>    <span class="kw">&lt;module</span><span class="ot"> name=</span><span class="st">&quot;javax.resource.api&quot;</span><span class="kw">/&gt;</span></span>
+<span id="cb21-10"><a href="#cb21-10"></a>  <span class="kw">&lt;/dependencies&gt;</span></span>
+<span id="cb21-11"><a href="#cb21-11"></a><span class="kw">&lt;/module&gt;</span></span></code></pre></div>
+<p>With Jaybird 3.0.4 and higher for Java 7 (but not Java 8!) in Wildfly (or JBoss), you will need to add the module <code>javax.xml.bind.api</code> to your module:</p>
+<div class="sourceCode" id="cb22"><pre class="sourceCode xml"><code class="sourceCode xml"><span id="cb22-1"><a href="#cb22-1"></a><span class="kw">&lt;?xml</span> version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;<span class="kw">?&gt;</span></span>
+<span id="cb22-2"><a href="#cb22-2"></a><span class="kw">&lt;module</span><span class="ot"> xmlns=</span><span class="st">&quot;urn:jboss:module:1.0&quot;</span><span class="ot"> name=</span><span class="st">&quot;org.firebirdsql&quot;</span><span class="kw">&gt;</span></span>
+<span id="cb22-3"><a href="#cb22-3"></a>  <span class="kw">&lt;resources&gt;</span></span>
+<span id="cb22-4"><a href="#cb22-4"></a>    <span class="kw">&lt;resource-root</span><span class="ot"> path=</span><span class="st">&quot;jaybird-3.0.x.jar&quot;</span><span class="kw">/&gt;</span></span>
+<span id="cb22-5"><a href="#cb22-5"></a>  <span class="kw">&lt;/resources&gt;</span></span>
+<span id="cb22-6"><a href="#cb22-6"></a>  <span class="kw">&lt;dependencies&gt;</span></span>
+<span id="cb22-7"><a href="#cb22-7"></a>    <span class="kw">&lt;module</span><span class="ot"> name=</span><span class="st">&quot;javax.api&quot;</span><span class="kw">/&gt;</span></span>
+<span id="cb22-8"><a href="#cb22-8"></a>    <span class="kw">&lt;module</span><span class="ot"> name=</span><span class="st">&quot;javax.transaction.api&quot;</span><span class="kw">/&gt;</span></span>
+<span id="cb22-9"><a href="#cb22-9"></a>    <span class="kw">&lt;module</span><span class="ot"> name=</span><span class="st">&quot;javax.resource.api&quot;</span><span class="kw">/&gt;</span></span>
+<span id="cb22-10"><a href="#cb22-10"></a>    <span class="kw">&lt;module</span><span class="ot"> name=</span><span class="st">&quot;javax.xml.bind.api&quot;</span><span class="kw">/&gt;</span> <span class="co">&lt;!-- Add this --&gt;</span></span>
+<span id="cb22-11"><a href="#cb22-11"></a>  <span class="kw">&lt;/dependencies&gt;</span></span>
+<span id="cb22-12"><a href="#cb22-12"></a><span class="kw">&lt;/module&gt;</span></span></code></pre></div>
+<p>Alternatively, use Jaybird for Java 8 (or higher).</p>
+</section>
+</section>
+</body>
+</html>

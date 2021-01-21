@@ -1,0 +1,1534 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang xml:lang>
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <title>Jaybird 4.0.2 Release Notes</title>
+  <style>
+    code{white-space: pre-wrap;}
+    span.smallcaps{font-variant: small-caps;}
+    span.underline{text-decoration: underline;}
+    div.column{display: inline-block; vertical-align: top; width: 50%;}
+    div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+    ul.task-list{list-style: none;}
+    pre > code.sourceCode { white-space: pre; position: relative; }
+    pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+    pre > code.sourceCode > span:empty { height: 1.2em; }
+    code.sourceCode > span { color: inherit; text-decoration: inherit; }
+    div.sourceCode { margin: 1em 0; }
+    pre.sourceCode { margin: 0; }
+    @media screen {
+    div.sourceCode { overflow: auto; }
+    }
+    @media print {
+    pre > code.sourceCode { white-space: pre-wrap; }
+    pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+    }
+    pre.numberSource code
+      { counter-reset: source-line 0; }
+    pre.numberSource code > span
+      { position: relative; left: -4em; counter-increment: source-line; }
+    pre.numberSource code > span > a:first-child::before
+      { content: counter(source-line);
+        position: relative; left: -1em; text-align: right; vertical-align: baseline;
+        border: none; display: inline-block;
+        -webkit-touch-callout: none; -webkit-user-select: none;
+        -khtml-user-select: none; -moz-user-select: none;
+        -ms-user-select: none; user-select: none;
+        padding: 0 4px; width: 4em;
+        color: #aaaaaa;
+      }
+    pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
+    div.sourceCode
+      {   }
+    @media screen {
+    pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+    }
+    code span.al { color: #ff0000; font-weight: bold; } /* Alert */
+    code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+    code span.at { color: #7d9029; } /* Attribute */
+    code span.bn { color: #40a070; } /* BaseN */
+    code span.bu { } /* BuiltIn */
+    code span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+    code span.ch { color: #4070a0; } /* Char */
+    code span.cn { color: #880000; } /* Constant */
+    code span.co { color: #60a0b0; font-style: italic; } /* Comment */
+    code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+    code span.do { color: #ba2121; font-style: italic; } /* Documentation */
+    code span.dt { color: #902000; } /* DataType */
+    code span.dv { color: #40a070; } /* DecVal */
+    code span.er { color: #ff0000; font-weight: bold; } /* Error */
+    code span.ex { } /* Extension */
+    code span.fl { color: #40a070; } /* Float */
+    code span.fu { color: #06287e; } /* Function */
+    code span.im { } /* Import */
+    code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+    code span.kw { color: #007020; font-weight: bold; } /* Keyword */
+    code span.op { color: #666666; } /* Operator */
+    code span.ot { color: #007020; } /* Other */
+    code span.pp { color: #bc7a00; } /* Preprocessor */
+    code span.sc { color: #4070a0; } /* SpecialChar */
+    code span.ss { color: #bb6688; } /* SpecialString */
+    code span.st { color: #4070a0; } /* String */
+    code span.va { color: #19177c; } /* Variable */
+    code span.vs { color: #4070a0; } /* VerbatimString */
+    code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+  </style>
+  <style type="text/css">html {
+padding: 0 1.5em;
+}
+body {
+max-width: 55.5em;
+margin: 0 auto;
+}
+table td {
+vertical-align: text-top;
+}
+table tr:nth-child(even) {
+background-color: #f2f2f2
+}
+table thead th {
+border-bottom: 1px solid black;
+}</style>
+  <!--[if lt IE 9]>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/html5shiv/3.7.3/html5shiv-printshiv.min.js"></script>
+  <![endif]-->
+</head>
+<body>
+<header id="title-block-header">
+<h1 class="title">Jaybird 4.0.2 Release Notes</h1>
+</header>
+<nav id="TOC" role="doc-toc">
+<ul>
+<li><a href="#jaybird-4.0.x-changelog"><span class="toc-section-number">1</span> Jaybird 4.0.x changelog</a>
+<ul>
+<li><a href="#jaybird-4.0.2"><span class="toc-section-number">1.1</span> Jaybird 4.0.2</a></li>
+<li><a href="#jaybird-4.0.1"><span class="toc-section-number">1.2</span> Jaybird 4.0.1</a></li>
+<li><a href="#jaybird-4.0.0"><span class="toc-section-number">1.3</span> Jaybird 4.0.0</a></li>
+<li><a href="#jaybird-4.0.0-beta-2"><span class="toc-section-number">1.4</span> Jaybird 4.0.0-beta-2</a></li>
+</ul></li>
+<li><a href="#known-issues"><span class="toc-section-number">2</span> Known issues</a></li>
+<li><a href="#support"><span class="toc-section-number">3</span> Support</a></li>
+<li><a href="#general-notes"><span class="toc-section-number">4</span> General Notes</a>
+<ul>
+<li><a href="#about-this-version"><span class="toc-section-number">4.1</span> About this version</a></li>
+<li><a href="#supported-firebird-versions"><span class="toc-section-number">4.2</span> Supported Firebird versions</a>
+<ul>
+<li><a href="#notes-on-firebird-3-support"><span class="toc-section-number">4.2.1</span> Notes on Firebird 3 support</a></li>
+<li><a href="#notes-on-firebird-4-support"><span class="toc-section-number">4.2.2</span> Notes on Firebird 4 support</a></li>
+</ul></li>
+<li><a href="#supported-java-versions"><span class="toc-section-number">4.3</span> Supported Java versions</a></li>
+<li><a href="#specification-support"><span class="toc-section-number">4.4</span> Specification support</a></li>
+</ul></li>
+<li><a href="#getting-jaybird-4"><span class="toc-section-number">5</span> Getting Jaybird 4</a>
+<ul>
+<li><a href="#jaybird-4.0.2-1"><span class="toc-section-number">5.1</span> Jaybird 4.0.2</a>
+<ul>
+<li><a href="#maven"><span class="toc-section-number">5.1.1</span> Maven</a></li>
+<li><a href="#download"><span class="toc-section-number">5.1.2</span> Download</a></li>
+</ul></li>
+</ul></li>
+<li><a href="#upgrading-from-jaybird-3-to-jaybird-4"><span class="toc-section-number">6</span> Upgrading from Jaybird 3 to Jaybird 4</a>
+<ul>
+<li><a href="#maven-1"><span class="toc-section-number">6.1</span> Maven</a></li>
+<li><a href="#manual-install"><span class="toc-section-number">6.2</span> Manual install</a></li>
+<li><a href="#gotchas"><span class="toc-section-number">6.3</span> Gotchas</a></li>
+</ul></li>
+<li><a href="#whats-new-in-jaybird-4"><span class="toc-section-number">7</span> What&#39;s new in Jaybird 4</a>
+<ul>
+<li><a href="#changes-in-artifact-and-library-names"><span class="toc-section-number">7.1</span> Changes in artifact and library names</a></li>
+<li><a href="#java-support"><span class="toc-section-number">7.2</span> Java support</a>
+<ul>
+<li><a href="#java-7"><span class="toc-section-number">7.2.1</span> Java 7</a></li>
+<li><a href="#java-8"><span class="toc-section-number">7.2.2</span> Java 8</a></li>
+<li><a href="#java-9-and-higher"><span class="toc-section-number">7.2.3</span> Java 9 and higher</a></li>
+</ul></li>
+<li><a href="#firebird-support"><span class="toc-section-number">7.3</span> Firebird support</a></li>
+<li><a href="#wire-encryption-support"><span class="toc-section-number">7.4</span> Wire encryption support</a></li>
+<li><a href="#database-encryption-support"><span class="toc-section-number">7.5</span> Database encryption support</a></li>
+<li><a href="#wire-compression-support"><span class="toc-section-number">7.6</span> Wire compression support</a></li>
+<li><a href="#authentication-plugin-improvements"><span class="toc-section-number">7.7</span> Authentication plugin improvements</a>
+<ul>
+<li><a href="#default-authentication-plugins"><span class="toc-section-number">7.7.1</span> Default authentication plugins</a></li>
+<li><a href="#configure-authentication-plugins"><span class="toc-section-number">7.7.2</span> Configure authentication plugins</a></li>
+<li><a href="#external-authentication-plugin-support-experimental"><span class="toc-section-number">7.7.3</span> External authentication plugin support (experimental)</a></li>
+</ul></li>
+<li><a href="#firebird-4-data-type-bind-configuration-support"><span class="toc-section-number">7.8</span> Firebird 4 data type bind configuration support</a></li>
+<li><a href="#firebird-4-decfloat-support"><span class="toc-section-number">7.9</span> Firebird 4 DECFLOAT support</a>
+<ul>
+<li><a href="#precision-and-range"><span class="toc-section-number">7.9.1</span> Precision and range</a></li>
+<li><a href="#configuring-decfloat-traps-and-rounding"><span class="toc-section-number">7.9.2</span> Configuring decfloat traps and rounding</a></li>
+<li><a href="#notes"><span class="toc-section-number">7.9.3</span> Notes</a></li>
+</ul></li>
+<li><a href="#firebird-4-extended-numeric-precision-support"><span class="toc-section-number">7.10</span> Firebird 4 extended numeric precision support</a>
+<ul>
+<li><a href="#important-notice-about-extended-numeric-precision-support"><span class="toc-section-number">7.10.1</span> Important notice about extended numeric precision support</a></li>
+</ul></li>
+<li><a href="#firebird-4-int128-support"><span class="toc-section-number">7.11</span> Firebird 4 INT128 support</a></li>
+<li><a href="#firebird-4-time-zone-support"><span class="toc-section-number">7.12</span> Firebird 4 time zone support</a>
+<ul>
+<li><a href="#scope-of-time-zone-support"><span class="toc-section-number">7.12.1</span> Scope of time zone support</a></li>
+<li><a href="#time-zone-bind-configuration"><span class="toc-section-number">7.12.2</span> Time zone bind configuration</a></li>
+<li><a href="#connection-property-sessiontimezone"><span class="toc-section-number">7.12.3</span> Connection property sessionTimeZone</a></li>
+<li><a href="#time-zone-support-for-convert"><span class="toc-section-number">7.12.4</span> Time zone support for CONVERT</a></li>
+<li><a href="#caveats-for-time-zone-types"><span class="toc-section-number">7.12.5</span> Caveats for time zone types</a></li>
+</ul></li>
+<li><a href="#firebird-4-statement-timeout-support"><span class="toc-section-number">7.13</span> Firebird 4 statement timeout support</a></li>
+<li><a href="#jdbc-rowid-support"><span class="toc-section-number">7.14</span> JDBC RowId support</a></li>
+<li><a href="#databasemetadata-getpseudocolumns-implemented"><span class="toc-section-number">7.15</span> DatabaseMetaData getPseudoColumns implemented</a></li>
+<li><a href="#databasemetadata-getversioncolumns-implemented"><span class="toc-section-number">7.16</span> DatabaseMetaData getVersionColumns implemented</a></li>
+<li><a href="#databasemetadata-getfunctions-implemented"><span class="toc-section-number">7.17</span> DatabaseMetaData getFunctions implemented</a></li>
+<li><a href="#databasemetadata-getfunctioncolumns-implemented"><span class="toc-section-number">7.18</span> DatabaseMetaData getFunctionColumns implemented</a></li>
+<li><a href="#improved-jdbc-function-escape-support"><span class="toc-section-number">7.19</span> Improved JDBC function escape support</a>
+<ul>
+<li><a href="#new-jdbc-function-escapes"><span class="toc-section-number">7.19.1</span> New JDBC function escapes</a></li>
+<li><a href="#improved-jdbc-function-escapes"><span class="toc-section-number">7.19.2</span> Improved JDBC function escapes</a></li>
+<li><a href="#improved-convert-support"><span class="toc-section-number">7.19.3</span> Improved CONVERT support</a></li>
+</ul></li>
+<li><a href="#new-jdbc-protocol-prefix-jdbcfirebird"><span class="toc-section-number">7.20</span> New JDBC protocol prefix jdbc:firebird:</a></li>
+<li><a href="#url-encoding-in-query-part-of-jdbc-url"><span class="toc-section-number">7.21</span> URL encoding in query part of JDBC URL</a></li>
+<li><a href="#generated-keys-support-improvements"><span class="toc-section-number">7.22</span> Generated keys support improvements</a>
+<ul>
+<li><a href="#configuration-of-generated-keys-behaviour"><span class="toc-section-number">7.22.1</span> Configuration of generated keys behaviour</a></li>
+<li><a href="#support-for-merge"><span class="toc-section-number">7.22.2</span> Support for MERGE</a></li>
+<li><a href="#support-for-firebird-4-returning"><span class="toc-section-number">7.22.3</span> Support for Firebird 4 RETURNING *</a></li>
+<li><a href="#generated-keys-grammar-simplification"><span class="toc-section-number">7.22.4</span> Generated keys grammar simplification</a></li>
+<li><a href="#other-behavioural-changes-to-generated-keys"><span class="toc-section-number">7.22.5</span> Other behavioural changes to generated keys</a></li>
+</ul></li>
+<li><a href="#operation-monitoring"><span class="toc-section-number">7.23</span> Operation monitoring</a></li>
+<li><a href="#potentially-breaking-changes"><span class="toc-section-number">7.24</span> Potentially breaking changes</a></li>
+<li><a href="#other-fixes-and-changes"><span class="toc-section-number">7.25</span> Other fixes and changes</a></li>
+<li><a href="#removal-of-deprecated-classes-and-packages"><span class="toc-section-number">7.26</span> Removal of deprecated classes and packages</a></li>
+</ul></li>
+<li><a href="#compatibility-changes"><span class="toc-section-number">8</span> Compatibility changes</a>
+<ul>
+<li><a href="#firebird-2.0-and-2.1-no-longer-supported"><span class="toc-section-number">8.1</span> Firebird 2.0 and 2.1 no longer supported</a></li>
+<li><a href="#removed-legacy_auth-from-default-authentication-plugins"><span class="toc-section-number">8.2</span> Removed Legacy_Auth from default authentication plugins</a></li>
+<li><a href="#time-zone-behaviour"><span class="toc-section-number">8.3</span> Time zone behaviour</a></li>
+<li><a href="#rdbdb_key-columns-no-longer-of-types.binary"><span class="toc-section-number">8.4</span> RDB$DB_KEY columns no longer of Types.BINARY</a></li>
+<li><a href="#databasemetadata.getbestrowidentifier-scope-handling"><span class="toc-section-number">8.5</span> DatabaseMetaData.getBestRowIdentifier scope handling</a></li>
+<li><a href="#precision-reported-for-float-and-double-precision-on-firebird-4"><span class="toc-section-number">8.6</span> Precision reported for FLOAT and DOUBLE PRECISION on Firebird 4</a></li>
+<li><a href="#incompatibilities-due-to-url-encoding-in-jdbc-url-query-part"><span class="toc-section-number">8.7</span> Incompatibilities due to URL encoding in JDBC URL query part</a></li>
+<li><a href="#stricter-jdbc-compliance"><span class="toc-section-number">8.8</span> Stricter JDBC compliance</a>
+<ul>
+<li><a href="#changes-to-behaviour-of-generated-keys"><span class="toc-section-number">8.8.1</span> Changes to behaviour of generated keys</a></li>
+<li><a href="#databasemetadata"><span class="toc-section-number">8.8.2</span> DatabaseMetaData</a></li>
+</ul></li>
+<li><a href="#removal-of-character-mapping"><span class="toc-section-number">8.9</span> Removal of character mapping</a></li>
+<li><a href="#removal-of-constants-without-deprecation"><span class="toc-section-number">8.10</span> Removal of constants without deprecation</a></li>
+<li><a href="#removal-of-deprecated-classes-packages-and-methods"><span class="toc-section-number">8.11</span> Removal of deprecated classes, packages and methods</a>
+<ul>
+<li><a href="#removal-of-deprecated-constants"><span class="toc-section-number">8.11.1</span> Removal of deprecated constants</a></li>
+</ul></li>
+<li><a href="#breaking-changes-for-jaybird-5"><span class="toc-section-number">8.12</span> Breaking changes for Jaybird 5</a>
+<ul>
+<li><a href="#dropping-support-for-java-7"><span class="toc-section-number">8.12.1</span> Dropping support for Java 7</a></li>
+<li><a href="#dropping-support-for-java-8-tentative"><span class="toc-section-number">8.12.2</span> Dropping support for Java 8 (tentative)</a></li>
+<li><a href="#dropping-jca-support"><span class="toc-section-number">8.12.3</span> Dropping JCA support</a></li>
+<li><a href="#removal-of-deprecated-methods"><span class="toc-section-number">8.12.4</span> Removal of deprecated methods</a></li>
+<li><a href="#removal-of-deprecated-classes"><span class="toc-section-number">8.12.5</span> Removal of deprecated classes</a></li>
+<li><a href="#removal-of-deprecated-constants-1"><span class="toc-section-number">8.12.6</span> Removal of deprecated constants</a></li>
+<li><a href="#removal-of-udf-support-for-jdbc-escapes"><span class="toc-section-number">8.12.7</span> Removal of UDF support for JDBC escapes</a></li>
+</ul></li>
+</ul></li>
+<li><a href="#compatibility-notes"><span class="toc-section-number">9</span> Compatibility notes</a>
+<ul>
+<li><a href="#type-2-native-and-embedded-driver"><span class="toc-section-number">9.1</span> Type 2 (native) and embedded driver</a></li>
+</ul></li>
+</ul>
+</nav>
+<section id="jaybird-4.0.x-changelog" class="level1" data-number="1">
+<h1 data-number="1"><span class="header-section-number">1</span> Jaybird 4.0.x changelog</h1>
+<p>Changes per Jaybird 4 release. See also <a href="#whats-new-in-jaybird-4">What&#39;s new in Jaybird 4</a>. For known issues, consult <a href="#known-issues">Known Issues</a>.</p>
+<section id="jaybird-4.0.2" class="level2" data-number="1.1">
+<h2 data-number="1.1"><span class="header-section-number">1.1</span> Jaybird 4.0.2</h2>
+<p>The following has been changed or fixed since Jaybird 4.0.1</p>
+<ul>
+<li>Fixed: First letter of JDBC escape was case-sensitive (<a href="http://tracker.firebirdsql.org/browse/JDBC-632">JDBC-632</a>)<br />
+This was a regression compared to 2.2.x. Fix was also back-ported to 3.0.10.</li>
+<li>Fixed: Some usernames cannot authenticate using SRP (<a href="http://tracker.firebirdsql.org/browse/JDBC-635">JDBC-635</a>)<br />
+Fix was also back-ported to 3.0.10.</li>
+<li>Fixed: <code>ServiceConfigurationError</code> while loading plugins could prevent Jaybird from loading (<a href="http://tracker.firebirdsql.org/browse/JDBC-636">JDBC-636</a>)<br />
+Fix was also back-ported to 3.0.10.</li>
+</ul>
+</section>
+<section id="jaybird-4.0.1" class="level2" data-number="1.2">
+<h2 data-number="1.2"><span class="header-section-number">1.2</span> Jaybird 4.0.1</h2>
+<p>The following has been changed or fixed since Jaybird 4.0.0</p>
+<ul>
+<li>Fixed: Changes to the transaction configuration (transaction parameter buffer configuration) of one connection are no longer propagated to other connections with the same connection properties (<a href="http://tracker.firebirdsql.org/browse/JDBC-386">JDBC-386</a>)<br />
+This change introduces a binary incompatibility as method <code>setTransactionParameters(int, TransactionParameterBuffer)</code> in <code>FBManagedConnection</code> can now throw <code>ResourceException</code> where previously it did not. Under the assumption that most users of Jaybird are not directly using this class, the change should not break anything.</li>
+<li>Fixed: Search index of Javadoc in Java 11 version used incorrect links (<a href="http://tracker.firebirdsql.org/browse/JDBC-619">JDBC-619</a>)</li>
+<li>Fixed: The cleanup of native resources didn&#39;t dispose the native library held by JNA, as a change in implementation no longer allowed directly access to the JNA <code>NativeLibrary</code> (<a href="http://tracker.firebirdsql.org/browse/JDBC-620">JDBC-620</a>)</li>
+<li>Fixed: When updating a row through an updatable result set, selected but not updated blob fields were set to <code>NULL</code> (<a href="http://tracker.firebirdsql.org/browse/JDBC-623">JDBC-623</a>)</li>
+<li>Added: Support for type <code>INT128</code> (reported as JDBC type <code>NUMERIC</code>) (<a href="http://tracker.firebirdsql.org/browse/JDBC-624">JDBC-624</a>)<br />
+See also <a href="#firebird-4-int128-support">Firebird 4 INT128 support</a>.</li>
+<li>Added: A static utility method <code>FBDriver.normalizeProperties</code> which, given a JDBC url and a <code>Properties</code> object, returns a <code>Map&lt;String, String&gt;</code> containing the merged properties normalized to common property name. (<a href="http://tracker.firebirdsql.org/browse/JDBC-627">JDBC-627</a>)<br />
+The current implementation normalizes known property names to the long-form <code>isc_dpb</code> name, and removes the <code>database</code> property. These are both implementation details that might change in future versions.<br />
+This feature is also back-ported to Jaybird 3.0.10.</li>
+<li>Fixed: Use of <code>isc_dpb_no_db_triggers</code> no longer logs a warning (<a href="http://tracker.firebirdsql.org/browse/JDBC-628">JDBC-628</a>)</li>
+<li>Incompatible change: While making changes to time zone support, the API of <code>org.firebirdsql.gds.ng.tz.TimeZoneDatatypeCoder</code> was made almost entirely private. This should not affect normal user code.<br />
+Although we try to avoid these types of incompatible changes in point releases, we explicitly allow them for the <code>org.firebirdsql.gds.ng</code> package and sub-packages.</li>
+<li>Changed: conversions from <code>TIME WITH TIME ZONE</code> now use 2020-01-01 as base date for named zones (<a href="http://tracker.firebirdsql.org/browse/JDBC-629">JDBC-629</a>)<br />
+There are some caveats with this conversion, especially between <code>OffsetTime</code> and <code>OffsetDateTime</code> for named zones. For <code>OffsetTime</code>, we will always use the offset as it was on 2020-01-01, while for <code>OffsetDateTime</code> we will first rebase the time in the named zone to the current date, and then derive the offset.<br />
+See also <a href="https://github.com/FirebirdSQL/jaybird/blob/master/devdoc/jdp/jdp-2020-06-offsettime-derivation-for-named-zone.md">jdp-2020-06 OffsetTime derivation for named zone</a></li>
+<li>New feature: Added support for <code>java.time.ZonedDateTime</code> for the <code>WITH TIME     ZONE</code> types (<a href="http://tracker.firebirdsql.org/browse/JDBC-630">JDBC-630</a>)<br />
+To preserve named zones, we have added support for getting and setting both <code>TIME WITH TIME ZONE</code> and <code>TIMESTAMP WITH TIME ZONE</code> as a <code>ZonedDateTime</code>.<br />
+For <code>TIME WITH TIME ZONE</code>, the returned value is rebased on the current date.</li>
+<li>Fixed: <code>Connection.setNetworkTimeout</code> incorrectly used the provided <code>Executor</code> to set the timeout (<a href="tracker.firebirdsql.org/browse/JDBC-631">JDBC-631</a>)<br />
+This caused a race condition where the timeout was possibly applied too late, and when <code>connection.close()</code> was called immediately after, this could trigger a <code>NullPointerException</code> that would bubble up into the executor.</li>
+</ul>
+</section>
+<section id="jaybird-4.0.0" class="level2" data-number="1.3">
+<h2 data-number="1.3"><span class="header-section-number">1.3</span> Jaybird 4.0.0</h2>
+<p>The following has been changed or fixed since Jaybird 4.0.0-beta-2</p>
+<ul>
+<li>Changed: The &#39;DEC_FIXED&#39; extended numeric precision support (for Firebird 4.0.0-beta-1) has been removed (<a href="http://tracker.firebirdsql.org/browse/JDBC-596">JDBC-596</a>)<br />
+Now only the &#39;INT128&#39; extended numeric precision (for Firebird 4.0.0-beta-2 and higher, or snapshot 4.0.0.1604 or higher) is supported.</li>
+<li>Changed: Updated dependency on JNA from 5.3.0 to 5.5.0 (<a href="http://tracker.firebirdsql.org/browse/JDBC-509">JDBC-509</a>)<br />
+Make sure to replace <code>jna-4.4.0.jar</code> (or <code>jna-5.3.0.jar</code> when coming from an earlier test version of Jaybird 4) with <code>jna-5.5.0.jar</code>.</li>
+<li>New feature: Support for <code>EXTENDED TIME(STAMP) WITH TIME ZONE</code> types introduced in Firebird 4.0.0.1795 (<a href="http://tracker.firebirdsql.org/browse/JDBC-611">JDBC-611</a>)<br />
+The &#39;extended&#39; time zone types are a &#39;bind-only&#39; data type that provides an additional offset, so an offset is also known for values using a named zone. Jaybird ignores this information and handles these types exactly the same as normal time zone types.<br />
+See also <a href="https://github.com/FirebirdSQL/jaybird/blob/master/devdoc/jdp/jdp-2020-01-extended-time-zone-types-support.md">jdp-2020-01: Extended Time Zone Types Support</a></li>
+<li>Fixed: Problem connecting to Firebird 4.0.0.1737 and higher with <code>SQLException</code> with message &quot;Unexpected tag type: 3&quot; (<a href="http://tracker.firebirdsql.org/browse/JDBC-612">JDBC-612</a>)</li>
+</ul>
+</section>
+<section id="jaybird-4.0.0-beta-2" class="level2" data-number="1.4">
+<h2 data-number="1.4"><span class="header-section-number">1.4</span> Jaybird 4.0.0-beta-2</h2>
+<p>The following has been changed or fixed since Jaybird 4.0.0-beta-1</p>
+<ul>
+<li>New feature: support for <code>DatabaseMetaData.getFunctions</code> (<a href="http://tracker.firebirdsql.org/browse/JDBC-552">JDBC-552</a>)<br />
+See also <a href="#databasemetadata-getfunctions-implemented">DatabaseMetaData getFunctions implemented</a>.</li>
+<li>New feature: support for <code>DatabaseMetaData.getFunctionColumns</code> (<a href="http://tracker.firebirdsql.org/browse/JDBC-552">JDBC-552</a>)<br />
+See also <a href="#databasemetadata-getfunctioncolumns-implemented">DatabaseMetaData getFunctionColumns implemented</a>.</li>
+<li>Fixed: Connection property <code>defaultIsolation</code>/<code>isolation</code> did not work through <code>DriverManager</code>, but only on <code>DataSource</code> implementations. (<a href="http://tracker.firebirdsql.org/browse/JDBC-584">JDBC-584</a>)</li>
+<li>Changed: Changed version numbering and naming scheme (<a href="http://tracker.firebirdsql.org/browse/JDBC-585">JDBC-585</a>)<br />
+See <a href="#changes-in-artifact-and-library-names">Changes in artifact and library names</a></li>
+<li>Fixed: attempts to use a blob after it was freed or after transaction end could throw a <code>NullPointerException</code> or just work depending on whether the connection had a new transaction. (<a href="http://tracker.firebirdsql.org/browse/JDBC-587">JDBC-587</a>)<br />
+The lifetime of a blob is now restricted to the transaction that created it, or - for blobs created using <code>Connection.createBlob()</code> - to the transaction that populated it. Attempts to use the blob after the transaction ends will now throw a <code>SQLException</code> with message <em>&quot;Blob is invalid. Blob was freed, or closed by transaction end.&quot;</em> This restriction does not apply to cached blobs, see also next item.</li>
+<li>Fixed: Instances of <code>java.sql.Blob</code> and <code>java.sql.Clob</code> obtained from a result set were freed after calls to <code>ResultSet.next()</code>. (<a href="http://tracker.firebirdsql.org/browse/JDBC-588">JDBC-588</a>)<br />
+Normal blobs will now remain valid until transaction end. You will need to call <code>Blob.free()</code> if you want to invalidate them earlier.<br />
+Cached blobs (in auto-commit, holdable or scrollable result sets) will not be automatically freed at transaction end. You will need to explicitly call <code>Blob.free()</code> or rely on the garbage collector.</li>
+<li>New feature: Support for <code>Connection.setNetworkTimeout</code> and <code>getNetworkTimeout</code> (<a href="http://tracker.firebirdsql.org/browse/JDBC-589">JDBC-589</a>)<br />
+This JDBC feature is only supported on pure Java connections, not in native or embedded. Calling <code>setNetworkTimeout</code> will override the timeout set with the <code>soTimeout</code> connection property. When a timeout occurs, the connection will be closed.</li>
+<li>Changed: Procedures in packages are no longer returned from <code>DatabaseMetaData.getProcedures</code> and <code>getProcedureColumns</code> (<a href="http://tracker.firebirdsql.org/browse/JDBC-590">JDBC-590</a>)<br />
+See also <a href="#excluding-procedures-from-packages">Excluding procedures from packages</a>.</li>
+<li>Changed: On Firebird 4 and higher, precision of <code>FLOAT</code> and <code>DOUBLE PRECISION</code> are reported using binary precision (24 and 53 respectively), instead of decimal precision (7 and 15 respectively) (<a href="http://tracker.firebirdsql.org/browse/JDBC-591">JBC-591</a>)<br />
+See also <a href="#precision-reported-for-float-and-double-precision-on-firebird-4">Precision reported for FLOAT and DOUBLE PRECISION on Firebird 4</a>.</li>
+<li>Improvement: added binary literal prefix (<code>x&#39;</code>) and suffix (<code>&#39;</code>) to <code>DatabaseMetaData.getTypeInfo</code> for <code>LONGVARBINARY</code>, <code>VARBINARY</code> and <code>BINARY</code> (<a href="http://tracker.firebirdsql.org/browse/JDBC-593">JDBC-593</a>)</li>
+<li>New feature: added <code>FBEventManager.createFor(Connection)</code> to create an <code>EventManager</code> for an existing connection. Back-ported to Jaybird 3.0.7. (<a href="http://tracker.firebirdsql.org/browse/JDBC-594">JDBC-594</a>)<br />
+The created event manager does not allow setting properties (other than <code>waitTimeout</code>). It is still required to use <code>connect()</code> and <code>disconnect()</code>, to start respectively stop listening for events.<br />
+Due to implementation limitations, the lifetime is tied to the physical connection. When using a connection pool, this means that the event manager works as long as the physical pooled connection remains open, which can be (significantly) longer than the logical connection used to create the event manager.<br />
+This feature was contributed by <a href="https://github.com/vasiliy-yashkov">Vasiliy Yashkov</a>.</li>
+<li>Changed: Firebird 4.0.0.1604 and later changed the format of extended numeric precision from a Decimal128 to an Int128, increasing the maximum decimal precision from 34 to 38. The Int128 format is now supported. (<a href="http://tracker.firebirdsql.org/browse/JDBC-595">JDBC-595</a>)<br />
+Support for the old format will be removed after Jaybird 4.0.0-beta-2. See also <a href="#firebird-4-extended-numeric-precision-support">Firebird 4 extended numeric precision support</a>.</li>
+<li>New experimental feature: A way to monitor driver operations (specifically statement executes and fetches). (<a href="http://tracker.firebirdsql.org/browse/JDBC-597">JDBC-597</a>)<br />
+See <a href="#operation-monitoring">Operation monitoring</a> for details.<br />
+This feature was contributed by <a href="https://github.com/vasiliy-yashkov">Vasiliy Yashkov</a>.</li>
+<li>Fixed: On Firebird 3 and 4 with <code>WireCrypt = Enabled</code>, the connection could hang or throw exceptions like <em>&quot;Unsupported or unexpected operation code&quot;</em>. (<a href="http://tracker.firebirdsql.org/browse/JDBC-599">JDBC-599</a>)<br />
+The implementation could read wrong data, followed by either a read blocked waiting for more data or an exception.<br />
+The underlying problem was how buffer padding was skipped using <code>InputStream.skip</code>, which in <code>CipherInputStream</code> never skips beyond its current buffer. If that buffer was at (or 1 or 2 bytes from) the end, Jaybird was reading less bytes than it should. This caused subsequent reads to read wrong data, reading too little or too much data.</li>
+<li>New feature: Support for the v15 protocol (Firebird 3.0.2 and higher). (<a href="http://tracker.firebirdsql.org/browse/JDBC-601">JDBC-601</a>)<br />
+The v15 protocol supports database encryption key callbacks during the authentication phase, supporting encrypted security databases. We decided to implement the v14 changes only as part of the v15 implementation.<br />
+See also <a href="#database-encryption-support">Database encryption support</a>.</li>
+<li>New feature: Jaybird now supports UTF-8 URL encoding for connection properties in the JDBC url. (<a href="http://tracker.firebirdsql.org/browse/JDBC-604">JDBC-604</a>)<br />
+This introduce a minor incompatibility, see also <a href="#url-encoding-in-query-part-of-jdbc-url">URL encoding in query part of JDBC URL</a>.<br />
+This feature was back-ported to Jaybird 3.0.9.</li>
+<li>New feature: Firebird 4 data type bind configuration support (<a href="http://tracker.firebirdsql.org/browse/JDBC-603">JDBC-603</a>)<br />
+This change also removes the <code>timeZoneBind</code> and <code>decfloatBind</code> connection properties. This feature requires Firebird 4 beta 2 or snapshot Firebird 4.0.0.1683 or higher.<br />
+See also <a href="#firebird-4-data-type-bind-configuration-support">Firebird 4 data type bind configuration support</a>.<br />
+This feature was partially back-ported to Jaybird 3.0.9.</li>
+<li>New feature: Support for statement timeouts through <code>java.sql.Statement.setQueryTimeout</code> for the v16 protocol (Firebird 4 and higher) (<a href="http://tracker.firebirdsql.org/browse/JDBC-602">JDBC-602</a>)<br />
+See also <a href="#firebird-4-statement-timeout-support">Firebird 4 statement timeout support</a>.</li>
+<li>New feature: Support for zlib wire compression in the pure Java wire protocol implementation (Firebird 3 and higher) (<a href="http://tracker.firebirdsql.org/browse/JDBC-606">JDBC-606</a>)<br />
+See also <a href="#wire-compression-support">Wire compression support</a>.</li>
+<li>New feature: Support for JDBC escape <code>DAYNAME</code>, will always return day names in English (<a href="http://tracker.firebirdsql.org/browse/JDBC-607">JDBC-607</a>)</li>
+<li>New feature: Support for JDBC escape <code>MONTHNAME</code>, will always return month names in English (<a href="http://tracker.firebirdsql.org/browse/JDBC-608">JDBC-608</a>)</li>
+<li>New feature: Support for JDBC escape <code>DATABASE</code> (<a href="http://tracker.firebirdsql.org/browse/JDBC-609">JDBC-609</a>)</li>
+</ul>
+</section>
+</section>
+<section id="known-issues" class="level1" data-number="2">
+<h1 data-number="2"><span class="header-section-number">2</span> Known issues</h1>
+<ul>
+<li><p>Using a native connection with a Firebird 3 client library to a Firebird 2.5 or older server may be slow to connect. The workaround is to specify the IPv4 address instead of the host name in the connection string, or to use a Firebird 2.5 or earlier <code>fbclient.dll</code>.</p>
+<p>This is caused by <a href="http://tracker.firebirdsql.org/browse/CORE-4658">CORE-4658</a></p></li>
+</ul>
+</section>
+<section id="support" class="level1" data-number="3">
+<h1 data-number="3"><span class="header-section-number">3</span> Support</h1>
+<p>If you need support with Jaybird, join the <a href="https://groups.google.com/g/firebird-java">Firebird-Java Google Group</a> and mailing list. You can subscribe by sending an email to <a href="mailto:firebird-java+subscribe@googlegroups.com">firebird-java+subscribe@googlegroups.com</a>.</p>
+<p>Looking for professional support of Jaybird? Jaybird is now part of the <a href="https://tidelift.com/subscription/pkg/maven-org-firebirdsql-jdbc-jaybird?utm_source=maven-org-firebirdsql-jdbc-jaybird&amp;utm_medium=referral&amp;utm_campaign=docs">Tidelift subscription</a>.</p>
+<p>See also <a href="https://www.firebirdsql.org/file/documentation/drivers_documentation/java/faq.html#where-to-get-help">Where to get help</a></p>
+</section>
+<section id="general-notes" class="level1" data-number="4">
+<h1 data-number="4"><span class="header-section-number">4</span> General Notes</h1>
+<p>Jaybird is a JDBC driver suite to connect to Firebird database servers from Java and other Java Virtual Machine (JVM) languages.</p>
+<section id="about-this-version" class="level2" data-number="4.1">
+<h2 data-number="4.1"><span class="header-section-number">4.1</span> About this version</h2>
+<p>Jaybird 4 is - compared to Jaybird 3 - an incremental release that builds on the foundations of Jaybird 3. The focus of this release has been on further improving JDBC support and adding support for the new data types and features of Firebird 4.</p>
+<p>The main new features are:</p>
+<ul>
+<li><a href="#wire-encryption-support">Wire encryption support</a> (back-ported to Jaybird 3.0.4)</li>
+<li><a href="#database-encryption-support">Database encryption support</a> (back-ported to Jaybird 3.0.4)</li>
+<li><a href="#wire-compression-support">Wire compression support</a></li>
+<li><a href="#authentication-plugin-improvements">Authentication plugin improvements</a></li>
+<li><a href="#firebird-4-data-type-bind-configuration-support">Firebird 4 data type bind configuration support</a> (since Jaybird 4.0.0-beta-2)</li>
+<li><a href="#firebird-4-decfloat-support">Firebird 4 DECFLOAT support</a></li>
+<li><a href="#firebird-4-extended-numeric-precision-support">Firebird 4 extended numeric precision support</a></li>
+<li><a href="#firebird-4-time-zone-support">Firebird 4 time zone support</a></li>
+<li><a href="#firebird-4-statement-timeout-support">Firebird 4 statement timeout support</a> (since Jaybird 4.0.0-beta-2)</li>
+<li><a href="#jdbc-rowid-support">JDBC RowId support</a></li>
+<li><a href="#databasemetadata-getpseudocolumns-implemented">DatabaseMetaData getPseudoColumns implemented</a></li>
+<li><a href="#databasemetadata-getversioncolumns-implemented">DatabaseMetaData getVersionColumns implemented</a></li>
+<li><a href="#databasemetadata-getfunctions-implemented">DatabaseMetaData getFunctions implemented</a> (since Jaybird 4.0.0-beta-2)</li>
+<li><a href="#databasemetadata-getfunctioncolumns-implemented">DatabaseMetaData getFunctionColumns implemented</a> (since Jaybird 4.0.0-beta-2)</li>
+<li><a href="#improved-jdbc-function-escape-support">Improved JDBC function escape support</a></li>
+<li><a href="#new-jdbc-protocol-prefix-jdbcfirebird">New JDBC protocol prefix jdbc:firebird:</a></li>
+<li><a href="#url-encoding-in-query-part-of-jdbc-url">URL encoding in query part of JDBC URL</a> (back-ported to Jaybird 3.0.9)</li>
+<li><a href="#generated-keys-support-improvements">Generated keys support improvements</a></li>
+<li><a href="#operation-monitoring">Operation monitoring</a></li>
+</ul>
+<p>Upgrading from Jaybird 3 to 4 should be simple, but please make sure to read <a href="#compatibility-changes">Compatibility changes</a> before using Jaybird 4. See also <a href="#upgrading-from-jaybird-3-to-jaybird-4">Upgrading from Jaybird 3 to Jaybird 4</a>.</p>
+<p>Bug reports about undocumented changes in behavior are appreciated. Feedback can be sent to the Firebird-java mailing list or reported on the issue tracker <a href="http://tracker.firebirdsql.org/browse/JDBC" class="uri">http://tracker.firebirdsql.org/browse/JDBC</a>.</p>
+</section>
+<section id="supported-firebird-versions" class="level2" data-number="4.2">
+<h2 data-number="4.2"><span class="header-section-number">4.2</span> Supported Firebird versions</h2>
+<p>Jaybird 4.0.2 was tested against Firebird 2.5.9, 3.0.7, and a recent Firebird 4 snapshot build, but should also support other Firebird versions from 2.5 and up.</p>
+<p>Formal support for Firebird 2.0 and 2.1 has been dropped (although in general we expect the driver to work). The Type 2 and embedded server JDBC drivers use JNA to access the Firebird client or embedded library.</p>
+<p>This driver does not support InterBase servers due to Firebird-specific changes in the protocol and database attachment parameters that are sent to the server.</p>
+<section id="notes-on-firebird-3-support" class="level3" data-number="4.2.1">
+<h3 data-number="4.2.1"><span class="header-section-number">4.2.1</span> Notes on Firebird 3 support</h3>
+<p>Jaybird 4 adds support for the Firebird 3 zlib compression in the pure Java wire protocol. The compression is disabled by default.</p>
+</section>
+<section id="notes-on-firebird-4-support" class="level3" data-number="4.2.2">
+<h3 data-number="4.2.2"><span class="header-section-number">4.2.2</span> Notes on Firebird 4 support</h3>
+<p>At the time of release of Jaybird 4, Firebird 4 was still in testing. As a result, support for Firebird 4 is tentative. There can be incompatibilities with features or changes after Firebird version 4.0.0.1803 (Jaybird 4.0.0), 4.0.0.2143 (Jaybird 4.0.1), or 4.0.0.2325 (Jaybird 4.0.2). Once Firebird 4 is released, incompatibilities or otherwise breaking changes will be addressed in a point release of Jaybird 4.</p>
+<p>Jaybird 4 supports the protocol improvements of Firebird 4 for statement timeouts, but does not implement the new batch protocol.</p>
+<p>Jaybird time zone support uses functionality added after Firebird 4 beta 1 (4.0.0.1436), you will need version 4.0.0.1683 or later for the <code>dataTypeBind</code> connection property.</p>
+<p>Jaybird 4 supports the extended numeric precision types introduced after Firebird 4 beta 1 (4.0.0.1436), you will need version 4.0.0.1604 to be able to use <code>NUMERIC</code> or <code>DECIMAL</code> with a precision higher than 18.</p>
+<p>Jaybird does not support the ChaCha wire encryption plugin. This may be added in a future major or point release.</p>
+</section>
+</section>
+<section id="supported-java-versions" class="level2" data-number="4.3">
+<h2 data-number="4.3"><span class="header-section-number">4.3</span> Supported Java versions</h2>
+<p>Jaybird 4 supports Java 7 (JDBC 4.1), Java 8 (JDBC 4.2), and Java 9 and higher (JDBC 4.3). Support for earlier Java versions has been dropped.</p>
+<p>Given the limited support period for Java 9 and higher versions, we will limit support on those versions to the most recent LTS version and the latest release. As of January 2021, that means we support Java 11 and Java 15.</p>
+<p>Jaybird 4 provides libraries for Java 7, Java 8 and Java 11. The Java 8 builds have the same source and all JDBC 4.3 related functionality and can be used on Java 9 and higher as well.</p>
+<p>Jaybird 4 is not modularized, but all versions declare the automatic module name <code>org.firebirdsql.jaybird</code>.</p>
+<p>See als <a href="#java-support">Java support</a> in <a href="#whats-new-in-jaybird-4">What&#39;s new in Jaybird 4</a>.</p>
+</section>
+<section id="specification-support" class="level2" data-number="4.4">
+<h2 data-number="4.4"><span class="header-section-number">4.4</span> Specification support</h2>
+<p>Jaybird supports the following specifications:</p>
+<table>
+<colgroup>
+<col style="width: 16%"></col>
+<col style="width: 83%"></col>
+</colgroup>
+<thead>
+<tr class="header">
+<th>Specification</th>
+<th>Notes</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>JDBC 4.3</td>
+<td>All JDBC 4.3 methods for features supported by Firebird; Java 9 and higher supported using the Java 8 or Java 11 driver.</td>
+</tr>
+<tr class="even">
+<td>JDBC 4.2</td>
+<td>All JDBC 4.2 methods for features supported by Firebird.</td>
+</tr>
+<tr class="odd">
+<td>JDBC 4.1</td>
+<td>All JDBC 4.1 methods for features supported by Firebird.</td>
+</tr>
+<tr class="even">
+<td>JTA 1.0.1</td>
+<td>Implementation of <code>javax.transaction.xa.XAResource</code> interface via <code>XADataSource</code> implementation.</td>
+</tr>
+</tbody>
+</table>
+</section>
+</section>
+<section id="getting-jaybird-4" class="level1" data-number="5">
+<h1 data-number="5"><span class="header-section-number">5</span> Getting Jaybird 4</h1>
+<section id="jaybird-4.0.2-1" class="level2" data-number="5.1">
+<h2 data-number="5.1"><span class="header-section-number">5.1</span> Jaybird 4.0.2</h2>
+<section id="maven" class="level3" data-number="5.1.1">
+<h3 data-number="5.1.1"><span class="header-section-number">5.1.1</span> Maven</h3>
+<p>Jaybird 4.0.2 is available from Maven central:</p>
+<p>Groupid: <code>org.firebirdsql.jdbc</code>,<br />
+Artifactid: <code>jaybird</code>,<br />
+Version: <code>4.0.2.javaXX</code> (where <code>XX</code> is <code>7</code>, <code>8</code> or <code>11</code>).</p>
+<p>For ease of transition to the new artifact naming, we also provide a Maven relocation artifact with artifact id <code>jaybird-jdkXX</code> (with <code>XX</code> is <code>17</code> or <code>18</code>). However, we recommend switching to the <code>jaybird</code> artifact id.</p>
+<p>NOTE: SNAPSHOT releases are only available from the Sonatype snapshot repository, <a href="https://oss.sonatype.org/content/repositories/snapshots" class="uri">https://oss.sonatype.org/content/repositories/snapshots</a></p>
+<p>For example:</p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode xml"><code class="sourceCode xml"><span id="cb1-1"><a href="#cb1-1"></a><span class="kw">&lt;dependency&gt;</span></span>
+<span id="cb1-2"><a href="#cb1-2"></a>    <span class="kw">&lt;groupId&gt;</span>org.firebirdsql.jdbc<span class="kw">&lt;/groupId&gt;</span></span>
+<span id="cb1-3"><a href="#cb1-3"></a>    <span class="kw">&lt;artifactId&gt;</span>jaybird<span class="kw">&lt;/artifactId&gt;</span></span>
+<span id="cb1-4"><a href="#cb1-4"></a>    <span class="kw">&lt;version&gt;</span>4.0.2.java8<span class="kw">&lt;/version&gt;</span></span>
+<span id="cb1-5"><a href="#cb1-5"></a><span class="kw">&lt;/dependency&gt;</span></span></code></pre></div>
+<p>If your application is deployed to a Java EE application server, you will need to exclude the <code>javax.resource:connector-api</code> dependency, and add it as a provided dependency:</p>
+<div class="sourceCode" id="cb2"><pre class="sourceCode xml"><code class="sourceCode xml"><span id="cb2-1"><a href="#cb2-1"></a><span class="kw">&lt;dependency&gt;</span></span>
+<span id="cb2-2"><a href="#cb2-2"></a>    <span class="kw">&lt;groupId&gt;</span>org.firebirdsql.jdbc<span class="kw">&lt;/groupId&gt;</span></span>
+<span id="cb2-3"><a href="#cb2-3"></a>    <span class="kw">&lt;artifactId&gt;</span>jaybird<span class="kw">&lt;/artifactId&gt;</span></span>
+<span id="cb2-4"><a href="#cb2-4"></a>    <span class="kw">&lt;version&gt;</span>4.0.2.java8<span class="kw">&lt;/version&gt;</span></span>
+<span id="cb2-5"><a href="#cb2-5"></a>    <span class="kw">&lt;exclusions&gt;</span></span>
+<span id="cb2-6"><a href="#cb2-6"></a>        <span class="kw">&lt;exclusion&gt;</span></span>
+<span id="cb2-7"><a href="#cb2-7"></a>            <span class="kw">&lt;groupId&gt;</span>javax.resource<span class="kw">&lt;/groupId&gt;</span></span>
+<span id="cb2-8"><a href="#cb2-8"></a>            <span class="kw">&lt;artifactId&gt;</span>connector-api<span class="kw">&lt;/artifactId&gt;</span></span>
+<span id="cb2-9"><a href="#cb2-9"></a>        <span class="kw">&lt;/exclusion&gt;</span></span>
+<span id="cb2-10"><a href="#cb2-10"></a>    <span class="kw">&lt;/exclusions&gt;</span></span>
+<span id="cb2-11"><a href="#cb2-11"></a><span class="kw">&lt;/dependency&gt;</span></span>
+<span id="cb2-12"><a href="#cb2-12"></a><span class="kw">&lt;dependency&gt;</span></span>
+<span id="cb2-13"><a href="#cb2-13"></a>    <span class="kw">&lt;groupId&gt;</span>javax.resource<span class="kw">&lt;/groupId&gt;</span></span>
+<span id="cb2-14"><a href="#cb2-14"></a>    <span class="kw">&lt;artifactId&gt;</span>connector-api<span class="kw">&lt;/artifactId&gt;</span></span>
+<span id="cb2-15"><a href="#cb2-15"></a>    <span class="kw">&lt;version&gt;</span>1.5<span class="kw">&lt;/version&gt;</span></span>
+<span id="cb2-16"><a href="#cb2-16"></a>    <span class="kw">&lt;scope&gt;</span>provided<span class="kw">&lt;/scope&gt;</span></span>
+<span id="cb2-17"><a href="#cb2-17"></a><span class="kw">&lt;/dependency&gt;</span></span></code></pre></div>
+<p>If you want to use Type 2 support (native, local or embedded), you need to explicitly include JNA 5.5.0 as a dependency:</p>
+<div class="sourceCode" id="cb3"><pre class="sourceCode xml"><code class="sourceCode xml"><span id="cb3-1"><a href="#cb3-1"></a><span class="kw">&lt;dependency&gt;</span></span>
+<span id="cb3-2"><a href="#cb3-2"></a>    <span class="kw">&lt;groupId&gt;</span>net.java.dev.jna<span class="kw">&lt;/groupId&gt;</span></span>
+<span id="cb3-3"><a href="#cb3-3"></a>    <span class="kw">&lt;artifactId&gt;</span>jna<span class="kw">&lt;/artifactId&gt;</span></span>
+<span id="cb3-4"><a href="#cb3-4"></a>    <span class="kw">&lt;version&gt;</span>5.5.0<span class="kw">&lt;/version&gt;</span></span>
+<span id="cb3-5"><a href="#cb3-5"></a><span class="kw">&lt;/dependency&gt;</span></span></code></pre></div>
+<p>For Windows and Linux, you can add the <code>org.firebirdsql.jdbc:fbclient</code> dependency on your classpath to provide the native libraries for the <code>native</code> and <code>local</code> protocol. Be aware that this dependency does not support <code>embedded</code>.</p>
+<p>See also <a href="#type-2-native-and-embedded-driver">Type 2 (native) and embedded driver</a>.</p>
+</section>
+<section id="download" class="level3" data-number="5.1.2">
+<h3 data-number="5.1.2"><span class="header-section-number">5.1.2</span> Download</h3>
+<p>You can download the latest versions from <a href="https://www.firebirdsql.org/en/jdbc-driver/" class="uri">https://www.firebirdsql.org/en/jdbc-driver/</a></p>
+<p>At minimum Jaybird 4 requires <code>jaybird-4.0.2.javaXX.jar</code> (where <code>XX</code> is <code>7</code>, <code>8</code> or <code>11</code>) and <code>connector-api-1.5.jar</code>. You can also use <code>jaybird-full-4.0.2.javaXX.jar</code> which includes the connector-api files.</p>
+<p>If you deploy your application to a Java EE application server, then you must use <code>jaybird-4.0.2.javaXX.jar</code> (not <code>-full</code>!), and <strong>not</strong> include <code>connector-api-1.5.jar</code> as this dependency will be provided by your application server.</p>
+<p>For <code>getGeneratedKeys</code> support you will need to include <code>antlr-runtime-4.7.2.jar</code> on your classpath.</p>
+<p>For native, local or embedded support, you will need to include <code>jna-5.5.0.jar</code> on your classpath. See also <a href="#type-2-native-and-embedded-driver">Type 2 (native) and embedded driver</a>.</p>
+</section>
+</section>
+</section>
+<section id="upgrading-from-jaybird-3-to-jaybird-4" class="level1" data-number="6">
+<h1 data-number="6"><span class="header-section-number">6</span> Upgrading from Jaybird 3 to Jaybird 4</h1>
+<p>Please make sure to read <a href="#compatibility-changes">Compatibility changes</a> and <a href="#changes-in-artifact-and-library-names">Changes in artifact and library names</a> before upgrading to Jaybird 4.</p>
+<section id="maven-1" class="level2" data-number="6.1">
+<h2 data-number="6.1"><span class="header-section-number">6.1</span> Maven</h2>
+<p>Change the artifact id from <code>jaybird-jdkXX</code> to <code>jaybird</code>, and change the version of the dependency to <code>4.0.2.javaXX</code> (where <code>XX</code> is your Java version, <code>7</code> for Java 7, <code>8</code> for Java 8 and <code>11</code> for Java 11). If you use native or embedded verify that you upgrade JNA (<code>net.java.dev.jna:jna</code>) from 4.4.0 to 5.5.0.</p>
+<p>For more detailed instructions, see also the information on Maven in <a href="#getting-jaybird-4">Getting Jaybird 4</a>.</p>
+</section>
+<section id="manual-install" class="level2" data-number="6.2">
+<h2 data-number="6.2"><span class="header-section-number">6.2</span> Manual install</h2>
+<p>If you manage your dependencies manually, you need to do the following:</p>
+<ol type="1">
+<li><p>Replace the Jaybird 3 library with the Jaybird 4 version</p>
+<ul>
+<li><code>jaybird-3.0.x.jar</code> with <code>jaybird-4.0.2.javaXX.jar</code> (where <code>XX</code> is <code>7</code>, <code>8</code> or <code>11</code>)</li>
+<li><code>jaybird-full-3.0.x.jar</code> with <code>jaybird-full-4.0.2.javaXX.jar</code></li>
+</ul></li>
+<li><p>If installed, remove <code>antlr-runtime-4.7.jar</code> and replace it with <code>antlr-runtime-4.7.2.jar</code>. This library is necessary for <code>getGeneratedKeys</code> support.</p></li>
+<li><p>If installed, remove <code>jna-4.4.0.jar</code> and replace it with <code>jna-5.5.0.jar</code>. This library is only necessary for native, local or embedded connections. If you use pure-java connections (the default), you don&#39;t need JNA.</p></li>
+</ol>
+</section>
+<section id="gotchas" class="level2" data-number="6.3">
+<h2 data-number="6.3"><span class="header-section-number">6.3</span> Gotchas</h2>
+<p>If you find a problem while upgrading, or other bugs: please report it on <a href="http://tracker.firebirdsql.org/browse/JDBC" class="uri">http://tracker.firebirdsql.org/browse/JDBC</a>.</p>
+<p>For known issues, consult <a href="#known-issues">Known Issues</a>.</p>
+</section>
+</section>
+<section id="whats-new-in-jaybird-4" class="level1" data-number="7">
+<h1 data-number="7"><span class="header-section-number">7</span> What&#39;s new in Jaybird 4</h1>
+<p>For a full list of changes, see <a href="http://tracker.firebirdsql.org/secure/ReleaseNote.jspa?projectId=10002&amp;styleName=Text&amp;version=10441">Firebird tracker for Jaybird 4</a>.</p>
+<section id="changes-in-artifact-and-library-names" class="level2" data-number="7.1">
+<h2 data-number="7.1"><span class="header-section-number">7.1</span> Changes in artifact and library names</h2>
+<p>Historically, the naming of Jaybird artifacts and libraries has been a bit inconsistent. With the rapid release cycle of Java, naming collisions are imminent with the old naming convention. For example, the Maven artifact <code>jaybird-jdk15</code> was used for Java 1.5 and with this naming convention, this would be reused for Java 15.</p>
+<p>Forced by this issue, we have overhauled the naming convention entirely to bring more consistency between Maven artifacts and the Jaybird zip distribution. The full naming convention is documented in <a href="https://github.com/FirebirdSQL/jaybird/blob/master/devdoc/jdp/jdp-2019-04-version-number-and-naming-scheme.md">jdp-2019-04: Version Number and Naming Scheme</a>.</p>
+<p>This new naming convention has been changed compared to the one from Jaybird 4.0.0-beta-1.</p>
+<p>This new naming convention has the following effects:</p>
+<ul>
+<li>The targeted Java version is no longer part of the Maven artifact id. The artifact id is now <code>jaybird</code> for all Java versions. We provide a relocation artifact for <code>jaybird-jdk17</code> and <code>jaybird-jdk18</code> for backwards compatibility.</li>
+<li>The targeted Java version is now part of the version (eg <code>4.0.0.java11</code>)</li>
+<li>Names of libraries in the distribution zip are now consistent with the Maven naming convention</li>
+</ul>
+<p>As a result of these new naming conventions, the following has been changed:</p>
+<ul>
+<li>Maven artifact: <code>jaybird</code> (for all Java versions) (was <code>jaybird-jdk18</code>)</li>
+<li>Maven version: <code>4.0.0.java8</code> (was <code>3.0.5</code>)</li>
+<li>Distribution zip: <code>jaybird-4.0.0.java8.zip</code> (was <code>Jaybird-3.0.5_JDK1.8.zip</code>)</li>
+<li>Jaybird: <code>jaybird-4.0.0.java8.jar</code> (was <code>jaybird-3.0.5.jar</code> in zip distribution)</li>
+<li>Jaybird (full): <code>jaybird-full-4.0.0.java8.jar</code> (was <code>jaybird-full-3.0.5.jar</code>)</li>
+<li>Jaybird sources: <code>jaybird-4.0.0.java8-sources.jar</code> (was <code>jaybird-3.0.5-sources.jar</code> in zip distribution)</li>
+<li>Jaybird javadoc: <code>jaybird-4.0.0.java8-javadoc.jar</code> (was <code>jaybird-3.0.5-javadoc.jar</code> in zip distribution)</li>
+</ul>
+<p>Furthermore, the client name reported to Firebird 2.5 and higher has been changed from <code>Jaybird 3.0.5-JDK_1.8</code> to <code>Jaybird jaybird-4.0.0.java8</code></p>
+</section>
+<section id="java-support" class="level2" data-number="7.2">
+<h2 data-number="7.2"><span class="header-section-number">7.2</span> Java support</h2>
+<section id="java-7" class="level3" data-number="7.2.1">
+<h3 data-number="7.2.1"><span class="header-section-number">7.2.1</span> Java 7</h3>
+<p>The driver supports Java 7 with caveats.</p>
+<ul>
+<li><p>Firebird 4 time zone types are not supported under Java 7, see also <a href="#firebird-4-time-zone-support">Firebird 4 time zone support</a>.</p></li>
+<li><p>Under Java 7, Jaybird requires JAXB (<code>javax.xml.bind</code>), this will work in standard Java, but may require additional configuration in certain environments, for example JBoss/Wildfly.</p></li>
+<li><p>Some libraries used for testing Jaybird have upped their minimum version to Java 8, while we need those library versions to test - for example - Java 11. When we can no longer work around these issues, we will sacrifice Java 7 test coverage in order to maintain Java 7 support.</p></li>
+</ul>
+</section>
+<section id="java-8" class="level3" data-number="7.2.2">
+<h3 data-number="7.2.2"><span class="header-section-number">7.2.2</span> Java 8</h3>
+<p>The driver supports Java 8.</p>
+</section>
+<section id="java-9-and-higher" class="level3" data-number="7.2.3">
+<h3 data-number="7.2.3"><span class="header-section-number">7.2.3</span> Java 9 and higher</h3>
+<p>Jaybird 4 supports Java 9 and higher (JDBC 4.3) with the Java 8 and 11 version of the driver. Most of the JDBC 4.3 features have been implemented (in as far as they are supported by Firebird).</p>
+<p>You can use the Java 8 driver under Java 9 and higher. For Java 11 or higher we recommend using the Java 11 driver, though its sources are identical to the Java 8 driver.</p>
+<p>We recommend not to use the Java 7 version of Jaybird with Java 9 or higher. The Java 7 version doesn&#39;t implement all JDBC 4.3 features that are implemented in the Java 8 version. In addition, since Jaybird 3.0.4, the Java 7 version of Jaybird needs the <code>java.xml.bind</code> module, where the Java 8 and higher versions do not need that module.</p>
+<p>Given the limited support period for Java 9 and higher versions, we limit support on those versions to the most recent LTS version and the latest release. As of January 2021, that means we support Java 7, 8, 11 and 15.</p>
+<p>For compatibility with Java 9 modules, Jaybird defines the automatic module name <code>org.firebirdsql.jaybird</code>. This guarantees a stable module name for Jaybird, and allows for future modularization of Jaybird.</p>
+</section>
+</section>
+<section id="firebird-support" class="level2" data-number="7.3">
+<h2 data-number="7.3"><span class="header-section-number">7.3</span> Firebird support</h2>
+<p>Support for Firebird 2.0 and 2.1 has been dropped. See <a href="#firebird-2.0-and-2.1-no-longer-supported">Firebird 2.0 and 2.1 no longer supported</a> for details.</p>
+<p>Firebird versions 2.5, 3.0 and (upcoming) 4.0 are supported. Firebird 4 support may require an additional point release of Jaybird 4 to address possible incompatibilities since release of Jaybird 4.</p>
+</section>
+<section id="wire-encryption-support" class="level2" data-number="7.4">
+<h2 data-number="7.4"><span class="header-section-number">7.4</span> Wire encryption support</h2>
+<p>Jaybird 4 adds support for the Firebird 3 ARC4 wire encryption. This feature has been back-ported to Jaybird 3.0.4. The encryption is configured using the connection property <code>wireCrypt</code>, with the following (case-insensitive) values:</p>
+<ul>
+<li><code>DEFAULT</code>: default (value used when <code>wireCrypt</code> is not specified; you&#39;d normally not specify this explicitly)</li>
+<li><code>ENABLED</code>: enable, but not require, wire encryption</li>
+<li><code>REQUIRED</code>: require wire encryption (only if Firebird version is 3.0 or higher)</li>
+<li><code>DISABLED</code>: disable wire encryption</li>
+</ul>
+<p>The default value acts as <code>ENABLED</code> for pure Java connections, for JNA (native) connections this wil use the fbclient default (either <code>Enabled</code> or the configured value of <code>WireCrypt</code> from a <code>firebird.conf</code> read by the native library).</p>
+<p>Connection property <code>wireCrypt=REQUIRED</code> will <strong>not</strong> reject unencrypted connections when connecting to Firebird 2.5 or lower. This behavior matches the Firebird 3 client library behavior. The value will also be ignored when using native connections with a Firebird 2.5 client library.</p>
+<p>Using <code>wireCrypt=DISABLED</code> when Firebird 3 or higher uses setting <code>WireCrypt = Required</code> (or vice versa) will yield error <em>&quot;Incompatible wire encryption levels requested on client and server&quot;</em> (error: <em>isc_wirecrypt_incompatible / 335545064</em>).</p>
+<p>The same error is raised when connecting to Firebird 3 and higher with a legacy authentication user with connection property <code>wireCrypt=REQUIRED</code>.</p>
+<p>Alternative wire encryption plugins are currently not supported, although we made some preparations to support this. If you want to develop such a plugin, contact us on the Firebird-Java mailing list so we can work out the details of adding plugin support.</p>
+<p>The new ChaCha wire encryption introduced in Firebird 4 is not yet supported.</p>
+<p><strong>WARNING</strong></p>
+<p>The implementation comes with a number of caveats:</p>
+<ul>
+<li>we cannot guarantee that the session key cannot be obtained by someone with access to your application or the machine hosting your application (although that in itself would already imply a severe security breach)</li>
+<li>the ARC4 encryption - the default provided by Firebird - is considered to be a weak (maybe even broken) cipher these days</li>
+<li>the encryption cipher uses ARCFOUR with a 160 bits key, this means that the unlimited Cryptographic Jurisdiction Policy needs to be used (or at minimum a custom policy that allows ARCFOUR with 160 bits keys). See also FAQ entry <a href="https://www.firebirdsql.org/file/documentation/drivers_documentation/java/faq.html#encryption-key-did-not-meet-algorithm-requirements-of-symmetricarc4-337248282">Encryption key did not meet algorithm requirements of Symmetric/Arc4 (337248282)</a></li>
+</ul>
+</section>
+<section id="database-encryption-support" class="level2" data-number="7.5">
+<h2 data-number="7.5"><span class="header-section-number">7.5</span> Database encryption support</h2>
+<p>Jaybird 4 (and 3.0.4) adds support for Firebird 3 database encryption callbacks in the pure Java implementation of the version 13 protocol. This feature was sponsored by IBPhoenix.</p>
+<p>In addition, version 15 of the protocol (Firebird 3.0.2 and higher) was also implemented, supporting encryption callbacks during authentication for use with encrypted security databases.</p>
+<p>The current implementation is simple and only supports replying with a static value from a connection property. Be aware that a static value response for database encryption is not very secure as it can easily lead to replay attacks or unintended key exposure.</p>
+<p>Future versions of Jaybird (likely 5) will introduce plugin support for database encryption plugins that require a more complex callback.</p>
+<p>The static response value of the encryption callback can be set through the <code>dbCryptConfig</code> connection property. <code>DataSource</code> and <code>ServiceManager</code> implementations have an equivalent property with the same name. This property can be set as follows:</p>
+<ul>
+<li>Absent or empty value: empty response to callback (depending on the database encryption plugin this may just work or yield an error later).</li>
+<li>Strings prefixed with <code>base64:</code>: rest of the string is decoded as base64 to bytes. The <code>=</code> padding characters are optional, but when present they must be valid (that is: if you use padding, you must use the right number of padding characters for the length).<br />
+When the base64 encoded value contains <code>+</code>, it must be escaped as <code>%2B</code> in the JDBC URL. For backwards compatibility with Jaybird 3, we can&#39;t switch to the URL-safe variant of base64.</li>
+<li>Plain string value: string is encoded to bytes using UTF-8, and these bytes are used as the response. Avoid use of <code>:</code> in the plain string value.</li>
+</ul>
+<p>Because of the limitation of connection URL parsing, we strongly suggest avoiding plain string values with <code>&amp;</code> or <code>;</code>. Likewise, avoid <code>:</code> so that we can support other prefixes similar to <code>base64:</code> in the future. If you need these characters, consider using a base64 encoded value instead, or ensure these characters are URL encoded: <code>&amp;</code>: <code>%26</code>, <code>;</code>: <code>%3B</code>, <code>:</code>: <code>%3A</code>, <code>%</code>: <code>%25</code>, <code>+</code>: <code>%2B</code>.</p>
+<p>For service operations, as implemented in the <code>org.firebirdsql.management</code> package, Firebird requires the <code>KeyHolderPlugin</code> configuration to be globally defined in <code>firebird.conf</code>. Database-specific configuration in <code>databases.conf</code> will be ignored for service operations. Be aware that some service operations on encrypted databases are not supported by Firebird 3 (eg <code>gstat</code> equivalents other than <code>gstat -h</code> or <code>gstat -e</code>).</p>
+<p>Other warnings and limitations</p>
+<ul>
+<li>Database encryption callback support is only available in the pure Java implementation. Support for native and embedded connections may be added in a future version.</li>
+<li>The database encryption callback does not require an encrypted connection, so the key can be exchanged unencrypted if wire protocol encryption has been disabled client-side or server-side, or if legacy authentication is used. Consider setting connection property <code>wireCrypt=REQUIRED</code> to force encryption (caveat: see the next point).</li>
+<li>Firebird may ask for the database encryption key before the connection has been encrypted (for example if the encrypted database itself is used as the security database). <em>This applies to v15 and higher protocol support.</em></li>
+<li>We cannot guarantee that the <code>dbCryptConfig</code> value cannot be obtained by someone with access to your application or the machine hosting your application (although that in itself would already imply a severe security breach).</li>
+</ul>
+</section>
+<section id="wire-compression-support" class="level2" data-number="7.6">
+<h2 data-number="7.6"><span class="header-section-number">7.6</span> Wire compression support</h2>
+<p>Support for zlib wire compression was added in the pure Java wire protocol. Compression can be enabled using boolean connection property <code>wireCompression</code>.</p>
+<p>The connection property only affects the pure Java wire protocol connections on Firebird 3 and higher, if the server has the zlib library. Native connections will follow the <code>WireCompression</code> configuration in the <code>firebird.conf</code> read by the client library, if the zlib library is on the search path.</p>
+<p>Compression is currently disabled by default. We may change this in future versions of Jaybird to be enabled by default.</p>
+<p>The <code>wireCompression</code> property is also available on data sources and the management classes in <code>org.firebirdsql.management</code>.</p>
+</section>
+<section id="authentication-plugin-improvements" class="level2" data-number="7.7">
+<h2 data-number="7.7"><span class="header-section-number">7.7</span> Authentication plugin improvements</h2>
+<p>Jaybird 4 has added support for the new <code>SrpNNN</code> (with NNN is 224, 256, 384 and 512) authentication plugins added in Firebird 4 (back-ported to Firebird 3.0.4 for Srp256 only).</p>
+<p>The original <code>Srp</code> plugin uses SHA-1, the new Srp-variants use SHA-224, SHA-256, SHA-384 and SHA-512 respectively<a href="#fn1" class="footnote-ref" id="fnref1" role="doc-noteref"><sup>1</sup></a>.</p>
+<p>Be aware, support for these plugins depends on support of these hash algorithms in the JVM. For example, SHA-224 is not supported in Oracle Java 7 by default and may require additional JCE libraries.</p>
+<section id="default-authentication-plugins" class="level3" data-number="7.7.1">
+<h3 data-number="7.7.1"><span class="header-section-number">7.7.1</span> Default authentication plugins</h3>
+<p>The default plugins applied by Jaybird are now - in order - <code>Srp256</code>, <code>Srp</code>. This applies only for the pure Java protocol and only when connecting to Firebird 3 or higher. The native implementation will use its own default, or the value configured through its <code>firebird.conf</code>.</p>
+<p>When connecting to Firebird 3 versions earlier than 3.0.4, or if <code>Srp256</code> has been removed from the <code>AuthServer</code> setting in Firebird, this might result in slower authentication because more roundtrips to the server are needed. After the attempt to use <code>Srp256</code> fails, authentication continues with <code>Srp</code>.</p>
+<p>To avoid this, consider explicitly configuring the authentication plugins to use, see <a href="#configure-authentication-plugins">Configure authentication plugins</a> for details.</p>
+<p>When connecting to Firebird 3 or higher, the pure Java protocol in Jaybird will no longer try the <code>Legacy_Auth</code> plugin by default as it is an unsafe authentication mechanism. We strongly suggest to use SRP users only, but if you really need to use legacy authentication, you can specify connection property <code>authPlugins=Legacy_Auth</code>, see <a href="#configure-authentication-plugins">Configure authentication plugins</a> for details.</p>
+<p>Firebird 2.5 and earlier are not affected and will always use legacy authentication.</p>
+</section>
+<section id="configure-authentication-plugins" class="level3" data-number="7.7.2">
+<h3 data-number="7.7.2"><span class="header-section-number">7.7.2</span> Configure authentication plugins</h3>
+<p>Jaybird 4 introduces the connection property <code>authPlugins</code> (alias <code>auth_plugin_list</code>) to specify the authentication plugins to try when connecting. The value of this property is a comma-separated<a href="#fn2" class="footnote-ref" id="fnref2" role="doc-noteref"><sup>2</sup></a> list with the plugin names.</p>
+<p>Unknown or unsupported plugins will be logged and skipped. When no known plugins are specified, Jaybird will throw an exception with:</p>
+<ul>
+<li><p>For pure Java</p>
+<p><em>Cannot authenticate. No known authentication plugins, requested plugins: [&lt;plugin-names&gt;] [SQLState:28000, ISC error code:337248287]</em></p></li>
+<li><p>For native</p>
+<p><em>Error occurred during login, please check server firebird.log for details [SQLState:08006, ISC error code:335545106]</em></p></li>
+</ul>
+<p>The <code>authPlugins</code> property only affects connecting to Firebird 3 or later. It will be ignored when connecting to Firebird 2.5 or earlier. The setting will also be ignored for native connections when using a fbclient library of version 2.5 or earlier.</p>
+<p>Examples:</p>
+<ul>
+<li><p>JDBC URL to connect using <code>Srp256</code> only:</p>
+<pre><code>jdbc:firebirdsql://localhost/employee?authPlugins=Srp256</code></pre></li>
+<li><p>JDBC URL to connect using <code>Legacy_Auth</code> only (this is unsafe!)</p>
+<pre><code>jdbc:firebirdsql://localhost/employee?authPlugins=Legacy_Auth</code></pre></li>
+<li><p>JDBC URL to try <code>Legacy_Auth</code> before <code>Srp512</code> (this order is unsafe!)</p>
+<pre><code>jdbc:firebirdsql://localhost/employee?authPlugins=Legacy_Auth,Srp512</code></pre></li>
+</ul>
+<p>The property is also supported by the data sources, service managers and event manager.</p>
+</section>
+<section id="external-authentication-plugin-support-experimental" class="level3" data-number="7.7.3">
+<h3 data-number="7.7.3"><span class="header-section-number">7.7.3</span> External authentication plugin support (experimental)</h3>
+<p>If you develop your own Firebird authentication plugin (or use a third-party authentication plugin), it is possible - for pure Java only - to add your own authentication plugin by implementing the interfaces</p>
+<ul>
+<li><code>org.firebirdsql.gds.ng.wire.auth.AuthenticationPluginSpi</code></li>
+<li><code>org.firebirdsql.gds.ng.wire.auth.AuthenticationPlugin</code></li>
+</ul>
+<p>The SPI implementation needs to be listed in <code>META-INF/services/org.firebirdsql.gds.ng.wire.auth.AuthenticationPluginSpi</code> in your jar.</p>
+<p>This support is experimental and comes with a number of caveats:</p>
+<ul>
+<li>We haven&#39;t tested this extensively (except for loading Jaybird&#39;s own plugins internally)</li>
+<li>The authentication plugin (and provider) interfaces should be considered unstable; they may change with point releases (although we will try to avoid that)</li>
+<li>For now, it will be necessary for the jar containing the authentication plugin to be loaded by the same class loader as Jaybird itself</li>
+</ul>
+<p>If you implement a custom authentication plugin and run into problems, contact us on the Firebird-Java mailing list.</p>
+<p>If you use a native connection, check the Firebird documentation how to add third-party authentication plugins to fbclient.</p>
+</section>
+</section>
+<section id="firebird-4-data-type-bind-configuration-support" class="level2" data-number="7.8">
+<h2 data-number="7.8"><span class="header-section-number">7.8</span> Firebird 4 data type bind configuration support</h2>
+<p>Firebird 4 (build 4.0.0.1683 or later) introduced the <code>SET BIND</code> statement and <code>isc_dpb_set_bind</code> DPB item. This allows you to define data type conversion rules for compatibility or ease of processing data.</p>
+<p>This feature is specifically necessary for using the <code>WITH TIME ZONE</code> types under Java 7. See also <a href="#time-zone-bind-configuration">Time zone bind configuration</a>.</p>
+<p>In Jaybird this feature is exposed as connection property <code>dataTypeBind</code> (alias <code>set_bind</code>). The value of this connection property is a semicolon-separated list of data type bind definitions.</p>
+<p>A data type bind definition is of the form <code>&lt;from-type&gt; TO &lt;to-type&gt;</code>. A definition is the same as the second half of a <code>SET BIND</code> statement after the <code>OF</code>. See the Firebird documentation of <code>SET BIND</code> for more information. Invalid values or impossible mappings will result in an error on connect.</p>
+<p>When using the <code>dataTypeBind</code> connection property in a JDBC URL, the semicolons of the list need to be encoded as <code>%3B</code>, as semicolons in the JDBC URL are an alternative to <code>&amp;</code> as the separator between properties.</p>
+<p>For example:</p>
+<pre><code>String jdbcUrl = &quot;jdbc:firebirdsql://localhost/database?charSet=utf-8&quot;
+        + &quot;&amp;dataTypeBind=decfloat to varchar%3Btimestamp with time zone to legacy</code></pre>
+<p>When the property is set through a <code>Properties</code> object or a <code>DataSource</code> configuration, encoding the semicolon is not necessary and will result in errors.</p>
+<p>For example:</p>
+<pre><code>Properties props = new Properties();
+props.setProperty(&quot;dataTypeBind&quot;, 
+        &quot;decfloat to varchar;timestamp with time zone to legacy&quot;</code></pre>
+<p>Values set through this connection property will be the session default configuration, which means that they are retained (or reverted to) when executing <code>ALTER SESSION RESET</code>.</p>
+<p>This feature replaces the connection properties <code>timeZoneBind</code> and <code>decfloatBind</code> from earlier Jaybird 4 beta or snapshot versions. The <code>timeZoneBind</code> and <code>decfloatBind</code> properties are no longer supported.</p>
+</section>
+<section id="firebird-4-decfloat-support" class="level2" data-number="7.9">
+<h2 data-number="7.9"><span class="header-section-number">7.9</span> Firebird 4 DECFLOAT support</h2>
+<p>Firebird 4 introduces the SQL:2016 <code>DECFLOAT</code> datatype, a decimal floating point with a precision of 16 or 34 digits (backed by an IEEE-754 Decimal64 or Decimal128). See the Firebird 4 release notes for details on this datatype.</p>
+<p>Jaybird 4 adds support for this datatype. The &#39;default&#39; object type for <code>DECFLOAT</code> is a <code>java.math.BigDecimal</code>, but conversion from and to the following datatypes is supported:</p>
+<ul>
+<li><code>java.math.BigDecimal</code> (see note 1)</li>
+<li><code>byte</code> (valid range -128 to 127(!); see notes 2, 3)</li>
+<li><code>short</code> (valid range -32768 to 32767; see note 3)</li>
+<li><code>int</code> (valid range -2<sup>31</sup> to 2<sup>31</sup>-1; see note 3)</li>
+<li><code>long</code> (valid range -2<sup>63</sup> to 2<sup>63</sup>-1; see notes 3, 4)</li>
+<li><code>float</code> (valid range -1 * Float.MAX_VALUE to Float.MAX_VALUE; see notes 5-9)</li>
+<li><code>double</code> (valid range -1 * Double.MAX_VALUE to Double.MAX_VALUE; see notes 6-9)</li>
+<li><code>boolean</code> (see notes 10, 11)</li>
+<li><code>java.lang.String</code> (see notes 12-14)</li>
+<li><code>java.math.BigInteger</code> (see notes 15, 16)</li>
+<li><code>org.firebirdsql.extern.decimal.Decimal32/64/128</code> (see notes 17, 18)</li>
+</ul>
+<p>The <code>DECFLOAT</code> type is not yet defined in the JDBC specification. For the time being, we have defined a Jaybird specific type code with value <code>-6001</code>. This value is available through constant <code>org.firebirdsql.jdbc.JaybirdTypeCodes.DECFLOAT</code>, or - for JDBC 4.2 and higher - <code>org.firebirdsql.jdbc.JaybirdType.DECFLOAT</code>, which is an enum implementing <code>java.sql.SQLType</code>.</p>
+<p>If you need to use the type code, we suggest you use these constants. If a <code>DECFLOAT</code> type constant gets added to the JDBC standard, we will update the value. The enum value will be deprecated when that version of JDBC has been released.</p>
+<p>Jaybird uses a local copy of the <a href="https://github.com/FirebirdSQL/decimal-java">FirebirdSQL/decimal-java</a> library, with a custom package <code>org.firebirdsql.extern.decimal</code>. This to avoid additional dependencies.</p>
+<section id="precision-and-range" class="level3" data-number="7.9.1">
+<h3 data-number="7.9.1"><span class="header-section-number">7.9.1</span> Precision and range</h3>
+<p>The <code>DECFLOAT</code> datatype supports values with a precision of 16 or 34 decimal digits, and an exponent<a href="#fn3" class="footnote-ref" id="fnref3" role="doc-noteref"><sup>3</sup></a> between -398 and 369 (<code>DECFLOAT(16)</code>), or between -6176 and 6111 (<code>DECFLOAT(34)</code>), so the minimum and maximum values are:</p>
+<table>
+<thead>
+<tr class="header">
+<th>Type</th>
+<th>Min/max value</th>
+<th>Smallest (non-zero) value</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>DECFLOAT(16)</code></td>
+<td>+/-9.9..9E+384 (16 digits)</td>
+<td>+/-1E-398 (1 digit)</td>
+</tr>
+<tr class="even">
+<td><code>DECFLOAT(34)</code></td>
+<td>+/-9.9..9E+6144 (34 digits)</td>
+<td>+/-1E-6176 (1 digit)</td>
+</tr>
+</tbody>
+</table>
+<p>When converting values from Java types to <code>DECFLOAT</code> and retrieving <code>DECFLOAT</code> values as <code>Decimal32</code> or <code>Decimal64</code>, the following rules are applied:</p>
+<ul>
+<li><p>Zero values can have a non-zero exponent, and if the exponent is out of range, the exponent value is &#39;clamped&#39; to the minimum or maximum exponent supported. This behavior is subject to change, and future releases may &#39;round&#39; to exact <code>0</code> (or <code>0E0</code>)</p></li>
+<li><p>Values with a precision larger than the target precision are rounded to the target precision using <code>RoundingMode.HALF_EVEN</code></p></li>
+<li><p>If the magnitude (or exponent) is too low, then the following steps are applied:</p>
+<ol type="1">
+<li><p>Precision is reduced applying <code>RoundingMode.HALF_EVEN</code>, increasing the exponent by the reduction of precision.</p>
+<p>An example: a <code>DECFLOAT(16)</code> stores values as an integral coefficient of 16 digits and an exponent between <code>-398</code> and <code>+369</code>. The value <code>1.234567890123456E-394</code> or <code>1234567890123456E-409</code> is coefficient <code>1234567890123456</code> and exponent <code>-409</code>. The coefficient is 16 digits, but the exponent is too low by 11.</p>
+<p>If we sacrifice least-significant digits, we can increase the exponent, this is achieved by dividing the coefficient by 10<sup>11</sup> (and rounding) and increasing the exponent by 11. We get exponent = round(1234567890123456 / 10<sup>11</sup>) = 12346 and exponent = -409 + 11 = -398.</p>
+<p>The resulting value is now <code>12346E-398</code> or <code>1.2346E-394</code>, or in other words, we sacrificed precision to make the value fit.</p></li>
+<li><p>If after the previous step, the magnitude is still too low, we have what is called an underflow, and the value is truncated to 0 with the minimum exponent and preserving sign, e.g. for <code>DECFLOAT(16)</code>, the value will become +0E+398 or -0E-398 (see note 19). Technically, this is just a special case of the previous step.</p></li>
+</ol></li>
+<li><p>If the magnitude (or exponent) is too high, then the following steps are applied:</p>
+<ol type="1">
+<li><p>If the precision is less than maximum precision, and the difference between maximum precision and actual precision is larger than or equal to the difference between the actual exponent and the maximum exponent, then the precision is increased by adding zeroes as least-significant digits and decreasing the exponent by the number of zeroes added.</p>
+<p>An example: a <code>DECFLOAT(16)</code> stores values as an integral coefficient of 16 digits and an exponent between <code>-398</code> and <code>+369</code>. The value <code>1E+384</code> is coefficient <code>1</code> with exponent <code>384</code>. This is too large for the maximum exponent, however, we have a value with a single digit, leaving us with 15 &#39;unused&#39; most-significant digits.</p>
+<p>If we multiply the coefficient by 10<sup>15</sup> and subtract 15 from the exponent we get: coefficient = 1 * 10<sup>15</sup> = 1000000000000000 and exponent = 384 - 15 = 369, and these values for coefficient and exponent are in range of the storage requirements.</p>
+<p>The resulting value is now <code>1000000000000000E+369</code> or <code>1.000000000000000E+384</code>, or in other words, we &#39;increased&#39; precision by adding zeroes as least-significant digits to make the value fit.</p></li>
+<li><p>Otherwise, we have what is called an overflow, and an <code>SQLException</code> is thrown as the value is out of range.</p></li>
+</ol></li>
+</ul>
+<p>If you need other rounding and overflow behavior, make sure you round the values appropriately before you set them.</p>
+</section>
+<section id="configuring-decfloat-traps-and-rounding" class="level3" data-number="7.9.2">
+<h3 data-number="7.9.2"><span class="header-section-number">7.9.2</span> Configuring decfloat traps and rounding</h3>
+<p>To configure the server-side(!) error and rounding behaviour of the <code>DECFLOAT</code> data types, you can configure use the following connection properties:</p>
+<ul>
+<li><code>decfloatRound</code> (alias: <code>decfloat_round</code>)<br />
+Possible values: <code>ceiling</code>, <code>up</code>, <code>half_up</code> (default), <code>half_even</code>, <code>half_down</code>, <code>down</code>, <code>floor</code>, <code>reround</code></li>
+<li><code>decfloatTraps</code> (alias: <code>decfloat_traps</code>)<br />
+Comma-separated list with options: <code>Division_by_zero</code> (default), <code>Inexact</code>, <code>Invalid_operation</code> (default), <code>Overflow</code> (default), <code>Underflow</code></li>
+</ul>
+<p>Configuring these options does not change driver behaviour, only server-side behaviour.</p>
+</section>
+<section id="notes" class="level3" data-number="7.9.3">
+<h3 data-number="7.9.3"><span class="header-section-number">7.9.3</span> Notes</h3>
+<ol type="1">
+<li><p><code>java.math.BigDecimal</code> is capable of representing numbers with larger precisions than <code>DECFLOAT</code>, and numbers that are out of range (too large or too small). When performing calculations in Java, use <code>MathContext.DECIMAL64</code> (for <code>DECFLOAT(16)</code>) or <code>MathContext.DECIMAL128</code> (for <code>DECFLOAT(34)</code>) to achieve similar results in calculations as in Firebird. Be aware there might still be differences in rounding, and the result of calculations may be out of range.</p>
+<ol type="a">
+<li>Firebird 4 snapshots currently allow storing NaN and Infinity values, retrieval of these values will result in a <code>SQLException</code>, with a <code>DecimalInconvertibleException</code> cause with details on the special. The support for these special values is currently under discussion and may be removed in future Firebird 4 snapshots, or may be disabled by default.</li>
+</ol></li>
+<li><p><code>byte</code> in Java is signed, and historically Jaybird has preserved sign when storing byte values, and it considers values outside -128 and +127 out of range.</p></li>
+<li><p>All integral values are - if within range - first converted to <code>long</code> using <code>BigDecimal.longValue</code>, which discards any fractional parts (rounding by truncation).</p></li>
+<li><p>When storing a <code>long</code> in <code>DECFLOAT(16)</code>, rounding will be applied using <code>RoundingMode.HALF_EVEN</code> for values larger than <code>9999999999999999L</code> or smaller than <code>-9999999999999999L</code>.</p></li>
+<li><p><code>float</code> values are first converted to (or from) double, this may lead to small rounding differences</p></li>
+<li><p><code>float</code> and <code>double</code> can be fully stored in <code>DECFLOAT(16)</code> and <code>DECLOAT(34)</code>, with minor rounding differences.</p></li>
+<li><p>When reading <code>DECFLOAT</code> values as <code>double</code> or <code>float</code>, rounding will be applied as binary floating point types are inexact, and have a smaller precision.</p></li>
+<li><p>If the magnitude of the <code>DECFLOAT</code> value is too great to be represented in <code>float</code> or <code>double</code>, +Infinity or -Infinity may be returned (see <code>BigDecimal.doubleValue()</code>). This behavior is subject to change, future releases may throw a <code>SQLException</code> instead, see also related note 9.</p></li>
+<li><p>Storing and retrieving values NaN, +Infinity and -Infinity are currently supported, but this may change as this doesn&#39;t seem to be allowed by the SQL:2016 standard.</p>
+<p>It is possible that Jaybird or Firebird will disallow storing and retrieving NaN and Infinity values in future releases, causing Jaybird to throw an <code>SQLException</code> instead. We strongly suggest not to rely on this support for special values.</p>
+<ol type="a">
+<li>Firebird <code>DECFLOAT</code> currently discerns four different NaNs (+/-NaN and +/-signaling-NaN). These are all mapped to <code>Double.NaN</code> (or <code>Float.NaN</code>), Java NaN values are mapped to +NaN in Firebird.</li>
+</ol></li>
+<li><p>Setting <code>boolean</code> values will set <code>0</code> (or <code>0E+0</code>) for <code>false</code> and <code>1</code> (or <code>1E+0</code>) for <code>true</code>.</p></li>
+<li><p>Retrieving as <code>boolean</code> will return <code>true</code> for <code>1</code> (exactly <code>1E+0</code>) and <code>false</code> for <strong>all other values</strong>. Be aware that this means that <code>1.0E+0</code> (or <code>10E-1</code>) etc will be <strong><code>false</code></strong> (<em>this may change before Jaybird 4 final to <code>getLong() == 1L</code> or similar, which truncates the value</em>).</p>
+<p>This behavior may change in the future and only allow <code>0</code> for <code>false</code> and exactly <code>1</code> for <code>true</code> and throw an <code>SQLException</code> for all other values, or maybe <code>true</code> for everything other than <code>0</code>. In general, we advise to not use numerical types for boolean values, and especially not to retrieve the result of a calculation as a boolean value. Instead, use a real <code>BOOLEAN</code>.</p></li>
+<li><p>Setting values as <code>String</code> is supported following the format rules of <code>new BigDecimal(String)</code>, with extra support for special values <code>+NaN</code>, <code>-NaN</code>, <code>+sNaN</code>, <code>-sNaN</code>, <code>+Infinity</code> and <code>-Infinity</code> (case-insensitive). Other non-numerical strings throw an <code>SQLException</code> with a <code>NumberFormatException</code> as cause. Out of range values are handled as described in <a href="#precision-and-range">Precision and range</a>.</p></li>
+<li><p>Getting values as <code>String</code> will be equivalent to <code>BigDecimal.toString()</code>, with extra support for the special values mentioned in the previous note.</p></li>
+<li><p>As mentioned in earlier notes, support for the special values is under discussion, and may be removed in the final Jaybird 4 or Firebird 4 release, or might change in future versions.</p></li>
+<li><p>Getting as <code>BigInteger</code> will behave as <code>BigDecimal.toBigInteger()</code>, which discards the fractional part (rounding by truncation), and may add <code>(-1 * scale - precision)</code> least-significant zeroes if the scale exceeds precision. Be aware that use of <code>BigInteger</code> for large values may result in significant memory consumption.</p></li>
+<li><p>Setting as <code>BigInteger</code> will lose precision for values with more digits than the target type. It applies the rules described in <a href="#precision-and-range">Precision and range</a>.</p></li>
+<li><p>Values can also be set and retrieved as types <code>Decimal32</code>, <code>Decimal64</code> and <code>Decimal128</code> from the <code>org.firebirdsql.extern.decimal</code> package. Where <code>Decimal64</code> exactly matches the <code>DECFLOAT(16)</code> protocol format, and <code>Decimal128</code> the <code>DECFLOAT(34)</code> protocol format. Be aware that this is an implementation detail that might change in future Jaybird versions (both in terms of support for these types, and in terms of the interface (API) of these types).</p></li>
+<li><p>Setting a <code>Decimal128</code> on a <code>DECFLOAT(16)</code>, or a <code>Decimal32</code> on a <code>DECFLOAT(16)</code> or <code>DECFLOAT(34)</code>, or retrieving a <code>Decimal32</code> from a <code>DECFLOAT(16)</code> or <code>DECFLOAT(34)</code>, or a <code>Decimal64</code> from a <code>DECFLOAT(34)</code> will apply the rules described in <a href="#precision-and-range">Precision and range</a>.</p></li>
+<li><p>Zero values can have a sign (eg <code>-0</code> vs <code>0</code> (<code>+0</code>)), this can only be set or retrieved using <code>String</code> or the <code>DecimalXX</code> types, or the result of rounding. This behaviour is subject to change, and future releases may &#39;round&#39; to <code>0</code> (aka <code>+0</code>).</p></li>
+</ol>
+</section>
+</section>
+<section id="firebird-4-extended-numeric-precision-support" class="level2" data-number="7.10">
+<h2 data-number="7.10"><span class="header-section-number">7.10</span> Firebird 4 extended numeric precision support</h2>
+<p>Added support for the extended precision for <code>NUMERIC</code> and <code>DECIMAL</code> introduced in Firebird 4, increasing the maximum precision to 38. In the implementation in Firebird, this extended precision is backed by an Int128.</p>
+<p>Any <code>NUMERIC</code> or <code>DECIMAL</code> with a precision between 19 and 38 will allow storage up to a precision of 38 (technically even 39, but not full range).</p>
+<p>Values set on a field or parameter will be rounded to the target scale of the field using <code>RoundingMode.HALF_UP</code>. Values exceeding that do not fit in an Int128 after rounding will be rejected with a <code>TypeConversionException</code>.</p>
+<section id="important-notice-about-extended-numeric-precision-support" class="level3" data-number="7.10.1">
+<h3 data-number="7.10.1"><span class="header-section-number">7.10.1</span> Important notice about extended numeric precision support</h3>
+<p>The implementation of extended numeric precision was changed after Firebird 4.0.0-beta-1 (in build 1604) from a maximum precision of 34 backed by a Decimal128 to a maximum precision of 38 backed by an Int128.</p>
+<p>Support for the old &#39;DEC_FIXED&#39; format backed by a Decimal128 was removed in Jaybird 4.0.0-beta-2.</p>
+</section>
+</section>
+<section id="firebird-4-int128-support" class="level2" data-number="7.11">
+<h2 data-number="7.11"><span class="header-section-number">7.11</span> Firebird 4 INT128 support</h2>
+<p>Since: Jaybird 4.0.1</p>
+<p>After Firebird 4 beta 2 (in build 4.0.0.2076), the Int128 type used to back the extended precision numerics was exposed as SQL type <code>INT128</code>. As JDBC does not provide this type, we map it to JDBC type <code>NUMERIC</code>, with a reported precision of 38 and a scale of 0.</p>
+<p>We think this mapping will offer the best support in tool and libraries. For further details, see <a href="https://github.com/FirebirdSQL/jaybird/blob/master/devdoc/jdp/jdp-2020-08-int128-support.md">jdp-2020-08 Int128 support</a></p>
+</section>
+<section id="firebird-4-time-zone-support" class="level2" data-number="7.12">
+<h2 data-number="7.12"><span class="header-section-number">7.12</span> Firebird 4 time zone support</h2>
+<p>Added support for the Firebird 4 <code>TIME WITH TIME ZONE</code> and <code>TIMESTAMP WITH TIME ZONE</code> types. See the Firebird 4 release notes and <code>doc/sql.extensions/README.time_zone.md</code> in the Firebird installation for details on these types.</p>
+<p>The time zone types are supported under Java 8 and higher, using the Java 8 (or higher) version of Jaybird.</p>
+<p>Time zone types are not supported under Java 7, you will need to enable legacy time zone bind. With legacy time zone bind, Firebird will convert to the equivalent <code>TIME</code> and <code>TIMESTAMP</code> (<code>WITHOUT TIME ZONE</code>) types using the session time zone. Time zone bind can be configured with connection property <code>dataTypeBind</code>, for more information see <a href="#time-zone-bind-configuration">Time zone bind configuration</a>.</p>
+<p>See also <a href="https://github.com/FirebirdSQL/jaybird/blob/master/devdoc/jdp/jdp-2019-03-time-zone-support.md">jdp-2019-03: Time Zone Support</a></p>
+<section id="scope-of-time-zone-support" class="level3" data-number="7.12.1">
+<h3 data-number="7.12.1"><span class="header-section-number">7.12.1</span> Scope of time zone support</h3>
+<p>JDBC 4.2 introduced support for time zones, and maps these types to <code>java.time.OffsetTime</code> and <code>java.time.OffsetDateTime</code>. JDBC does not define explicit setters for these types. Use <code>setObject(index, value)</code>, <code>updateObject(index, value)</code>, <code>getObject(index/name)</code> or <code>getObject(index/name, classType)</code>.</p>
+<p>Firebird 4 supports both offset and named time zones. Given the definition in JDBC, Jaybird defaults to offset time zones. On retrieval of a value with a named zone, Jaybird will make a best-effort attempt to convert to the equivalent offset using Java&#39;s time zone information. If no mapping is available, the time will be returned at UTC (offset zero).</p>
+<p>Since Jaybird 4.0.1, it is also possible to get and set <code>java.time.ZonedDateTime</code>, which preserves the named zone information.</p>
+<p>Jaybird 4 supports the following Java types on fields of time zone types (those marked with * are not defined in JDBC)</p>
+<p><code>TIME WITH TIME ZONE</code>:</p>
+<ul>
+<li><code>java.time.OffsetTime</code> (default for <code>getObject</code>)
+<ul>
+<li>On get, if the value is a named zone, it will derive the offset using the base date 2020-01-01 (in 4.0.0 it used the current date). The offset can be different from the offset of the <code>OffsetDateTime</code> for the same value.</li>
+</ul></li>
+<li><code>java.time.OffsetDateTime</code>
+<ul>
+<li>On get, the current date is added
+<ul>
+<li>For a named zone, the time in the zone is derived at 2020-01-01 and then rebased to the current date. As a result, the offset can be different from an <code>OffsetTime</code>.</li>
+</ul></li>
+<li>On set the date information is removed</li>
+</ul></li>
+<li><code>java.time.ZonedDateTime</code> (*)
+<ul>
+<li>On get, the time in the zone is derived at 2020-01-01 and then rebased to the current date.</li>
+<li>On set, the time is rebased to 2020-01-01 and then the date information is removed.</li>
+</ul></li>
+<li><code>java.lang.String</code>
+<ul>
+<li>On get, applies <code>OffsetTime.toString()</code> (eg <code>13:25:13.1+01:00</code>)</li>
+<li>On set, tries the default parse format of either <code>OffsetTime</code> or <code>OffsetDateTime</code> (eg <code>13:25:13.1+01:00</code> or <code>2019-03-10T13:25:13+01:00</code>) and then sets as that type</li>
+</ul></li>
+<li><code>java.sql.Time</code> (*)
+<ul>
+<li>On get, obtains <code>java.time.OffsetDateTime</code>, converts this to epoch milliseconds and uses <code>new java.sql.Time(millis)</code></li>
+<li>On set, applies <code>toLocalTime()</code>, combines this with <code>LocalDate.now()</code> and then derives the offset time for the default JVM time zone</li>
+</ul></li>
+<li><code>java.sql.Timestamp</code> (*)
+<ul>
+<li>On get, obtains <code>java.time.OffsetDateTime</code>, converts this to epoch milliseconds and uses <code>new java.sql.Timestamp(millis)</code></li>
+<li>On set, applies <code>toLocalDateTime()</code> and derives the offset time for the default JVM time zone</li>
+</ul></li>
+</ul>
+<p><code>TIMESTAMP WITH TIME ZONE</code>:</p>
+<ul>
+<li><code>java.time.OffsetDateTime</code> (default for <code>getObject</code>)</li>
+<li><code>java.time.OffsetTime</code> (*)
+<ul>
+<li>On get, the date information is removed</li>
+<li>On set, the current date is added</li>
+</ul></li>
+<li><code>java.time.ZonedDateTime</code> (*)</li>
+<li><code>java.lang.String</code>
+<ul>
+<li>On get, applies <code>OffsetDateTime.toString()</code> (eg <code>2019-03-10T13:25:13.1+01:00</code>)</li>
+<li>On set, tries the default parse format of either <code>OffsetTime</code> or <code>OffsetDateTime</code> (eg <code>13:25:13.1+01:00</code> or <code>2019-03-10T13:25:13+01:00</code>) and then sets as that type</li>
+</ul></li>
+<li><code>java.sql.Time</code> (*)
+<ul>
+<li>On get, obtains <code>java.time.OffsetDateTime</code>, converts this to epoch milliseconds and uses <code>new java.sql.Time(millis)</code></li>
+<li>On set, applies <code>toLocalTime()</code>, combines this with <code>LocalDate.now()</code> and then derives the offset date time for the default JVM time zone</li>
+</ul></li>
+<li><code>java.sql.Timestamp</code> (*)
+<ul>
+<li>On get, obtains <code>java.time.OffsetDateTime</code>, converts this to epoch milliseconds and uses <code>new java.sql.Timestamp(millis)</code></li>
+<li>On set, applies <code>toLocalDateTime()</code> and derives the offset date time for the default JVM time zone</li>
+</ul></li>
+<li><code>java.sql.Date</code> (*)
+<ul>
+<li>On get, obtains <code>java.time.OffsetDateTime</code>, converts this to epoch milliseconds and uses <code>new java.sql.Date(millis)</code></li>
+<li>On set, applies <code>toLocalDate()</code> at start of day and derives the offset date time for the default JVM time zone</li>
+</ul></li>
+</ul>
+<p>In addition, Firebird 4 has &#39;bind-only&#39; data types <code>EXTENDED TIME/TIMESTAMP WITH TIME ZONE</code>. These data types can be set through the data type bind configuration and include an extra offset in its data so clients without access to ICU or other time zone data can use the offset as determined by Firebird.</p>
+<p>Jaybird provides minimal support for these types by handling them the same as the normal <code>WITH TIME ZONE</code> types. That means the extra offset information is ignored and Jaybird will always use the Java time zone information to calculate the offset of a named zone, and if a zone is unknown in Java, Jaybird will fallback to UTC even when the actual offset is available in the &#39;extended&#39; time zone type.</p>
+<p>See also:</p>
+<ul>
+<li><a href="https://github.com/FirebirdSQL/jaybird/blob/master/devdoc/jdp/jdp-2020-01-extended-time-zone-types-support.md">jdp-2020-01: Extended Time Zone Types Support</a></li>
+<li><a href="https://github.com/FirebirdSQL/jaybird/blob/master/devdoc/jdp/jdp-2020-06-offsettime-derivation-for-named-zone.md">jdp-2020-06: OffsetTime derivation for named zone</a></li>
+<li><a href="https://github.com/FirebirdSQL/jaybird/blob/master/devdoc/jdp/jdp-2020-09-add-zoneddatetime-support.md">jdp-2020-09: Add ZonedDateTime support</a></li>
+</ul>
+<section id="support-for-legacy-jdbc-datetime-types" class="level4" data-number="7.12.1.1">
+<h4 data-number="7.12.1.1"><span class="header-section-number">7.12.1.1</span> Support for legacy JDBC date/time types</h4>
+<p>For the <code>WITH TIME ZONE</code> types, JDBC does not define support for the legacy JDBC types (<code>java.sql.Time</code>, <code>java.sql.Timestamp</code> and <code>java.sql.Date</code>). To ease the transition and potential compatibility with tools and libraries, Jaybird does provide support. However, we strongly recommend avoiding using these types.</p>
+<p>Compared to the <code>WITHOUT TIME ZONE</code> types, there may be small discrepancies in values as Jaybird uses 1970-01-01 for <code>WITHOUT TIME ZONE</code>, while for <code>WITH TIME ZONE</code> it uses the current date. If this is problematic, then either apply the necessary conversions yourself, enable legacy time zone bind, or define or cast your columns to <code>TIME</code> or <code>TIMESTAMP</code>.</p>
+</section>
+<section id="no-support-for-other-java.time-types" class="level4" data-number="7.12.1.2">
+<h4 data-number="7.12.1.2"><span class="header-section-number">7.12.1.2</span> No support for other java.time types</h4>
+<p>The types <code>java.time.LocalTime</code>, <code>java.time.LocalDateTime</code> and <code>java.time.LocalDate</code> are not supported. Supporting these types would be ambiguous. If you need to use these, then either apply the necessary conversions yourself, enable legacy time zone bind, or define or cast your columns as <code>TIME</code> or <code>TIMESTAMP</code>.</p>
+<p>Jaybird also does not support non-standard extensions like <code>java.time.Instant</code>. If there is interest, we may add them in the future.</p>
+</section>
+</section>
+<section id="time-zone-bind-configuration" class="level3" data-number="7.12.2">
+<h3 data-number="7.12.2"><span class="header-section-number">7.12.2</span> Time zone bind configuration</h3>
+<p>If you are using Java 7 and need to handle the <code>WITH TIME ZONE</code> types, you will need to redefine the data type binding for the time zone types as the necessary <code>java.time</code> types do not exist in Java 7. Redefining the binding can also be used for tools or applications that expect <code>java.sql.Time</code>/<code>Timestamp</code> types and cannot use the <code>java.time.OffsetTime</code>/<code>OffsetDateTime</code> types returned for the <code>WITH TIME ZONE</code> types.</p>
+<p>To redefine the data type binding, you can use the connection property <code>dataTypeBind</code>. See <a href="#firebird-4-data-type-bind-configuration-support">Firebird 4 data type bind configuration support</a> for details.</p>
+<p>You will need to map the time zone types, either to <code>legacy</code> (which uses <code>time</code> and <code>timestamp</code> (without time zone)) or to a desired target data type (for example <code>time</code> or <code>varchar</code>). You can map per type or for both types together:</p>
+<pre><code>Properties props = new Properties();
+props.setProperty(&quot;dataTypeBind&quot;, &quot;time zone to legacy&quot;);</code></pre>
+<p>The <code>TIME ZONE TO EXTENDED</code> binds (including type-specific variants) is only supported under Java 8 and higher using the Java 8 or higher version of Jaybird. As mentioned earlier, the support for &#39;extended&#39; time zone types will behave identical to the normal time zone types.</p>
+<p><strong>Important</strong>: These features requires Firebird 4 beta 2 or higher (or a snapshot build version 4.0.0.1683 or later). It will be ignored in builds before 1481 as the necessary database parameter buffer item does not exist, and it will raise an error in versions between 1481 and 1682 as there the DPB item points to the removed DPB item <code>isc_time_zone_bind</code>.</p>
+</section>
+<section id="connection-property-sessiontimezone" class="level3" data-number="7.12.3">
+<h3 data-number="7.12.3"><span class="header-section-number">7.12.3</span> Connection property sessionTimeZone</h3>
+<p>The connection property <code>sessionTimeZone</code> (alias <code>session_time_zone</code>) does two things:</p>
+<ol type="1">
+<li>specifies the Firebird 4 session time zone (see Firebird 4 documentation),</li>
+<li>specifies the time zone to use when converting values to the legacy JDBC datetime types (all Firebird version).</li>
+</ol>
+<p>By default, Jaybird will use the JVM default time zone as reported by <code>java.util.TimeZone.getDefault().getID()</code>. Using the JVM default time zone as the default is the best option in the light of JDBC requirements with regard to <code>java.sql.Time</code> and <code>java.sql.Timestamp</code> using the JVM default time zone.</p>
+<p>Valid values are time zone names known by Firebird, we recommend using the long names (eg <code>Europe/Amsterdam</code>), and not the ambiguous short IDs (eg <code>CET</code>). Although not required, we recommend to use time zone names that are known by Firebird and Java (see <a href="#session-time-zone-for-conversion">Session time zone for conversion</a> for caveats).</p>
+<p>To use the default server time zone and the old behaviour to use the JVM default time zone, set the connection property to <code>server</code>. This will result in the conversion behaviour of Jaybird 3 and earlier. Be aware that this is inconsistent if Firebird and Java are in different time zones.</p>
+<section id="firebird-4-session-time-zone" class="level4" data-number="7.12.3.1">
+<h4 data-number="7.12.3.1"><span class="header-section-number">7.12.3.1</span> Firebird 4 session time zone</h4>
+<p>The session time zone is used for conversion between <code>WITH TIME ZONE</code> values and <code>WITHOUT TIME ZONE</code> values (ie using cast or with legacy time zone bind), and for the value of <code>LOCALTIME</code>, <code>LOCALTIMESTAMP</code>, <code>CURRENT_TIME</code> and <code>CURRENT_TIMESTAMP</code>, and other uses of the session time zone as documented in the Firebird 4 documentation.</p>
+<p>The value of <code>sessionTimeZone</code> must be supported by Firebird 4. It is possible that time zone identifiers used by Java are not supported by Firebird. If Firebird does not know the session time zone, error (<code>Invalid time zone region: &lt;zone name&gt;</code>) is reported on connect.</p>
+<p>The use of the JVM default time zone as the default session time zone will result in subtly different behaviour compared to previous versions of Jaybird and - even with Jaybird 4 - Firebird 3 or earlier, as current time values like <code>LOCALTIMESTAMP</code> (etc) will now reflect the time in the JVM time zone, and not the server time zone rebased on the JVM default time zone.</p>
+<p>As an example, with a Firebird in Europe/London and a Java application in Europe/Amsterdam with Firebird time 12:00, in Jaybird 3, the Java application will report this time as 12:00, in Jaybird 4 with Firebird 4, this will now report 13:00, as that is the time in Amsterdam if it is 12:00 in London (ignoring potential DST start/end differences).</p>
+<p>Other examples include values generated in triggers and default value clauses.</p>
+</section>
+<section id="session-time-zone-for-conversion" class="level4" data-number="7.12.3.2">
+<h4 data-number="7.12.3.2"><span class="header-section-number">7.12.3.2</span> Session time zone for conversion</h4>
+<p>For <code>WITHOUT TIME ZONE</code> types, the session time zone will be used to derive the <code>java.sql.Time</code>, <code>java.sql.Timestamp</code> and <code>java.sql.Date</code> values. This is also done for Firebird 3 and earlier.</p>
+<p>If Java does not know the session time zone, no error is reported, but when retrieving <code>java.sql.Time</code>, <code>java.sql.Timestamp</code> or <code>java.sql.Date</code> a warning is logged and conversion will happen in GMT, which might yield unexpected values.</p>
+<p>We strongly suggest that you use <code>java.time.LocalTime</code>, <code>java.time.LocalDateTime</code> and <code>java.time.LocalDate</code> types instead of these legacy datetime types.</p>
+<p>For <code>WITH TIME ZONE</code> types, the session time zone has no effect on the conversion to the legacy JDBC date/time types: the offset date/time is converted to epoch milliseconds and used to construct these legacy types directly.</p>
+<p>Executing <code>SET TIME ZONE &lt;zone name&gt;</code> statements after connect will change the session time zone on the server, but Jaybird will continue to use the session time zone set in the connection property for these conversions.</p>
+</section>
+</section>
+<section id="time-zone-support-for-convert" class="level3" data-number="7.12.4">
+<h3 data-number="7.12.4"><span class="header-section-number">7.12.4</span> Time zone support for CONVERT</h3>
+<p>Although not defined in JDBC (or ODBC), Jaybird has added a non-standard extension to the <code>CONVERT</code> JDBC escape to allow conversion to the time zone types.</p>
+<p>In addition to the standard-defined types, it also supports the type names <code>TIME_WITH_TIME_ZONE</code>, <code>TIME_WITH_TIMEZONE</code>, <code>TIMESTAMP_WITH_TIME_ZONE</code> and <code>TIMESTAMP_WITH_TIMEZONE</code> (and the same with the <code>SQL_</code> prefix).</p>
+</section>
+<section id="caveats-for-time-zone-types" class="level3" data-number="7.12.5">
+<h3 data-number="7.12.5"><span class="header-section-number">7.12.5</span> Caveats for time zone types</h3>
+<ul>
+<li><p>Time zone fields do not support <code>java.time.LocalDate</code>, <code>java.time.LocalTime</code>, <code>java.time.LocalDateTime</code>.</p></li>
+<li><p>Firebird 4 redefines <code>CURRENT_TIME</code> and <code>CURRENT_TIMESTAMP</code> to return a <code>WITH TIME ZONE</code> type. Use <code>LOCALTIME</code> and <code>LOCALTIMESTAMP</code> (introduced in Firebird 3.0.4) if you want to ensure a <code>WITHOUT TIME ZONE</code> type is used.</p></li>
+<li><p>The database metadata will always return JDBC 4.2 compatible information on time zone types, even on Java 7, and even when legacy time zone bind is set. For Java 7 compatibility the JDBC 4.2 <code>java.sql.Types</code> constants <code>TIME_WITH_TIMEZONE</code> and <code>TIMESTAMP_WITH_TIMEZONE</code> are also defined in <code>org.firebirdsql.jdbc.JaybirdTypeCodes</code>.</p></li>
+<li><p>The default <code>sessionTimeZone</code> is set to the JVM default time zone, this may result in different application behavior for <code>DATE</code>, <code>TIME</code> and <code>TIMESTAMP</code>, including values generated in triggers and default value clauses. To prevent this, either switch those types to a <code>WITH TIME ZONE</code> type, or set the <code>sessionTimeZone</code> to <code>server</code> or to the actual time zone of the Firebird server.</p></li>
+<li><p>As <code>CURRENT_TIME</code> uses the session time zone, which usually is a named zone, use in combination with <code>java.time.OffsetTime</code> can yield confusing results. For example, if the current date and time is &#39;2020-07-01T14:51:00 Europe/Amsterdam&#39;, then retrieving <code>CURRENT_TIME</code> as an <code>OffsetTime</code> will return the value &#39;14:51:00+01:00&#39;, and not &#39;14:51:00+02:00&#39;.<br />
+It is recommended to avoid <code>CURRENT_TIME</code> and use <code>CURRENT_TIMESTAMP</code> instead.</p></li>
+<li><p>Overall, using <code>TIME WITH TIME ZONE</code> with named zones is rather fragile and prone to interpretation errors. This is a result of how this is implemented in Firebird: values are stored at UTC with their offset or named zones, where derivation of the time in the named zone needs to use 2020-01-01 as the date for the time zone rules to apply.<br />
+We recommend avoiding <code>TIME WITH TIME ZONE</code> where possible.</p></li>
+</ul>
+</section>
+</section>
+<section id="firebird-4-statement-timeout-support" class="level2" data-number="7.13">
+<h2 data-number="7.13"><span class="header-section-number">7.13</span> Firebird 4 statement timeout support</h2>
+<p>Supports was added for Firebird 4 statement timeouts through <code>java.sql.setQueryTimeout</code>. On Firebird 3 and earlier or a native connection with a Firebird 3 or earlier client library, the timeout is silently ignored.</p>
+<p>This implementation supports a maximum timeout of 4294967 seconds. Larger values will be handled as if <code>0</code> (unlimited) was set. Firebird also has attachment level and global statement timeouts. This configuration governs the statement level statement timeout only. In practice, a more stringent timeout might be applied by this attachment level or global statement timeout.</p>
+<p><strong>Important</strong>: Query timeouts in Firebird 4 and higher have an important caveat: for result set producing statements, the timeout covers the time from execution start until the cursor is closed. This includes the time that Firebird waits for the application to fetch more rows. This means that if you execute a SELECT and take your time processing the results, the statement may be cancelled even when Firebird itself returns rows quickly.</p>
+<p>See Firebird 4 release notes and documentation for more information.</p>
+</section>
+<section id="jdbc-rowid-support" class="level2" data-number="7.14">
+<h2 data-number="7.14"><span class="header-section-number">7.14</span> JDBC RowId support</h2>
+<p>Columns of type <code>RDB$DB_KEY</code> are now identified as <code>java.sql.Types.ROWID</code>, and <code>getObject</code> on these columns will now return a <code>java.sql.RowId</code>.</p>
+<p>The <code>getObject(int/String, Class)</code> methods support retrieval as <code>java.sql.RowId</code> and <code>org.firebirdsql.jdbc.FBRowId</code>; the object returned is the same type (<code>org.firebirdsql.jdbc.FBRowId</code>) in both cases.</p>
+<p>Updating row ids is not possible, so attempts to call <code>updateRowId</code> or <code>updateObject</code> on a <code>RDB$DB_KEY</code> in an updatable result set will throw an <code>SQLFeatureNotSupportedException</code>.</p>
+<p>Unfortunately, this support does not extend to parameters, as parameters (e.g. in <code>where RDB$DB_KEY = ?</code>) cannot be distinguished from parameters of a normal binary field (<code>char character set octets</code>). To address this, binary fields now also accept values of type <code>java.sql.RowId</code> on <code>setRowId</code> and <code>setObject</code>.</p>
+<p>Support has also been added to <code>DatabaseMetaData</code>:</p>
+<ul>
+<li><code>getBestRowIdentifier</code> returns <code>RDB$DB_KEY</code> if there is no primary key (existing functionality)</li>
+<li><code>getRowIdLifetime</code> now returns <code>RowIdLifetime.ROWID_VALID_TRANSACTION</code> (even if <code>dbkey_scope=1</code> has been specified!)</li>
+<li><code>getPseudoColumns</code> now returns <code>RDB$DB_KEY</code></li>
+</ul>
+<p>Other database metadata (eg <code>getColumns</code>) will <strong>not</strong> list the <code>RDB$DB_KEY</code> column, as it is a pseudo-column.</p>
+<p>In result sets, Jaybird will now also automatically map request for columns by name <code>RDB$DB_KEY</code> (case-insensitive) to <code>DB_KEY</code> as Firebird automatically applies this alias for the <code>RDB$DB_KEY</code> column(s) in a select-list.</p>
+<p>Be aware that result set metadata will still report <code>DB_KEY</code> as the column name and label.</p>
+</section>
+<section id="databasemetadata-getpseudocolumns-implemented" class="level2" data-number="7.15">
+<h2 data-number="7.15"><span class="header-section-number">7.15</span> DatabaseMetaData getPseudoColumns implemented</h2>
+<p>The <code>DatabaseMetaData.getPseudoColumns</code> method (introduced in JDBC 4.1) has now been implemented.</p>
+<p>The JDBC API specifies this method as:</p>
+<blockquote>
+<p>Retrieves a description of the pseudo or hidden columns available in a given table within the specified catalog and schema. Pseudo or hidden columns may not always be stored within a table and are not visible in a <code>ResultSet</code> unless they are specified in the query&#39;s outermost <code>SELECT</code> list. Pseudo or hidden columns may not necessarily be able to be modified. If there are no pseudo or hidden columns, an empty <code>ResultSet</code> is returned.</p>
+</blockquote>
+<p>For Firebird 2.5 and earlier it will only report on <code>RDB$DB_KEY</code>, for Firebird 3 and higher it will also report on <code>RDB$RECORD_VERSION</code>.</p>
+<p>The pseudo-column <code>RDB$RECORD_VERSION</code> was introduced in Firebird 3, its value is the transaction that last updated the row.</p>
+</section>
+<section id="databasemetadata-getversioncolumns-implemented" class="level2" data-number="7.16">
+<h2 data-number="7.16"><span class="header-section-number">7.16</span> DatabaseMetaData getVersionColumns implemented</h2>
+<p>The <code>DatabaseMetaData.getVersionColumns</code> method has now been implemented.</p>
+<p>The JDBC API specifies this method as:</p>
+<blockquote>
+<p>Retrieves a description of a table&#39;s columns that are automatically updated when any value in a row is updated. They are unordered.</p>
+</blockquote>
+<p>For Firebird 2.5 and earlier it will only report on <code>RDB$DB_KEY</code>, for Firebird 3 and higher it will also report on <code>RDB$RECORD_VERSION</code>.</p>
+<p>The pseudo-column <code>RDB$RECORD_VERSION</code> was introduced in Firebird 3, its value is the transaction that last updated the row.</p>
+<p>Jaybird only returns pseudo-column as version columns, so &#39;last updated&#39; columns updated by a trigger, calculated columns, or other forms of change tracking are not reported by this method.</p>
+</section>
+<section id="databasemetadata-getfunctions-implemented" class="level2" data-number="7.17">
+<h2 data-number="7.17"><span class="header-section-number">7.17</span> DatabaseMetaData getFunctions implemented</h2>
+<p>The <code>DatabaseMetaData.getFunctions</code> method has now been implemented.</p>
+<p>The JDBC API specifies this method as:</p>
+<blockquote>
+<p>Retrieves a description of the system and user functions available in the given catalog.</p>
+</blockquote>
+<p>The implementation only returns functions that are available from the <code>RDB$FUNCTIONS</code> table. This means that the built-in functions are not included in the result of this method.</p>
+<p>For Firebird 3 and higher, the result includes native UDF, PSQL and UDR functions. The result does not include functions defined in packages as JDBC does not provide support for packages.</p>
+<p>Jaybird provides additional columns with Firebird specific information. As these columns are not defined by JDBC, they may change position when JDBC adds new columns. We recommend retrieving these columns by name.</p>
+<p>The additional columns are:</p>
+<ul>
+<li><code>JB_FUNCTION_SOURCE</code> - Source of Firebird 3+ PSQL function, this is the part after the <code>AS</code> clause.</li>
+<li><code>JB_FUNCTION_KIND</code> - Kind of function, one of <code>&quot;UDF&quot;</code>, <code>&quot;PSQL&quot;</code> (Firebird 3+) or <code>&quot;UDR&quot;</code> (Firebird 3+)</li>
+<li><code>JB_MODULE_NAME</code> - Value of <code>RDB$MODULE_NAME</code>, is <code>null</code> for PSQL functions</li>
+<li><code>JB_ENTRYPOINT</code> - Value of <code>RDB$ENTRYPOINT</code>, is <code>null</code> for PSQL functions</li>
+<li><code>JB_ENGINE_NAME</code> - Value of <code>RDB$ENGINE_NAME</code>, is <code>null</code> for UDF and PSQL functions</li>
+</ul>
+</section>
+<section id="databasemetadata-getfunctioncolumns-implemented" class="level2" data-number="7.18">
+<h2 data-number="7.18"><span class="header-section-number">7.18</span> DatabaseMetaData getFunctionColumns implemented</h2>
+<p>The <code>DatabaseMetaData.getFunctionColumns</code> method has now been implemented.</p>
+<p>The JDBC API specifies this method as:</p>
+<blockquote>
+<p>Retrieves a description of the given catalog&#39;s system or user function parameters and return type.</p>
+</blockquote>
+<p>The implementation only returns columns of functions that are available from the <code>RDB$FUNCTIONS</code> table. This means that the built-in functions are not included in the result of this method.</p>
+<p>For Firebird 3 and higher, the result includes native UDF, PSQL and UDR functions. The result does not include functions defined in packages as JDBC does not provide support for packages.</p>
+<p>Where Firebird provides no column name, Jaybird generates one by combining the string <code>PARAM_</code> with the value of <code>RDB$ARGUMENT_POSITION</code>. Names are not available for the parameters of legacy UDF functions, and for the return value of any function.</p>
+</section>
+<section id="improved-jdbc-function-escape-support" class="level2" data-number="7.19">
+<h2 data-number="7.19"><span class="header-section-number">7.19</span> Improved JDBC function escape support</h2>
+<p>Revised support for JDBC function escapes with optional parameters, and added support for a number of previously unsupported functions or options.</p>
+<p>If you only target Firebird, then we suggest you do not use JDBC function escapes.</p>
+<section id="new-jdbc-function-escapes" class="level3" data-number="7.19.1">
+<h3 data-number="7.19.1"><span class="header-section-number">7.19.1</span> New JDBC function escapes</h3>
+<ul>
+<li><p><code>DEGREES(number)</code> - Degrees in <em>number</em> radians; implemented as <code>((number)*180.0/PI())</code></p></li>
+<li><p><code>RADIANS(number)</code> - Radians in <em>number</em> degrees; implemented as <code>((number)*PI()/180.0)</code></p></li>
+<li><p><code>QUARTER(date)</code> - Quarter of year for date; implemented as <code>(1+(EXTRACT(MONTH FROM date)-1)/3)</code></p></li>
+<li><p><code>TIMESTAMPADD(interval, count, timestamp)</code> - Implemented using <code>DATEADD</code> with the following caveats:</p>
+<ul>
+<li><em>interval</em> <code>SQL_TSI_FRAC_SECOND</code> unit is nanoseconds and will be simulated by using <code>MILLISECOND</code> and the count multiplied by <code>1.0e-6</code> to convert the value to milliseconds.</li>
+<li><em>interval</em> <code>SQL_TSI_QUARTER</code> will be simulated by using <code>MONTH</code> and <em>count</em> multiplied by 3.</li>
+<li><em>interval</em> values that are not specified in JDBC will be passed as is, resulting in an error from the Firebird engine if it is an invalid interval name for <code>DATEADD</code>.</li>
+</ul></li>
+<li><p><code>TIMESTAMPDIFF(interval, timestamp1, timestamp2)</code> - Implemented using <code>DATEDIFF</code> with the following caveats:</p>
+<ul>
+<li><em>interval</em> <code>SQL_TSI_FRAC_SECOND</code> unit is nanoseconds and will be simulated by using <code>MILLISECOND</code> and the result multiplied by <code>1.0e6</code> and cast to <code>BIGINT</code> to convert the value to nanoseconds.</li>
+<li>Value <code>SQL_TSI_QUARTER</code> will be simulated by using <code>MONTH</code> and the result divided by 3.</li>
+<li>Contrary to specified in the JDBC specification, the resulting value will be <code>BIGINT</code>, not <code>INTEGER</code>.</li>
+<li><em>interval</em> values that are not specified in JDBC will be passed as is, resulting in an error from the Firebird engine if it is an invalid interval name for <code>DATEDIFF</code>.</li>
+</ul></li>
+<li><p><code>DAYNAME(date)</code> - A character string representing the day component of <em>date</em>; implemented to always return English day names (ie Sunday, Monday, etc)</p></li>
+<li><p><code>MONTHNAME(date)</code> - A character string representing the month component of <em>date</em>; implemented to always return English month names (ie January, February, etc)</p></li>
+<li><p><code>DATABASE()</code> Name of the database; implemented as <code>RDB$GET_CONTEXT(&#39;SYSTEM&#39;, &#39;DB_NAME&#39;)</code></p></li>
+</ul>
+</section>
+<section id="improved-jdbc-function-escapes" class="level3" data-number="7.19.2">
+<h3 data-number="7.19.2"><span class="header-section-number">7.19.2</span> Improved JDBC function escapes</h3>
+<ul>
+<li><p><code>CHAR_LENGTH(string[, CHARACTERS|OCTETS])</code> - The optional second parameter with <code>CHARACTERS</code> or <code>OCTETS</code> is now supported.</p>
+<p>Absence of second parameter, or <code>CHARACTERS</code> maps to <code>CHAR_LENGTH</code>, <code>OCTETS</code> maps to <code>OCTET_LENGTH</code></p></li>
+<li><p><code>CHARACTER_LENGTH(string[, CHARACTERS|OCTETS])</code> - see <code>CHAR_LENGTH</code></p></li>
+<li><p><code>CONCAT(string1, string2)</code> - Added parentheses around expression to prevent ambiguity or incorrect evaluation order.</p></li>
+<li><p><code>LENGTH(string[, CHARACTERS|OCTETS])</code> - The optional second parameter with <code>CHARACTERS</code> or <code>OCTETS</code> is now supported.</p>
+<p>The JDBC specification specifies <em>Number of characters in string, excluding trailing blanks</em>, we right-trim (<code>TRIM(TRAILING FROM value)</code>) the string before passing the value to either <code>CHAR_LENGTH</code> or <code>OCTETS_LENGTH</code>. As a result, the interpretation of what is a blank depends on the type of <em>value</em>. Is the value a normal <code>(VAR)CHAR</code> (non-octets), then the blank is space (0x20), for a <code>VAR(CHAR)CHARACTER SET OCTETS / (VAR)BINARY</code> the blank is NUL (0x00). This means that the optional <code>CHARACTERS|OCTETS</code> parameter has no influence on which blanks are trimmed, but only whether we count characters or bytes after trimming.</p></li>
+<li><p><code>LOCATE(string1, string2[, start])</code> - The third parameter <em>start</em> is now optional.</p></li>
+<li><p><code>POSITION(substring IN string[, CHARACTERS|OCTETS])</code> - The optional second parameter is now supported if <code>CHARACTERS</code>. <code>OCTETS</code> is not supported.</p></li>
+<li><p><code>CONVERT(value, SQLtype)</code> - See <a href="#improved-convert-support">Improved CONVERT support</a>.</p></li>
+</ul>
+</section>
+<section id="improved-convert-support" class="level3" data-number="7.19.3">
+<h3 data-number="7.19.3"><span class="header-section-number">7.19.3</span> Improved CONVERT support</h3>
+<p>In Jaybird 3, <code>CONVERT(value, SQLtype)</code> would map directly to <code>CAST(value as SQLtype)</code>, we have improved support to better conform to the JDBC requirements, with some caveats:</p>
+<ul>
+<li>Both the <code>SQL_&lt;datatype&gt;</code> and <code>&lt;datatype&gt;</code> mapping is now supported</li>
+<li>Contrary to the specification, we allow explicit length or precision and scale parameters</li>
+<li><code>(SQL_)VARCHAR</code>, <code>(SQL_)NVARCHAR</code> (and <em>value</em> not a parameter (<code>?</code>)) without explicit length is converted using <code>TRIM(TRAILING FROM value)</code>, which means the result is <code>VARCHAR</code> except for blobs where this will result in a blob; national character set will be lost. If <em>value</em> is a parameter (<code>?</code>), and no length is specified, then a length of 50 will be applied (cast to <code>(N)VARCHAR(50)</code>).</li>
+<li><code>(SQL_)CHAR</code>, <code>(SQL_)NCHAR</code> without explicit length will be cast to <code>(N)CHAR(50)</code></li>
+<li><code>(SQL_)BINARY</code>, and <code>(SQL_)VARBINARY</code> without explicit length will be cast to <code>(VAR)CHAR(50) CHARACTER SET OCTETS</code>. With explicit length, <code>CHARACTER SET OCTETS</code> is appended.</li>
+<li><code>(SQL_)LONGVARCHAR</code>, <code>(SQL_)LONGNVARCHAR</code>, <code>(SQL_)CLOB</code>, <code>(SQL_)NCLOB</code> will be cast to <code>BLOB SUB_TYPE TEXT</code>, national character set will be lost</li>
+<li><code>(SQL_)LONGVARBINARY</code>, <code>(SQL_)BLOB</code> will be cast to <code>BLOB SUB_TYPE BINARY</code></li>
+<li><code>(SQL_)TINYINT</code> is mapped to <code>SMALLINT</code></li>
+<li><code>(SQL_)ROWID</code> is not supported as length of <code>DB_KEY</code> values depend on the context</li>
+<li><code>(SQL_)DECIMAL</code> and <code>(SQL_)NUMERIC</code> without precision and scale are passed as is, in current Firebird versions, this means the value will be equivalent to <code>DECIMAL(9,0)</code> (which is equivalent to <code>INTEGER</code>)</li>
+<li>Unsupported/unknown <em>SQLtype</em> values (or invalid length or precision and scale) are passed as is to cast, resulting in an error from the Firebird engine if the resulting cast is invalid</li>
+</ul>
+</section>
+</section>
+<section id="new-jdbc-protocol-prefix-jdbcfirebird" class="level2" data-number="7.20">
+<h2 data-number="7.20"><span class="header-section-number">7.20</span> New JDBC protocol prefix jdbc:firebird:</h2>
+<p>Historically, the JDBC protocols supported by Jaybird have used the prefix <code>jdbc:firebirdsql:</code>. We have now added support for <code>jdbc:firebird:</code> as an alternative prefix. This prefix was previously only supported in the OpenOffice.org/LibreOffice pure Java variant.</p>
+<p>Jaybird now supports the following URL prefixes (or JDBC protocols):</p>
+<ul>
+<li>Pure Java
+<ul>
+<li><code>jdbc:firebirdsql:</code></li>
+<li><code>jdbc:firebirdsql:java</code></li>
+<li><code>jdbc:firebird:</code> (new)</li>
+<li><code>jdbc:firebird:java:</code> (new)</li>
+</ul></li>
+<li>Native
+<ul>
+<li><code>jdbc:firebirdsql:native:</code></li>
+<li><code>jdbc:firebird:native:</code> (new)</li>
+</ul></li>
+<li>Embedded
+<ul>
+<li><code>jdbc:firebirdsql:embedded:</code></li>
+<li><code>jdbc:firebird:embedded:</code> (new)</li>
+</ul></li>
+<li>Local
+<ul>
+<li><code>jdbc:firebirdsql:local:</code></li>
+<li><code>jdbc:firebird:local:</code> (new)</li>
+</ul></li>
+<li>OpenOffice.org/LibreOffice pure Java variant
+<ul>
+<li><code>jdbc:firebird:oo:</code></li>
+<li><code>jdbc:firebirdsql:oo:</code></li>
+</ul></li>
+</ul>
+</section>
+<section id="url-encoding-in-query-part-of-jdbc-url" class="level2" data-number="7.21">
+<h2 data-number="7.21"><span class="header-section-number">7.21</span> URL encoding in query part of JDBC URL</h2>
+<p>Jaybird now supports UTF-8 URL encoded values (and keys) in the query part of the JDBC URL.</p>
+<p>As a result of this change, the following previously unsupported characters can be used in a connection property value when escaped:</p>
+<ul>
+<li><code>;</code> escaped as <code>%3B</code></li>
+<li><code>&amp;</code> escaped as <code>%26</code></li>
+</ul>
+<p>URL encoding can also be used to encode any unicode character in the query string. Jaybird will always use UTF-8 for decoding.</p>
+<p>This change introduces the following backwards incompatibilities:</p>
+<ul>
+<li><code>+</code> in the query part now means <em>space</em> (0x20), so occurrences of <code>+</code> (<em>plus</em>) need to be escaped as <code>%2B</code>; make sure to do this for base64 encoded values of <code>dbCryptConfig</code></li>
+<li><code>%</code> in the query part now introduces an escape, so occurrences of <code>%</code> (<em>percent</em>) need to be escaped as <code>%25</code></li>
+</ul>
+<p>Invalid URL encoded values will now throw a <code>SQLNonTransientConnectionException</code>.</p>
+<p>The reason for this change is that the new <code>dataTypeBind</code> connection property requires semicolon-separated values, but Jaybird supports semicolon-separated key/value connection properties in the query part. To be able to support this new property in the connection string, we had to introduce URL encoding.</p>
+<p>This change only applies to the JDBC URL part after the first <code>?</code>. This change does not apply to connection properties set through <code>java.util.Properties</code> or on a <code>javax.sql.DataSource</code>.</p>
+</section>
+<section id="generated-keys-support-improvements" class="level2" data-number="7.22">
+<h2 data-number="7.22"><span class="header-section-number">7.22</span> Generated keys support improvements</h2>
+<p>Support for generated keys generation was improved with the following changes.</p>
+<section id="configuration-of-generated-keys-behaviour" class="level3" data-number="7.22.1">
+<h3 data-number="7.22.1"><span class="header-section-number">7.22.1</span> Configuration of generated keys behaviour</h3>
+<p>A new connection property <code>generatedKeysEnabled</code> (alias <code>generated_keys_enabled</code>) has been added that allows the behaviour of generated keys support to be configured. Also available on data sources.</p>
+<p>This property supports the following values (case-insensitive):</p>
+<ul>
+<li><code>default</code>: default behaviour to enable generated keys for statement types with <code>RETURNING</code> clause in the connected Firebird version (absence of this property, <code>null</code> or empty string implies <code>default</code>). This corresponds to the existing behaviour.</li>
+<li><code>disabled</code>: disable support. Attempts to use generated keys methods other than using <code>Statement.NO_GENERATED_KEYS</code> will throw a <code>SQLFeatureNotSupportedException</code>.</li>
+<li><code>ignored</code>: ignore generated keys support. Attempts to use generated keys methods will not attempt to detect generated keys support and execute as if the statement generates no keys. The <code>Statement.getGeneratedKeys()</code> method will always return an empty result set. This behaviour is equivalent to using the non-generated keys methods.</li>
+<li>A comma-separated list of statement types to enable.</li>
+</ul>
+<p>For <code>disabled</code> and <code>ignored</code>, <code>DatabaseMetaData.supportsGetGeneratedKeys</code> will report <code>false</code>.</p>
+<p>Because of the behaviour specified in the next section, typos in property values will behave as <code>ignored</code> (e.g. using <code>generatedKeysEnabled=disable</code> instead of <code>disabled</code> will behave as <code>ignored</code>).</p>
+<section id="selectively-enable-statement-types" class="level4" data-number="7.22.1.1">
+<h4 data-number="7.22.1.1"><span class="header-section-number">7.22.1.1</span> Selectively enable statement types</h4>
+<p>This last option allows you to selectively enable support for generated keys. For example, <code>generatedKeysEnabled=insert</code> will only enable it for <code>insert</code> while ignoring it for all other statement types. Statement types that are not enabled will behave as if they generate no keys and will execute normally. For these statement types, <code>Statement.getGeneratedKeys()</code> will return an empty result set.</p>
+<p>Possible statement type values (case-insensitive) are:</p>
+<ul>
+<li><code>insert</code></li>
+<li><code>update</code></li>
+<li><code>delete</code></li>
+<li><code>update_or_insert</code></li>
+<li><code>merge</code></li>
+</ul>
+<p>Invalid values will be ignored. If none of the specified statement types are supported by Firebird, it will behave as <code>ignored</code><a href="#fn4" class="footnote-ref" id="fnref4" role="doc-noteref"><sup>4</sup></a>.</p>
+<p>Some examples:</p>
+<ul>
+<li><code>jdbc:firebird://localhost/testdb?generatedKeysEnabled=insert</code> will only enable insert support</li>
+<li><code>jdbc:firebird://localhost/testdb?generatedKeysEnabled=merge</code> will only enable merge support, but only on Firebird 3 and higher, for Firebird 2.5 this will behave as <code>ignored</code> given the lack of <code>RETURNING</code> support for merge in that version.</li>
+<li><code>jdbc:firebird://localhost/testdb?generatedKeysEnabled=insert,update</code> will only enable insert and update support</li>
+</ul>
+<p>This feature can be used to circumvent issues with frameworks or tools that always use generated keys methods for prepare or execution. For example, with <code>UPDATE</code> statements that touch multiple records and - given the Firebird limitations for <code>RETURNING</code> - produce the error <em>&quot;multiple rows in singleton select&quot;</em>.</p>
+</section>
+</section>
+<section id="support-for-merge" class="level3" data-number="7.22.2">
+<h3 data-number="7.22.2"><span class="header-section-number">7.22.2</span> Support for MERGE</h3>
+<p>Firebird 3 added <code>RETURNING</code> support for <code>MERGE</code>, this support is now available in Jaybird.</p>
+</section>
+<section id="support-for-firebird-4-returning" class="level3" data-number="7.22.3">
+<h3 data-number="7.22.3"><span class="header-section-number">7.22.3</span> Support for Firebird 4 RETURNING *</h3>
+<p>Firebird 4 added a <code>RETURNING *</code> (&#39;returning all&#39;) clause which returns all columns of the row affected by a DML statement. When connected to Firebird 4, the <code>Statement.RETURN_GENERATED_KEYS</code> methods will no longer query the database metadata for the column names, but instead append a <code>RETURNING *</code> clause.</p>
+<p>Artificial testing by repeatedly executing the same insert statement using <code>Statement.execute(insert, Statement.RETURN_GENERATED_KEYS)</code> shows a performance improvement of roughly 200% (even 400% on localhost).</p>
+</section>
+<section id="generated-keys-grammar-simplification" class="level3" data-number="7.22.4">
+<h3 data-number="7.22.4"><span class="header-section-number">7.22.4</span> Generated keys grammar simplification</h3>
+<p>The grammar used by the generated keys support has been simplified to avoid issues with complex statements not being identified as types that generate keys, and to reduce maintenance.</p>
+<p>The downside is that this may introduce different behaviour, as statements previously not identified as generated keys types, now could be identified as generated keys. Especially with DML other than <code>INSERT</code>, or <code>INSERT .. SELECT ..</code> this could result in error <em>&quot;multiple rows in singleton select&quot;</em> as the <code>RETURNING</code> clause is currently only supported for statements that modify a single row.</p>
+<p>You will either need to change the execution of these statements to use the normal execute/prepare or use <code>Statement.NO_GENERATED_KEYS</code>. Alternatively ignore or only selectively enable generated keys support, see <a href="#configuration-of-generated-keys-behaviour">Configuration of generated keys behaviour</a> above.</p>
+</section>
+<section id="other-behavioural-changes-to-generated-keys" class="level3" data-number="7.22.5">
+<h3 data-number="7.22.5"><span class="header-section-number">7.22.5</span> Other behavioural changes to generated keys</h3>
+<p>See <a href="#changes-to-behaviour-of-generated-keys">Changes to behaviour of generated keys</a> in <a href="#stricter-jdbc-compliance">Stricter JDBC compliance</a>.</p>
+</section>
+</section>
+<section id="operation-monitoring" class="level2" data-number="7.23">
+<h2 data-number="7.23"><span class="header-section-number">7.23</span> Operation monitoring</h2>
+<p><strong>Experimental feature</strong></p>
+<p>Operation monitoring is an experimental feature that allows an application to monitor and - in a limited fashion - control driver operations. This feature is exposed as the interfaces <code>org.firebirdsql.gds.ng.monitor.OperationAware</code> and <code>org.firebirdsql.gds.ng.monitor.Operation</code>.</p>
+<p>An application can implement <code>OperationAware</code> and register it through <code>org.firebirdsql.gds.ng.OperationMonitor.initOperationAware(OperationAware)</code>. When a <code>SecurityManager</code> is active, registering an <code>OperationAware</code> will require the <code>SQLPermission</code> with name <code>org.firebirdsql.jaybird.initOperationAware</code>. Only one instance can be registered at a time. Setting <code>null</code> will clear the current instance.</p>
+<p>Once registered, the <code>OperationAware</code> instance will be notified of operation start and end through the methods <code>startOperation(Operation)</code> and <code>endOperation(Operation)</code>. These methods are called on the thread performing the operation, so implementations must complete these methods as soon as possible to prevent performance problems in the driver.</p>
+<p>The <code>Operation</code> instance exposes the type of operation through <code>getType()</code> and allows the operation to be cancelled. Cancellation is only possible as long as the operation is active. Attempting to cancel when the operation is complete will throw an <code>SQLException</code>.</p>
+<p>This feature is experimental and its API may be removed or changed, and operation types may be added or removed in point releases.</p>
+<p>See also <a href="https://github.com/FirebirdSQL/jaybird/blob/master/devdoc/jdp/jdp-2019-06-ability-to-monitor-driver-operations.md">jdp-2019-06: Ability to monitor driver operations</a></p>
+<p>This feature was contributed by <a href="https://github.com/vasiliy-yashkov">Vasiliy Yashkov</a>.</p>
+</section>
+<section id="potentially-breaking-changes" class="level2" data-number="7.24">
+<h2 data-number="7.24"><span class="header-section-number">7.24</span> Potentially breaking changes</h2>
+<p>Jaybird 4 contains a number of changes that might break existing applications.</p>
+<p>See also <a href="#compatibility-changes">Compatibility changes</a> for details.</p>
+</section>
+<section id="other-fixes-and-changes" class="level2" data-number="7.25">
+<h2 data-number="7.25"><span class="header-section-number">7.25</span> Other fixes and changes</h2>
+<ul>
+<li><p>The distribution zip no longer includes the jaybird-4.0.2.javaXX.rar. This file was an example JCA Resource Archive.</p>
+<p>We currently plan to remove JCA support entirely in Jaybird 5. See also <a href="#dropping-jca-support">Dropping JCA support</a>.</p></li>
+<li><p>Added support for Firebird 4 page size 32768 (32KB) in <code>FBManager</code> and backup managers (back-ported to Jaybird 3.0.5) (<a href="http://tracker.firebirdsql.org/browse/JDBC-468">JDBC-468</a>)</p></li>
+<li><p>Changed: The value returned by <code>ResultSetMetaData.getColumnDisplaySize</code> was revised for <code>REAL</code>/<code>FLOAT</code> and <code>DOUBLE PRECISION</code> to take scientific notation into account (<a href="http://tracker.firebirdsql.org/browse/JDBC-514">JDBC-514</a>)</p></li>
+<li><p>Fixed: Database metadata pattern parameters now allow the pattern escape character (<code>\</code>) to occur unescaped, this means that patterns <code>A\B</code> and <code>A\\B</code> will both match a value of <code>A\B</code>. This complies with the (undocumented) JDBC expectation that patterns follow the ODBC requirements for pattern value arguments (<a href="http://tracker.firebirdsql.org/browse/JDBC-562">JDBC-562</a>)</p></li>
+<li><p>Upgraded antlr-runtime used for generated keys support from 4.7 to 4.7.2.</p>
+<p>The grammar generated for version 4.7.2 should still run on 4.7, but we suggest that you upgrade this dependency.</p></li>
+<li><p>Improvement: Added <code>FBManager.setDefaultCharacterSet</code> to set default database character set during database creation (<a href="http://tracker.firebirdsql.org/browse/JDBC-541">JDBC-541</a>)</p></li>
+<li><p>New Feature: Support for Firebird 3 &#39;explained&#39; (detailed) execution plan (<a href="http://tracker.firebirdsql.org/browse/JDBC-574">JDBC-574</a>)</p>
+<p>Adds <code>FirebirdStatement.getLastExplainedExecutionPlan()</code>, <code>FirebirdPreparedStatement.getExplainedExecutionPlan()</code>, and <code>Firebird ResultSet.getExplainedExecutionPlan()</code>.</p>
+<p>This feature was contributed by <a href="https://github.com/vasiliy-yashkov">Vasiliy Yashkov</a>.</p></li>
+<li><p>Upgraded jna library used for native/embedded from 4.4 to 5.5 (<a href="http://tracker.firebirdsql.org/browse/JDBC-509">JDBC-509</a></p>
+<p>The pull request to upgrade (from 4.4 to 5.2) was contributed by <a href="https://github.com/serval2412">Julien Nabet</a>.</p></li>
+<li><p>Native libraries will now be disposed on application exit (<a href="http://tracker.firebirdsql.org/browse/JDBC-519">JDBC-519</a>)</p>
+<p>On JVM exit or - if deployed inside a WAR - servlet context destroy (tested on Tomcat), Jaybird will call <code>fb_shutdown</code> on any loaded native libraries and dispose the JNA handle to the native library. This should prevent crashes (e.g. access violation / 0xc0000005 error on Windows) on library unload if there were still embedded connections open.</p>
+<p>Given the potential for bugs or timing issues with this feature, it can be disabled with system property <code>org.firebirdsql.nativeResourceShutdownDisabled</code> set to <code>true</code>. This property must be set before Jaybird is loaded, preferably on the Java command line.</p></li>
+</ul>
+</section>
+<section id="removal-of-deprecated-classes-and-packages" class="level2" data-number="7.26">
+<h2 data-number="7.26"><span class="header-section-number">7.26</span> Removal of deprecated classes and packages</h2>
+<p>See <a href="#removal-of-deprecated-classes-packages-and-methods">Removal of deprecated classes, packages and methods</a> in <a href="#compatibility-changes">Compatibility changes</a> for more details.</p>
+</section>
+</section>
+<section id="compatibility-changes" class="level1" data-number="8">
+<h1 data-number="8"><span class="header-section-number">8</span> Compatibility changes</h1>
+<p>Jaybird 4 introduces some changes in compatibility and announces future breaking changes.</p>
+<p><strong>The list might not be complete, if you notice a difference in behavior that is not listed, please report it as bug.</strong> It might have been a change we forgot to document, but it could just as well be an implementation bug.</p>
+<section id="firebird-2.0-and-2.1-no-longer-supported" class="level2" data-number="8.1">
+<h2 data-number="8.1"><span class="header-section-number">8.1</span> Firebird 2.0 and 2.1 no longer supported</h2>
+<!-- For GitHub markdown compatibility -->
+<p><a name="firebird-2.0-and-2.1-no-longer-supported"></a></p>
+<p>Support for Firebird 2.0 and 2.1 has been dropped in Jaybird 4. In general, we expect the driver to remain functional, but chances are certain metadata (eg <code>DatabaseMetaData</code>) will break if we use features introduced in newer versions.</p>
+<p>In general, we will no longer fix issues that only occur with Firebird 2.1 or earlier.</p>
+<p>As a result of changes in <code>FBDatabaseMetaData</code>, most result set producing methods will no longer work with Firebird 1.5 or earlier (unsupported since Jaybird 3).</p>
+</section>
+<section id="removed-legacy_auth-from-default-authentication-plugins" class="level2" data-number="8.2">
+<h2 data-number="8.2"><span class="header-section-number">8.2</span> Removed Legacy_Auth from default authentication plugins</h2>
+<p>The pure Java protocol in Jaybird will - by default - no longer try the <code>Legacy_Auth</code> plugin when connecting to Firebird 3 or higher.</p>
+<p>See <a href="#default-authentication-plugins">Default authentication plugins</a> for more information.</p>
+</section>
+<section id="time-zone-behaviour" class="level2" data-number="8.3">
+<h2 data-number="8.3"><span class="header-section-number">8.3</span> Time zone behaviour</h2>
+<p>Using Jaybird 4 with Firebird 4 on a machine with a different time zone than the JVM, values of <code>CURRENT_TIMESTAMP</code>, <code>LOCALTIMESTAMP</code>, <code>CURRENT_TIME</code> and <code>LOCALTIME</code> will result in different values compared to Jaybird 4 with Firebird 3 (or Jaybird 3 or earlier with Firebird 4). This is caused by Jaybird 4 setting the session time zone to the JVM default time zone. As a result values will be in the time zone of the JVM and not the Firebird server time zone.</p>
+<p>To revert to the previous behaviour, explicitly set <code>sessionTimeZone=server</code>. See <a href="#connection-property-sessiontimezone">Connection property sessionTimeZone</a> for more information.</p>
+</section>
+<section id="rdbdb_key-columns-no-longer-of-types.binary" class="level2" data-number="8.4">
+<h2 data-number="8.4"><span class="header-section-number">8.4</span> RDB$DB_KEY columns no longer of Types.BINARY</h2>
+<p>With the introduction of <a href="#jdbc-rowid-support">JDBC RowId support</a>, <code>RDB$DB_KEY</code> columns are no longer identified as <code>java.sql.Types.BINARY</code>, but as <code>java.sql.Types.ROWID</code>. The column will behave in a backwards-compatible manner as a binary field, except <code>getObject</code>, which will return a <code>java.sql.RowId</code> instead.</p>
+<p>Unfortunately this does not apply to parameters, see also <a href="#jdbc-rowid-support">JDBC RowId support</a>.</p>
+<p>Due to the method of identification, real columns of type <code>char character set octets</code> with the name <code>DB_KEY</code> will also be identified as a <code>ROWID</code> column.</p>
+</section>
+<section id="databasemetadata.getbestrowidentifier-scope-handling" class="level2" data-number="8.5">
+<h2 data-number="8.5"><span class="header-section-number">8.5</span> DatabaseMetaData.getBestRowIdentifier scope handling</h2>
+<p>Previously, the Jaybird implementation of <code>DatabaseMetaData.getBestRowIdentifier</code> used the <code>scope</code> parameter to populate the <code>SCOPE</code> column of its result set, instead of using it to filter on the required scope.</p>
+<p>This has been changed to instead filter on <code>scope</code>. In this implementation, the columns of the primary key are considered the best row identifier, with scope <code>bestRowSession</code>. It will be returned for all values of <code>scope</code>.</p>
+<p>If a table does not have a primary key, the <code>RDB$DB_KEY</code> is considered the second-best alternative, with scope <code>bestRowTransaction</code>. It will only be returned for scopes <code>bestRowTemporary</code> and <code>bestRowTransaction</code>. See also <a href="#jdbc-rowid-support">JDBC RowId support</a>.</p>
+<p>If you are currently using <code>DatabaseMetaData.getBestRowIdentifier</code> with <code>scope</code> value <code>DatabaseMetaData.bestRowSession</code>, consider if you need to use <code>bestRowTransaction</code> instead.</p>
+<p>If you are relying on the <code>SCOPE</code> column containing the value for the requested scope, change your logic to remove that dependency.</p>
+</section>
+<section id="precision-reported-for-float-and-double-precision-on-firebird-4" class="level2" data-number="8.6">
+<h2 data-number="8.6"><span class="header-section-number">8.6</span> Precision reported for FLOAT and DOUBLE PRECISION on Firebird 4</h2>
+<p>Firebird 4 introduced support for SQL standard <code>FLOAT(p)</code> with 1 &lt;= p &lt;= 24 a synonym of <code>FLOAT</code>, and 25 &lt;= p &lt;= 53 as synonym of <code>DOUBLE PRECISION</code>. This precision is expressed in binary digits (or radix 2).</p>
+<p>To bring the metadata reported by Jaybird in line for this change, on Firebird 4 and higher, we now report the precision for <code>FLOAT</code> and <code>DOUBLE PRECISION</code> in binary digits instead of decimal digits.</p>
+<p>For example for <code>FLOAT</code> precision, on Firebird 3 and lower Jaybird 4 returns <code>7</code>, and <code>24</code> on Firebird 4 and higher. For <code>DOUBLE PRECISION</code> precision, on Firebird 3 and lower Jaybird 4 returns <code>15</code>, and <code>53</code> on Firebird 4 and higher. In addition, the radix reported in the metadata for these types will be 2 instead of 10 on Firebird 4 and higher.</p>
+<p>This change affects</p>
+<ul>
+<li><code>DatabaseMetaData.getColumns</code> (columns <code>COLUMN_SIZE</code> and <code>NUM_PREC_RADIX</code>),</li>
+<li><code>DatabaseMetaData.getProcedureColumns</code> (columns <code>PRECISION</code> and <code>RADIX</code>),</li>
+<li><code>DatabaseMetaData.getTypeInfo</code> (columns <code>PRECISION</code> and <code>NUM_PREC_RADIX</code>),</li>
+<li><code>ParameterMetaData.getPrecison</code>,</li>
+<li><code>ResultSetMetaData.getPrecision</code>.</li>
+</ul>
+</section>
+<section id="incompatibilities-due-to-url-encoding-in-jdbc-url-query-part" class="level2" data-number="8.7">
+<h2 data-number="8.7"><span class="header-section-number">8.7</span> Incompatibilities due to URL encoding in JDBC URL query part</h2>
+<p>With the introduction of URL encoding for the query part of the JDBC URL, the use of characters <code>+</code> and <code>%</code> in the query part of a JDBC URL now have different meaning and can lead to errors or unexpected results. This is especially relevant for base64 encoded values of <code>dbCryptConfig</code>.</p>
+<p>See <a href="#url-encoding-in-query-part-of-jdbc-url">URL encoding in query part of JDBC URL</a> for more information.</p>
+</section>
+<section id="stricter-jdbc-compliance" class="level2" data-number="8.8">
+<h2 data-number="8.8"><span class="header-section-number">8.8</span> Stricter JDBC compliance</h2>
+<p>In Jaybird 4 a number of changes were made for stricter compliance to the JDBC specification.</p>
+<section id="changes-to-behaviour-of-generated-keys" class="level3" data-number="8.8.1">
+<h3 data-number="8.8.1"><span class="header-section-number">8.8.1</span> Changes to behaviour of generated keys</h3>
+<section id="order-of-columns-for-columns-by-position" class="level4" data-number="8.8.1.1">
+<h4 data-number="8.8.1.1"><span class="header-section-number">8.8.1.1</span> Order of columns for columns by position</h4>
+<p>In previous versions of Jaybird, the column indexes (passed to <code>Connection.prepareStatement</code> and <code>Statement.executeXXX</code> methods accepting an <code>int[]</code>) where sorted. The columns in the generated <code>RETURNING</code> clause where in ascending ordinal order.</p>
+<p>In Jaybird 4 this sort is no longer applied, so columns will be in the order specified by the array. If you were previously relying on this behaviour, you will need to sort the array yourself or correct the indexes used in <code>ResultSet.getXXX(int)</code>.</p>
+</section>
+<section id="empty-or-null-columnindexes-or-columnnames-no-longer-allowed" class="level4" data-number="8.8.1.2">
+<h4 data-number="8.8.1.2"><span class="header-section-number">8.8.1.2</span> Empty or null columnIndexes or columnNames no longer allowed</h4>
+<p>The various generated keys <code>Connection.prepareStatement</code> and <code>Statement.executeXXX</code> methods accepting an <code>int[]</code> or <code>String[]</code> array no longer accept a null or empty array if the statement is a statement that generates keys. Instead, an exception is thrown with message <em>&quot;Generated keys array (columnIndexes|columnNames) was empty or null. A non-empty array is required.&quot;</em></p>
+<p>This change does not apply for statements that already explicitly include a <code>RETURNING</code> clause or for non-generated keys statements. In those cases, the array is ignored.</p>
+</section>
+<section id="invalid-column-index-no-longer-allowed" class="level4" data-number="8.8.1.3">
+<h4 data-number="8.8.1.3"><span class="header-section-number">8.8.1.3</span> Invalid column index no longer allowed</h4>
+<p>In addition, the methods accepting an <code>int[]</code> array no longer ignore invalid column indexes, and instead throw an exception with message <em>&quot;Generated keys column position &lt;position&gt; does not exist for table &lt;tablename&gt;. Check DatabaseMetaData.getColumns (column ORDINAL_POSITION) for valid values.&quot;</em></p>
+<p>If you were previously relying on this behaviour, you will need to remove invalid column indexes from the array.</p>
+<p>This change does not apply for statements that already explicitly include a <code>RETURNING</code> clause or for non-generated keys statements. In those cases, the array is ignored.</p>
+</section>
+<section id="unknown-table" class="level4" data-number="8.8.1.4">
+<h4 data-number="8.8.1.4"><span class="header-section-number">8.8.1.4</span> Unknown table</h4>
+<p>If generated keys methods using <code>Statement.RETURN_GENERATED_KEYS</code> or <code>int[]</code> cannot find any columns for a table, an exception is now thrown with message <em>&quot;No columns were found for table &lt;tablename&gt; to build RETURNING clause. The table does not exist.&quot;</em>. Previously this executed as if the statement generated no keys and deferred to Firebird to return a <em>&quot;Table unknown&quot;</em> error.</p>
+<p>On Firebird 4, using <code>Statement.RETURN_GENERATED_KEYS</code> will continue to produce a <em>&quot;Table unknown&quot;</em> error as it does not need to query the metadata, and instead defers this to Firebird using <code>RETURNING *</code>.</p>
+<p>This change does not apply for statements that already explicitly include a <code>RETURNING</code> clause or for non-generated keys statements.</p>
+</section>
+<section id="grammar-simplification" class="level4" data-number="8.8.1.5">
+<h4 data-number="8.8.1.5"><span class="header-section-number">8.8.1.5</span> Grammar simplification</h4>
+<p>The generated keys grammar was changed, this may in some cases change the detection of statement types and execute statements previously generated as normal statement to be enhanced with a <code>RETURNING</code> clause.</p>
+<p>This is probably only a theoretical concern (we don&#39;t know of actual cases where detection changed).</p>
+<p>See also <a href="#generated-keys-grammar-simplification">Generated keys grammar simplification</a>.</p>
+</section>
+</section>
+<section id="databasemetadata" class="level3" data-number="8.8.2">
+<h3 data-number="8.8.2"><span class="header-section-number">8.8.2</span> DatabaseMetaData</h3>
+<section id="excluding-procedures-from-packages" class="level4" data-number="8.8.2.1">
+<h4 data-number="8.8.2.1"><span class="header-section-number">8.8.2.1</span> Excluding procedures from packages</h4>
+<p>The definition of <code>getProcedures</code> and <code>getProcedureColumns</code> does not offer a way to return information on procedures in packages without breaking tools or applications that rely on the JDBC standard behaviour. To avoid these problems, stored procedures in packages are no longer returned from these methods.</p>
+<p>The way Jaybird handled this previously was &#39;by accident&#39;, and the information returned was not enough to correctly call the procedure as the package name was not included.</p>
+</section>
+</section>
+</section>
+<section id="removal-of-character-mapping" class="level2" data-number="8.9">
+<h2 data-number="8.9"><span class="header-section-number">8.9</span> Removal of character mapping</h2>
+<p>Character mapping has been removed. Character mapping (also known as translation) was a feature that allowed to remap certain characters when encoding/decoding strings. This could be used to address incompatibilities or incorrect mappings in the character set implementation of certain platforms (apparently HPUX was affected).</p>
+<p>If you do need this feature, then you will need to use a custom encoding implementation.</p>
+<p>Connection property <code>useTranslation</code> (and it&#39;s alias <code>mapping_path</code>) will no longer be available. As part of this change, the following parts of the implementation have been removed (note that most are internal to Jaybird):</p>
+<ul>
+<li><code>org.firebirdsql.encodings.CharacterTranslator</code> will be removed entirely</li>
+<li><code>DatatypeCoder#encodeString(String value, String javaEncoding, String mappingPath)</code></li>
+<li><code>DatatypeCoder#encodeString(String value, Encoding encoding, String mappingPath)</code></li>
+<li><code>DatatypeCoder#decodeString(byte[] value, String javaEncoding, String mappingPath)</code></li>
+<li><code>DatatypeCoder#decodeString(byte[] value, Encoding encoding, String mappingPath)</code></li>
+<li><code>Encoding#withTranslation(CharacterTranslator translator)</code></li>
+<li><code>EncodingFactory#getEncoding(String encoding, String mappingPath)</code></li>
+<li><code>EncodingFactory#getEncoding(Charset charset, String mappingPath)</code></li>
+<li><code>FirebirdConnectionProperties#setUseTranslation(String translationPath)</code> (and on data sources)</li>
+<li><code>FirebirdConnectionProperties#getUseTranslation</code> (and on data sources)</li>
+<li><code>IEncodingFactory#getCharacterTranslator(String mappingPath)</code></li>
+</ul>
+</section>
+<section id="removal-of-constants-without-deprecation" class="level2" data-number="8.10">
+<h2 data-number="8.10"><span class="header-section-number">8.10</span> Removal of constants without deprecation</h2>
+<p>The following array constants in <code>FBDatabaseMetaData</code> have been made private or have been removed to avoid unintended side effects of modification:</p>
+<ul>
+<li><code>ALL_TYPES_2_5</code></li>
+<li><code>ALL_TYPES_2_1</code></li>
+<li><code>ALL_TYPES</code></li>
+</ul>
+<p>Instead, use <code>DatabaseMetaData.getTableTypes()</code> (which returns a <code>ResultSet</code>), or <code>FirebirdDatabaseMetaData.getTableTypeNames()</code> (which returns a <code>String[]</code>).</p>
+<p>To access <code>getTableTypeNames()</code>, the <code>DatabaseMetaData</code> needs to be unwrapped to <code>FirebirdDatabaseMetaData</code></p>
+<div class="sourceCode" id="cb10"><pre class="sourceCode java"><code class="sourceCode java"><span id="cb10-1"><a href="#cb10-1"></a><span class="bu">DatabaseMetaData</span> dbmd = connection.<span class="fu">getDatabaseMetaData</span>();</span>
+<span id="cb10-2"><a href="#cb10-2"></a><span class="bu">String</span>[] tableTypes = dbmd</span>
+<span id="cb10-3"><a href="#cb10-3"></a>        .<span class="fu">unwrap</span>(FirebirdDatabaseMetaData.<span class="fu">class</span>)</span>
+<span id="cb10-4"><a href="#cb10-4"></a>        .<span class="fu">getTableTypeNames</span>();</span></code></pre></div>
+</section>
+<section id="removal-of-deprecated-classes-packages-and-methods" class="level2" data-number="8.11">
+<h2 data-number="8.11"><span class="header-section-number">8.11</span> Removal of deprecated classes, packages and methods</h2>
+<p>The following connection properties (and equivalent data source properties) have been removed:</p>
+<ul>
+<li><code>useTranslation</code>: See <a href="#removal-of-character-mapping">Removal of character mapping</a></li>
+<li><code>octetsAsBytes</code>: Since Jaybird 3 octets is always handled as <code>BINARY</code></li>
+<li><code>noResultSetTracking</code>: Option does nothing since Jaybird 3</li>
+<li><code>paranoia_mode</code>: Option does nothing since Jaybird 2.2 (maybe earlier)</li>
+</ul>
+<p>The following deprecated methods have been removed in Jaybird 4:</p>
+<ul>
+<li><code>GDSHelper.iscVaxInteger(byte[] buffer, int pos, int length)</code> use <code>VaxEncoding.iscVaxInteger(byte[] buffer, int startPosition, int length)</code> instead.</li>
+<li><code>GDSHelper.iscVaxLong(byte[] buffer, int pos, int length)</code> use <code>VaxEncoding.iscVaxLong(byte[] buffer, int startPosition, int length)</code> instead.</li>
+<li><code>MaintenanceManager.commitTransaction(int transactionId)</code>, use <code>MaintenanceManager.commitTransaction(long transactionId)</code> instead.</li>
+<li><code>MaintenanceManager.rollbackTransaction(int transactionId)</code>, use <code>MaintenanceManager.rollbackTransaction(long transactionId)</code> instead.</li>
+<li><code>ServiceRequestBufferImp#ServiceRequestBufferImp()</code></li>
+<li><code>ServiceRequestBufferImp#ServiceRequestBufferImp(int taskIdentifier)</code></li>
+<li><code>FBBlob#copyCharacterStream(Reader reader, long length, String encoding)</code></li>
+<li><code>FBBlob#copyCharacterStream(Reader reader, String encoding)</code></li>
+<li>See also <a href="#removal-of-character-mapping">Removal of character mapping</a> for a number of removed methods</li>
+</ul>
+<p>The following classes have been removed in Jaybird 4:</p>
+<ul>
+<li><code>org.firebirdsql.gds.ExceptionListener</code>, use <code>org.firebirdsql.gds.ng.listeners.ExceptionListener</code></li>
+<li><code>org.firebirdsql.pool.FBSimpleDataSource</code>, use <code>org.firebirdsql.ds.FBSimpleDataSource</code></li>
+</ul>
+<section id="removal-of-deprecated-constants" class="level3" data-number="8.11.1">
+<h3 data-number="8.11.1"><span class="header-section-number">8.11.1</span> Removal of deprecated constants</h3>
+<p>The following constants have been removed in Jaybird 4:</p>
+<ul>
+<li>All <code>SQL_STATE_*</code> constants in <code>FBSQLException</code>, <code>FBResourceTransactionException</code>, <code>FBResourceException</code>, and <code>FBDriverNotCapableException</code> have been removed. Use equivalent constants in <code>org.firebirdsql.jdbc.SQLStateConstants</code>.</li>
+</ul>
+</section>
+</section>
+<section id="breaking-changes-for-jaybird-5" class="level2" data-number="8.12">
+<h2 data-number="8.12"><span class="header-section-number">8.12</span> Breaking changes for Jaybird 5</h2>
+<p>With Jaybird 5 the following breaking changes will be introduced.</p>
+<section id="dropping-support-for-java-7" class="level3" data-number="8.12.1">
+<h3 data-number="8.12.1"><span class="header-section-number">8.12.1</span> Dropping support for Java 7</h3>
+<p>Jaybird 5 will drop support for Java 7.</p>
+</section>
+<section id="dropping-support-for-java-8-tentative" class="level3" data-number="8.12.2">
+<h3 data-number="8.12.2"><span class="header-section-number">8.12.2</span> Dropping support for Java 8 (tentative)</h3>
+<p>Jaybird 5 may drop support for Java 8, depending on the actual release timeline.</p>
+<p>This decision is not final yet.</p>
+</section>
+<section id="dropping-jca-support" class="level3" data-number="8.12.3">
+<h3 data-number="8.12.3"><span class="header-section-number">8.12.3</span> Dropping JCA support</h3>
+<p>Jaybird is currently built around a JCA (Java Connector Architecture) implementation. As such, it is both a JDBC driver and a JCA driver. The current structure requires a dependency on JCA for non-JCA usage.</p>
+<p>We will remove support for JCA entirely in Jaybird 5 to simplify the implementation. The package <code>org.firebirdsql.jca</code> will be removed entirely.</p>
+<p>If you are currently using Jaybird as a JCA driver, please let us know on the Firebird-Java mailing list. We may reconsider this decision and instead restructure Jaybird so the dependency on JCA is only needed when Jaybird is used as a JCA driver.</p>
+</section>
+<section id="removal-of-deprecated-methods" class="level3" data-number="8.12.4">
+<h3 data-number="8.12.4"><span class="header-section-number">8.12.4</span> Removal of deprecated methods</h3>
+<p>The following methods will be removed in Jaybird 5:</p>
+<ul>
+<li><code>MaintenanceManager.listLimboTransactions()</code>, use <code>MaintenanceManager.limboTransactionsAsList()</code> or <code>MaintenanceManager.getLimboTransactions()</code> instead.</li>
+<li><code>TraceManager.loadConfigurationFromFile(String)</code>, use standard Java functionality like <code>new String(Files.readAllBytes(Paths.get(fileName)), &lt;charset&gt;)</code></li>
+<li><code>FBDatabaseMetaData.hasNoWildcards(String pattern)</code></li>
+<li><code>FBDatabaseMetaData.stripEscape(String pattern)</code></li>
+<li><code>StatementParser.parseInsertStatement(String sql)</code>, use <code>StatementParser.parseStatement(String sql)</code></li>
+<li><code>FbStatement.getFieldDescriptor()</code>, use <code>FbStatement.getRowDescriptor()</code></li>
+<li><code>AbstractFbStatement.setFieldDescriptor(RowDescriptor fieldDescriptor)</code>, use <code>AbstractFbStatement.setRowDescriptor(RowDescriptor rowDescriptor)</code></li>
+<li><code>FBField.isType(FieldDescriptor, int)</code>, use <code>JdbcTypeConverter.isJdbcType(FieldDescriptor, int)</code></li>
+</ul>
+</section>
+<section id="removal-of-deprecated-classes" class="level3" data-number="8.12.5">
+<h3 data-number="8.12.5"><span class="header-section-number">8.12.5</span> Removal of deprecated classes</h3>
+<p>The following classes will be removed in Jaybird 5:</p>
+<ul>
+<li><code>FBMissingParameterException</code>, exception is no longer used.</li>
+</ul>
+</section>
+<section id="removal-of-deprecated-constants-1" class="level3" data-number="8.12.6">
+<h3 data-number="8.12.6"><span class="header-section-number">8.12.6</span> Removal of deprecated constants</h3>
+<p>The following constants will be removed in Jaybird 5:</p>
+<ul>
+<li>All <code>SQL_STATE_*</code> constants in <code>FBSQLParseException</code> will be removed. Use equivalent constants in <code>org.firebirdsql.jdbc.SQLStateConstants</code>.</li>
+<li><code>DatabaseParameterBufferExtension.EXTENSION_PARAMETERS</code> will be removed. There is no official replacement as this should be considered an implementation detail. It is possible that <code>DatabaseParameterBufferExtension</code> will be removed entirely.</li>
+</ul>
+</section>
+<section id="removal-of-udf-support-for-jdbc-escapes" class="level3" data-number="8.12.7">
+<h3 data-number="8.12.7"><span class="header-section-number">8.12.7</span> Removal of UDF support for JDBC escapes</h3>
+<p>Jaybird 4 and earlier have support to map JDBC function escapes to UDFs from <code>ib_udf</code> instead of built-in function using the boolean connection property <code>useStandarUdf</code>[sic].</p>
+<p>Given recent Firebird versions have significantly improved support for built-in functions, and UDFs are now deprecated, this option will be removed in Jaybird 5.</p>
+</section>
+</section>
+</section>
+<section id="compatibility-notes" class="level1" data-number="9">
+<h1 data-number="9"><span class="header-section-number">9</span> Compatibility notes</h1>
+<section id="type-2-native-and-embedded-driver" class="level2" data-number="9.1">
+<h2 data-number="9.1"><span class="header-section-number">9.1</span> Type 2 (native) and embedded driver</h2>
+<p>Jaybird uses JNA to access the client library. If you want to use the Type 2 driver, or Firebird embedded, then you need to include <code>jna-5.5.0.jar</code> on the classpath.</p>
+<p>When using Maven, you need to specify the dependency on JNA yourself, as we don&#39;t depend on it by default (it is specified as an optional dependency):</p>
+<div class="sourceCode" id="cb11"><pre class="sourceCode xml"><code class="sourceCode xml"><span id="cb11-1"><a href="#cb11-1"></a><span class="kw">&lt;dependency&gt;</span></span>
+<span id="cb11-2"><a href="#cb11-2"></a>    <span class="kw">&lt;groupId&gt;</span>net.java.dev.jna<span class="kw">&lt;/groupId&gt;</span></span>
+<span id="cb11-3"><a href="#cb11-3"></a>    <span class="kw">&lt;artifactId&gt;</span>jna<span class="kw">&lt;/artifactId&gt;</span></span>
+<span id="cb11-4"><a href="#cb11-4"></a>    <span class="kw">&lt;version&gt;</span>5.5.0<span class="kw">&lt;/artifactId&gt;</span></span>
+<span id="cb11-5"><a href="#cb11-5"></a><span class="kw">&lt;/dependency&gt;</span></span></code></pre></div>
+<p>The <code>fbclient.dll</code>, <code>fbembed.dll</code>, <code>libfbclient.so</code>, or <code>libfbembed.so</code> need to be on the path, or the location needs to be specified in the system property <code>jna.library.path</code> (as an absolute or relative path to the directory/directories containing the library file(s)).</p>
+<p>For Windows and Linux, you can add the <code>org.firebirdsql.jdbc:fbclient</code> dependency on your classpath to provide the native libraries for the <code>native</code> and <code>local</code> protocol. Be aware that this dependency does not support <code>embedded</code>.</p>
+<div class="sourceCode" id="cb12"><pre class="sourceCode xml"><code class="sourceCode xml"><span id="cb12-1"><a href="#cb12-1"></a><span class="kw">&lt;dependency&gt;</span></span>
+<span id="cb12-2"><a href="#cb12-2"></a>    <span class="kw">&lt;groupId&gt;</span>org.firebirdsql.jdbc<span class="kw">&lt;/groupId&gt;</span></span>
+<span id="cb12-3"><a href="#cb12-3"></a>    <span class="kw">&lt;artifactId&gt;</span>fbclient<span class="kw">&lt;/artifactId&gt;</span></span>
+<span id="cb12-4"><a href="#cb12-4"></a>    <span class="kw">&lt;version&gt;</span>3.0.5.1<span class="kw">&lt;/artifactId&gt;</span></span>
+<span id="cb12-5"><a href="#cb12-5"></a><span class="kw">&lt;/dependency&gt;</span></span></code></pre></div>
+<p>In the future we will move the Type 2 support to a separate library and provide JNA-compatible jars that provide the embedded libraries of a specific Firebird version.</p>
+</section>
+</section>
+<section class="footnotes" role="doc-endnotes">
+<hr />
+<ol>
+<li id="fn1" role="doc-endnote"><p>Internally <code>SrpNNN</code> continues to use SHA-1, only the client-proof applies the SHA-NNN hash. See also <a href="http://tracker.firebirdsql.org/browse/CORE-5788">CORE-5788</a>.<a href="#fnref1" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn2" role="doc-endnote"><p>The <code>authPlugins</code> values can be separated by commas, spaces, tabs, or semi-colons. The semi-colon should not be used in a JDBC URL as there the semi-colon is a separator between connection properties.<a href="#fnref2" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn3" role="doc-endnote"><p>The <code>DECFLOAT</code> decimal format stores values as sign, integral number with 16 or 34 digits, and an exponent. This is similar to<br />
+<code>java.math.BigDecimal</code>, but instead of an exponent, that uses the concept <code>scale</code>, where <code>scale = -1 * exponent</code>.<a href="#fnref3" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn4" role="doc-endnote"><p>This is not the case for the unsupported Firebird 1.0 and 1.5 versions. There this will behave similar to <code>disabled</code>, and you will need to explicitly specify <code>ignored</code> instead to get this behaviour.<a href="#fnref4" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+</ol>
+</section>
+</body>
+</html>
