@@ -22,7 +22,7 @@ final class MetaData {
     private static final Log log = Log.getLogger(MetaData.class);
 
     // properties for each class - static because this won't change between MetaData instances
-    private static final Map<Class, Collection<PropertyInfo>> propertyMap = new ConcurrentHashMap<Class, Collection<PropertyInfo>>(32);
+    private static final Map<Class, Collection<PropertyInfo>> propertyMap = new ConcurrentHashMap<>(32);
 
     // column to property map for each class
     private Map<Class, Map<String, PropertyInfo>> propertyInfoMap = new ConcurrentHashMap<Class, Map<String, PropertyInfo>>(32);
@@ -84,7 +84,7 @@ final class MetaData {
 
     // Should only be called IF the map does not contain the column meta information yet.
     // Version for Tables
-    private synchronized <T> Map<String, PropertyInfo> determineColumns(Class<T> objectClass, String tableName, Connection connection) {
+    private synchronized <T> Map<String, PropertyInfo> determinePropertyInfo(Class<T> objectClass, String tableName, Connection connection) {
         // double check map
         if (propertyInfoMap.containsKey(objectClass)) {
             return propertyInfoMap.get(objectClass);
@@ -103,7 +103,7 @@ final class MetaData {
                 log.debug("determineColumns: " + sql);
             }
             rs = st.executeQuery(sql);
-            return determineColumns(objectClass, rs);
+            return determinePropertyInfo(objectClass, rs);
         } catch (SQLException e) {
             throw new PersismException(e.getMessage(), e);
         } finally {
@@ -113,7 +113,7 @@ final class MetaData {
 
     // Should only be called IF the map does not contain the column meta information yet.
     // Version for Queries
-    private synchronized <T> Map<String, PropertyInfo> determineColumns(Class<T> objectClass, ResultSet rs) {
+    private synchronized <T> Map<String, PropertyInfo> determinePropertyInfo(Class<T> objectClass, ResultSet rs) {
         // double check map - note this could be called with a Query were we never have that in here
         if (propertyInfoMap.containsKey(objectClass)) {
             return propertyInfoMap.get(objectClass);
@@ -176,7 +176,7 @@ final class MetaData {
 
         Statement st = null;
         ResultSet rs = null;
-        Map<String, PropertyInfo> properties = getTableColumns(objectClass, connection);
+        Map<String, PropertyInfo> properties = getTableColumnsPropertyInfo(objectClass, connection);
         String sd = connectionType.getKeywordStartDelimiter();
         String ed = connectionType.getKeywordEndDelimiter();
 
@@ -249,6 +249,8 @@ final class MetaData {
             while (rs.next()) {
                 ColumnInfo columnInfo = map.get(rs.getString("COLUMN_NAME"));
                 if (columnInfo != null) {
+                    // Do we not have autoinc info here? Yes.
+                    // IS_AUTOINCREMENT = NO or YES - Firebird has NO ANYWAY but we should maybe check other DBs
                     if (!columnInfo.hasDefault) {
                         columnInfo.hasDefault = Util.containsColumn(rs, "COLUMN_DEF") && rs.getString("COLUMN_DEF") != null;
                     }
@@ -423,12 +425,12 @@ final class MetaData {
     String getUpdateStatement(Object object, Connection connection) throws PersismException, NoChangesDetectedForUpdateException {
 
         if (object instanceof Persistable) {
-            Map<String, PropertyInfo> changedColumns = getChangedColumns((Persistable) object, connection);
-            if (changedColumns.size() == 0) {
+            Map<String, PropertyInfo> changes = getChangedProperties((Persistable) object, connection);
+            if (changes.size() == 0) {
                 throw new NoChangesDetectedForUpdateException();
             }
             // Note we don't not add Persistable updates to updateStatementsMap since they will be different each time.
-            String sql = buildUpdateString(object, changedColumns.keySet().iterator(), connection);
+            String sql = buildUpdateString(object, changes.keySet().iterator(), connection);
             if (log.isDebugEnabled()) {
                 log.debug("getUpdateStatement for " + object.getClass() + " for changed fields is " + sql);
             }
@@ -448,7 +450,7 @@ final class MetaData {
             return updateStatementsMap.get(object.getClass());
         }
 
-        Map<String, PropertyInfo> columns = getTableColumns(object.getClass(), connection);
+        Map<String, PropertyInfo> columns = getTableColumnsPropertyInfo(object.getClass(), connection);
 
         String updateStatement = buildUpdateString(object, columns.keySet().iterator(), connection);
 
@@ -481,8 +483,8 @@ final class MetaData {
             String sd = connectionType.getKeywordStartDelimiter();
             String ed = connectionType.getKeywordEndDelimiter();
 
-            Map<String, ColumnInfo> columns = columnInfoMap.get(object.getClass());
-            Map<String, PropertyInfo> properties = getTableColumns(object.getClass(), connection);
+            Map<String, ColumnInfo> columns = getColumns(object.getClass(), connection);
+            Map<String, PropertyInfo> properties = getTableColumnsPropertyInfo(object.getClass(), connection);
             StringBuilder sb = new StringBuilder();
             sb.append("INSERT INTO ").append(sd).append(tableName).append(ed).append(" (");
             String sep = "";
@@ -609,7 +611,7 @@ final class MetaData {
 
         String sep = "";
 
-        Map<String, ColumnInfo> columns = columnInfoMap.get(object.getClass());
+        Map<String, ColumnInfo> columns = getColumns(object.getClass(), connection);
         for (String column : columns.keySet()) {
             ColumnInfo columnInfo = columns.get(column);
             sb.append(sep).append(sd).append(columnInfo.columnName).append(ed);
@@ -646,7 +648,7 @@ final class MetaData {
         sb.append("UPDATE ").append(sd).append(tableName).append(ed).append(" SET ");
         String sep = "";
 
-        Map<String, ColumnInfo> columns = columnInfoMap.get(object.getClass());
+        Map<String, ColumnInfo> columns = getColumns(object.getClass(), connection);
         while (it.hasNext()) {
             String column = it.next();
             ColumnInfo columnInfo = columns.get(column);
@@ -664,12 +666,12 @@ final class MetaData {
         return sb.toString();
     }
 
-    Map<String, PropertyInfo> getChangedColumns(Persistable persistable, Connection connection) throws PersismException {
+    Map<String, PropertyInfo> getChangedProperties(Persistable persistable, Connection connection) throws PersismException {
 
         try {
             Persistable original = (Persistable) persistable.getOriginalValue();
 
-            Map<String, PropertyInfo> columns = getTableColumns(persistable.getClass(), connection);
+            Map<String, PropertyInfo> columns = getTableColumnsPropertyInfo(persistable.getClass(), connection);
             if (original == null) {
                 // Could happen in the case of cloning or other operation - so it's never read so it never sets original.
                 return columns;
@@ -705,19 +707,19 @@ final class MetaData {
         return determineColumnInfo(objectClass, getTableName(objectClass), connection);
     }
 
-    <T> Map<String, PropertyInfo> getQueryColumns(Class<T> objectClass, ResultSet rs) throws PersismException {
+    <T> Map<String, PropertyInfo> getQueryColumnsPropertyInfo(Class<T> objectClass, ResultSet rs) throws PersismException {
         if (propertyInfoMap.containsKey(objectClass)) {
             return propertyInfoMap.get(objectClass);
         }
 
-        return determineColumns(objectClass, rs);
+        return determinePropertyInfo(objectClass, rs);
     }
 
-    <T> Map<String, PropertyInfo> getTableColumns(Class<T> objectClass, Connection connection) throws PersismException {
+    <T> Map<String, PropertyInfo> getTableColumnsPropertyInfo(Class<T> objectClass, Connection connection) throws PersismException {
         if (propertyInfoMap.containsKey(objectClass)) {
             return propertyInfoMap.get(objectClass);
         }
-        return determineColumns(objectClass, getTableName(objectClass), connection);
+        return determinePropertyInfo(objectClass, getTableName(objectClass), connection);
     }
 
     <T> String getTableName(Class<T> objectClass) {
@@ -740,7 +742,7 @@ final class MetaData {
         }
 
         if (!propertyInfoMap.containsKey(objectClass)) {
-            determineColumns(objectClass, tableName, connection);
+            determinePropertyInfo(objectClass, tableName, connection);
         }
         return tableName;
     }
@@ -827,7 +829,7 @@ final class MetaData {
         log.debug("getPrimaryKeys for " + tableName);
 
         List<String> primaryKeys = new ArrayList<String>(4);
-        Map<String, ColumnInfo> map = columnInfoMap.get(objectClass);
+        Map<String, ColumnInfo> map = getColumns(objectClass, connection);
         for (ColumnInfo col : map.values()) {
             if (col.primary) {
                 primaryKeys.add(col.columnName);

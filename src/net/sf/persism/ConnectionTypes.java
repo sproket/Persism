@@ -9,6 +9,7 @@ enum ConnectionTypes {
     MySQL(null, "`", "`"),
     PostgreSQL(null, "\"", "\""),
     SQLite(null, "[", "]"),
+    Firebird(null, "\"", "\""),
     Other(null, "", "")
     ;
 
@@ -57,6 +58,10 @@ enum ConnectionTypes {
 
         if (connectionUrl.startsWith("jdbc:postgresql")) {
             return PostgreSQL;
+        }
+        
+        if (connectionUrl.startsWith("jdbc:firebirdsql")) {
+            return Firebird;
         }
         return Other;
     }

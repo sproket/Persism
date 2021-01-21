@@ -12,7 +12,6 @@ import net.sf.persism.dao.*;
 import java.math.BigDecimal;
 import java.sql.*;
 import java.sql.Date;
-import java.time.Instant;
 import java.time.LocalTime;
 import java.util.*;
 
@@ -177,6 +176,7 @@ public class TestMSSQL extends BaseTest {
                     e.getMessage());
         }
         assertTrue(failed);
+
     }
 
     public void testStoredProc() throws SQLException {
@@ -186,6 +186,8 @@ public class TestMSSQL extends BaseTest {
         c1.setCompanyName("ABC INC");
         c1.setRegion(Regions.East);
         session.insert(c1);
+
+        assertNotNull("Should be defaulted", c1.getDateRegistered());
 
         Customer c2 = new Customer();
         c2.setCustomerId("456");
@@ -231,6 +233,7 @@ public class TestMSSQL extends BaseTest {
                 "left join ROOMS as r ON Exams.Room_No = r.Room_No ";
 
         list = session.query(QueryResult.class, sql);
+        list.stream().count();
         log.info(list.toString());
 
         List<Integer> simpleList;
@@ -262,7 +265,7 @@ public class TestMSSQL extends BaseTest {
         } catch (PersismException e) {
             shouldHaveFailed = true;
             log.warn(e.getMessage(), e);
-            assertEquals("message should be ", "Object class net.sf.persism.dao.ContactFail was not properly initialized. Some properties not found in the queried columns (fail).", e.getMessage());
+            assertEquals("message should be ", "Object class net.sf.persism.dao.ContactFail was not properly initialized. Some properties not initialized in the queried columns (fail).", e.getMessage());
         }
 
         assertEquals("should have failed", true, shouldHaveFailed);
@@ -357,7 +360,7 @@ public class TestMSSQL extends BaseTest {
     }
 
 
-    public void testContactTable() {
+    public void testContactTable() throws SQLException {
         try {
             session.execute("ALTER TABLE [Contacts] DROP CONSTRAINT [DF_Contacts_identity]");
         } catch (Exception e) {
@@ -468,9 +471,41 @@ public class TestMSSQL extends BaseTest {
 
         assertEquals("should have same count in Contacts",
                 count,
-                session.query(Contact.class, "select * from Contacts").size() );
+                session.query(Contact.class, "select * from Contacts").size());
 
         log.info(session.query(Contact.class, "select * from Contacts"));
+
+//        tryInsertReturnall();
+    }
+
+    private void tryInsertReturnall() throws SQLException {
+        // this was a test to see if I could prepare a statement and return all colums. Nope.....
+
+        // ensure metadata is there
+        log.info(session.query(Contact.class, "select * from Contacts"));
+
+        String insertStatement = "INSERT INTO Contacts (FirstName, LastName) VALUES ( ?, ? ) ";
+
+        PreparedStatement st = null;
+        ResultSet rs = null;
+
+        Map<String, ColumnInfo> columns = session.getMetaData().getColumns(Contact.class, con);
+
+        String[] columnNames = columns.keySet().toArray(new String[0]);
+        int x = Statement.RETURN_GENERATED_KEYS;
+        st = con.prepareStatement(insertStatement, columnNames);
+
+        st.setString(1, "Wilma");
+        st.setString(1, "Flintstone");
+
+        int ret = st.executeUpdate();
+        log.info("rows insetred " + ret);
+        rs = st.getGeneratedKeys();
+        while (rs.next()) {
+            log.info("NOPE: " + rs.getObject(1));
+        }
+
+
     }
 
     public void testDetectAutoInc() {
@@ -532,6 +567,7 @@ public class TestMSSQL extends BaseTest {
         }
     }
 
+
     public void testNullPointerWithTableTypes() throws SQLException {
         ResultSet rs = null;
         // NULL POINTER WITH
@@ -563,6 +599,7 @@ public class TestMSSQL extends BaseTest {
                 " CREATED datetime " +
                 ") ");
 
+        commands.add("ALTER TABLE [dbo].[Orders] ADD  CONSTRAINT [DF_Orders_CREATED]  DEFAULT (getdate()) FOR [CREATED]");
 
         if (UtilsForTests.isTableInDatabase("Customers", con)) {
             commands.add("DROP TABLE Customers");
@@ -581,7 +618,7 @@ public class TestMSSQL extends BaseTest {
                 " Phone VARCHAR(30) NULL, " +
                 " Fax VARCHAR(30) NULL, " +
                 " STATUS CHAR(1) NULL, " +
-                " Date_Registered datetime default current_timestamp, " +
+                " Date_Registered datetime  default current_timestamp, " +
                 " Date_Of_Last_Order datetime " +
                 ") ");
 
@@ -603,21 +640,7 @@ public class TestMSSQL extends BaseTest {
         commands.add("CREATE TABLE DumbTableStringAutoInc ( " +
                 " ID VARCHAR(10) )");
 
-        try {
-            st = con.createStatement();
-            for (String command : commands) {
-                st.execute(command);
-            }
-
-        } finally {
-            try {
-                if (st != null) {
-                    st.close();
-                }
-            } catch (SQLException e) {
-                log.error(e.getMessage(), e);
-            }
-        }
+        executeCommands(commands, con);
     }
 
 

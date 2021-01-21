@@ -77,10 +77,10 @@ public class Session {
             st = connection.prepareStatement(updateStatement);
 
             // These keys should always be in sorted order.
-            Map<String, PropertyInfo> allProperties = metaData.getTableColumns(object.getClass(), connection);
+            Map<String, PropertyInfo> allProperties = metaData.getTableColumnsPropertyInfo(object.getClass(), connection);
             Map<String, PropertyInfo> changedProperties;
             if (object instanceof Persistable) {
-                changedProperties = metaData.getChangedColumns((Persistable) object, connection);
+                changedProperties = metaData.getChangedProperties((Persistable) object, connection);
             } else {
                 changedProperties = allProperties;
             }
@@ -148,7 +148,7 @@ public class Session {
 
         try {
             // These keys should always be in sorted order.
-            Map<String, PropertyInfo> properties = metaData.getTableColumns(object.getClass(), connection);
+            Map<String, PropertyInfo> properties = metaData.getTableColumnsPropertyInfo(object.getClass(), connection);
             Map<String, ColumnInfo> columns = metaData.getColumns(object.getClass(), connection);
 
             List<String> generatedKeys = new ArrayList<>(1);
@@ -286,7 +286,7 @@ public class Session {
             st = connection.prepareStatement(deleteStatement);
 
             // These keys should always be in sorted order.
-            Map<String, PropertyInfo> columns = metaData.getTableColumns(object.getClass(), connection);
+            Map<String, PropertyInfo> columns = metaData.getTableColumnsPropertyInfo(object.getClass(), connection);
 
             List<Object> params = new ArrayList<Object>(primaryKeys.size());
             for (String column : primaryKeys) {
@@ -329,7 +329,8 @@ public class Session {
                 pst.execute();
             }
 
-        } catch (SQLException e) {
+        } catch (Exception e) {
+            Util.rollback(connection);
             throw new PersismException(e.getMessage(), e);
         } finally {
             Util.cleanup(st, null);
@@ -357,7 +358,7 @@ public class Session {
 
         if (!readPrimitive && objectClass.getAnnotation(Query.class) == null) {
             // Make sure columns are initialized if this is a table.
-            metaData.getTableColumns(objectClass, connection);
+            metaData.getTableColumnsPropertyInfo(objectClass, connection);
         }
 
         try {
@@ -376,9 +377,7 @@ public class Session {
                 }
             }
 
-        } catch (IllegalAccessException | InstantiationException | InvocationTargetException | IOException e) {
-            throw new PersismException(e.getMessage(), e);
-        } catch (SQLException e) {
+        } catch (Exception e) {
             Util.rollback(connection);
             throw new PersismException(e.getMessage(), e);
         } finally {
@@ -411,7 +410,7 @@ public class Session {
             throw new PersismException("Cannot perform readObjectByPrimary. " + metaData.getTableName(objectClass) + " has no primary keys.");
         }
 
-        Map<String, PropertyInfo> properties = metaData.getTableColumns(object.getClass(), connection);
+        Map<String, PropertyInfo> properties = metaData.getTableColumnsPropertyInfo(object.getClass(), connection);
         List<Object> params = new ArrayList<>(primaryKeys.size());
 
         Result result = new Result();
@@ -432,9 +431,7 @@ public class Session {
             }
             return false;
 
-        } catch (IllegalAccessException | InvocationTargetException | IOException e) {
-            throw new PersismException(e.getMessage(), e);
-        } catch (SQLException e) {
+        } catch (Exception e) {
             Util.rollback(connection);
             throw new PersismException(e.getMessage(), e);
         } finally {
@@ -497,10 +494,7 @@ public class Session {
 
             return null;
 
-        } catch (IllegalAccessException | InvocationTargetException | InstantiationException | IOException e) {
-            throw new PersismException(e.getMessage(), e);
-
-        } catch (SQLException e) {
+        } catch (Exception e) {
             Util.rollback(connection);
             throw new PersismException(e.getMessage(), e);
         } finally {
@@ -508,62 +502,6 @@ public class Session {
         }
     }
 
-
-    // Used for debugging for now
-    List<LinkedHashMap<String, Object>> query(ResultSet rs) throws SQLException {
-        List<LinkedHashMap<String, Object>> results = new ArrayList<LinkedHashMap<String, Object>>(32);
-
-        while (rs.next()) {
-            LinkedHashMap<String, Object> map = new LinkedHashMap<String, Object>(32);
-            int n = rs.getMetaData().getColumnCount();
-            for (int j = 1; j <= n; j++) {
-                map.put(rs.getMetaData().getColumnLabel(j), rs.getObject(j));
-            }
-            results.add(map);
-        }
-        return results;
-    }
-
-    /**
-     * Execute an arbut? Why bother? Why even put in Command?
-     *
-     * @param sql
-     * @param parameters
-     * @return
-     */
-    List<LinkedHashMap<String, Object>> query(String sql, Object... parameters) {
-
-        Statement st = null;
-        ResultSet rs = null;
-
-        try {
-
-            if (parameters.length == 0) {
-                st = connection.createStatement();
-                rs = st.executeQuery(sql);
-            } else {
-                st = connection.prepareStatement(sql);
-
-                PreparedStatement pst = (PreparedStatement) st;
-                int n = 1;
-                for (Object o : parameters) {
-                    pst.setObject(n, o);
-                    n++;
-                }
-                rs = pst.executeQuery();
-            }
-
-            return query(rs);
-        } catch (SQLException e) {
-            throw new PersismException(e.getMessage(), e);
-        } finally {
-            Util.cleanup(st, rs);
-        }
-    }
-
-    /*
-    Package private methods (usually for unit tests)
-     */
     MetaData getMetaData() {
         return metaData;
     }
@@ -600,9 +538,9 @@ public class Session {
 
         Map<String, PropertyInfo> properties;
         if (objectClass.getAnnotation(Query.class) == null) {
-            properties = metaData.getTableColumns(objectClass, connection);
+            properties = metaData.getTableColumnsPropertyInfo(objectClass, connection);
         } else {
-            properties = metaData.getQueryColumns(objectClass, rs);
+            properties = metaData.getQueryColumnsPropertyInfo(objectClass, rs);
         }
 
         // Test if all properties have column mapping and throw PersismException if not
@@ -622,7 +560,7 @@ public class Session {
                 sep = ",";
             }
 
-            throw new PersismException("Object " + objectClass + " was not properly initialized. Some properties not found in the queried columns (" + sb + ").");
+            throw new PersismException("Object " + objectClass + " was not properly initialized. Some properties not initialized in the queried columns (" + sb + ").");
         }
         ResultSetMetaData rsmd = rs.getMetaData();
         int columnCount = rsmd.getColumnCount();
@@ -652,6 +590,8 @@ public class Session {
             }
         }
 
+        // This is doing a similar check to above but on the ResultSet itself.
+        // This tests for when a user writes their own SQL and forgets a column.
         if (foundColumns.size() < properties.keySet().size()) {
 
             Set<String> missing = new HashSet<String>(columnCount);
@@ -659,7 +599,7 @@ public class Session {
             missing.removeAll(foundColumns);
 
             // todo maybe strict mode off logs warn? Should we do this if this is Query vs Table?
-            throw new PersismException("Object " + objectClass + " was not properly initialized. Some properties not found in the queried columns. : " + missing);
+            throw new PersismException("Object " + objectClass + " was not properly initialized. Some properties not initialized by the queried columns: " + foundColumns + " Missing:" + missing);
         }
 
         if (object instanceof Persistable) {
@@ -744,6 +684,12 @@ public class Session {
                 case TimeType:
                     value = rs.getTime(column);
                     break;
+// We can't assume rs.getDate will work. SQLITE actually has a long value in here.
+// We can live with rs.getObject and the convert method will handle it.
+//                case SQLDateType:
+//                case UtilDateType:DateType:
+//                    value = rs.getDate(column);
+//                    break;
                 default:
                     value = rs.getObject(column);
             }
@@ -836,6 +782,8 @@ public class Session {
                     // BigDecimal to Boolean. Oracle (sigh) - Additional for a Char to Boolean as then (see TestOracle for links)
                     dbValue = ((BigDecimal) dbValue).intValue() == 1;
                     warnOverflow("Possible overflow column " + columnName + " - Property is Boolean and column value is BigDecimal - seems a bit overkill?");
+                } else if (propertyType == String.class) {
+                    dbValue = (dbValue).toString();
                 }
                 break;
 
@@ -848,7 +796,15 @@ public class Session {
                     java.util.Date dval = null;
                     try {
                         // Used for SQLite returning dates as Strings under some conditions
-                        DateFormat df = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss");
+                        // SQL or others may return STRING yyyy-MM-dd for older legacy 'date' type.
+                        // https://docs.microsoft.com/en-us/sql/t-sql/data-types/date-transact-sql?view=sql-server-ver15
+                        String format;
+                        if ((""+dbValue).length() > "yyyy-MM-dd".length()) {
+                            format = "yyyy-MM-dd hh:mm:ss";
+                        } else {
+                            format = "yyyy-MM-dd";
+                        }
+                        DateFormat df = new SimpleDateFormat(format);
                         dval = df.parse("" + dbValue);
                     } catch (ParseException e) {
                         String msg = e.getMessage() + ". Column: " + columnName + " Type of property: " + propertyType + " - Type read: " + dbValue.getClass() + " VALUE: " + dbValue;
@@ -908,6 +864,8 @@ public class Session {
                     if (s.length() > 0) {
                         dbValue = s.charAt(0);
                     }
+                } else if (propertyType.equals(BigDecimal.class)) {
+                    dbValue = new BigDecimal(""+dbValue);
                 }
                 break;
 

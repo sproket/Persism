@@ -1,12 +1,14 @@
 package net.sf.persism.dao.northwind;
 
+import java.sql.Date;
+
 /**
  * NORTHWIND CUSTOMER OBJECT
  *
  * @author Dan Howard
  * @since 5/4/12 5:52 AM
  */
-public class Customer {
+public final class Customer {
 
     private String customerId;
     private String companyName;
@@ -19,7 +21,9 @@ public class Customer {
     private String country;
     private String phone;
     private String fax;
-
+    private Date dateOfLastResort;
+    private Date dateOfDoom;
+    private Date dateOfOffset;
 
     public String getCustomerId() {
         return customerId;
@@ -109,6 +113,30 @@ public class Customer {
         this.fax = fax;
     }
 
+    public Date getDateOfLastResort() {
+        return dateOfLastResort;
+    }
+
+    public void setDateOfLastResort(Date dateOfLastResort) {
+        this.dateOfLastResort = dateOfLastResort;
+    }
+
+    public Date getDateOfDoom() {
+        return dateOfDoom;
+    }
+
+    public void setDateOfDoom(Date dateOfDoom) {
+        this.dateOfDoom = dateOfDoom;
+    }
+
+    public Date getDateOfOffset() {
+        return dateOfOffset;
+    }
+
+    public void setDateOfOffset(Date dateOfOffset) {
+        this.dateOfOffset = dateOfOffset;
+    }
+
     @Override
     public String toString() {
         return "Customer{" +
@@ -123,6 +151,9 @@ public class Customer {
                 ", country='" + country + '\'' +
                 ", phone='" + phone + '\'' +
                 ", fax='" + fax + '\'' +
+                ", dateOfLastResort='" + dateOfLastResort + '\'' +
+                ", dateOfDoom='" + dateOfDoom + '\'' +
+                ", dateOfOffset='" + dateOfOffset + '\'' +
                 '}';
     }
 }

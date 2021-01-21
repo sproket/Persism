@@ -123,7 +123,11 @@ public class TestSQLite extends BaseTest {
         assertTrue("null key should have failed", nullKeyFail);
 
         customer.setCustomerId("MOO");
+        customer.setDateOfLastOrder(new Date(System.currentTimeMillis()));
+        customer.setDateRegistered(new java.util.Date(System.currentTimeMillis() - 10000000l));
         session.insert(customer); // this should be ok now.
+
+        log.warn("Customer 1 ?" + customer);
 
         // insert a duplicate
         boolean dupFail = false;
@@ -278,6 +282,7 @@ public class TestSQLite extends BaseTest {
             Customer customer = new Customer();
             customer.setCustomerId("123");
             customer.setContactName("FRED");
+            customer.setDateOfLastOrder(new Date(System.currentTimeMillis()-1000000l));
             session.insert(customer);
 
 
@@ -417,7 +422,7 @@ public class TestSQLite extends BaseTest {
                 " ROW_ID VARCHAR(30) NULL, " +
                 " Customer_ID VARCHAR(10) NULL, " +
                 " PAID BIT NULL, " +
-                " CREATED datetime " +
+                " CREATED datetime DEFAULT CURRENT_TIMESTAMP" +
                 ") ");
 
 
@@ -459,21 +464,7 @@ public class TestSQLite extends BaseTest {
                 " Field8 COWABUNGA " +
                 ") ");
 
-        try {
-            st = con.createStatement();
-            for (String command : commands) {
-                st.execute(command);
-            }
-
-        } finally {
-            try {
-                if (st != null) {
-                    st.close();
-                }
-            } catch (SQLException e) {
-                log.error(e.getMessage(), e);
-            }
-        }
+        executeCommands(commands, con);
     }
 
 

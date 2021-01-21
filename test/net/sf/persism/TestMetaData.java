@@ -72,14 +72,7 @@ public final class TestMetaData extends BaseTest {
 
         commands.add(sql);
 
-
-        try (Statement st = con.createStatement()) {
-
-            for (String command : commands) {
-                st.execute(command);
-
-            }
-        }
+        executeCommands(commands, con);
     }
 
     public void testGuessing() throws SQLException {

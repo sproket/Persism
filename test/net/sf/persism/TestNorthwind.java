@@ -1,5 +1,6 @@
 /**
  * Comments for TestNorthwind go here.
+ *
  * @author Dan Howard
  * @since 5/3/12 8:46 PM
  */
@@ -55,7 +56,7 @@ public class TestNorthwind extends TestCase {
             for (Category cat : list) {
                 log.info(cat);
                 File directory = new File("c:/temp/pinf/");
-                if (! directory.exists()){
+                if (!directory.exists()) {
                     directory.mkdir();
                 }
 
@@ -241,17 +242,21 @@ public class TestNorthwind extends TestCase {
                 customer.setPhone("456-678-1234");
                 customer.setPostalCode("54321");
                 customer.setRegion("East");
-
+                customer.setDateOfLastResort(new Date(System.currentTimeMillis()));
                 session.insert(customer);
             } else {
-                // remove orders and details for 'MOO'
+                customer.setDateOfLastResort(new Date(System.currentTimeMillis()));
+                session.update(customer);
+// remove orders and details for 'MOO'
                 List<Order> orders = session.query(Order.class, "select * from orders where customerID=?", "MOO");
                 for (Order order : orders) {
                     session.execute("DELETE FROM \"ORDER Details\" WHERE OrderID=?", order.getOrderId());
                 }
                 session.execute("DELETE FROM ORDERS WHERE CustomerID=?", "MOO");
             }
-
+            log.warn("DATE? " + customer.getDateOfLastResort());
+            session.fetch(customer);
+            log.warn("CUSTOMER DATE? " + customer);
 
             // Find employee to place this order
             // Leverling	Janet
@@ -336,7 +341,9 @@ public class TestNorthwind extends TestCase {
         customer.setPhone("456-678-1234");
         customer.setPostalCode("54321");
         customer.setRegion("East");
-
+        customer.setDateOfDoom(new Date(System.currentTimeMillis()));
+        customer.setDateOfOffset(new Date(System.currentTimeMillis()));
+        customer.setDateOfLastResort(new Date(System.currentTimeMillis()));
         session.delete(customer); // in case it already exists.
         session.insert(customer);
 
@@ -361,7 +368,7 @@ public class TestNorthwind extends TestCase {
         assertTrue("Should not be able to read fields if there are missing properties", failOnMissingProperties);
 
         // Make sure all columns are NOT the CASE of the ones in the DB.
-        List<Customer> list = session.query(Customer.class, "SELECT companyNAME, contacttitle, pHone, rEGion, postalCODE, FAX, ADDress, CUStomerid, conTacTname, coUntry, cIty from CuStOMeRS WHERE CustomerID='MOo'");
+        List<Customer> list = session.query(Customer.class, "SELECT companyNAME, contacttitle, pHone, rEGion, postalCODE, FAX, ADDress, CUStomerid, conTacTname, coUntry, cIty, DAteOfLastResort,DATEOFDOOM, daTeoFOFFSET  from CuStOMeRS WHERE CustomerID='MOo'");
 
         log.info(list);
         assertEquals("list should be 1", 1, list.size());

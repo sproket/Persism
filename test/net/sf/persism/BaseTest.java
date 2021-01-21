@@ -165,11 +165,10 @@ public abstract class BaseTest extends TestCase {
         customer.setRegion(Regions.North);
         session.update(customer);
 
-//
         boolean failOnMissingProperties = false;
 
         try {
-            session.query(Customer.class, "SELECT Country from CUSTOMERS");
+            session.query(Customer.class, "SELECT Country, PHONE from CUSTOMERS");
         } catch (Exception e) {
             log.error(e.getMessage(), e);
             assertTrue("message should contain 'Customer was not properly initialized'", e.getMessage().contains("Customer was not properly initialized"));
@@ -262,7 +261,7 @@ public abstract class BaseTest extends TestCase {
     }
 
 
-    public void testReadPrimitive() {
+    public void testReadPrimitive() throws SQLException {
 
         Customer customer = new Customer();
         customer.setCompanyName("TEST");
@@ -279,22 +278,33 @@ public abstract class BaseTest extends TestCase {
         customer.setRegion(Regions.East);
         customer.setStatus('2');
 
-        session.delete(customer); // i case it already exists.
+        session.delete(customer); // in case it already exists.
         session.insert(customer);
 
         List<String> list = session.query(String.class, "SELECT Country from CUSTOMERS");
 
+
+        Order order;
+        order = DAOFactory.newOrder(con);
+        order.setCustomerId("MOO");
+        order.setName("ORDER 1");
+        //order.setCreated(new java.sql.Date(System.currentTimeMillis()));
+        order.setPaid(true);
+        session.insert(order);
+
+        assertTrue("order # > 0", order.getId() > 0);
+        assertNotNull("order created date should be defaulted", order.getCreated());
+
+
         assertEquals("list should have 1", 1, list.size());
         assertEquals("String should be US", "US", list.get(0));
 
-        String country = session.fetch(String.class, "SELECT Country from CUSTOMERS");
-        assertEquals("String should be US", "US", country);
+        String countryString = session.fetch(String.class, "SELECT Country from CUSTOMERS");
+        assertEquals("String should be US", "US", countryString);
 
-        country = "NOT US";
-
-        country = session.fetch(String.class, "SELECT Country from CUSTOMERS");
-
-        assertEquals("String should be US", "US", country);
+        countryString = "NOT US";
+        countryString = session.fetch(String.class, "SELECT Country from CUSTOMERS");
+        assertEquals("String should be US", "US", countryString);
 
         List<Date> dates = session.query(Date.class, "select Date_Registered from Customers ");
         log.info(dates);
@@ -312,7 +322,7 @@ public abstract class BaseTest extends TestCase {
         // this should fail. We can't do simple read on a primitive
         boolean failed = false;
         try {
-            session.fetch(country);
+            session.fetch(countryString);
         } catch (PersismException e) {
             failed = true;
             assertEquals("message s/b 'Cannot read a primitive type object with this method.'", "Cannot read a primitive type object with this method.", e.getMessage());
@@ -365,5 +375,44 @@ public abstract class BaseTest extends TestCase {
 
     protected abstract void createTables() throws SQLException;
 
+    void executeCommands(List<String> commands, Connection con) throws SQLException {
+        Statement st = null;
+        try {
+            st = con.createStatement();
+            for (String command : commands) {
+                log.info(command);
+                st.execute(command);
 
+            }
+
+        } finally {
+            try {
+                if (st != null) {
+                    st.close();
+                }
+            } catch (SQLException e) {
+                log.error(e.getMessage(), e);
+            }
+        }
+
+    }
+
+    // use if you want to run commands one at a time for debugging or testing
+    void executeCommand(String command, Connection con) throws SQLException {
+        Statement st = null;
+        try {
+            st = con.createStatement();
+            log.info(command);
+            st.execute(command);
+        } finally {
+            try {
+                if (st != null) {
+                    st.close();
+                }
+            } catch (SQLException e) {
+                log.error(e.getMessage(), e);
+            }
+        }
+
+    }
 }

@@ -193,22 +193,6 @@ public class TestDerby extends BaseTest {
 
         commands.add("ALTER TABLE TABLEMULTIPRIMARY ADD PRIMARY KEY (ID, CUSTOMER_NAME)");
 
-        Statement st = null;
-        try {
-            st = con.createStatement();
-            for (String command : commands) {
-                st.execute(command);
-
-            }
-
-        } finally {
-            try {
-                if (st != null) {
-                    st.close();
-                }
-            } catch (SQLException e) {
-                log.error(e.getMessage(), e);
-            }
-        }
+        executeCommands(commands, con);
     }
 }

@@ -27,12 +27,12 @@ public class AllTests {
         theTestSuite.addTestSuite(TestDerby.class);
         theTestSuite.addTestSuite(TestMySQL.class);
         theTestSuite.addTestSuite(TestPostgreSQL.class);
+        theTestSuite.addTestSuite(TestFirebird.class);
 
         theTestSuite.addTestSuite(TestMetaData.class);
         theTestSuite.addTestSuite(TestNorthwind.class);
         theTestSuite.addTestSuite(TestPubs.class);
         theTestSuite.addTestSuite(TestMiscellaneous.class);
-        theTestSuite.addTestSuite(TestResultSet.class);
 
         return theTestSuite;
     }

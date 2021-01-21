@@ -433,23 +433,7 @@ public class TestH2 extends BaseTest {
                 " Silver REAL NULL, " +
                 " Data TEXT NULL ) ");
 
-        Statement st = null;
-        try {
-            st = con.createStatement();
-            for (String command : commands) {
-                st.execute(command);
-
-            }
-
-        } finally {
-            try {
-                if (st != null) {
-                    st.close();
-                }
-            } catch (SQLException e) {
-                log.error(e.getMessage(), e);
-            }
-        }
+        executeCommands(commands, con);
     }
 
     public void testVariousTypes() throws SQLException {

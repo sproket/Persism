@@ -1,17 +1,18 @@
 /**
  * Comments for TestPostgreSQL go here.
+ *
  * @author Dan Howard
  * @since 6/21/12 6:05 AM
  */
 package net.sf.persism;
 
+import net.sf.persism.dao.Contact;
 import net.sf.persism.dao.Customer;
 
-import java.sql.DriverManager;
-import java.sql.SQLException;
-import java.sql.Statement;
+import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 
 public class TestPostgreSQL extends BaseTest {
@@ -57,8 +58,6 @@ public class TestPostgreSQL extends BaseTest {
                 " PAID BOOLEAN NULL, " +
                 " Customer_ID VARCHAR(10) NULL, " +
                 " Created TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL " +
-                //" Created DATETIME DEFAULT CURRENT_TIMESTAMP NOT NULL " +
-                //" Created DATETIME " + // working one
                 ") ";
 
         commands.add(sql);
@@ -111,42 +110,51 @@ public class TestPostgreSQL extends BaseTest {
 
         commands.add("ALTER TABLE TABLEMULTIPRIMARY ADD PRIMARY KEY (ID, CUSTOMER_NAME)");
 
-        Statement st = null;
-        try {
-            st = con.createStatement();
-            for (String command : commands) {
-                log.info(command);
-                st.execute(command);
-
-            }
-
-        } finally {
-            try {
-                if (st != null) {
-                    st.close();
-                }
-            } catch (SQLException e) {
-                log.error(e.getMessage(), e);
-            }
-        }
+        executeCommands(commands, con);
     }
 
-    public void testDefaultDate() {
-        try {
-            Customer customer = new Customer();
-            customer.setCustomerId("MOO");
-            customer.setContactName("FRED");
-            customer.setStatus('1');
-            session.insert(customer);
-            log.info(customer);
+    public void testDefaultDate() throws SQLException {
+        Customer customer = new Customer();
+        customer.setCustomerId("MOO");
+        customer.setContactName("FRED");
+        customer.setStatus('1');
+        session.insert(customer);
+        log.info(customer);
 
-            assertNotNull(customer.getDateRegistered());
+        assertNotNull(customer.getDateRegistered());
+
+        tryInsertReturnall();
+    }
+
+    private void tryInsertReturnall() throws SQLException {
+        // this was a test to see if I could prepare a statement and return all colums. Nope.....
+
+        // ensure metadata is there
+        log.info(session.query(Customer.class, "select * from Customers"));
+
+        String insertStatement = "INSERT INTO Customers (Customer_ID, Company_Name, Contact_Name) VALUES ( ?, ?, ? ) ";
+
+        PreparedStatement st = null;
+        ResultSet rs = null;
+
+        Map<String, ColumnInfo> columns = session.getMetaData().getColumns(Customer.class, con);
+
+        String[] columnNames = columns.keySet().toArray(new String[0]);
+        st = con.prepareStatement(insertStatement, columnNames);
+        st.setString(1, "123");
+        st.setString(2, "Slate Quarry");
+        st.setString(3, "Fred");
 
 
-        } catch (Exception e) {
-            log.error(e.getMessage(), e);
-            fail(e.getMessage());
+        int ret = st.executeUpdate();
+        log.info("rows insetred " + ret);
+        rs = st.getGeneratedKeys();
+        log.info("resultset? " + st.getResultSet());
+        while (rs.next()) {
+            log.info("NOPE: " + rs.getObject(1));
         }
 
+
     }
+
 }

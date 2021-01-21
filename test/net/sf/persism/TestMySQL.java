@@ -86,25 +86,7 @@ public class TestMySQL extends BaseTest {
                 " Created TIMESTAMP " +
                 ") ");
 
-
-        Statement st = null;
-        try {
-            st = con.createStatement();
-            for (String command : commands) {
-                st.execute(command);
-
-            }
-
-        } finally {
-            try {
-                if (st != null) {
-                    st.close();
-                }
-            } catch (SQLException e) {
-                log.error(e.getMessage(), e);
-            }
-        }
-
+        executeCommands(commands, con);
     }
 
 

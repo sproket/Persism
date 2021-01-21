@@ -30,6 +30,7 @@ public class TestOracle extends BaseTest {
     private static final Log log = Log.getLogger(TestOracle.class);
 
     protected void setUp() throws Exception {
+
         // Turn off SQLMode for next MSSQL Test so it uses JTDS
         BaseTest.mssqlmode = false;
         MSSQLDataSource.removeInstance();
@@ -61,31 +62,36 @@ public class TestOracle extends BaseTest {
     }
 
 
-    public void testInsert() {
+    public void testInsert() throws Exception {
+        OracleOrder order = (OracleOrder) DAOFactory.newOrder(con);
+        order.setName("MOO");
+        order.setPaid(true);
+        order.setBit2("ANYTHING?");
+        order.setBit1(new BigDecimal(0));
         try {
-
-            Order order = DAOFactory.newOrder(con);
-            order.setName("MOO");
-            order.setPaid(true);
             session.insert(order);
-            log.info("inserted? " + order);
-            assertTrue("order # > 0", order.getId() > 0);
-
-            order =  DAOFactory.newOrder(con);
-            order.setName("MOO2");
-            order.setPaid(false);
-            session.insert(order);
-
-            order = DAOFactory.newOrder(con);
-            order.setName("MOO3");
-            session.insert(order);
-
-            log.info("MOO:"  + session.query(Order.class, "select * from ORDERS"));
-
-        } catch (Exception e) {
-            log.error(e.getMessage(), e);
-            fail(e.getMessage());
+        } catch (PersismException e) {
+            // net.sf.persism.PersismException: ORA-01722: invalid number
+            // Anything is not a number. Really?
+            assertTrue("should contain invalid number", e.getMessage().contains("invalid number"));
         }
+
+        order.setBit2("1");
+        session.insert(order);
+        log.info("inserted? " + order);
+        assertTrue("order # > 0", order.getId() > 0);
+
+        order = (OracleOrder) DAOFactory.newOrder(con);
+        order.setName("MOO2");
+        order.setPaid(false);
+        session.insert(order);
+
+        order = (OracleOrder) DAOFactory.newOrder(con);
+        order.setName("MOO3");
+        session.insert(order);
+
+        log.info("MOO:" + session.query(Order.class, "select * from ORDERS"));
+
     }
 
     public void testTimeStamp() {
@@ -168,7 +174,6 @@ end;
                 "\"PAID\" NUMBER(3), " + // BIT TEST
                 "\"CREATED\" DATE, " +
                 "\"GARBAGE\" CHAR(1), " + // BIT TEST
-
                 " CONSTRAINT \"ORACLEBIT_PK\" PRIMARY KEY (\"ID\") ENABLE" +
                 "   ) ");
 
@@ -180,8 +185,9 @@ end;
                 "\"ROW__ID\" VARCHAR2(10), " +
                 "\"CUSTOMER_ID\" VARCHAR(10), " +
                 "\"PAID\" NUMBER(3), " +
-                "\"CREATED\" DATE, " +
-
+                "\"CREATED\" DATE DEFAULT CURRENT_TIMESTAMP, " +
+                "\"BIT1\" CHAR(1), " + // BIT TEST
+                "\"BIT2\" NUMBER(3), " + // BIT TEST
                 " CONSTRAINT \"ORDERS_PK\" PRIMARY KEY (\"ID\") ENABLE" +
                 "   ) ");
 
@@ -214,7 +220,6 @@ end;
                 " Phone VARCHAR(30) NULL, " +
                 " Fax VARCHAR(30) NULL, " +
                 " Date_Registered TIMESTAMP DEFAULT CURRENT_TIMESTAMP, " +
-                //" Date_Registered DATE DEFAULT CURRENT_TIMESTAMP, " +
                 " SomeDouble NUMBER(38,2) NULL," +
                 " SomeInt NUMBER(38,2) NULL," +
                 " STATUS CHAR(1) NULL, " +
@@ -227,14 +232,7 @@ end;
         }
 
         commands.add("CREATE TABLE TESTTIMESTAMP ( NAME VARCHAR(10), TS TIMESTAMP DEFAULT CURRENT_TIMESTAMP ) ");
-
-        try (Statement st = con.createStatement()) {
-
-            for (String command : commands) {
-                log.info(command);
-                st.executeUpdate(command);
-            }
-        }
+        executeCommands(commands, con);
     }
 
     public void testBits() {

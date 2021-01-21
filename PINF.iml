@@ -35,5 +35,6 @@
     <orderEntry type="library" name="commons-pool-1.5.4-javadoc" level="project" />
     <orderEntry type="library" name="logback" level="project" />
     <orderEntry type="library" name="log4j" level="project" />
+    <orderEntry type="library" name="jaybird" level="project" />
   </component>
 </module>
