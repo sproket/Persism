@@ -99,24 +99,27 @@
 <i>25</i>&nbsp;
 <i>26</i>&nbsp;    boolean hasDefault;
 <i>27</i>&nbsp;
-<i>28</i>&nbsp;    @Override
-<i>29</i>&nbsp;    public String toString() {
-<b class="fc"><i>30</i>&nbsp;        return &quot;ColumnInfo{&quot; +</b>
-<i>31</i>&nbsp;                &quot;columnName=&#39;&quot; + columnName + &#39;\&#39;&#39; +
-<i>32</i>&nbsp;                &quot;, columnType=&quot; + columnType +
-<i>33</i>&nbsp;                &quot;, sqlColumnType=&quot; + sqlColumnType +
-<i>34</i>&nbsp;                &quot;, autoIncrement=&quot; + autoIncrement +
-<i>35</i>&nbsp;                &quot;, primary=&quot; + primary +
-<i>36</i>&nbsp;                &quot;, hasDefault=&quot; + hasDefault +
-<i>37</i>&nbsp;                &#39;}&#39;;
-<i>38</i>&nbsp;    }
-<i>39</i>&nbsp;}
+<i>28</i>&nbsp;    int length; // for string to varchar length checking
+<i>29</i>&nbsp;
+<i>30</i>&nbsp;    @Override
+<i>31</i>&nbsp;    public String toString() {
+<b class="fc"><i>32</i>&nbsp;        return &quot;ColumnInfo{&quot; +</b>
+<i>33</i>&nbsp;                &quot;columnName=&#39;&quot; + columnName + &#39;\&#39;&#39; +
+<i>34</i>&nbsp;                &quot;, columnType=&quot; + columnType +
+<i>35</i>&nbsp;                &quot;, sqlColumnType=&quot; + sqlColumnType +
+<i>36</i>&nbsp;                &quot;, autoIncrement=&quot; + autoIncrement +
+<i>37</i>&nbsp;                &quot;, primary=&quot; + primary +
+<i>38</i>&nbsp;                &quot;, hasDefault=&quot; + hasDefault +
+<i>39</i>&nbsp;                &quot;, length=&quot; + length +
+<i>40</i>&nbsp;                &#39;}&#39;;
+<i>41</i>&nbsp;    }
+<i>42</i>&nbsp;}
 </div>
 </div>
 
 <div class="footer">
     
-    <div style="float:right;">generated on 2021-01-21 14:01</div>
+    <div style="float:right;">generated on 2021-01-26 07:10</div>
 </div>
 </body>
 </html>

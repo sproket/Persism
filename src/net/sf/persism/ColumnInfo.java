@@ -25,6 +25,8 @@ final class ColumnInfo {
 
     boolean hasDefault;
 
+    int length; // for string to varchar length checking
+
     @Override
     public String toString() {
         return "ColumnInfo{" +
@@ -34,6 +36,7 @@ final class ColumnInfo {
                 ", autoIncrement=" + autoIncrement +
                 ", primary=" + primary +
                 ", hasDefault=" + hasDefault +
+                ", length=" + length +
                 '}';
     }
 }

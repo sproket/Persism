@@ -1,7 +1,7 @@
 package net.sf.persism;
 
 import net.sf.persism.annotations.Column;
-import net.sf.persism.annotations.NotMapped;
+import net.sf.persism.annotations.NotColumn;
 import net.sf.persism.annotations.Table;
 
 import java.lang.annotation.Annotation;
@@ -127,7 +127,6 @@ final class MetaData {
             Map<String, PropertyInfo> columns = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
             for (int j = 1; j <= columnCount; j++) {
                 String realColumnName = rsmd.getColumnLabel(j);
-                int length = rsmd.getColumnDisplaySize(j);
                 String columnName = realColumnName.toLowerCase().replace("_", "").replace(" ", "");
                 if (extraNameCharacters != null && !extraNameCharacters.isEmpty()) {
                     // also replace these characters
@@ -154,7 +153,6 @@ final class MetaData {
                 }
 
                 if (foundProperty != null) {
-                    foundProperty.length = length;
                     columns.put(realColumnName, foundProperty);
                 } else {
                     log.warn("Property not found for column: " + realColumnName + " class: " + objectClass);
@@ -187,7 +185,7 @@ final class MetaData {
 
             // Make sure primary keys sorted by column order in case we have more than 1
             // then we'll know the order to apply the parameters.
-            Map<String, ColumnInfo> map = new LinkedHashMap<String, ColumnInfo>(32);
+            Map<String, ColumnInfo> map = new LinkedHashMap<>(32);
 
             boolean primaryKeyFound = false;
 
@@ -202,6 +200,7 @@ final class MetaData {
                     columnInfo.primary = columnInfo.autoIncrement;
                     columnInfo.sqlColumnType = rsMetaData.getColumnType(i);
                     columnInfo.columnType = Types.convert(columnInfo.sqlColumnType);
+                    columnInfo.length = rsMetaData.getColumnDisplaySize(i);
 
                     if (!primaryKeyFound) {
                         primaryKeyFound = columnInfo.primary;
@@ -292,18 +291,6 @@ final class MetaData {
         }
     }
 
-//    List<String> getNamedParameters(String sql) {
-//        if (namedParams.containsKey(sql)) {
-//            return namedParams.get(sql);
-//        }
-//
-//        if (!sql.contains(":")) {
-//            return Collections.emptyList();
-//        }
-//
-//        return null;
-//    }
-
     static <T> Collection<PropertyInfo> getPropertyInfo(Class<T> objectClass) {
         if (propertyMap.containsKey(objectClass)) {
             return propertyMap.get(objectClass);
@@ -377,7 +364,7 @@ final class MetaData {
         while (it.hasNext()) {
             Map.Entry<String, PropertyInfo> entry = it.next();
             PropertyInfo info = entry.getValue();
-            if (info.getAnnotation(NotMapped.class) != null || info.setter == null) {
+            if (info.getAnnotation(NotColumn.class) != null || info.setter == null) {
                 it.remove();
             }
         }

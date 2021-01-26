@@ -100,7 +100,7 @@
 
 <div class="sourceCode"><i>1</i>&nbsp;package net.sf.persism;
 <i>2</i>&nbsp;
-<i>3</i>&nbsp;import net.sf.persism.annotations.Query;
+<i>3</i>&nbsp;import net.sf.persism.annotations.NotTable;
 <i>4</i>&nbsp;
 <i>5</i>&nbsp;import java.io.IOException;
 <i>6</i>&nbsp;import java.io.InputStream;
@@ -121,7 +121,7 @@
 <i>21</i>&nbsp; * @author Dan Howard
 <i>22</i>&nbsp; * @since 1/8/2021
 <i>23</i>&nbsp; */
-<b class="fc"><i>24</i>&nbsp;public class Session {</b>
+<b class="fc"><i>24</i>&nbsp;public final class Session {</b>
 <i>25</i>&nbsp;
 <b class="fc"><i>26</i>&nbsp;    private static final Log log = Log.getLogger(Session.class);</b>
 <i>27</i>&nbsp;
@@ -185,7 +185,7 @@
 <b class="fc"><i>85</i>&nbsp;                changedProperties = allProperties;</b>
 <i>86</i>&nbsp;            }
 <i>87</i>&nbsp;
-<b class="fc"><i>88</i>&nbsp;            List&lt;Object&gt; params = new ArrayList&lt;Object&gt;(primaryKeys.size());</b>
+<b class="fc"><i>88</i>&nbsp;            List&lt;Object&gt; params = new ArrayList&lt;&gt;(primaryKeys.size());</b>
 <b class="fc"><i>89</i>&nbsp;            for (String column : changedProperties.keySet()) {</b>
 <b class="fc"><i>90</i>&nbsp;                if (!primaryKeys.contains(column)) {</b>
 <b class="fc"><i>91</i>&nbsp;                    Object value = allProperties.get(column).getter.invoke(object);</b>
@@ -202,10 +202,10 @@
 <i>102</i>&nbsp;
 <b class="fc"><i>103</i>&nbsp;                        if (value instanceof String) {</b>
 <i>104</i>&nbsp;                            // check width
-<b class="fc"><i>105</i>&nbsp;                            PropertyInfo propertyInfo = allProperties.get(column);</b>
+<b class="fc"><i>105</i>&nbsp;                            ColumnInfo columnInfo = metaData.getColumns(object.getClass(), connection).get(column);</b>
 <b class="fc"><i>106</i>&nbsp;                            String str = (String) value;</b>
-<b class="fc"><i>107</i>&nbsp;                            if (str.length() &gt; propertyInfo.length) {</b>
-<b class="fc"><i>108</i>&nbsp;                                str = str.substring(0, propertyInfo.length);</b>
+<b class="fc"><i>107</i>&nbsp;                            if (str.length() &gt; columnInfo.length) {</b>
+<b class="fc"><i>108</i>&nbsp;                                str = str.substring(0, columnInfo.length);</b>
 <i>109</i>&nbsp;                                // todo Should Persism strict should throw this as an exception?
 <b class="fc"><i>110</i>&nbsp;                                log.warn(&quot;TRUNCATION with Column: &quot; + column + &quot; for table: &quot; + metaData.getTableName(object.getClass()) + &quot;. Old value: \&quot;&quot; + value + &quot;\&quot; New value: \&quot;&quot; + str + &quot;\&quot;&quot;);</b>
 <b class="fc"><i>111</i>&nbsp;                                value = str;</b>
@@ -233,833 +233,826 @@
 <i>133</i>&nbsp;    }
 <i>134</i>&nbsp;
 <i>135</i>&nbsp;    /**
-<i>136</i>&nbsp;     * Inserts the data object in the database.
-<i>137</i>&nbsp;     * The data object is refreshed with autoinc and other defaults that may exist.
-<i>138</i>&nbsp;     *
-<i>139</i>&nbsp;     * @param object the data object to insert.
-<i>140</i>&nbsp;     * @return usually 1 to indicate rows changed via JDBC.
-<i>141</i>&nbsp;     * @throws PersismException When planet of the apes starts happening.
-<i>142</i>&nbsp;     */
-<i>143</i>&nbsp;    public int insert(Object object) throws PersismException {
-<b class="fc"><i>144</i>&nbsp;        String insertStatement = metaData.getInsertStatement(object, connection);</b>
-<i>145</i>&nbsp;
-<b class="fc"><i>146</i>&nbsp;        PreparedStatement st = null;</b>
-<b class="fc"><i>147</i>&nbsp;        ResultSet rs = null;</b>
-<i>148</i>&nbsp;
-<i>149</i>&nbsp;        try {
-<i>150</i>&nbsp;            // These keys should always be in sorted order.
-<b class="fc"><i>151</i>&nbsp;            Map&lt;String, PropertyInfo&gt; properties = metaData.getTableColumnsPropertyInfo(object.getClass(), connection);</b>
-<b class="fc"><i>152</i>&nbsp;            Map&lt;String, ColumnInfo&gt; columns = metaData.getColumns(object.getClass(), connection);</b>
-<i>153</i>&nbsp;
-<b class="fc"><i>154</i>&nbsp;            List&lt;String&gt; generatedKeys = new ArrayList&lt;&gt;(1);</b>
-<b class="fc"><i>155</i>&nbsp;            for (ColumnInfo column : columns.values()) {</b>
-<b class="fc"><i>156</i>&nbsp;                if (column.autoIncrement) {</b>
-<b class="fc"><i>157</i>&nbsp;                    generatedKeys.add(column.columnName);</b>
-<i>158</i>&nbsp;                }
-<b class="fc"><i>159</i>&nbsp;            }</b>
-<i>160</i>&nbsp;
-<b class="fc"><i>161</i>&nbsp;            if (generatedKeys.size() &gt; 0) {</b>
-<b class="fc"><i>162</i>&nbsp;                String[] keyArray = generatedKeys.toArray(new String[0]);</b>
-<b class="fc"><i>163</i>&nbsp;                st = connection.prepareStatement(insertStatement, keyArray);</b>
-<b class="fc"><i>164</i>&nbsp;            } else {</b>
-<b class="fc"><i>165</i>&nbsp;                st = connection.prepareStatement(insertStatement);</b>
-<i>166</i>&nbsp;            }
-<i>167</i>&nbsp;
-<b class="fc"><i>168</i>&nbsp;            boolean tableHasDefaultColumnValues = false;</b>
-<i>169</i>&nbsp;
-<b class="fc"><i>170</i>&nbsp;            List&lt;Object&gt; params = new ArrayList&lt;Object&gt;();</b>
-<b class="fc"><i>171</i>&nbsp;            for (ColumnInfo column : columns.values()) {</b>
-<i>172</i>&nbsp;
-<b class="fc"><i>173</i>&nbsp;                PropertyInfo propertyInfo = properties.get(column.columnName);</b>
-<b class="fc"><i>174</i>&nbsp;                if (!column.autoIncrement) {</b>
-<i>175</i>&nbsp;
-<i>176</i>&nbsp;                    // See MetaData getInsertStatement - Maybe we should return a new Object type for InsertStatement
-<b class="fc"><i>177</i>&nbsp;                    if (column.hasDefault) {</b>
-<i>178</i>&nbsp;                        // Do not include if this column has a default and no value has been
-<i>179</i>&nbsp;                        // set on it&#39;s associated property.
-<b class="fc"><i>180</i>&nbsp;                        if (properties.get(column.columnName).getter.invoke(object) == null) {</b>
-<i>181</i>&nbsp;
-<b class="fc"><i>182</i>&nbsp;                            if (column.primary) {</b>
-<b class="fc"><i>183</i>&nbsp;                                throw new PersismException(&quot;Non-auto inc generated primary keys are not supported. Please assign your primary key value before performing an insert.&quot;);</b>
-<i>184</i>&nbsp;                            }
-<i>185</i>&nbsp;
-<b class="fc"><i>186</i>&nbsp;                            tableHasDefaultColumnValues = true;</b>
-<b class="fc"><i>187</i>&nbsp;                            continue;</b>
-<i>188</i>&nbsp;                        }
-<i>189</i>&nbsp;                    }
+<i>136</i>&nbsp;     * Inserts the data object in the database refreshing with autoinc and other defaults that may exist.
+<i>137</i>&nbsp;     *
+<i>138</i>&nbsp;     * @param object the data object to insert.
+<i>139</i>&nbsp;     * @return usually 1 to indicate rows changed via JDBC.
+<i>140</i>&nbsp;     * @throws PersismException When planet of the apes starts happening.
+<i>141</i>&nbsp;     */
+<i>142</i>&nbsp;    public int insert(Object object) throws PersismException {
+<b class="fc"><i>143</i>&nbsp;        String insertStatement = metaData.getInsertStatement(object, connection);</b>
+<i>144</i>&nbsp;
+<b class="fc"><i>145</i>&nbsp;        PreparedStatement st = null;</b>
+<b class="fc"><i>146</i>&nbsp;        ResultSet rs = null;</b>
+<i>147</i>&nbsp;
+<i>148</i>&nbsp;        try {
+<i>149</i>&nbsp;            // These keys should always be in sorted order.
+<b class="fc"><i>150</i>&nbsp;            Map&lt;String, PropertyInfo&gt; properties = metaData.getTableColumnsPropertyInfo(object.getClass(), connection);</b>
+<b class="fc"><i>151</i>&nbsp;            Map&lt;String, ColumnInfo&gt; columns = metaData.getColumns(object.getClass(), connection);</b>
+<i>152</i>&nbsp;
+<b class="fc"><i>153</i>&nbsp;            List&lt;String&gt; generatedKeys = new ArrayList&lt;&gt;(1);</b>
+<b class="fc"><i>154</i>&nbsp;            for (ColumnInfo column : columns.values()) {</b>
+<b class="fc"><i>155</i>&nbsp;                if (column.autoIncrement) {</b>
+<b class="fc"><i>156</i>&nbsp;                    generatedKeys.add(column.columnName);</b>
+<i>157</i>&nbsp;                }
+<b class="fc"><i>158</i>&nbsp;            }</b>
+<i>159</i>&nbsp;
+<b class="fc"><i>160</i>&nbsp;            if (generatedKeys.size() &gt; 0) {</b>
+<b class="fc"><i>161</i>&nbsp;                String[] keyArray = generatedKeys.toArray(new String[0]);</b>
+<b class="fc"><i>162</i>&nbsp;                st = connection.prepareStatement(insertStatement, keyArray);</b>
+<b class="fc"><i>163</i>&nbsp;            } else {</b>
+<b class="fc"><i>164</i>&nbsp;                st = connection.prepareStatement(insertStatement);</b>
+<i>165</i>&nbsp;            }
+<i>166</i>&nbsp;
+<b class="fc"><i>167</i>&nbsp;            boolean tableHasDefaultColumnValues = false;</b>
+<i>168</i>&nbsp;
+<b class="fc"><i>169</i>&nbsp;            List&lt;Object&gt; params = new ArrayList&lt;&gt;();</b>
+<b class="fc"><i>170</i>&nbsp;            for (ColumnInfo columnInfo : columns.values()) {</b>
+<i>171</i>&nbsp;
+<b class="fc"><i>172</i>&nbsp;                PropertyInfo propertyInfo = properties.get(columnInfo.columnName);</b>
+<b class="fc"><i>173</i>&nbsp;                if (!columnInfo.autoIncrement) {</b>
+<i>174</i>&nbsp;
+<i>175</i>&nbsp;                    // See MetaData getInsertStatement - Maybe we should return a new Object type for InsertStatement
+<b class="fc"><i>176</i>&nbsp;                    if (columnInfo.hasDefault) {</b>
+<i>177</i>&nbsp;                        // Do not include if this column has a default and no value has been
+<i>178</i>&nbsp;                        // set on it&#39;s associated property.
+<b class="fc"><i>179</i>&nbsp;                        if (properties.get(columnInfo.columnName).getter.invoke(object) == null) {</b>
+<i>180</i>&nbsp;
+<b class="fc"><i>181</i>&nbsp;                            if (columnInfo.primary) {</b>
+<b class="fc"><i>182</i>&nbsp;                                throw new PersismException(&quot;Non-auto inc generated primary keys are not supported. Please assign your primary key value before performing an insert.&quot;);</b>
+<i>183</i>&nbsp;                            }
+<i>184</i>&nbsp;
+<b class="fc"><i>185</i>&nbsp;                            tableHasDefaultColumnValues = true;</b>
+<b class="fc"><i>186</i>&nbsp;                            continue;</b>
+<i>187</i>&nbsp;                        }
+<i>188</i>&nbsp;                    }
+<i>189</i>&nbsp;
 <i>190</i>&nbsp;
-<i>191</i>&nbsp;
-<b class="fc"><i>192</i>&nbsp;                    Object value = propertyInfo.getter.invoke(object);</b>
-<i>193</i>&nbsp;
-<b class="fc"><i>194</i>&nbsp;                    if (value != null) {</b>
-<i>195</i>&nbsp;
-<b class="fc"><i>196</i>&nbsp;                        if (value.getClass().isEnum()) {</b>
-<b class="fc"><i>197</i>&nbsp;                            value = &quot;&quot; + value; // convert enum to string.</b>
-<i>198</i>&nbsp;                        }
-<i>199</i>&nbsp;
-<i>200</i>&nbsp;                        // sql.Date is a subclass so this would be true
-<b class="fc"><i>201</i>&nbsp;                        if (value instanceof java.util.Date) {</b>
-<b class="fc"><i>202</i>&nbsp;                            java.util.Date dt = (java.util.Date) value;</b>
-<b class="fc"><i>203</i>&nbsp;                            value = new Timestamp(dt.getTime());</b>
-<i>204</i>&nbsp;                        }
+<b class="fc"><i>191</i>&nbsp;                    Object value = propertyInfo.getter.invoke(object);</b>
+<i>192</i>&nbsp;
+<b class="fc"><i>193</i>&nbsp;                    if (value != null) {</b>
+<i>194</i>&nbsp;
+<b class="fc"><i>195</i>&nbsp;                        if (value.getClass().isEnum()) {</b>
+<b class="fc"><i>196</i>&nbsp;                            value = &quot;&quot; + value; // convert enum to string.</b>
+<i>197</i>&nbsp;                        }
+<i>198</i>&nbsp;
+<i>199</i>&nbsp;                        // sql.Date is a subclass so this would be true
+<b class="fc"><i>200</i>&nbsp;                        if (value instanceof java.util.Date) {</b>
+<b class="fc"><i>201</i>&nbsp;                            java.util.Date dt = (java.util.Date) value;</b>
+<b class="fc"><i>202</i>&nbsp;                            value = new Timestamp(dt.getTime());</b>
+<i>203</i>&nbsp;                        }
+<i>204</i>&nbsp;
 <i>205</i>&nbsp;
-<i>206</i>&nbsp;
-<b class="fc"><i>207</i>&nbsp;                        if (value instanceof String) {</b>
-<i>208</i>&nbsp;                            // check width
-<b class="fc"><i>209</i>&nbsp;                            String str = (String) value;</b>
-<b class="fc"><i>210</i>&nbsp;                            if (str.length() &gt; propertyInfo.length) {</b>
-<i>211</i>&nbsp;                                // todo should Persism strict throw this as an exception?
-<b class="fc"><i>212</i>&nbsp;                                str = str.substring(0, propertyInfo.length);</b>
-<b class="fc"><i>213</i>&nbsp;                                log.warn(&quot;TRUNCATION with Column: &quot; + column + &quot; for table: &quot; + metaData.getTableName(object.getClass()) + &quot;. Old value: \&quot;&quot; + value + &quot;\&quot; New value: \&quot;&quot; + str + &quot;\&quot;&quot;);</b>
-<b class="fc"><i>214</i>&nbsp;                                value = str;</b>
-<i>215</i>&nbsp;                            }
-<i>216</i>&nbsp;                        }
-<i>217</i>&nbsp;                    }
-<b class="fc"><i>218</i>&nbsp;                    params.add(value);</b>
-<i>219</i>&nbsp;                }
-<b class="fc"><i>220</i>&nbsp;            }</b>
-<i>221</i>&nbsp;
-<i>222</i>&nbsp;            // https://forums.oracle.com/forums/thread.jspa?threadID=879222
-<i>223</i>&nbsp;            // http://download.oracle.com/javase/1.4.2/docs/guide/jdbc/getstart/statement.html
-<i>224</i>&nbsp;            //int ret = st.executeUpdate(insertStatement, Statement.RETURN_GENERATED_KEYS);
-<b class="fc"><i>225</i>&nbsp;            Util.setParameters(st, params.toArray());</b>
-<b class="fc"><i>226</i>&nbsp;            int ret = st.executeUpdate();</b>
-<b class="fc"><i>227</i>&nbsp;            if (log.isDebugEnabled()) {</b>
-<b class="fc"><i>228</i>&nbsp;                log.debug(&quot;insert ret: &quot; + ret);</b>
-<i>229</i>&nbsp;            }
-<i>230</i>&nbsp;
-<b class="fc"><i>231</i>&nbsp;            if (generatedKeys.size() &gt; 0) {</b>
-<b class="fc"><i>232</i>&nbsp;                rs = st.getGeneratedKeys();</b>
-<b class="fc"><i>233</i>&nbsp;                for (String column : generatedKeys) {</b>
-<b class="fc"><i>234</i>&nbsp;                    if (rs.next()) {</b>
-<i>235</i>&nbsp;
-<b class="fc"><i>236</i>&nbsp;                        Method setter = properties.get(column).setter;</b>
-<i>237</i>&nbsp;
-<b class="fc"><i>238</i>&nbsp;                        if (setter != null) {</b>
-<b class="fc"><i>239</i>&nbsp;                            Object value = getTypedValueReturnedFromGeneratedKeys(setter.getParameterTypes()[0], rs);</b>
-<i>240</i>&nbsp;
-<b class="fc"><i>241</i>&nbsp;                            if (log.isDebugEnabled()) {</b>
-<b class="fc"><i>242</i>&nbsp;                                log.debug(column + &quot; generated &quot; + value); // HERE!</b>
-<b class="fc"><i>243</i>&nbsp;                                log.debug(setter);</b>
-<i>244</i>&nbsp;                            }
-<b class="fc"><i>245</i>&nbsp;                            setter.invoke(object, value);</b>
-<i>246</i>&nbsp;
-<b class="fc"><i>247</i>&nbsp;                        } else {</b>
-<b class="nc"><i>248</i>&nbsp;                            log.warn(&quot;no setter found for column &quot; + column);</b>
-<i>249</i>&nbsp;                        }
-<i>250</i>&nbsp;                    }
-<b class="fc"><i>251</i>&nbsp;                }</b>
-<i>252</i>&nbsp;            }
-<i>253</i>&nbsp;
-<b class="fc"><i>254</i>&nbsp;            if (tableHasDefaultColumnValues) {</b>
-<i>255</i>&nbsp;                // Read the full object back to update any properties which had defaults
-<b class="fc"><i>256</i>&nbsp;                fetch(object);</b>
-<i>257</i>&nbsp;            }
-<i>258</i>&nbsp;
-<b class="fc"><i>259</i>&nbsp;            return ret;</b>
-<b class="fc"><i>260</i>&nbsp;        } catch (Exception e) {</b>
-<b class="fc"><i>261</i>&nbsp;            Util.rollback(connection);</b>
-<b class="fc"><i>262</i>&nbsp;            throw new PersismException(e.getMessage(), e);</b>
-<i>263</i>&nbsp;        } finally {
-<b class="fc"><i>264</i>&nbsp;            Util.cleanup(st, rs);</b>
-<b class="fc"><i>265</i>&nbsp;        }</b>
-<i>266</i>&nbsp;    }
+<b class="fc"><i>206</i>&nbsp;                        if (value instanceof String) {</b>
+<i>207</i>&nbsp;                            // check width
+<b class="fc"><i>208</i>&nbsp;                            String str = (String) value;</b>
+<b class="fc"><i>209</i>&nbsp;                            if (str.length() &gt; columnInfo.length) {</b>
+<i>210</i>&nbsp;                                // todo should Persism strict throw this as an exception?
+<b class="fc"><i>211</i>&nbsp;                                str = str.substring(0, columnInfo.length);</b>
+<b class="fc"><i>212</i>&nbsp;                                log.warn(&quot;TRUNCATION with Column: &quot; + columnInfo.columnName + &quot; for table: &quot; + metaData.getTableName(object.getClass()) + &quot;. Old value: \&quot;&quot; + value + &quot;\&quot; New value: \&quot;&quot; + str + &quot;\&quot;&quot;);</b>
+<b class="fc"><i>213</i>&nbsp;                                value = str;</b>
+<i>214</i>&nbsp;                            }
+<i>215</i>&nbsp;                        }
+<i>216</i>&nbsp;                    }
+<b class="fc"><i>217</i>&nbsp;                    params.add(value);</b>
+<i>218</i>&nbsp;                }
+<b class="fc"><i>219</i>&nbsp;            }</b>
+<i>220</i>&nbsp;
+<i>221</i>&nbsp;            // https://forums.oracle.com/forums/thread.jspa?threadID=879222
+<i>222</i>&nbsp;            // http://download.oracle.com/javase/1.4.2/docs/guide/jdbc/getstart/statement.html
+<i>223</i>&nbsp;            //int ret = st.executeUpdate(insertStatement, Statement.RETURN_GENERATED_KEYS);
+<b class="fc"><i>224</i>&nbsp;            Util.setParameters(st, params.toArray());</b>
+<b class="fc"><i>225</i>&nbsp;            int ret = st.executeUpdate();</b>
+<b class="fc"><i>226</i>&nbsp;            if (log.isDebugEnabled()) {</b>
+<b class="fc"><i>227</i>&nbsp;                log.debug(&quot;insert ret: &quot; + ret);</b>
+<i>228</i>&nbsp;            }
+<i>229</i>&nbsp;
+<b class="fc"><i>230</i>&nbsp;            if (generatedKeys.size() &gt; 0) {</b>
+<b class="fc"><i>231</i>&nbsp;                rs = st.getGeneratedKeys();</b>
+<b class="fc"><i>232</i>&nbsp;                for (String column : generatedKeys) {</b>
+<b class="fc"><i>233</i>&nbsp;                    if (rs.next()) {</b>
+<i>234</i>&nbsp;
+<b class="fc"><i>235</i>&nbsp;                        Method setter = properties.get(column).setter;</b>
+<i>236</i>&nbsp;
+<b class="fc"><i>237</i>&nbsp;                        if (setter != null) {</b>
+<b class="fc"><i>238</i>&nbsp;                            Object value = getTypedValueReturnedFromGeneratedKeys(setter.getParameterTypes()[0], rs);</b>
+<i>239</i>&nbsp;
+<b class="fc"><i>240</i>&nbsp;                            if (log.isDebugEnabled()) {</b>
+<b class="fc"><i>241</i>&nbsp;                                log.debug(column + &quot; generated &quot; + value); // HERE!</b>
+<b class="fc"><i>242</i>&nbsp;                                log.debug(setter);</b>
+<i>243</i>&nbsp;                            }
+<b class="fc"><i>244</i>&nbsp;                            setter.invoke(object, value);</b>
+<i>245</i>&nbsp;
+<b class="fc"><i>246</i>&nbsp;                        } else {</b>
+<b class="nc"><i>247</i>&nbsp;                            log.warn(&quot;no setter found for column &quot; + column);</b>
+<i>248</i>&nbsp;                        }
+<i>249</i>&nbsp;                    }
+<b class="fc"><i>250</i>&nbsp;                }</b>
+<i>251</i>&nbsp;            }
+<i>252</i>&nbsp;
+<b class="fc"><i>253</i>&nbsp;            if (tableHasDefaultColumnValues) {</b>
+<i>254</i>&nbsp;                // Read the full object back to update any properties which had defaults
+<b class="fc"><i>255</i>&nbsp;                fetch(object);</b>
+<i>256</i>&nbsp;            }
+<i>257</i>&nbsp;
+<b class="fc"><i>258</i>&nbsp;            return ret;</b>
+<b class="fc"><i>259</i>&nbsp;        } catch (Exception e) {</b>
+<b class="fc"><i>260</i>&nbsp;            Util.rollback(connection);</b>
+<b class="fc"><i>261</i>&nbsp;            throw new PersismException(e.getMessage(), e);</b>
+<i>262</i>&nbsp;        } finally {
+<b class="fc"><i>263</i>&nbsp;            Util.cleanup(st, rs);</b>
+<b class="fc"><i>264</i>&nbsp;        }</b>
+<i>265</i>&nbsp;    }
+<i>266</i>&nbsp;
 <i>267</i>&nbsp;
-<i>268</i>&nbsp;
-<i>269</i>&nbsp;    /**
-<i>270</i>&nbsp;     * Deletes the data object object from the database.
-<i>271</i>&nbsp;     *
-<i>272</i>&nbsp;     * @param object data object to delete
-<i>273</i>&nbsp;     * @return usually 1 to indicate rows changed via JDBC.
-<i>274</i>&nbsp;     * @throws PersismException Perhaps when asteroid 1999 RQ36 hits us?
-<i>275</i>&nbsp;     */
-<i>276</i>&nbsp;    public int delete(Object object) throws PersismException {
-<i>277</i>&nbsp;
-<b class="fc"><i>278</i>&nbsp;        List&lt;String&gt; primaryKeys = metaData.getPrimaryKeys(object.getClass(), connection);</b>
-<b class="fc"><i>279</i>&nbsp;        if (primaryKeys.size() == 0) {</b>
-<b class="nc"><i>280</i>&nbsp;            throw new PersismException(&quot;Cannot perform delete. &quot; + metaData.getTableName(object.getClass()) + &quot; has no primary keys.&quot;);</b>
-<i>281</i>&nbsp;        }
-<i>282</i>&nbsp;
-<b class="fc"><i>283</i>&nbsp;        PreparedStatement st = null;</b>
-<i>284</i>&nbsp;        try {
-<b class="fc"><i>285</i>&nbsp;            String deleteStatement = metaData.getDeleteStatement(object, connection);</b>
-<b class="fc"><i>286</i>&nbsp;            st = connection.prepareStatement(deleteStatement);</b>
-<i>287</i>&nbsp;
-<i>288</i>&nbsp;            // These keys should always be in sorted order.
-<b class="fc"><i>289</i>&nbsp;            Map&lt;String, PropertyInfo&gt; columns = metaData.getTableColumnsPropertyInfo(object.getClass(), connection);</b>
-<i>290</i>&nbsp;
-<b class="fc"><i>291</i>&nbsp;            List&lt;Object&gt; params = new ArrayList&lt;Object&gt;(primaryKeys.size());</b>
-<b class="fc"><i>292</i>&nbsp;            for (String column : primaryKeys) {</b>
-<b class="fc"><i>293</i>&nbsp;                params.add(columns.get(column).getter.invoke(object));</b>
-<b class="fc"><i>294</i>&nbsp;            }</b>
-<b class="fc"><i>295</i>&nbsp;            Util.setParameters(st, params.toArray());</b>
-<b class="fc"><i>296</i>&nbsp;            int ret = st.executeUpdate();</b>
-<b class="fc"><i>297</i>&nbsp;            return ret;</b>
-<i>298</i>&nbsp;
-<b class="nc"><i>299</i>&nbsp;        } catch (Exception e) {</b>
-<b class="nc"><i>300</i>&nbsp;            Util.rollback(connection);</b>
-<b class="nc"><i>301</i>&nbsp;            throw new PersismException(e.getMessage(), e);</b>
-<i>302</i>&nbsp;
-<i>303</i>&nbsp;        } finally {
-<b class="fc"><i>304</i>&nbsp;            Util.cleanup(st, null);</b>
-<b class="nc"><i>305</i>&nbsp;        }</b>
-<i>306</i>&nbsp;    }
-<i>307</i>&nbsp;
-<i>308</i>&nbsp;    /**
-<i>309</i>&nbsp;     * Execute an arbitrary SQL statement.
-<i>310</i>&nbsp;     *
-<i>311</i>&nbsp;     * @param sql        sql string
-<i>312</i>&nbsp;     * @param parameters parameters
-<i>313</i>&nbsp;     */
-<i>314</i>&nbsp;    public void execute(String sql, Object... parameters) {
+<i>268</i>&nbsp;    /**
+<i>269</i>&nbsp;     * Deletes the data object object from the database.
+<i>270</i>&nbsp;     *
+<i>271</i>&nbsp;     * @param object data object to delete
+<i>272</i>&nbsp;     * @return usually 1 to indicate rows changed via JDBC.
+<i>273</i>&nbsp;     * @throws PersismException Perhaps when asteroid 1999 RQ36 hits us?
+<i>274</i>&nbsp;     */
+<i>275</i>&nbsp;    public int delete(Object object) throws PersismException {
+<i>276</i>&nbsp;
+<b class="fc"><i>277</i>&nbsp;        List&lt;String&gt; primaryKeys = metaData.getPrimaryKeys(object.getClass(), connection);</b>
+<b class="fc"><i>278</i>&nbsp;        if (primaryKeys.size() == 0) {</b>
+<b class="nc"><i>279</i>&nbsp;            throw new PersismException(&quot;Cannot perform delete. &quot; + metaData.getTableName(object.getClass()) + &quot; has no primary keys.&quot;);</b>
+<i>280</i>&nbsp;        }
+<i>281</i>&nbsp;
+<b class="fc"><i>282</i>&nbsp;        PreparedStatement st = null;</b>
+<i>283</i>&nbsp;        try {
+<b class="fc"><i>284</i>&nbsp;            String deleteStatement = metaData.getDeleteStatement(object, connection);</b>
+<b class="fc"><i>285</i>&nbsp;            st = connection.prepareStatement(deleteStatement);</b>
+<i>286</i>&nbsp;
+<i>287</i>&nbsp;            // These keys should always be in sorted order.
+<b class="fc"><i>288</i>&nbsp;            Map&lt;String, PropertyInfo&gt; columns = metaData.getTableColumnsPropertyInfo(object.getClass(), connection);</b>
+<i>289</i>&nbsp;
+<b class="fc"><i>290</i>&nbsp;            List&lt;Object&gt; params = new ArrayList&lt;Object&gt;(primaryKeys.size());</b>
+<b class="fc"><i>291</i>&nbsp;            for (String column : primaryKeys) {</b>
+<b class="fc"><i>292</i>&nbsp;                params.add(columns.get(column).getter.invoke(object));</b>
+<b class="fc"><i>293</i>&nbsp;            }</b>
+<b class="fc"><i>294</i>&nbsp;            Util.setParameters(st, params.toArray());</b>
+<b class="fc"><i>295</i>&nbsp;            int ret = st.executeUpdate();</b>
+<b class="fc"><i>296</i>&nbsp;            return ret;</b>
+<i>297</i>&nbsp;
+<b class="nc"><i>298</i>&nbsp;        } catch (Exception e) {</b>
+<b class="nc"><i>299</i>&nbsp;            Util.rollback(connection);</b>
+<b class="nc"><i>300</i>&nbsp;            throw new PersismException(e.getMessage(), e);</b>
+<i>301</i>&nbsp;
+<i>302</i>&nbsp;        } finally {
+<b class="fc"><i>303</i>&nbsp;            Util.cleanup(st, null);</b>
+<b class="nc"><i>304</i>&nbsp;        }</b>
+<i>305</i>&nbsp;    }
+<i>306</i>&nbsp;
+<i>307</i>&nbsp;    // For unit tests only for now.
+<i>308</i>&nbsp;    void execute(String sql, Object... parameters) {
+<i>309</i>&nbsp;
+<b class="fc"><i>310</i>&nbsp;        if (log.isDebugEnabled()) {</b>
+<b class="fc"><i>311</i>&nbsp;            log.debug(&quot;execute: &quot; + sql + &quot; params: &quot; + Arrays.asList(parameters));</b>
+<i>312</i>&nbsp;        }
+<b class="fc"><i>313</i>&nbsp;        Statement st = null;</b>
+<i>314</i>&nbsp;        try {
 <i>315</i>&nbsp;
-<b class="fc"><i>316</i>&nbsp;        if (log.isDebugEnabled()) {</b>
-<b class="fc"><i>317</i>&nbsp;            log.debug(&quot;execute: &quot; + sql + &quot; params: &quot; + Arrays.asList(parameters));</b>
-<i>318</i>&nbsp;        }
-<b class="fc"><i>319</i>&nbsp;        Statement st = null;</b>
-<i>320</i>&nbsp;        try {
-<i>321</i>&nbsp;
-<b class="fc"><i>322</i>&nbsp;            if (parameters.length == 0) {</b>
-<b class="fc"><i>323</i>&nbsp;                st = connection.createStatement();</b>
-<b class="fc"><i>324</i>&nbsp;                st.execute(sql);</b>
-<i>325</i>&nbsp;            } else {
-<b class="fc"><i>326</i>&nbsp;                st = connection.prepareStatement(sql);</b>
-<b class="fc"><i>327</i>&nbsp;                PreparedStatement pst = (PreparedStatement) st;</b>
-<b class="fc"><i>328</i>&nbsp;                Util.setParameters(pst, parameters);</b>
-<b class="fc"><i>329</i>&nbsp;                pst.execute();</b>
-<i>330</i>&nbsp;            }
-<i>331</i>&nbsp;
-<b class="nc"><i>332</i>&nbsp;        } catch (Exception e) {</b>
-<b class="nc"><i>333</i>&nbsp;            Util.rollback(connection);</b>
-<b class="nc"><i>334</i>&nbsp;            throw new PersismException(e.getMessage(), e);</b>
-<i>335</i>&nbsp;        } finally {
-<b class="fc"><i>336</i>&nbsp;            Util.cleanup(st, null);</b>
-<b class="fc"><i>337</i>&nbsp;        }</b>
-<b class="fc"><i>338</i>&nbsp;    }</b>
-<i>339</i>&nbsp;
-<i>340</i>&nbsp;    /**
-<i>341</i>&nbsp;     * Query for a list of objects of the specified class using the specified SQL query and parameters.
-<i>342</i>&nbsp;     * The type of the list can be Data Objects or native Java Objects or primitives.
-<i>343</i>&nbsp;     *
-<i>344</i>&nbsp;     * @param objectClass class of objects to return.
-<i>345</i>&nbsp;     * @param sql         query string to execute.
-<i>346</i>&nbsp;     * @param parameters  parameters to the query.
-<i>347</i>&nbsp;     * @param &lt;T&gt;         Return type
-<i>348</i>&nbsp;     * @return a list of objects of the specified class using the specified SQL query and parameters.
-<i>349</i>&nbsp;     * @throws PersismException If something goes wrong you get a big stack trace.s
-<i>350</i>&nbsp;     */
-<i>351</i>&nbsp;    public &lt;T&gt; List&lt;T&gt; query(Class&lt;T&gt; objectClass, String sql, Object... parameters) throws PersismException {
-<b class="fc"><i>352</i>&nbsp;        List&lt;T&gt; list = new ArrayList&lt;T&gt;(32);</b>
-<i>353</i>&nbsp;
-<b class="fc"><i>354</i>&nbsp;        Result result = new Result();</b>
-<i>355</i>&nbsp;
-<i>356</i>&nbsp;        // If we know this type it means it&#39;s a primitive type. Not a DAO so we use a different rule to read those
-<b class="fc"><i>357</i>&nbsp;        boolean readPrimitive = Types.getType(objectClass) != null;</b>
-<i>358</i>&nbsp;
-<b class="fc"><i>359</i>&nbsp;        if (!readPrimitive &amp;&amp; objectClass.getAnnotation(Query.class) == null) {</b>
-<i>360</i>&nbsp;            // Make sure columns are initialized if this is a table.
-<b class="fc"><i>361</i>&nbsp;            metaData.getTableColumnsPropertyInfo(objectClass, connection);</b>
-<i>362</i>&nbsp;        }
+<b class="fc"><i>316</i>&nbsp;            if (parameters.length == 0) {</b>
+<b class="fc"><i>317</i>&nbsp;                st = connection.createStatement();</b>
+<b class="fc"><i>318</i>&nbsp;                st.execute(sql);</b>
+<i>319</i>&nbsp;            } else {
+<b class="fc"><i>320</i>&nbsp;                st = connection.prepareStatement(sql);</b>
+<b class="fc"><i>321</i>&nbsp;                PreparedStatement pst = (PreparedStatement) st;</b>
+<b class="fc"><i>322</i>&nbsp;                Util.setParameters(pst, parameters);</b>
+<b class="fc"><i>323</i>&nbsp;                pst.execute();</b>
+<i>324</i>&nbsp;            }
+<i>325</i>&nbsp;
+<b class="nc"><i>326</i>&nbsp;        } catch (Exception e) {</b>
+<b class="nc"><i>327</i>&nbsp;            Util.rollback(connection);</b>
+<b class="nc"><i>328</i>&nbsp;            throw new PersismException(e.getMessage(), e);</b>
+<i>329</i>&nbsp;        } finally {
+<b class="fc"><i>330</i>&nbsp;            Util.cleanup(st, null);</b>
+<b class="fc"><i>331</i>&nbsp;        }</b>
+<b class="fc"><i>332</i>&nbsp;    }</b>
+<i>333</i>&nbsp;
+<i>334</i>&nbsp;    /**
+<i>335</i>&nbsp;     * Query for a list of objects of the specified class using the specified SQL query and parameters.
+<i>336</i>&nbsp;     * The type of the list can be Data Objects or native Java Objects or primitives.
+<i>337</i>&nbsp;     *
+<i>338</i>&nbsp;     * @param objectClass class of objects to return.
+<i>339</i>&nbsp;     * @param sql         query string to execute.
+<i>340</i>&nbsp;     * @param parameters  parameters to the query.
+<i>341</i>&nbsp;     * @param &lt;T&gt;         Return type
+<i>342</i>&nbsp;     * @return a list of objects of the specified class using the specified SQL query and parameters.
+<i>343</i>&nbsp;     * @throws PersismException If something goes wrong you get a big stack trace.
+<i>344</i>&nbsp;     */
+<i>345</i>&nbsp;    public &lt;T&gt; List&lt;T&gt; query(Class&lt;T&gt; objectClass, String sql, Object... parameters) throws PersismException {
+<b class="fc"><i>346</i>&nbsp;        List&lt;T&gt; list = new ArrayList&lt;T&gt;(32);</b>
+<i>347</i>&nbsp;
+<b class="fc"><i>348</i>&nbsp;        Result result = new Result();</b>
+<i>349</i>&nbsp;
+<i>350</i>&nbsp;        // If we know this type it means it&#39;s a primitive type. Not a DAO so we use a different rule to read those
+<b class="fc"><i>351</i>&nbsp;        boolean readPrimitive = Types.getType(objectClass) != null;</b>
+<i>352</i>&nbsp;
+<b class="fc"><i>353</i>&nbsp;        if (!readPrimitive &amp;&amp; objectClass.getAnnotation(NotTable.class) == null) {</b>
+<i>354</i>&nbsp;            // Make sure columns are initialized if this is a table.
+<b class="fc"><i>355</i>&nbsp;            metaData.getTableColumnsPropertyInfo(objectClass, connection);</b>
+<i>356</i>&nbsp;        }
+<i>357</i>&nbsp;
+<i>358</i>&nbsp;        try {
+<i>359</i>&nbsp;
+<b class="fc"><i>360</i>&nbsp;            exec(result, sql, parameters);</b>
+<i>361</i>&nbsp;
+<b class="fc"><i>362</i>&nbsp;            while (result.rs.next()) {</b>
 <i>363</i>&nbsp;
-<i>364</i>&nbsp;        try {
-<i>365</i>&nbsp;
-<b class="fc"><i>366</i>&nbsp;            exec(result, sql, parameters);</b>
-<i>367</i>&nbsp;
-<b class="fc"><i>368</i>&nbsp;            while (result.rs.next()) {</b>
-<i>369</i>&nbsp;
-<b class="fc"><i>370</i>&nbsp;                if (readPrimitive) {</b>
-<b class="fc"><i>371</i>&nbsp;                    list.add((T) readPrimitive(result.rs, 1, objectClass));</b>
-<i>372</i>&nbsp;                } else {
-<i>373</i>&nbsp;                    // should be getDeclaredConstructor().newInstance() now.
-<b class="fc"><i>374</i>&nbsp;                    T t = objectClass.newInstance();</b>
-<b class="fc"><i>375</i>&nbsp;                    t = (T) readObject(t, result.rs);</b>
-<b class="fc"><i>376</i>&nbsp;                    list.add(t);</b>
-<b class="fc"><i>377</i>&nbsp;                }</b>
-<i>378</i>&nbsp;            }
-<i>379</i>&nbsp;
-<b class="fc"><i>380</i>&nbsp;        } catch (Exception e) {</b>
-<b class="fc"><i>381</i>&nbsp;            Util.rollback(connection);</b>
-<b class="fc"><i>382</i>&nbsp;            throw new PersismException(e.getMessage(), e);</b>
-<i>383</i>&nbsp;        } finally {
-<b class="fc"><i>384</i>&nbsp;            Util.cleanup(result.st, result.rs);</b>
-<b class="fc"><i>385</i>&nbsp;        }</b>
-<i>386</i>&nbsp;
-<b class="fc"><i>387</i>&nbsp;        return list;</b>
-<i>388</i>&nbsp;
-<i>389</i>&nbsp;    }
-<i>390</i>&nbsp;
-<i>391</i>&nbsp;    /**
-<i>392</i>&nbsp;     * Fetch an object from the database by it&#39;s primary key(s).
-<i>393</i>&nbsp;     * You should instantiate the object and set the primary key properties before calling this method.
-<i>394</i>&nbsp;     *
-<i>395</i>&nbsp;     * @param object Data object to read from the database.
-<i>396</i>&nbsp;     * @return true if the object was found by the primary key.
-<i>397</i>&nbsp;     * @throws PersismException if something goes wrong.
-<i>398</i>&nbsp;     */
-<i>399</i>&nbsp;    public boolean fetch(Object object) throws PersismException {
-<b class="fc"><i>400</i>&nbsp;        Class objectClass = object.getClass();</b>
+<b class="fc"><i>364</i>&nbsp;                if (readPrimitive) {</b>
+<b class="fc"><i>365</i>&nbsp;                    list.add((T) readPrimitive(result.rs, 1, objectClass));</b>
+<i>366</i>&nbsp;                } else {
+<i>367</i>&nbsp;                    // should be getDeclaredConstructor().newInstance() now.
+<b class="fc"><i>368</i>&nbsp;                    T t = objectClass.newInstance();</b>
+<b class="fc"><i>369</i>&nbsp;                    t = (T) readObject(t, result.rs);</b>
+<b class="fc"><i>370</i>&nbsp;                    list.add(t);</b>
+<b class="fc"><i>371</i>&nbsp;                }</b>
+<i>372</i>&nbsp;            }
+<i>373</i>&nbsp;
+<b class="fc"><i>374</i>&nbsp;        } catch (Exception e) {</b>
+<b class="fc"><i>375</i>&nbsp;            Util.rollback(connection);</b>
+<b class="fc"><i>376</i>&nbsp;            throw new PersismException(e.getMessage(), e);</b>
+<i>377</i>&nbsp;        } finally {
+<b class="fc"><i>378</i>&nbsp;            Util.cleanup(result.st, result.rs);</b>
+<b class="fc"><i>379</i>&nbsp;        }</b>
+<i>380</i>&nbsp;
+<b class="fc"><i>381</i>&nbsp;        return list;</b>
+<i>382</i>&nbsp;
+<i>383</i>&nbsp;    }
+<i>384</i>&nbsp;
+<i>385</i>&nbsp;    /**
+<i>386</i>&nbsp;     * Fetch an object from the database by it&#39;s primary key(s).
+<i>387</i>&nbsp;     * You should instantiate the object and set the primary key properties before calling this method.
+<i>388</i>&nbsp;     *
+<i>389</i>&nbsp;     * @param object Data object to read from the database.
+<i>390</i>&nbsp;     * @return true if the object was found by the primary key.
+<i>391</i>&nbsp;     * @throws PersismException if something goes wrong.
+<i>392</i>&nbsp;     */
+<i>393</i>&nbsp;    public boolean fetch(Object object) throws PersismException {
+<b class="fc"><i>394</i>&nbsp;        Class objectClass = object.getClass();</b>
+<i>395</i>&nbsp;
+<i>396</i>&nbsp;        // If we know this type it means it&#39;s a primitive type. This method cannot be used for primitives
+<b class="fc"><i>397</i>&nbsp;        boolean readPrimitive = Types.getType(objectClass) != null;</b>
+<b class="fc"><i>398</i>&nbsp;        if (readPrimitive) {</b>
+<b class="fc"><i>399</i>&nbsp;            throw new PersismException(&quot;Cannot read a primitive type object with this method.&quot;);</b>
+<i>400</i>&nbsp;        }
 <i>401</i>&nbsp;
-<i>402</i>&nbsp;        // If we know this type it means it&#39;s a primitive type. This method cannot be used for primitives
-<b class="fc"><i>403</i>&nbsp;        boolean readPrimitive = Types.getType(objectClass) != null;</b>
-<b class="fc"><i>404</i>&nbsp;        if (readPrimitive) {</b>
-<b class="fc"><i>405</i>&nbsp;            throw new PersismException(&quot;Cannot read a primitive type object with this method.&quot;);</b>
-<i>406</i>&nbsp;        }
-<i>407</i>&nbsp;
-<b class="fc"><i>408</i>&nbsp;        List&lt;String&gt; primaryKeys = metaData.getPrimaryKeys(objectClass, connection);</b>
-<b class="fc"><i>409</i>&nbsp;        if (primaryKeys.size() == 0) {</b>
-<b class="nc"><i>410</i>&nbsp;            throw new PersismException(&quot;Cannot perform readObjectByPrimary. &quot; + metaData.getTableName(objectClass) + &quot; has no primary keys.&quot;);</b>
-<i>411</i>&nbsp;        }
-<i>412</i>&nbsp;
-<b class="fc"><i>413</i>&nbsp;        Map&lt;String, PropertyInfo&gt; properties = metaData.getTableColumnsPropertyInfo(object.getClass(), connection);</b>
-<b class="fc"><i>414</i>&nbsp;        List&lt;Object&gt; params = new ArrayList&lt;&gt;(primaryKeys.size());</b>
-<i>415</i>&nbsp;
-<b class="fc"><i>416</i>&nbsp;        Result result = new Result();</b>
-<i>417</i>&nbsp;        try {
-<b class="fc"><i>418</i>&nbsp;            for (String column : primaryKeys) {</b>
-<b class="fc"><i>419</i>&nbsp;                PropertyInfo propertyInfo = properties.get(column);</b>
-<b class="fc"><i>420</i>&nbsp;                params.add(propertyInfo.getter.invoke(object));</b>
-<b class="fc"><i>421</i>&nbsp;            }</b>
-<b class="fc"><i>422</i>&nbsp;            String sql = metaData.getSelectStatement(object, connection);</b>
-<b class="fc"><i>423</i>&nbsp;            if (log.isDebugEnabled()) {</b>
-<b class="fc"><i>424</i>&nbsp;                log.debug(&quot;FETCH &quot; + sql + &quot; PARAMS: &quot; + params);</b>
+<b class="fc"><i>402</i>&nbsp;        List&lt;String&gt; primaryKeys = metaData.getPrimaryKeys(objectClass, connection);</b>
+<b class="fc"><i>403</i>&nbsp;        if (primaryKeys.size() == 0) {</b>
+<b class="nc"><i>404</i>&nbsp;            throw new PersismException(&quot;Cannot perform readObjectByPrimary. &quot; + metaData.getTableName(objectClass) + &quot; has no primary keys.&quot;);</b>
+<i>405</i>&nbsp;        }
+<i>406</i>&nbsp;
+<b class="fc"><i>407</i>&nbsp;        Map&lt;String, PropertyInfo&gt; properties = metaData.getTableColumnsPropertyInfo(object.getClass(), connection);</b>
+<b class="fc"><i>408</i>&nbsp;        List&lt;Object&gt; params = new ArrayList&lt;&gt;(primaryKeys.size());</b>
+<i>409</i>&nbsp;
+<b class="fc"><i>410</i>&nbsp;        Result result = new Result();</b>
+<i>411</i>&nbsp;        try {
+<b class="fc"><i>412</i>&nbsp;            for (String column : primaryKeys) {</b>
+<b class="fc"><i>413</i>&nbsp;                PropertyInfo propertyInfo = properties.get(column);</b>
+<b class="fc"><i>414</i>&nbsp;                params.add(propertyInfo.getter.invoke(object));</b>
+<b class="fc"><i>415</i>&nbsp;            }</b>
+<b class="fc"><i>416</i>&nbsp;            String sql = metaData.getSelectStatement(object, connection);</b>
+<b class="fc"><i>417</i>&nbsp;            if (log.isDebugEnabled()) {</b>
+<b class="fc"><i>418</i>&nbsp;                log.debug(&quot;FETCH &quot; + sql + &quot; PARAMS: &quot; + params);</b>
+<i>419</i>&nbsp;            }
+<b class="fc"><i>420</i>&nbsp;            exec(result, sql, params.toArray());</b>
+<i>421</i>&nbsp;
+<b class="fc"><i>422</i>&nbsp;            if (result.rs.next()) {</b>
+<b class="fc"><i>423</i>&nbsp;                readObject(object, result.rs);</b>
+<b class="fc"><i>424</i>&nbsp;                return true;</b>
 <i>425</i>&nbsp;            }
-<b class="fc"><i>426</i>&nbsp;            exec(result, sql, params.toArray());</b>
+<b class="fc"><i>426</i>&nbsp;            return false;</b>
 <i>427</i>&nbsp;
-<b class="fc"><i>428</i>&nbsp;            if (result.rs.next()) {</b>
-<b class="fc"><i>429</i>&nbsp;                readObject(object, result.rs);</b>
-<b class="fc"><i>430</i>&nbsp;                return true;</b>
-<i>431</i>&nbsp;            }
-<b class="fc"><i>432</i>&nbsp;            return false;</b>
-<i>433</i>&nbsp;
-<b class="fc"><i>434</i>&nbsp;        } catch (Exception e) {</b>
-<b class="fc"><i>435</i>&nbsp;            Util.rollback(connection);</b>
-<b class="fc"><i>436</i>&nbsp;            throw new PersismException(e.getMessage(), e);</b>
-<i>437</i>&nbsp;        } finally {
-<b class="fc"><i>438</i>&nbsp;            Util.cleanup(result.st, result.rs);</b>
-<b class="fc"><i>439</i>&nbsp;        }</b>
-<i>440</i>&nbsp;    }
-<i>441</i>&nbsp;
-<i>442</i>&nbsp;
-<i>443</i>&nbsp;// Method collides with other fetch methods - ambiguous.
-<i>444</i>&nbsp;//    /**
-<i>445</i>&nbsp;//     * Fetch an object from the database by primary key(s).
-<i>446</i>&nbsp;//     *
-<i>447</i>&nbsp;//     * @param objectClass class of objects to return
-<i>448</i>&nbsp;//     * @param primaryKey  primary key value parameters
-<i>449</i>&nbsp;//     * @param &lt;T&gt;         Return type
-<i>450</i>&nbsp;//     * @return new instance of T or null if not found
-<i>451</i>&nbsp;//     * @throws PersismException if something goes wrong
-<i>452</i>&nbsp;//     */
-<i>453</i>&nbsp;//    public &lt;T&gt; T fetch(Class&lt;T&gt; objectClass, Object... primaryKey) throws PersismException {
-<i>454</i>&nbsp;//
-<i>455</i>&nbsp;//        String select = metaData.getSelectStatement(objectClass, connection);
-<i>456</i>&nbsp;//
-<i>457</i>&nbsp;//        if (log.isDebugEnabled()) {
-<i>458</i>&nbsp;//            log.debug(&quot;fetch Class&lt;T&gt; objectClass, Object... primaryKey: SQL &quot; + select);
-<i>459</i>&nbsp;//        }
-<i>460</i>&nbsp;//        return fetch(objectClass, select, primaryKey);
-<i>461</i>&nbsp;//    }
-<i>462</i>&nbsp;
-<i>463</i>&nbsp;    /**
-<i>464</i>&nbsp;     * Fetch an object of the specified type from the database. The type can be a Data Object or a native Java Object or primitive.
-<i>465</i>&nbsp;     *
-<i>466</i>&nbsp;     * @param objectClass Type of returned value
-<i>467</i>&nbsp;     * @param sql         query - this would usually be a select OR a select of a single column if the type is a primitive.
-<i>468</i>&nbsp;     *                    If this is a primitive type then this method will only look at the 1st column in the result.
-<i>469</i>&nbsp;     * @param parameters  parameters to the query.
-<i>470</i>&nbsp;     * @param &lt;T&gt;         Return type
-<i>471</i>&nbsp;     * @return value read from the database of type T or null if not found
-<i>472</i>&nbsp;     * @throws PersismException Well, this is a runtime exception so actually it could be anything really.
-<i>473</i>&nbsp;     */
-<i>474</i>&nbsp;    public &lt;T&gt; T fetch(Class&lt;T&gt; objectClass, String sql, Object... parameters) throws PersismException {
-<i>475</i>&nbsp;        // If we know this type it means it&#39;s a primitive type. Not a DAO so we use a different rule to read those
-<b class="fc"><i>476</i>&nbsp;        boolean readPrimitive = Types.getType(objectClass) != null;</b>
-<i>477</i>&nbsp;
-<b class="fc"><i>478</i>&nbsp;        Result result = new Result();</b>
-<i>479</i>&nbsp;        try {
-<i>480</i>&nbsp;
-<b class="fc"><i>481</i>&nbsp;            exec(result, sql, parameters);</b>
-<i>482</i>&nbsp;
-<b class="fc"><i>483</i>&nbsp;            if (result.rs.next()) {</b>
-<i>484</i>&nbsp;
-<b class="fc"><i>485</i>&nbsp;                if (readPrimitive) {</b>
-<b class="fc"><i>486</i>&nbsp;                    return (T) readPrimitive(result.rs, 1, objectClass);</b>
-<i>487</i>&nbsp;
-<i>488</i>&nbsp;                } else {
-<b class="fc"><i>489</i>&nbsp;                    T t = objectClass.newInstance();</b>
-<b class="fc"><i>490</i>&nbsp;                    readObject(t, result.rs);</b>
-<b class="fc"><i>491</i>&nbsp;                    return t;</b>
-<i>492</i>&nbsp;                }
-<i>493</i>&nbsp;            }
-<i>494</i>&nbsp;
-<b class="fc"><i>495</i>&nbsp;            return null;</b>
-<i>496</i>&nbsp;
-<b class="fc"><i>497</i>&nbsp;        } catch (Exception e) {</b>
-<b class="fc"><i>498</i>&nbsp;            Util.rollback(connection);</b>
-<b class="fc"><i>499</i>&nbsp;            throw new PersismException(e.getMessage(), e);</b>
-<i>500</i>&nbsp;        } finally {
-<b class="fc"><i>501</i>&nbsp;            Util.cleanup(result.st, result.rs);</b>
-<b class="fc"><i>502</i>&nbsp;        }</b>
-<i>503</i>&nbsp;    }
-<i>504</i>&nbsp;
-<i>505</i>&nbsp;    MetaData getMetaData() {
-<b class="fc"><i>506</i>&nbsp;        return metaData;</b>
-<i>507</i>&nbsp;    }
-<i>508</i>&nbsp;
-<i>509</i>&nbsp;    /*
-<i>510</i>&nbsp;    Private methods
-<i>511</i>&nbsp;     */
-<i>512</i>&nbsp;
-<i>513</i>&nbsp;    private Result exec(Result result, String sql, Object... parameters) throws SQLException {
-<b class="fc"><i>514</i>&nbsp;        if (sql.toLowerCase().startsWith(&quot;select &quot;)) {</b>
-<b class="fc"><i>515</i>&nbsp;            result.st = connection.prepareStatement(sql);</b>
-<i>516</i>&nbsp;
-<b class="fc"><i>517</i>&nbsp;            PreparedStatement pst = (PreparedStatement) result.st;</b>
-<b class="fc"><i>518</i>&nbsp;            Util.setParameters(pst, parameters);</b>
-<b class="fc"><i>519</i>&nbsp;            result.rs = pst.executeQuery();</b>
-<b class="fc"><i>520</i>&nbsp;        } else {</b>
-<b class="fc"><i>521</i>&nbsp;            if (!sql.toLowerCase().startsWith(&quot;{call&quot;)) {</b>
-<b class="fc"><i>522</i>&nbsp;                sql = &quot;{call &quot; + sql + &quot;} &quot;;</b>
-<i>523</i>&nbsp;            }
-<b class="fc"><i>524</i>&nbsp;            result.st = connection.prepareCall(sql);</b>
-<i>525</i>&nbsp;
-<b class="fc"><i>526</i>&nbsp;            CallableStatement cst = (CallableStatement) result.st;</b>
-<b class="fc"><i>527</i>&nbsp;            Util.setParameters(cst, parameters);</b>
-<b class="fc"><i>528</i>&nbsp;            result.rs = cst.executeQuery();</b>
-<i>529</i>&nbsp;        }
-<b class="fc"><i>530</i>&nbsp;        return result;</b>
-<i>531</i>&nbsp;    }
+<b class="fc"><i>428</i>&nbsp;        } catch (Exception e) {</b>
+<b class="fc"><i>429</i>&nbsp;            Util.rollback(connection);</b>
+<b class="fc"><i>430</i>&nbsp;            throw new PersismException(e.getMessage(), e);</b>
+<i>431</i>&nbsp;        } finally {
+<b class="fc"><i>432</i>&nbsp;            Util.cleanup(result.st, result.rs);</b>
+<b class="fc"><i>433</i>&nbsp;        }</b>
+<i>434</i>&nbsp;    }
+<i>435</i>&nbsp;
+<i>436</i>&nbsp;
+<i>437</i>&nbsp;// Method collides with other fetch methods - ambiguous.
+<i>438</i>&nbsp;//    /**
+<i>439</i>&nbsp;//     * Fetch an object from the database by primary key(s).
+<i>440</i>&nbsp;//     *
+<i>441</i>&nbsp;//     * @param objectClass class of objects to return
+<i>442</i>&nbsp;//     * @param primaryKey  primary key value parameters
+<i>443</i>&nbsp;//     * @param &lt;T&gt;         Return type
+<i>444</i>&nbsp;//     * @return new instance of T or null if not found
+<i>445</i>&nbsp;//     * @throws PersismException if something goes wrong
+<i>446</i>&nbsp;//     */
+<i>447</i>&nbsp;//    public &lt;T&gt; T fetch(Class&lt;T&gt; objectClass, Object... primaryKey) throws PersismException {
+<i>448</i>&nbsp;//
+<i>449</i>&nbsp;//        String select = metaData.getSelectStatement(objectClass, connection);
+<i>450</i>&nbsp;//
+<i>451</i>&nbsp;//        if (log.isDebugEnabled()) {
+<i>452</i>&nbsp;//            log.debug(&quot;fetch Class&lt;T&gt; objectClass, Object... primaryKey: SQL &quot; + select);
+<i>453</i>&nbsp;//        }
+<i>454</i>&nbsp;//        return fetch(objectClass, select, primaryKey);
+<i>455</i>&nbsp;//    }
+<i>456</i>&nbsp;
+<i>457</i>&nbsp;    /**
+<i>458</i>&nbsp;     * Fetch an object of the specified type from the database. The type can be a Data Object or a native Java Object or primitive.
+<i>459</i>&nbsp;     *
+<i>460</i>&nbsp;     * @param objectClass Type of returned value
+<i>461</i>&nbsp;     * @param sql         query - this would usually be a select OR a select of a single column if the type is a primitive.
+<i>462</i>&nbsp;     *                    If this is a primitive type then this method will only look at the 1st column in the result.
+<i>463</i>&nbsp;     * @param parameters  parameters to the query.
+<i>464</i>&nbsp;     * @param &lt;T&gt;         Return type
+<i>465</i>&nbsp;     * @return value read from the database of type T or null if not found
+<i>466</i>&nbsp;     * @throws PersismException Well, this is a runtime exception so actually it could be anything really.
+<i>467</i>&nbsp;     */
+<i>468</i>&nbsp;    public &lt;T&gt; T fetch(Class&lt;T&gt; objectClass, String sql, Object... parameters) throws PersismException {
+<i>469</i>&nbsp;        // If we know this type it means it&#39;s a primitive type. Not a DAO so we use a different rule to read those
+<b class="fc"><i>470</i>&nbsp;        boolean readPrimitive = Types.getType(objectClass) != null;</b>
+<i>471</i>&nbsp;
+<b class="fc"><i>472</i>&nbsp;        Result result = new Result();</b>
+<i>473</i>&nbsp;        try {
+<i>474</i>&nbsp;
+<b class="fc"><i>475</i>&nbsp;            exec(result, sql, parameters);</b>
+<i>476</i>&nbsp;
+<b class="fc"><i>477</i>&nbsp;            if (result.rs.next()) {</b>
+<i>478</i>&nbsp;
+<b class="fc"><i>479</i>&nbsp;                if (readPrimitive) {</b>
+<b class="fc"><i>480</i>&nbsp;                    return (T) readPrimitive(result.rs, 1, objectClass);</b>
+<i>481</i>&nbsp;
+<i>482</i>&nbsp;                } else {
+<b class="fc"><i>483</i>&nbsp;                    T t = objectClass.newInstance();</b>
+<b class="fc"><i>484</i>&nbsp;                    readObject(t, result.rs);</b>
+<b class="fc"><i>485</i>&nbsp;                    return t;</b>
+<i>486</i>&nbsp;                }
+<i>487</i>&nbsp;            }
+<i>488</i>&nbsp;
+<b class="fc"><i>489</i>&nbsp;            return null;</b>
+<i>490</i>&nbsp;
+<b class="fc"><i>491</i>&nbsp;        } catch (Exception e) {</b>
+<b class="fc"><i>492</i>&nbsp;            Util.rollback(connection);</b>
+<b class="fc"><i>493</i>&nbsp;            throw new PersismException(e.getMessage(), e);</b>
+<i>494</i>&nbsp;        } finally {
+<b class="fc"><i>495</i>&nbsp;            Util.cleanup(result.st, result.rs);</b>
+<b class="fc"><i>496</i>&nbsp;        }</b>
+<i>497</i>&nbsp;    }
+<i>498</i>&nbsp;
+<i>499</i>&nbsp;    MetaData getMetaData() {
+<b class="fc"><i>500</i>&nbsp;        return metaData;</b>
+<i>501</i>&nbsp;    }
+<i>502</i>&nbsp;
+<i>503</i>&nbsp;    /*
+<i>504</i>&nbsp;    Private methods
+<i>505</i>&nbsp;     */
+<i>506</i>&nbsp;
+<i>507</i>&nbsp;    private Result exec(Result result, String sql, Object... parameters) throws SQLException {
+<b class="fc"><i>508</i>&nbsp;        if (sql.toLowerCase().startsWith(&quot;select &quot;)) {</b>
+<b class="fc"><i>509</i>&nbsp;            result.st = connection.prepareStatement(sql);</b>
+<i>510</i>&nbsp;
+<b class="fc"><i>511</i>&nbsp;            PreparedStatement pst = (PreparedStatement) result.st;</b>
+<b class="fc"><i>512</i>&nbsp;            Util.setParameters(pst, parameters);</b>
+<b class="fc"><i>513</i>&nbsp;            result.rs = pst.executeQuery();</b>
+<b class="fc"><i>514</i>&nbsp;        } else {</b>
+<b class="fc"><i>515</i>&nbsp;            if (!sql.toLowerCase().startsWith(&quot;{call&quot;)) {</b>
+<b class="fc"><i>516</i>&nbsp;                sql = &quot;{call &quot; + sql + &quot;} &quot;;</b>
+<i>517</i>&nbsp;            }
+<b class="fc"><i>518</i>&nbsp;            result.st = connection.prepareCall(sql);</b>
+<i>519</i>&nbsp;
+<b class="fc"><i>520</i>&nbsp;            CallableStatement cst = (CallableStatement) result.st;</b>
+<b class="fc"><i>521</i>&nbsp;            Util.setParameters(cst, parameters);</b>
+<b class="fc"><i>522</i>&nbsp;            result.rs = cst.executeQuery();</b>
+<i>523</i>&nbsp;        }
+<b class="fc"><i>524</i>&nbsp;        return result;</b>
+<i>525</i>&nbsp;    }
+<i>526</i>&nbsp;
+<i>527</i>&nbsp;    private &lt;T&gt; T readObject(Object object, ResultSet rs) throws IllegalAccessException, SQLException, InvocationTargetException, IOException {
+<i>528</i>&nbsp;
+<b class="fc"><i>529</i>&nbsp;        Class objectClass = object.getClass();</b>
+<i>530</i>&nbsp;        // We should never call this method with a primitive type.
+<b class="fc"><i>531</i>&nbsp;        assert Types.getType(objectClass) == null;</b>
 <i>532</i>&nbsp;
-<i>533</i>&nbsp;    private &lt;T&gt; T readObject(Object object, ResultSet rs) throws IllegalAccessException, SQLException, InvocationTargetException, IOException {
-<i>534</i>&nbsp;
-<b class="fc"><i>535</i>&nbsp;        Class objectClass = object.getClass();</b>
-<i>536</i>&nbsp;        // We should never call this method with a primitive type.
-<b class="fc"><i>537</i>&nbsp;        assert Types.getType(objectClass) == null;</b>
-<i>538</i>&nbsp;
-<i>539</i>&nbsp;        Map&lt;String, PropertyInfo&gt; properties;
-<b class="fc"><i>540</i>&nbsp;        if (objectClass.getAnnotation(Query.class) == null) {</b>
-<b class="fc"><i>541</i>&nbsp;            properties = metaData.getTableColumnsPropertyInfo(objectClass, connection);</b>
-<i>542</i>&nbsp;        } else {
-<b class="fc"><i>543</i>&nbsp;            properties = metaData.getQueryColumnsPropertyInfo(objectClass, rs);</b>
-<i>544</i>&nbsp;        }
-<i>545</i>&nbsp;
-<i>546</i>&nbsp;        // Test if all properties have column mapping and throw PersismException if not
-<i>547</i>&nbsp;        // This block verifies that the object is fully initialized.
-<i>548</i>&nbsp;        // Any properties not marked by NotMapped should have been set (or if they have a getter only)
-<i>549</i>&nbsp;        // If not throw a PersismException
-<b class="fc"><i>550</i>&nbsp;        Collection&lt;PropertyInfo&gt; allProperties = MetaData.getPropertyInfo(objectClass);</b>
-<b class="fc"><i>551</i>&nbsp;        if (properties.values().size() &lt; allProperties.size()) {</b>
-<b class="fc"><i>552</i>&nbsp;            Set&lt;PropertyInfo&gt; missing = new HashSet&lt;PropertyInfo&gt;(allProperties.size());</b>
-<b class="fc"><i>553</i>&nbsp;            missing.addAll(allProperties);</b>
-<b class="fc"><i>554</i>&nbsp;            missing.removeAll(properties.values());</b>
-<i>555</i>&nbsp;
-<b class="fc"><i>556</i>&nbsp;            StringBuilder sb = new StringBuilder();</b>
-<b class="fc"><i>557</i>&nbsp;            String sep = &quot;&quot;;</b>
-<b class="fc"><i>558</i>&nbsp;            for (PropertyInfo prop : missing) {</b>
-<b class="fc"><i>559</i>&nbsp;                sb.append(sep).append(prop.propertyName);</b>
-<b class="fc"><i>560</i>&nbsp;                sep = &quot;,&quot;;</b>
-<b class="fc"><i>561</i>&nbsp;            }</b>
+<i>533</i>&nbsp;        Map&lt;String, PropertyInfo&gt; properties;
+<b class="fc"><i>534</i>&nbsp;        if (objectClass.getAnnotation(NotTable.class) == null) {</b>
+<b class="fc"><i>535</i>&nbsp;            properties = metaData.getTableColumnsPropertyInfo(objectClass, connection);</b>
+<i>536</i>&nbsp;        } else {
+<b class="fc"><i>537</i>&nbsp;            properties = metaData.getQueryColumnsPropertyInfo(objectClass, rs);</b>
+<i>538</i>&nbsp;        }
+<i>539</i>&nbsp;
+<i>540</i>&nbsp;        // Test if all properties have column mapping and throw PersismException if not
+<i>541</i>&nbsp;        // This block verifies that the object is fully initialized.
+<i>542</i>&nbsp;        // Any properties not marked by NotMapped should have been set (or if they have a getter only)
+<i>543</i>&nbsp;        // If not throw a PersismException
+<b class="fc"><i>544</i>&nbsp;        Collection&lt;PropertyInfo&gt; allProperties = MetaData.getPropertyInfo(objectClass);</b>
+<b class="fc"><i>545</i>&nbsp;        if (properties.values().size() &lt; allProperties.size()) {</b>
+<b class="fc"><i>546</i>&nbsp;            Set&lt;PropertyInfo&gt; missing = new HashSet&lt;PropertyInfo&gt;(allProperties.size());</b>
+<b class="fc"><i>547</i>&nbsp;            missing.addAll(allProperties);</b>
+<b class="fc"><i>548</i>&nbsp;            missing.removeAll(properties.values());</b>
+<i>549</i>&nbsp;
+<b class="fc"><i>550</i>&nbsp;            StringBuilder sb = new StringBuilder();</b>
+<b class="fc"><i>551</i>&nbsp;            String sep = &quot;&quot;;</b>
+<b class="fc"><i>552</i>&nbsp;            for (PropertyInfo prop : missing) {</b>
+<b class="fc"><i>553</i>&nbsp;                sb.append(sep).append(prop.propertyName);</b>
+<b class="fc"><i>554</i>&nbsp;                sep = &quot;,&quot;;</b>
+<b class="fc"><i>555</i>&nbsp;            }</b>
+<i>556</i>&nbsp;
+<b class="fc"><i>557</i>&nbsp;            throw new PersismException(&quot;Object &quot; + objectClass + &quot; was not properly initialized. Some properties not initialized in the queried columns (&quot; + sb + &quot;).&quot;);</b>
+<i>558</i>&nbsp;        }
+<b class="fc"><i>559</i>&nbsp;        ResultSetMetaData rsmd = rs.getMetaData();</b>
+<b class="fc"><i>560</i>&nbsp;        int columnCount = rsmd.getColumnCount();</b>
+<b class="fc"><i>561</i>&nbsp;        List&lt;String&gt; foundColumns = new ArrayList&lt;String&gt;(columnCount);</b>
 <i>562</i>&nbsp;
-<b class="fc"><i>563</i>&nbsp;            throw new PersismException(&quot;Object &quot; + objectClass + &quot; was not properly initialized. Some properties not initialized in the queried columns (&quot; + sb + &quot;).&quot;);</b>
-<i>564</i>&nbsp;        }
-<b class="fc"><i>565</i>&nbsp;        ResultSetMetaData rsmd = rs.getMetaData();</b>
-<b class="fc"><i>566</i>&nbsp;        int columnCount = rsmd.getColumnCount();</b>
-<b class="fc"><i>567</i>&nbsp;        List&lt;String&gt; foundColumns = new ArrayList&lt;String&gt;(columnCount);</b>
-<i>568</i>&nbsp;
-<b class="fc"><i>569</i>&nbsp;        for (int j = 1; j &lt;= columnCount; j++) {</b>
+<b class="fc"><i>563</i>&nbsp;        for (int j = 1; j &lt;= columnCount; j++) {</b>
+<i>564</i>&nbsp;
+<b class="fc"><i>565</i>&nbsp;            String columnName = rsmd.getColumnLabel(j);</b>
+<b class="fc"><i>566</i>&nbsp;            PropertyInfo columnProperty = properties.get(columnName);</b>
+<i>567</i>&nbsp;
+<b class="fc"><i>568</i>&nbsp;            if (columnProperty != null) {</b>
+<b class="fc"><i>569</i>&nbsp;                Class getterType = columnProperty.getter.getReturnType();</b>
 <i>570</i>&nbsp;
-<b class="fc"><i>571</i>&nbsp;            String columnName = rsmd.getColumnLabel(j);</b>
-<b class="fc"><i>572</i>&nbsp;            PropertyInfo columnProperty = properties.get(columnName);</b>
-<i>573</i>&nbsp;
-<b class="fc"><i>574</i>&nbsp;            if (columnProperty != null) {</b>
-<b class="fc"><i>575</i>&nbsp;                Class getterType = columnProperty.getter.getReturnType();</b>
-<i>576</i>&nbsp;
-<b class="fc"><i>577</i>&nbsp;                Object value = readPrimitive(rs, j, getterType);</b>
-<i>578</i>&nbsp;
-<b class="fc"><i>579</i>&nbsp;                foundColumns.add(columnName);</b>
-<i>580</i>&nbsp;
-<b class="fc"><i>581</i>&nbsp;                if (value != null) {</b>
-<i>582</i>&nbsp;                    try {
-<b class="fc"><i>583</i>&nbsp;                        columnProperty.setter.invoke(object, value);</b>
-<b class="fc"><i>584</i>&nbsp;                    } catch (IllegalArgumentException e) {</b>
-<b class="fc"><i>585</i>&nbsp;                        String msg = e.getMessage() + &quot; Object &quot; + objectClass + &quot;. Column: &quot; + columnName + &quot; Type of property: &quot; + getterType + &quot; - Type read: &quot; + value.getClass() + &quot; VALUE: &quot; + value;</b>
-<b class="fc"><i>586</i>&nbsp;                        throw new PersismException(msg, e);</b>
-<b class="fc"><i>587</i>&nbsp;                    }</b>
-<i>588</i>&nbsp;
-<i>589</i>&nbsp;                }
-<i>590</i>&nbsp;            }
-<i>591</i>&nbsp;        }
-<i>592</i>&nbsp;
-<i>593</i>&nbsp;        // This is doing a similar check to above but on the ResultSet itself.
-<i>594</i>&nbsp;        // This tests for when a user writes their own SQL and forgets a column.
-<b class="fc"><i>595</i>&nbsp;        if (foundColumns.size() &lt; properties.keySet().size()) {</b>
-<i>596</i>&nbsp;
-<b class="fc"><i>597</i>&nbsp;            Set&lt;String&gt; missing = new HashSet&lt;String&gt;(columnCount);</b>
-<b class="fc"><i>598</i>&nbsp;            missing.addAll(properties.keySet());</b>
-<b class="fc"><i>599</i>&nbsp;            missing.removeAll(foundColumns);</b>
-<i>600</i>&nbsp;
-<i>601</i>&nbsp;            // todo maybe strict mode off logs warn? Should we do this if this is Query vs Table?
-<b class="fc"><i>602</i>&nbsp;            throw new PersismException(&quot;Object &quot; + objectClass + &quot; was not properly initialized. Some properties not initialized by the queried columns: &quot; + foundColumns + &quot; Missing:&quot; + missing);</b>
-<i>603</i>&nbsp;        }
-<i>604</i>&nbsp;
-<b class="fc"><i>605</i>&nbsp;        if (object instanceof Persistable) {</b>
-<i>606</i>&nbsp;            // Save this object&#39;s initial state to later detect changed properties
-<b class="fc"><i>607</i>&nbsp;            ((Persistable) object).saveReadState();</b>
-<i>608</i>&nbsp;        }
-<i>609</i>&nbsp;
-<b class="fc"><i>610</i>&nbsp;        return (T) object;</b>
+<b class="fc"><i>571</i>&nbsp;                Object value = readPrimitive(rs, j, getterType);</b>
+<i>572</i>&nbsp;
+<b class="fc"><i>573</i>&nbsp;                foundColumns.add(columnName);</b>
+<i>574</i>&nbsp;
+<b class="fc"><i>575</i>&nbsp;                if (value != null) {</b>
+<i>576</i>&nbsp;                    try {
+<b class="fc"><i>577</i>&nbsp;                        columnProperty.setter.invoke(object, value);</b>
+<b class="fc"><i>578</i>&nbsp;                    } catch (IllegalArgumentException e) {</b>
+<b class="fc"><i>579</i>&nbsp;                        String msg = e.getMessage() + &quot; Object &quot; + objectClass + &quot;. Column: &quot; + columnName + &quot; Type of property: &quot; + getterType + &quot; - Type read: &quot; + value.getClass() + &quot; VALUE: &quot; + value;</b>
+<b class="fc"><i>580</i>&nbsp;                        throw new PersismException(msg, e);</b>
+<b class="fc"><i>581</i>&nbsp;                    }</b>
+<i>582</i>&nbsp;
+<i>583</i>&nbsp;                }
+<i>584</i>&nbsp;            }
+<i>585</i>&nbsp;        }
+<i>586</i>&nbsp;
+<i>587</i>&nbsp;        // This is doing a similar check to above but on the ResultSet itself.
+<i>588</i>&nbsp;        // This tests for when a user writes their own SQL and forgets a column.
+<b class="fc"><i>589</i>&nbsp;        if (foundColumns.size() &lt; properties.keySet().size()) {</b>
+<i>590</i>&nbsp;
+<b class="fc"><i>591</i>&nbsp;            Set&lt;String&gt; missing = new HashSet&lt;String&gt;(columnCount);</b>
+<b class="fc"><i>592</i>&nbsp;            missing.addAll(properties.keySet());</b>
+<b class="fc"><i>593</i>&nbsp;            missing.removeAll(foundColumns);</b>
+<i>594</i>&nbsp;
+<i>595</i>&nbsp;            // todo maybe strict mode off logs warn? Should we do this if this is Query vs Table?
+<b class="fc"><i>596</i>&nbsp;            throw new PersismException(&quot;Object &quot; + objectClass + &quot; was not properly initialized. Some properties not initialized by the queried columns: &quot; + foundColumns + &quot; Missing:&quot; + missing);</b>
+<i>597</i>&nbsp;        }
+<i>598</i>&nbsp;
+<b class="fc"><i>599</i>&nbsp;        if (object instanceof Persistable) {</b>
+<i>600</i>&nbsp;            // Save this object&#39;s initial state to later detect changed properties
+<b class="fc"><i>601</i>&nbsp;            ((Persistable) object).saveReadState();</b>
+<i>602</i>&nbsp;        }
+<i>603</i>&nbsp;
+<b class="fc"><i>604</i>&nbsp;        return (T) object;</b>
+<i>605</i>&nbsp;
+<i>606</i>&nbsp;    }
+<i>607</i>&nbsp;
+<i>608</i>&nbsp;    private Object readPrimitive(ResultSet rs, int column, Class returnType) throws SQLException, IOException {
+<b class="fc"><i>609</i>&nbsp;        ResultSetMetaData rsmd = rs.getMetaData();</b>
+<b class="fc"><i>610</i>&nbsp;        int sqlColumnType = rsmd.getColumnType(column);</b>
 <i>611</i>&nbsp;
-<i>612</i>&nbsp;    }
-<i>613</i>&nbsp;
-<i>614</i>&nbsp;    private Object readPrimitive(ResultSet rs, int column, Class returnType) throws SQLException, IOException {
-<b class="fc"><i>615</i>&nbsp;        ResultSetMetaData rsmd = rs.getMetaData();</b>
-<b class="fc"><i>616</i>&nbsp;        int sqlColumnType = rsmd.getColumnType(column);</b>
-<i>617</i>&nbsp;
-<b class="fc"><i>618</i>&nbsp;        Types columnType = Types.convert(sqlColumnType); // note this could be null if we can&#39;t match a type</b>
-<i>619</i>&nbsp;        // Since there is no specific SQL column type for UUID we will use the return type to detect it.
-<b class="fc"><i>620</i>&nbsp;        if (returnType.equals(UUID.class)) {</b>
-<i>621</i>&nbsp;            // Check the return type for UUID since resultSetMetaData.getColumnType(column) has no UUID type
-<i>622</i>&nbsp;            // it always returns a char or nvarchar so we&#39;ll just test and set it here. FFS.
-<b class="fc"><i>623</i>&nbsp;            columnType = Types.UUIDType;</b>
-<i>624</i>&nbsp;        }
-<b class="fc"><i>625</i>&nbsp;        String columnName = rsmd.getColumnLabel(column);</b>
-<i>626</i>&nbsp;
-<b class="fc"><i>627</i>&nbsp;        Object value = read(rs, column, sqlColumnType);</b>
-<i>628</i>&nbsp;
-<i>629</i>&nbsp;        // If value is null or column type is unknown - no need to try to convert anything.
-<b class="fc"><i>630</i>&nbsp;        if (value != null &amp;&amp; columnType != null) {</b>
-<b class="fc"><i>631</i>&nbsp;            value = convert(value, returnType, columnName);</b>
-<i>632</i>&nbsp;        }
-<i>633</i>&nbsp;
-<b class="fc"><i>634</i>&nbsp;        return value;</b>
-<i>635</i>&nbsp;    }
-<i>636</i>&nbsp;
-<i>637</i>&nbsp;    // Make an educated guess read an object from the ResultSet to get the best Class type of the object
-<i>638</i>&nbsp;    private Object read(ResultSet rs, int column, int sqlColumnType) throws SQLException, IOException {
-<i>639</i>&nbsp;        Object value;
-<b class="fc"><i>640</i>&nbsp;        Types columnType = Types.convert(sqlColumnType); // note this could be null if we can&#39;t match a type</b>
-<i>641</i>&nbsp;
-<b class="fc"><i>642</i>&nbsp;        if (columnType != null) {</b>
-<b class="fc"><i>643</i>&nbsp;            switch (columnType) {</b>
-<i>644</i>&nbsp;
-<i>645</i>&nbsp;                case TimestampType:
-<i>646</i>&nbsp;                    // work around to Oracle reading a oracle.sql.TIMESTAMP class with getObject
-<b class="fc"><i>647</i>&nbsp;                    value = rs.getTimestamp(column);</b>
-<b class="fc"><i>648</i>&nbsp;                    break;</b>
-<i>649</i>&nbsp;                case ClobType:
-<b class="fc"><i>650</i>&nbsp;                    value = rs.getClob(column);</b>
-<b class="fc"><i>651</i>&nbsp;                    InputStream in = ((Clob) value).getAsciiStream();</b>
-<b class="fc"><i>652</i>&nbsp;                    StringWriter write = new StringWriter();</b>
-<i>653</i>&nbsp;
-<b class="fc"><i>654</i>&nbsp;                    int c = -1;</b>
-<b class="fc"><i>655</i>&nbsp;                    while ((c = in.read()) != -1) {</b>
-<b class="fc"><i>656</i>&nbsp;                        write.write(c);</b>
-<i>657</i>&nbsp;                    }
-<b class="fc"><i>658</i>&nbsp;                    write.flush();</b>
-<b class="fc"><i>659</i>&nbsp;                    value = write.toString();</b>
-<b class="fc"><i>660</i>&nbsp;                    break;</b>
-<i>661</i>&nbsp;//                case BlobType:
-<i>662</i>&nbsp;//                    // todo BlobType
-<i>663</i>&nbsp;//                case InputStreamType:
-<i>664</i>&nbsp;//                    // todo InputStreamType
-<i>665</i>&nbsp;//                case ReaderType:
-<i>666</i>&nbsp;//                    // todo ReaderType
-<i>667</i>&nbsp;//                case EnumType:
-<i>668</i>&nbsp;//                    // todo EnumType - no SQL type for that
-<i>669</i>&nbsp;                case IntegerType:
-<b class="fc"><i>670</i>&nbsp;                    value = rs.getObject(column) == null ? null : rs.getInt(column);</b>
-<b class="fc"><i>671</i>&nbsp;                    break;</b>
-<i>672</i>&nbsp;                case LongType:
-<b class="fc"><i>673</i>&nbsp;                    value = rs.getObject(column) == null ? null : rs.getLong(column);</b>
+<b class="fc"><i>612</i>&nbsp;        Types columnType = Types.convert(sqlColumnType); // note this could be null if we can&#39;t match a type</b>
+<i>613</i>&nbsp;        // Since there is no specific SQL column type for UUID we will use the return type to detect it.
+<b class="fc"><i>614</i>&nbsp;        if (returnType.equals(UUID.class)) {</b>
+<i>615</i>&nbsp;            // Check the return type for UUID since resultSetMetaData.getColumnType(column) has no UUID type
+<i>616</i>&nbsp;            // it always returns a char or nvarchar so we&#39;ll just test and set it here. FFS.
+<b class="fc"><i>617</i>&nbsp;            columnType = Types.UUIDType;</b>
+<i>618</i>&nbsp;        }
+<b class="fc"><i>619</i>&nbsp;        String columnName = rsmd.getColumnLabel(column);</b>
+<i>620</i>&nbsp;
+<b class="fc"><i>621</i>&nbsp;        Object value = read(rs, column, sqlColumnType);</b>
+<i>622</i>&nbsp;
+<i>623</i>&nbsp;        // If value is null or column type is unknown - no need to try to convert anything.
+<b class="fc"><i>624</i>&nbsp;        if (value != null &amp;&amp; columnType != null) {</b>
+<b class="fc"><i>625</i>&nbsp;            value = convert(value, returnType, columnName);</b>
+<i>626</i>&nbsp;        }
+<i>627</i>&nbsp;
+<b class="fc"><i>628</i>&nbsp;        return value;</b>
+<i>629</i>&nbsp;    }
+<i>630</i>&nbsp;
+<i>631</i>&nbsp;    // Make an educated guess read an object from the ResultSet to get the best Class type of the object
+<i>632</i>&nbsp;    private Object read(ResultSet rs, int column, int sqlColumnType) throws SQLException, IOException {
+<i>633</i>&nbsp;        Object value;
+<b class="fc"><i>634</i>&nbsp;        Types columnType = Types.convert(sqlColumnType); // note this could be null if we can&#39;t match a type</b>
+<i>635</i>&nbsp;
+<b class="fc"><i>636</i>&nbsp;        if (columnType != null) {</b>
+<b class="fc"><i>637</i>&nbsp;            switch (columnType) {</b>
+<i>638</i>&nbsp;
+<i>639</i>&nbsp;                case TimestampType:
+<i>640</i>&nbsp;                    // work around to Oracle reading a oracle.sql.TIMESTAMP class with getObject
+<b class="fc"><i>641</i>&nbsp;                    value = rs.getTimestamp(column);</b>
+<b class="fc"><i>642</i>&nbsp;                    break;</b>
+<i>643</i>&nbsp;                case ClobType:
+<b class="fc"><i>644</i>&nbsp;                    value = rs.getClob(column);</b>
+<b class="fc"><i>645</i>&nbsp;                    InputStream in = ((Clob) value).getAsciiStream();</b>
+<b class="fc"><i>646</i>&nbsp;                    StringWriter write = new StringWriter();</b>
+<i>647</i>&nbsp;
+<b class="fc"><i>648</i>&nbsp;                    int c = -1;</b>
+<b class="fc"><i>649</i>&nbsp;                    while ((c = in.read()) != -1) {</b>
+<b class="fc"><i>650</i>&nbsp;                        write.write(c);</b>
+<i>651</i>&nbsp;                    }
+<b class="fc"><i>652</i>&nbsp;                    write.flush();</b>
+<b class="fc"><i>653</i>&nbsp;                    value = write.toString();</b>
+<b class="fc"><i>654</i>&nbsp;                    break;</b>
+<i>655</i>&nbsp;//                case BlobType:
+<i>656</i>&nbsp;//                    // todo BlobType
+<i>657</i>&nbsp;//                case InputStreamType:
+<i>658</i>&nbsp;//                    // todo InputStreamType
+<i>659</i>&nbsp;//                case ReaderType:
+<i>660</i>&nbsp;//                    // todo ReaderType
+<i>661</i>&nbsp;//                case EnumType:
+<i>662</i>&nbsp;//                    // todo EnumType - no SQL type for that
+<i>663</i>&nbsp;                case IntegerType:
+<b class="fc"><i>664</i>&nbsp;                    value = rs.getObject(column) == null ? null : rs.getInt(column);</b>
+<b class="fc"><i>665</i>&nbsp;                    break;</b>
+<i>666</i>&nbsp;                case LongType:
+<b class="fc"><i>667</i>&nbsp;                    value = rs.getObject(column) == null ? null : rs.getLong(column);</b>
+<b class="fc"><i>668</i>&nbsp;                    break;</b>
+<i>669</i>&nbsp;                case FloatType:
+<b class="nc"><i>670</i>&nbsp;                    value = rs.getObject(column) == null ? null : rs.getFloat(column);</b>
+<b class="nc"><i>671</i>&nbsp;                    break;</b>
+<i>672</i>&nbsp;                case DoubleType:
+<b class="fc"><i>673</i>&nbsp;                    value = rs.getObject(column) == null ? null : rs.getDouble(column);</b>
 <b class="fc"><i>674</i>&nbsp;                    break;</b>
-<i>675</i>&nbsp;                case FloatType:
-<b class="nc"><i>676</i>&nbsp;                    value = rs.getObject(column) == null ? null : rs.getFloat(column);</b>
-<b class="nc"><i>677</i>&nbsp;                    break;</b>
-<i>678</i>&nbsp;                case DoubleType:
-<b class="fc"><i>679</i>&nbsp;                    value = rs.getObject(column) == null ? null : rs.getDouble(column);</b>
+<i>675</i>&nbsp;                case DecimalType:
+<b class="fc"><i>676</i>&nbsp;                    value = rs.getBigDecimal(column);</b>
+<b class="fc"><i>677</i>&nbsp;                    break;</b>
+<i>678</i>&nbsp;                case TimeType:
+<b class="fc"><i>679</i>&nbsp;                    value = rs.getTime(column);</b>
 <b class="fc"><i>680</i>&nbsp;                    break;</b>
-<i>681</i>&nbsp;                case DecimalType:
-<b class="fc"><i>682</i>&nbsp;                    value = rs.getBigDecimal(column);</b>
-<b class="fc"><i>683</i>&nbsp;                    break;</b>
-<i>684</i>&nbsp;                case TimeType:
-<b class="fc"><i>685</i>&nbsp;                    value = rs.getTime(column);</b>
-<b class="fc"><i>686</i>&nbsp;                    break;</b>
-<i>687</i>&nbsp;// We can&#39;t assume rs.getDate will work. SQLITE actually has a long value in here.
-<i>688</i>&nbsp;// We can live with rs.getObject and the convert method will handle it.
-<i>689</i>&nbsp;//                case SQLDateType:
-<i>690</i>&nbsp;//                case UtilDateType:DateType:
-<i>691</i>&nbsp;//                    value = rs.getDate(column);
-<i>692</i>&nbsp;//                    break;
-<i>693</i>&nbsp;                default:
-<b class="fc"><i>694</i>&nbsp;                    value = rs.getObject(column);</b>
-<i>695</i>&nbsp;            }
-<i>696</i>&nbsp;
-<i>697</i>&nbsp;        } else {
-<b class="nc"><i>698</i>&nbsp;            log.warn(&quot;Column type not known for SQL type &quot; + sqlColumnType, new Throwable());</b>
-<b class="nc"><i>699</i>&nbsp;            value = rs.getObject(column);</b>
-<i>700</i>&nbsp;        }
-<i>701</i>&nbsp;
-<b class="fc"><i>702</i>&nbsp;        return value;</b>
-<i>703</i>&nbsp;    }
-<i>704</i>&nbsp;
-<i>705</i>&nbsp;    // Make a sensible conversion of the Value read from the DB and the property type defined on the Data class.
-<i>706</i>&nbsp;    private Object convert(Object dbValue, Class propertyType, String columnName) {
-<b class="fc"><i>707</i>&nbsp;        Types valueType = Types.getType(dbValue.getClass());</b>
-<i>708</i>&nbsp;
-<i>709</i>&nbsp;        // try to convert or cast the value to the proper type.
-<b class="fc"><i>710</i>&nbsp;        switch (valueType) {</b>
-<i>711</i>&nbsp;
-<i>712</i>&nbsp;            case booleanType:
-<i>713</i>&nbsp;            case BooleanType:
-<b class="fc"><i>714</i>&nbsp;                break;</b>
-<i>715</i>&nbsp;
-<i>716</i>&nbsp;            case byteType:
-<i>717</i>&nbsp;            case ByteType:
-<i>718</i>&nbsp;            case shortType:
-<i>719</i>&nbsp;            case ShortType:
-<i>720</i>&nbsp;            case integerType:
-<i>721</i>&nbsp;            case IntegerType:
-<i>722</i>&nbsp;                // int to bool
-<b class="fc"><i>723</i>&nbsp;                if (propertyType == Boolean.class || propertyType == boolean.class) {</b>
-<b class="fc"><i>724</i>&nbsp;                    dbValue = (Integer.valueOf(&quot;&quot; + dbValue) == 0) ? false : true;</b>
-<i>725</i>&nbsp;                }
-<i>726</i>&nbsp;                break;
+<i>681</i>&nbsp;// We can&#39;t assume rs.getDate will work. SQLITE actually has a long value in here.
+<i>682</i>&nbsp;// We can live with rs.getObject and the convert method will handle it.
+<i>683</i>&nbsp;//                case SQLDateType:
+<i>684</i>&nbsp;//                case UtilDateType:DateType:
+<i>685</i>&nbsp;//                    value = rs.getDate(column);
+<i>686</i>&nbsp;//                    break;
+<i>687</i>&nbsp;                default:
+<b class="fc"><i>688</i>&nbsp;                    value = rs.getObject(column);</b>
+<i>689</i>&nbsp;            }
+<i>690</i>&nbsp;
+<i>691</i>&nbsp;        } else {
+<b class="nc"><i>692</i>&nbsp;            log.warn(&quot;Column type not known for SQL type &quot; + sqlColumnType, new Throwable());</b>
+<b class="nc"><i>693</i>&nbsp;            value = rs.getObject(column);</b>
+<i>694</i>&nbsp;        }
+<i>695</i>&nbsp;
+<b class="fc"><i>696</i>&nbsp;        return value;</b>
+<i>697</i>&nbsp;    }
+<i>698</i>&nbsp;
+<i>699</i>&nbsp;    // Make a sensible conversion of the Value read from the DB and the property type defined on the Data class.
+<i>700</i>&nbsp;    private Object convert(Object dbValue, Class propertyType, String columnName) {
+<b class="fc"><i>701</i>&nbsp;        Types valueType = Types.getType(dbValue.getClass());</b>
+<i>702</i>&nbsp;
+<i>703</i>&nbsp;        // try to convert or cast the value to the proper type.
+<b class="fc"><i>704</i>&nbsp;        switch (valueType) {</b>
+<i>705</i>&nbsp;
+<i>706</i>&nbsp;            case booleanType:
+<i>707</i>&nbsp;            case BooleanType:
+<b class="fc"><i>708</i>&nbsp;                break;</b>
+<i>709</i>&nbsp;
+<i>710</i>&nbsp;            case byteType:
+<i>711</i>&nbsp;            case ByteType:
+<i>712</i>&nbsp;            case shortType:
+<i>713</i>&nbsp;            case ShortType:
+<i>714</i>&nbsp;            case integerType:
+<i>715</i>&nbsp;            case IntegerType:
+<i>716</i>&nbsp;                // int to bool
+<b class="fc"><i>717</i>&nbsp;                if (propertyType == Boolean.class || propertyType == boolean.class) {</b>
+<b class="fc"><i>718</i>&nbsp;                    dbValue = (Integer.valueOf(&quot;&quot; + dbValue) == 0) ? false : true;</b>
+<i>719</i>&nbsp;                }
+<i>720</i>&nbsp;                break;
+<i>721</i>&nbsp;
+<i>722</i>&nbsp;            case longType:
+<i>723</i>&nbsp;            case LongType:
+<i>724</i>&nbsp;                // long to date
+<b class="fc"><i>725</i>&nbsp;                if (propertyType.equals(java.util.Date.class) || propertyType.equals(java.sql.Date.class)) {</b>
+<b class="fc"><i>726</i>&nbsp;                    long lval = Long.valueOf(&quot;&quot; + dbValue);</b>
 <i>727</i>&nbsp;
-<i>728</i>&nbsp;            case longType:
-<i>729</i>&nbsp;            case LongType:
-<i>730</i>&nbsp;                // long to date
-<b class="fc"><i>731</i>&nbsp;                if (propertyType.equals(java.util.Date.class) || propertyType.equals(java.sql.Date.class)) {</b>
-<b class="fc"><i>732</i>&nbsp;                    long lval = Long.valueOf(&quot;&quot; + dbValue);</b>
-<i>733</i>&nbsp;
-<b class="fc"><i>734</i>&nbsp;                    if (propertyType.equals(java.sql.Date.class)) {</b>
-<b class="fc"><i>735</i>&nbsp;                        dbValue = new java.sql.Date(lval);</b>
-<i>736</i>&nbsp;                    } else {
-<b class="fc"><i>737</i>&nbsp;                        dbValue = new java.util.Date(lval);</b>
-<i>738</i>&nbsp;                    }
-<b class="fc"><i>739</i>&nbsp;                } else if (propertyType == Integer.class || propertyType == int.class) {</b>
-<b class="fc"><i>740</i>&nbsp;                    warnOverflow(&quot;Possible overflow column &quot; + columnName + &quot; - Property is INT and column value is LONG&quot;);</b>
-<b class="fc"><i>741</i>&nbsp;                    dbValue = Integer.parseInt(&quot;&quot; + dbValue);</b>
-<i>742</i>&nbsp;                }
+<b class="fc"><i>728</i>&nbsp;                    if (propertyType.equals(java.sql.Date.class)) {</b>
+<b class="fc"><i>729</i>&nbsp;                        dbValue = new java.sql.Date(lval);</b>
+<i>730</i>&nbsp;                    } else {
+<b class="fc"><i>731</i>&nbsp;                        dbValue = new java.util.Date(lval);</b>
+<i>732</i>&nbsp;                    }
+<b class="fc"><i>733</i>&nbsp;                } else if (propertyType == Integer.class || propertyType == int.class) {</b>
+<b class="fc"><i>734</i>&nbsp;                    warnOverflow(&quot;Possible overflow column &quot; + columnName + &quot; - Property is INT and column value is LONG&quot;);</b>
+<b class="fc"><i>735</i>&nbsp;                    dbValue = Integer.parseInt(&quot;&quot; + dbValue);</b>
+<i>736</i>&nbsp;                }
+<i>737</i>&nbsp;
+<i>738</i>&nbsp;                break;
+<i>739</i>&nbsp;
+<i>740</i>&nbsp;            case floatType:
+<i>741</i>&nbsp;            case FloatType:
+<b class="nc"><i>742</i>&nbsp;                break;</b>
 <i>743</i>&nbsp;
-<i>744</i>&nbsp;                break;
-<i>745</i>&nbsp;
-<i>746</i>&nbsp;            case floatType:
-<i>747</i>&nbsp;            case FloatType:
-<b class="nc"><i>748</i>&nbsp;                break;</b>
-<i>749</i>&nbsp;
-<i>750</i>&nbsp;            case doubleType:
-<i>751</i>&nbsp;            case DoubleType:
-<i>752</i>&nbsp;                // float or doubles to BigDecimal
-<b class="fc"><i>753</i>&nbsp;                if (propertyType == BigDecimal.class) {</b>
-<b class="fc"><i>754</i>&nbsp;                    dbValue = new BigDecimal(&quot;&quot; + dbValue);</b>
-<b class="fc"><i>755</i>&nbsp;                } else if (propertyType == Float.class || propertyType == float.class) {</b>
-<b class="fc"><i>756</i>&nbsp;                    warnOverflow(&quot;Possible overflow column &quot; + columnName + &quot; - Property is FLOAT and column value is DOUBLE&quot;);</b>
-<b class="fc"><i>757</i>&nbsp;                    dbValue = Float.parseFloat(&quot;&quot; + dbValue);</b>
-<b class="fc"><i>758</i>&nbsp;                } else if (propertyType == Integer.class || propertyType == int.class) {</b>
-<b class="fc"><i>759</i>&nbsp;                    warnOverflow(&quot;Possible overflow column &quot; + columnName + &quot; - Property is INT and column value is DOUBLE&quot;);</b>
-<b class="fc"><i>760</i>&nbsp;                    String val = &quot;&quot; + dbValue;</b>
-<b class="fc"><i>761</i>&nbsp;                    if (val.contains(&quot;.&quot;)) {</b>
-<b class="fc"><i>762</i>&nbsp;                        val = val.substring(0, val.indexOf(&quot;.&quot;));</b>
-<i>763</i>&nbsp;                    }
-<b class="fc"><i>764</i>&nbsp;                    dbValue = Integer.parseInt(val);</b>
-<b class="fc"><i>765</i>&nbsp;                }</b>
-<i>766</i>&nbsp;                break;
-<i>767</i>&nbsp;
-<i>768</i>&nbsp;            case DecimalType:
-<b class="fc"><i>769</i>&nbsp;                if (propertyType == Float.class || propertyType == float.class) {</b>
-<b class="fc"><i>770</i>&nbsp;                    dbValue = ((BigDecimal) dbValue).floatValue();</b>
-<b class="fc"><i>771</i>&nbsp;                    warnOverflow(&quot;Possible overflow column &quot; + columnName + &quot; - Property is Float and column value is BigDecimal&quot;);</b>
-<b class="fc"><i>772</i>&nbsp;                } else if (propertyType == Double.class || propertyType == double.class) {</b>
-<b class="fc"><i>773</i>&nbsp;                    dbValue = ((BigDecimal) dbValue).doubleValue();</b>
-<b class="fc"><i>774</i>&nbsp;                    warnOverflow(&quot;Possible overflow column &quot; + columnName + &quot; - Property is Double and column value is BigDecimal&quot;);</b>
-<b class="fc"><i>775</i>&nbsp;                } else if (propertyType == Long.class || propertyType == long.class) {</b>
-<b class="fc"><i>776</i>&nbsp;                    dbValue = ((BigDecimal) dbValue).longValue();</b>
-<b class="fc"><i>777</i>&nbsp;                    warnOverflow(&quot;Possible overflow column &quot; + columnName + &quot; - Property is Long and column value is BigDecimal&quot;);</b>
-<b class="fc"><i>778</i>&nbsp;                } else if (propertyType == Integer.class || propertyType == int.class) {</b>
-<b class="fc"><i>779</i>&nbsp;                    dbValue = ((BigDecimal) dbValue).intValue();</b>
-<b class="fc"><i>780</i>&nbsp;                    warnOverflow(&quot;Possible overflow column &quot; + columnName + &quot; - Property is Integer and column value is BigDecimal&quot;);</b>
-<b class="fc"><i>781</i>&nbsp;                } else if (propertyType == Boolean.class || propertyType == boolean.class) {</b>
-<i>782</i>&nbsp;                    // BigDecimal to Boolean. Oracle (sigh) - Additional for a Char to Boolean as then (see TestOracle for links)
-<b class="fc"><i>783</i>&nbsp;                    dbValue = ((BigDecimal) dbValue).intValue() == 1;</b>
-<b class="fc"><i>784</i>&nbsp;                    warnOverflow(&quot;Possible overflow column &quot; + columnName + &quot; - Property is Boolean and column value is BigDecimal - seems a bit overkill?&quot;);</b>
-<b class="fc"><i>785</i>&nbsp;                } else if (propertyType == String.class) {</b>
-<b class="fc"><i>786</i>&nbsp;                    dbValue = (dbValue).toString();</b>
-<i>787</i>&nbsp;                }
-<i>788</i>&nbsp;                break;
-<i>789</i>&nbsp;
-<i>790</i>&nbsp;            case StringType:
-<i>791</i>&nbsp;
-<i>792</i>&nbsp;                // Read a string but we want a date
-<b class="fc"><i>793</i>&nbsp;                if (propertyType.equals(java.util.Date.class) || propertyType.equals(java.sql.Date.class)) {</b>
-<i>794</i>&nbsp;                    // This condition occurs in SQLite when you have a datetime with default annotated
-<i>795</i>&nbsp;                    // the format returned is 2012-06-02 19:59:49
-<b class="fc"><i>796</i>&nbsp;                    java.util.Date dval = null;</b>
-<i>797</i>&nbsp;                    try {
-<i>798</i>&nbsp;                        // Used for SQLite returning dates as Strings under some conditions
-<i>799</i>&nbsp;                        // SQL or others may return STRING yyyy-MM-dd for older legacy &#39;date&#39; type.
-<i>800</i>&nbsp;                        // TODO date, datetime, datetime2, smalldatetime... FFS
-<i>801</i>&nbsp;                        // https://docs.microsoft.com/en-us/sql/t-sql/data-types/date-transact-sql?view=sql-server-ver15
-<i>802</i>&nbsp;                        String format;
-<b class="fc"><i>803</i>&nbsp;                        if ((&quot;&quot;+dbValue).length() &gt; &quot;yyyy-MM-dd&quot;.length()) {</b>
-<b class="fc"><i>804</i>&nbsp;                            format = &quot;yyyy-MM-dd hh:mm:ss&quot;;</b>
-<i>805</i>&nbsp;                        } else {
-<b class="fc"><i>806</i>&nbsp;                            format = &quot;yyyy-MM-dd&quot;;</b>
-<i>807</i>&nbsp;                        }
-<b class="fc"><i>808</i>&nbsp;                        DateFormat df = new SimpleDateFormat(format);</b>
-<b class="fc"><i>809</i>&nbsp;                        dval = df.parse(&quot;&quot; + dbValue);</b>
-<b class="nc"><i>810</i>&nbsp;                    } catch (ParseException e) {</b>
-<b class="nc"><i>811</i>&nbsp;                        String msg = e.getMessage() + &quot;. Column: &quot; + columnName + &quot; Type of property: &quot; + propertyType + &quot; - Type read: &quot; + dbValue.getClass() + &quot; VALUE: &quot; + dbValue;</b>
-<b class="nc"><i>812</i>&nbsp;                        throw new PersismException(msg, e);</b>
-<b class="fc"><i>813</i>&nbsp;                    }</b>
-<i>814</i>&nbsp;
-<b class="fc"><i>815</i>&nbsp;                    if (propertyType.equals(java.sql.Date.class)) {</b>
-<b class="fc"><i>816</i>&nbsp;                        dbValue = new java.sql.Date(dval.getTime());</b>
-<i>817</i>&nbsp;                    } else {
-<b class="fc"><i>818</i>&nbsp;                        dbValue = dval;</b>
-<i>819</i>&nbsp;                    }
-<i>820</i>&nbsp;
-<b class="fc"><i>821</i>&nbsp;                } else if (propertyType.equals(java.sql.Timestamp.class)) {</b>
-<i>822</i>&nbsp;                    // String to timestamp?
-<i>823</i>&nbsp;                    // value = new Timestamp()
-<b class="fc"><i>824</i>&nbsp;                    java.util.Date dval = null;</b>
-<b class="fc"><i>825</i>&nbsp;                    DateFormat df = new SimpleDateFormat(&quot;yyyy-MM-dd hh:mm:ss&quot;);</b>
-<i>826</i>&nbsp;                    try {
-<b class="fc"><i>827</i>&nbsp;                        dval = df.parse(&quot;&quot; + dbValue);</b>
-<b class="fc"><i>828</i>&nbsp;                        dbValue = new Timestamp(dval.getTime());</b>
-<b class="nc"><i>829</i>&nbsp;                    } catch (ParseException e) {</b>
-<b class="nc"><i>830</i>&nbsp;                        String msg = e.getMessage() + &quot;. Column: &quot; + columnName + &quot; Type of property: &quot; + propertyType + &quot; - Type read: &quot; + dbValue.getClass() + &quot; VALUE: &quot; + dbValue;</b>
-<b class="nc"><i>831</i>&nbsp;                        throw new PersismException(msg, e);</b>
-<b class="fc"><i>832</i>&nbsp;                    }</b>
-<i>833</i>&nbsp;
-<b class="fc"><i>834</i>&nbsp;                } else if (propertyType.isEnum()) {</b>
-<i>835</i>&nbsp;                    // If this is an enum do a case insensitive comparison
-<b class="fc"><i>836</i>&nbsp;                    Object[] enumConstants = propertyType.getEnumConstants();</b>
-<b class="fc"><i>837</i>&nbsp;                    for (Object element : enumConstants) {</b>
-<b class="fc"><i>838</i>&nbsp;                        if ((&quot;&quot; + dbValue).equalsIgnoreCase(element.toString())) {</b>
-<b class="fc"><i>839</i>&nbsp;                            dbValue = element;</b>
-<b class="fc"><i>840</i>&nbsp;                            break;</b>
-<i>841</i>&nbsp;                        }
-<i>842</i>&nbsp;                    }
-<b class="fc"><i>843</i>&nbsp;                } else if (propertyType.equals(UUID.class)) {</b>
-<b class="fc"><i>844</i>&nbsp;                    dbValue = UUID.fromString(&quot;&quot; + dbValue);</b>
+<i>744</i>&nbsp;            case doubleType:
+<i>745</i>&nbsp;            case DoubleType:
+<i>746</i>&nbsp;                // float or doubles to BigDecimal
+<b class="fc"><i>747</i>&nbsp;                if (propertyType == BigDecimal.class) {</b>
+<b class="fc"><i>748</i>&nbsp;                    dbValue = new BigDecimal(&quot;&quot; + dbValue);</b>
+<b class="fc"><i>749</i>&nbsp;                } else if (propertyType == Float.class || propertyType == float.class) {</b>
+<b class="fc"><i>750</i>&nbsp;                    warnOverflow(&quot;Possible overflow column &quot; + columnName + &quot; - Property is FLOAT and column value is DOUBLE&quot;);</b>
+<b class="fc"><i>751</i>&nbsp;                    dbValue = Float.parseFloat(&quot;&quot; + dbValue);</b>
+<b class="fc"><i>752</i>&nbsp;                } else if (propertyType == Integer.class || propertyType == int.class) {</b>
+<b class="fc"><i>753</i>&nbsp;                    warnOverflow(&quot;Possible overflow column &quot; + columnName + &quot; - Property is INT and column value is DOUBLE&quot;);</b>
+<b class="fc"><i>754</i>&nbsp;                    String val = &quot;&quot; + dbValue;</b>
+<b class="fc"><i>755</i>&nbsp;                    if (val.contains(&quot;.&quot;)) {</b>
+<b class="fc"><i>756</i>&nbsp;                        val = val.substring(0, val.indexOf(&quot;.&quot;));</b>
+<i>757</i>&nbsp;                    }
+<b class="fc"><i>758</i>&nbsp;                    dbValue = Integer.parseInt(val);</b>
+<b class="fc"><i>759</i>&nbsp;                }</b>
+<i>760</i>&nbsp;                break;
+<i>761</i>&nbsp;
+<i>762</i>&nbsp;            case DecimalType:
+<b class="fc"><i>763</i>&nbsp;                if (propertyType == Float.class || propertyType == float.class) {</b>
+<b class="fc"><i>764</i>&nbsp;                    dbValue = ((BigDecimal) dbValue).floatValue();</b>
+<b class="fc"><i>765</i>&nbsp;                    warnOverflow(&quot;Possible overflow column &quot; + columnName + &quot; - Property is Float and column value is BigDecimal&quot;);</b>
+<b class="fc"><i>766</i>&nbsp;                } else if (propertyType == Double.class || propertyType == double.class) {</b>
+<b class="fc"><i>767</i>&nbsp;                    dbValue = ((BigDecimal) dbValue).doubleValue();</b>
+<b class="fc"><i>768</i>&nbsp;                    warnOverflow(&quot;Possible overflow column &quot; + columnName + &quot; - Property is Double and column value is BigDecimal&quot;);</b>
+<b class="fc"><i>769</i>&nbsp;                } else if (propertyType == Long.class || propertyType == long.class) {</b>
+<b class="fc"><i>770</i>&nbsp;                    dbValue = ((BigDecimal) dbValue).longValue();</b>
+<b class="fc"><i>771</i>&nbsp;                    warnOverflow(&quot;Possible overflow column &quot; + columnName + &quot; - Property is Long and column value is BigDecimal&quot;);</b>
+<b class="fc"><i>772</i>&nbsp;                } else if (propertyType == Integer.class || propertyType == int.class) {</b>
+<b class="fc"><i>773</i>&nbsp;                    dbValue = ((BigDecimal) dbValue).intValue();</b>
+<b class="fc"><i>774</i>&nbsp;                    warnOverflow(&quot;Possible overflow column &quot; + columnName + &quot; - Property is Integer and column value is BigDecimal&quot;);</b>
+<b class="fc"><i>775</i>&nbsp;                } else if (propertyType == Boolean.class || propertyType == boolean.class) {</b>
+<i>776</i>&nbsp;                    // BigDecimal to Boolean. Oracle (sigh) - Additional for a Char to Boolean as then (see TestOracle for links)
+<b class="fc"><i>777</i>&nbsp;                    dbValue = ((BigDecimal) dbValue).intValue() == 1;</b>
+<b class="fc"><i>778</i>&nbsp;                    warnOverflow(&quot;Possible overflow column &quot; + columnName + &quot; - Property is Boolean and column value is BigDecimal - seems a bit overkill?&quot;);</b>
+<b class="fc"><i>779</i>&nbsp;                } else if (propertyType == String.class) {</b>
+<b class="fc"><i>780</i>&nbsp;                    dbValue = (dbValue).toString();</b>
+<i>781</i>&nbsp;                }
+<i>782</i>&nbsp;                break;
+<i>783</i>&nbsp;
+<i>784</i>&nbsp;            case StringType:
+<i>785</i>&nbsp;
+<i>786</i>&nbsp;                // Read a string but we want a date
+<b class="fc"><i>787</i>&nbsp;                if (propertyType.equals(java.util.Date.class) || propertyType.equals(java.sql.Date.class)) {</b>
+<i>788</i>&nbsp;                    // This condition occurs in SQLite when you have a datetime with default annotated
+<i>789</i>&nbsp;                    // the format returned is 2012-06-02 19:59:49
+<b class="fc"><i>790</i>&nbsp;                    java.util.Date dval = null;</b>
+<i>791</i>&nbsp;                    try {
+<i>792</i>&nbsp;                        // Used for SQLite returning dates as Strings under some conditions
+<i>793</i>&nbsp;                        // SQL or others may return STRING yyyy-MM-dd for older legacy &#39;date&#39; type.
+<i>794</i>&nbsp;                        // https://docs.microsoft.com/en-us/sql/t-sql/data-types/date-transact-sql?view=sql-server-ver15
+<i>795</i>&nbsp;                        String format;
+<b class="fc"><i>796</i>&nbsp;                        if ((&quot;&quot;+dbValue).length() &gt; &quot;yyyy-MM-dd&quot;.length()) {</b>
+<b class="fc"><i>797</i>&nbsp;                            format = &quot;yyyy-MM-dd hh:mm:ss&quot;;</b>
+<i>798</i>&nbsp;                        } else {
+<b class="fc"><i>799</i>&nbsp;                            format = &quot;yyyy-MM-dd&quot;;</b>
+<i>800</i>&nbsp;                        }
+<b class="fc"><i>801</i>&nbsp;                        DateFormat df = new SimpleDateFormat(format);</b>
+<b class="fc"><i>802</i>&nbsp;                        dval = df.parse(&quot;&quot; + dbValue);</b>
+<b class="nc"><i>803</i>&nbsp;                    } catch (ParseException e) {</b>
+<b class="nc"><i>804</i>&nbsp;                        String msg = e.getMessage() + &quot;. Column: &quot; + columnName + &quot; Type of property: &quot; + propertyType + &quot; - Type read: &quot; + dbValue.getClass() + &quot; VALUE: &quot; + dbValue;</b>
+<b class="nc"><i>805</i>&nbsp;                        throw new PersismException(msg, e);</b>
+<b class="fc"><i>806</i>&nbsp;                    }</b>
+<i>807</i>&nbsp;
+<b class="fc"><i>808</i>&nbsp;                    if (propertyType.equals(java.sql.Date.class)) {</b>
+<b class="fc"><i>809</i>&nbsp;                        dbValue = new java.sql.Date(dval.getTime());</b>
+<i>810</i>&nbsp;                    } else {
+<b class="fc"><i>811</i>&nbsp;                        dbValue = dval;</b>
+<i>812</i>&nbsp;                    }
+<i>813</i>&nbsp;
+<b class="fc"><i>814</i>&nbsp;                } else if (propertyType.equals(java.sql.Timestamp.class)) {</b>
+<i>815</i>&nbsp;                    // String to timestamp?
+<i>816</i>&nbsp;                    // value = new Timestamp()
+<b class="fc"><i>817</i>&nbsp;                    java.util.Date dval = null;</b>
+<b class="fc"><i>818</i>&nbsp;                    DateFormat df = new SimpleDateFormat(&quot;yyyy-MM-dd hh:mm:ss&quot;);</b>
+<i>819</i>&nbsp;                    try {
+<b class="fc"><i>820</i>&nbsp;                        dval = df.parse(&quot;&quot; + dbValue);</b>
+<b class="fc"><i>821</i>&nbsp;                        dbValue = new Timestamp(dval.getTime());</b>
+<b class="nc"><i>822</i>&nbsp;                    } catch (ParseException e) {</b>
+<b class="nc"><i>823</i>&nbsp;                        String msg = e.getMessage() + &quot;. Column: &quot; + columnName + &quot; Type of property: &quot; + propertyType + &quot; - Type read: &quot; + dbValue.getClass() + &quot; VALUE: &quot; + dbValue;</b>
+<b class="nc"><i>824</i>&nbsp;                        throw new PersismException(msg, e);</b>
+<b class="fc"><i>825</i>&nbsp;                    }</b>
+<i>826</i>&nbsp;
+<b class="fc"><i>827</i>&nbsp;                } else if (propertyType.isEnum()) {</b>
+<i>828</i>&nbsp;                    // If this is an enum do a case insensitive comparison
+<b class="fc"><i>829</i>&nbsp;                    Object[] enumConstants = propertyType.getEnumConstants();</b>
+<b class="fc"><i>830</i>&nbsp;                    for (Object element : enumConstants) {</b>
+<b class="fc"><i>831</i>&nbsp;                        if ((&quot;&quot; + dbValue).equalsIgnoreCase(element.toString())) {</b>
+<b class="fc"><i>832</i>&nbsp;                            dbValue = element;</b>
+<b class="fc"><i>833</i>&nbsp;                            break;</b>
+<i>834</i>&nbsp;                        }
+<i>835</i>&nbsp;                    }
+<b class="fc"><i>836</i>&nbsp;                } else if (propertyType.equals(UUID.class)) {</b>
+<b class="fc"><i>837</i>&nbsp;                    dbValue = UUID.fromString(&quot;&quot; + dbValue);</b>
+<i>838</i>&nbsp;
+<b class="fc"><i>839</i>&nbsp;                } else if (propertyType.equals(Boolean.class) || propertyType.equals(boolean.class)) {</b>
+<i>840</i>&nbsp;                    // String to Boolean - true or 1 - otherwise false (or null)
+<b class="fc"><i>841</i>&nbsp;                    if (dbValue != null) {</b>
+<b class="fc"><i>842</i>&nbsp;                        String bval = &quot;&quot; + dbValue;</b>
+<b class="fc"><i>843</i>&nbsp;                        dbValue = (bval.equalsIgnoreCase(&quot;true&quot;) || bval.equals(&quot;1&quot;));</b>
+<b class="fc"><i>844</i>&nbsp;                    }</b>
 <i>845</i>&nbsp;
-<b class="fc"><i>846</i>&nbsp;                } else if (propertyType.equals(Boolean.class) || propertyType.equals(boolean.class)) {</b>
-<i>847</i>&nbsp;                    // String to Boolean - true or 1 - otherwise false (or null)
-<b class="fc"><i>848</i>&nbsp;                    if (dbValue != null) {</b>
-<b class="fc"><i>849</i>&nbsp;                        String bval = &quot;&quot; + dbValue;</b>
-<b class="fc"><i>850</i>&nbsp;                        dbValue = (bval.equalsIgnoreCase(&quot;true&quot;) || bval.equals(&quot;1&quot;));</b>
-<b class="fc"><i>851</i>&nbsp;                    }</b>
-<i>852</i>&nbsp;
-<b class="fc"><i>853</i>&nbsp;                } else if (propertyType.equals(Time.class)) {</b>
-<i>854</i>&nbsp;                    // MSSQL works, JTDS returns Varchar in format below
-<b class="fc"><i>855</i>&nbsp;                    DateFormat df = new SimpleDateFormat(&quot;hh:mm:ss.SSSSS&quot;);</b>
-<i>856</i>&nbsp;                    try {
-<b class="fc"><i>857</i>&nbsp;                        Date d = df.parse(dbValue + &quot;&quot;);</b>
-<b class="fc"><i>858</i>&nbsp;                        dbValue = new Time(d.getTime());</b>
-<b class="nc"><i>859</i>&nbsp;                    } catch (ParseException e) {</b>
-<b class="nc"><i>860</i>&nbsp;                        String msg = e.getMessage() + &quot;. Column: &quot; + columnName + &quot; Type of property: &quot; + propertyType + &quot; - Type read: &quot; + dbValue.getClass() + &quot; VALUE: &quot; + dbValue;</b>
-<b class="nc"><i>861</i>&nbsp;                        throw new PersismException(msg, e);</b>
-<b class="fc"><i>862</i>&nbsp;                    }</b>
-<b class="fc"><i>863</i>&nbsp;                } else if (propertyType.equals(Character.class) || propertyType.equals(char.class)) {</b>
-<b class="fc"><i>864</i>&nbsp;                    String s = &quot;&quot;+dbValue;</b>
-<b class="fc"><i>865</i>&nbsp;                    if (s.length() &gt; 0) {</b>
-<b class="fc"><i>866</i>&nbsp;                        dbValue = s.charAt(0);</b>
-<i>867</i>&nbsp;                    }
-<b class="fc"><i>868</i>&nbsp;                } else if (propertyType.equals(BigDecimal.class)) {</b>
-<b class="fc"><i>869</i>&nbsp;                    dbValue = new BigDecimal(&quot;&quot;+dbValue);</b>
-<i>870</i>&nbsp;                }
-<i>871</i>&nbsp;                break;
-<i>872</i>&nbsp;
-<i>873</i>&nbsp;            case characterType:
-<i>874</i>&nbsp;            case CharacterType:
-<b class="nc"><i>875</i>&nbsp;                break;</b>
-<i>876</i>&nbsp;
-<i>877</i>&nbsp;            case UtilDateType:
-<i>878</i>&nbsp;            case SQLDateType:
-<i>879</i>&nbsp;                // todo maybe add check for property type = long. Same with TimestampType
-<b class="nc"><i>880</i>&nbsp;                break;</b>
-<i>881</i>&nbsp;
-<i>882</i>&nbsp;            case TimestampType:
-<b class="fc"><i>883</i>&nbsp;                if (propertyType.equals(java.util.Date.class) || propertyType.equals(java.sql.Date.class)) {</b>
-<b class="fc"><i>884</i>&nbsp;                    if (propertyType.equals(java.sql.Date.class)) {</b>
-<b class="fc"><i>885</i>&nbsp;                        dbValue = new java.sql.Date(((Date) dbValue).getTime());</b>
-<i>886</i>&nbsp;                    } else {
-<b class="fc"><i>887</i>&nbsp;                        dbValue = new java.util.Date(((Date) dbValue).getTime());</b>
-<i>888</i>&nbsp;                    }
-<i>889</i>&nbsp;                }
-<i>890</i>&nbsp;                break;
+<b class="fc"><i>846</i>&nbsp;                } else if (propertyType.equals(Time.class)) {</b>
+<i>847</i>&nbsp;                    // MSSQL works, JTDS returns Varchar in format below
+<b class="fc"><i>848</i>&nbsp;                    DateFormat df = new SimpleDateFormat(&quot;hh:mm:ss.SSSSS&quot;);</b>
+<i>849</i>&nbsp;                    try {
+<b class="fc"><i>850</i>&nbsp;                        Date d = df.parse(dbValue + &quot;&quot;);</b>
+<b class="fc"><i>851</i>&nbsp;                        dbValue = new Time(d.getTime());</b>
+<b class="nc"><i>852</i>&nbsp;                    } catch (ParseException e) {</b>
+<b class="nc"><i>853</i>&nbsp;                        String msg = e.getMessage() + &quot;. Column: &quot; + columnName + &quot; Type of property: &quot; + propertyType + &quot; - Type read: &quot; + dbValue.getClass() + &quot; VALUE: &quot; + dbValue;</b>
+<b class="nc"><i>854</i>&nbsp;                        throw new PersismException(msg, e);</b>
+<b class="fc"><i>855</i>&nbsp;                    }</b>
+<b class="fc"><i>856</i>&nbsp;                } else if (propertyType.equals(Character.class) || propertyType.equals(char.class)) {</b>
+<b class="fc"><i>857</i>&nbsp;                    String s = &quot;&quot;+dbValue;</b>
+<b class="fc"><i>858</i>&nbsp;                    if (s.length() &gt; 0) {</b>
+<b class="fc"><i>859</i>&nbsp;                        dbValue = s.charAt(0);</b>
+<i>860</i>&nbsp;                    }
+<b class="fc"><i>861</i>&nbsp;                } else if (propertyType.equals(BigDecimal.class)) {</b>
+<b class="fc"><i>862</i>&nbsp;                    dbValue = new BigDecimal(&quot;&quot;+dbValue);</b>
+<i>863</i>&nbsp;                }
+<i>864</i>&nbsp;                break;
+<i>865</i>&nbsp;
+<i>866</i>&nbsp;            case characterType:
+<i>867</i>&nbsp;            case CharacterType:
+<b class="nc"><i>868</i>&nbsp;                break;</b>
+<i>869</i>&nbsp;
+<i>870</i>&nbsp;            case UtilDateType:
+<i>871</i>&nbsp;            case SQLDateType:
+<i>872</i>&nbsp;                // todo maybe add check for property type = long. Same with TimestampType
+<b class="nc"><i>873</i>&nbsp;                break;</b>
+<i>874</i>&nbsp;
+<i>875</i>&nbsp;            case TimestampType:
+<b class="fc"><i>876</i>&nbsp;                if (propertyType.equals(java.util.Date.class) || propertyType.equals(java.sql.Date.class)) {</b>
+<b class="fc"><i>877</i>&nbsp;                    if (propertyType.equals(java.sql.Date.class)) {</b>
+<b class="fc"><i>878</i>&nbsp;                        dbValue = new java.sql.Date(((Date) dbValue).getTime());</b>
+<i>879</i>&nbsp;                    } else {
+<b class="fc"><i>880</i>&nbsp;                        dbValue = new java.util.Date(((Date) dbValue).getTime());</b>
+<i>881</i>&nbsp;                    }
+<i>882</i>&nbsp;                }
+<i>883</i>&nbsp;                break;
+<i>884</i>&nbsp;
+<i>885</i>&nbsp;            case TimeType:
+<b class="fc"><i>886</i>&nbsp;                break;</b>
+<i>887</i>&nbsp;
+<i>888</i>&nbsp;            case byteArrayType:
+<i>889</i>&nbsp;            case ByteArrayType:
+<b class="fc"><i>890</i>&nbsp;                break;</b>
 <i>891</i>&nbsp;
-<i>892</i>&nbsp;            case TimeType:
-<b class="fc"><i>893</i>&nbsp;                break;</b>
-<i>894</i>&nbsp;
-<i>895</i>&nbsp;            case byteArrayType:
-<i>896</i>&nbsp;            case ByteArrayType:
-<b class="fc"><i>897</i>&nbsp;                break;</b>
-<i>898</i>&nbsp;
-<i>899</i>&nbsp;            case charArrayType:
-<i>900</i>&nbsp;            case CharArrayType:
-<b class="nc"><i>901</i>&nbsp;                break;</b>
-<i>902</i>&nbsp;
-<i>903</i>&nbsp;            case ClobType:
-<i>904</i>&nbsp;                // Convert to string
-<b class="nc"><i>905</i>&nbsp;                if (dbValue != null) {</b>
-<b class="nc"><i>906</i>&nbsp;                    dbValue = &quot;&quot; + dbValue;</b>
-<i>907</i>&nbsp;                }
-<i>908</i>&nbsp;                break;
-<i>909</i>&nbsp;            case BlobType:
-<b class="nc"><i>910</i>&nbsp;                break;</b>
-<i>911</i>&nbsp;            case InputStreamType:
-<b class="nc"><i>912</i>&nbsp;                break;</b>
-<i>913</i>&nbsp;            case ReaderType:
-<b class="nc"><i>914</i>&nbsp;                break;</b>
-<i>915</i>&nbsp;            case EnumType:
-<b class="nc"><i>916</i>&nbsp;                break;</b>
-<i>917</i>&nbsp;            case UUIDType:
-<i>918</i>&nbsp;                break;
-<i>919</i>&nbsp;        }
-<b class="fc"><i>920</i>&nbsp;        return dbValue;</b>
-<i>921</i>&nbsp;    }
-<i>922</i>&nbsp;
-<i>923</i>&nbsp;    private &lt;T&gt; T getTypedValueReturnedFromGeneratedKeys(Class&lt;T&gt; type, ResultSet rs) throws SQLException {
-<i>924</i>&nbsp;
-<b class="fc"><i>925</i>&nbsp;        Object value = null;</b>
-<b class="fc"><i>926</i>&nbsp;        Types types = Types.getType(type);</b>
+<i>892</i>&nbsp;            case charArrayType:
+<i>893</i>&nbsp;            case CharArrayType:
+<b class="nc"><i>894</i>&nbsp;                break;</b>
+<i>895</i>&nbsp;
+<i>896</i>&nbsp;            case ClobType:
+<i>897</i>&nbsp;                // Convert to string
+<b class="nc"><i>898</i>&nbsp;                if (dbValue != null) {</b>
+<b class="nc"><i>899</i>&nbsp;                    dbValue = &quot;&quot; + dbValue;</b>
+<i>900</i>&nbsp;                }
+<i>901</i>&nbsp;                break;
+<i>902</i>&nbsp;            case BlobType:
+<b class="nc"><i>903</i>&nbsp;                break;</b>
+<i>904</i>&nbsp;            case InputStreamType:
+<b class="nc"><i>905</i>&nbsp;                break;</b>
+<i>906</i>&nbsp;            case ReaderType:
+<b class="nc"><i>907</i>&nbsp;                break;</b>
+<i>908</i>&nbsp;            case EnumType:
+<b class="nc"><i>909</i>&nbsp;                break;</b>
+<i>910</i>&nbsp;            case UUIDType:
+<i>911</i>&nbsp;                break;
+<i>912</i>&nbsp;        }
+<b class="fc"><i>913</i>&nbsp;        return dbValue;</b>
+<i>914</i>&nbsp;    }
+<i>915</i>&nbsp;
+<i>916</i>&nbsp;    private &lt;T&gt; T getTypedValueReturnedFromGeneratedKeys(Class&lt;T&gt; type, ResultSet rs) throws SQLException {
+<i>917</i>&nbsp;
+<b class="fc"><i>918</i>&nbsp;        Object value = null;</b>
+<b class="fc"><i>919</i>&nbsp;        Types types = Types.getType(type);</b>
+<i>920</i>&nbsp;
+<b class="fc"><i>921</i>&nbsp;        if (types == null) {</b>
+<b class="nc"><i>922</i>&nbsp;            log.warn(&quot;Unhandled type &quot; + type);</b>
+<b class="nc"><i>923</i>&nbsp;            return (T) rs.getObject(1);</b>
+<i>924</i>&nbsp;        }
+<i>925</i>&nbsp;
+<b class="fc"><i>926</i>&nbsp;        switch (types) {</b>
 <i>927</i>&nbsp;
-<b class="fc"><i>928</i>&nbsp;        if (types == null) {</b>
-<b class="nc"><i>929</i>&nbsp;            log.warn(&quot;Unhandled type &quot; + type);</b>
-<b class="nc"><i>930</i>&nbsp;            return (T) rs.getObject(1);</b>
-<i>931</i>&nbsp;        }
+<i>928</i>&nbsp;            case integerType:
+<i>929</i>&nbsp;            case IntegerType:
+<b class="fc"><i>930</i>&nbsp;                value = rs.getInt(1);</b>
+<b class="fc"><i>931</i>&nbsp;                break;</b>
 <i>932</i>&nbsp;
-<b class="fc"><i>933</i>&nbsp;        switch (types) {</b>
-<i>934</i>&nbsp;
-<i>935</i>&nbsp;            case integerType:
-<i>936</i>&nbsp;            case IntegerType:
-<b class="fc"><i>937</i>&nbsp;                value = rs.getInt(1);</b>
-<b class="fc"><i>938</i>&nbsp;                break;</b>
-<i>939</i>&nbsp;
-<i>940</i>&nbsp;            case longType:
-<i>941</i>&nbsp;            case LongType:
-<b class="fc"><i>942</i>&nbsp;                value = rs.getLong(1);</b>
-<i>943</i>&nbsp;                break;
-<i>944</i>&nbsp;        }
-<b class="fc"><i>945</i>&nbsp;        return (T) value;</b>
-<i>946</i>&nbsp;    }
-<i>947</i>&nbsp;
-<i>948</i>&nbsp;    // Prevent duplicate &quot;Possible overflow column&quot; messages
-<i>949</i>&nbsp;    private static void warnOverflow(String message) {
-<b class="fc"><i>950</i>&nbsp;        if (!warnings.contains(message)) {</b>
-<b class="fc"><i>951</i>&nbsp;            warnings.add(message);</b>
-<b class="fc"><i>952</i>&nbsp;            log.warn(message);</b>
-<i>953</i>&nbsp;        }
-<b class="fc"><i>954</i>&nbsp;    }</b>
-<i>955</i>&nbsp;
-<i>956</i>&nbsp;}
+<i>933</i>&nbsp;            case longType:
+<i>934</i>&nbsp;            case LongType:
+<b class="fc"><i>935</i>&nbsp;                value = rs.getLong(1);</b>
+<i>936</i>&nbsp;                break;
+<i>937</i>&nbsp;        }
+<b class="fc"><i>938</i>&nbsp;        return (T) value;</b>
+<i>939</i>&nbsp;    }
+<i>940</i>&nbsp;
+<i>941</i>&nbsp;    // Prevent duplicate &quot;Possible overflow column&quot; messages
+<i>942</i>&nbsp;    private static void warnOverflow(String message) {
+<b class="fc"><i>943</i>&nbsp;        if (!warnings.contains(message)) {</b>
+<b class="fc"><i>944</i>&nbsp;            warnings.add(message);</b>
+<b class="fc"><i>945</i>&nbsp;            log.warn(message);</b>
+<i>946</i>&nbsp;        }
+<b class="fc"><i>947</i>&nbsp;    }</b>
+<i>948</i>&nbsp;
+<i>949</i>&nbsp;}
 </div>
 </div>
 
 <div class="footer">
     
-    <div style="float:right;">generated on 2021-01-21 14:01</div>
+    <div style="float:right;">generated on 2021-01-26 07:10</div>
 </div>
 </body>
 </html>

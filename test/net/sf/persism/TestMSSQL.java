@@ -300,7 +300,7 @@ public class TestMSSQL extends BaseTest {
         try {
             Procedure proc1; // = query.readObject(Procedure.class, "select * from examcode where examcode_no=3");
             proc1 = new Procedure();
-            proc1.setDescription("new proc");
+            proc1.setDescription("new proc LDKJH DLKJH SLKJH DLSJKH DLSKJHD LSKDJH DSLKJH DSLKJH SLKJHD LKSJHD LKSHJD LSKJDH LSKDJH DSLKJHD SLKJDH SLDKJH SDLKJHD SLKDHS LKDJHSDLKJSDH LDKJH ");
             session.insert(proc1);
 
             int examCodeNo = proc1.getExamCodeNo();
@@ -350,7 +350,7 @@ public class TestMSSQL extends BaseTest {
     public void testInsert() {
         // query = new Query(con);
         Procedure procedure = new Procedure();
-        procedure.setDescription("TEST 99");
+        procedure.setDescription("TEST 99 LKJHDSLKJSDH LKSDJH LDSKJHD LSKDJH DSLKJHDLSKHD SLKDJHS KLDJHS DKLDH SLKDJH SDLKJHD SLKDJSHD LKSJH SLKDH SLDKJSH DLKJSH DLKSJDH LKSJH DLKSJH D");
         procedure.setModalityId(2);
         procedure.setSomeDate(new java.util.Date());
 

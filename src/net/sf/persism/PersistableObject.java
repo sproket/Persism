@@ -4,8 +4,8 @@ import java.lang.reflect.InvocationTargetException;
 import java.util.Collection;
 
 /**
- * Data objects can optionally inherit from this class. Persism uses information from this class to detect which
- * properties are modified in your data objects and only includes those columns in the SQL UPDATE statements.
+ * Persism uses information from this class to detect which properties are modified in your data objects and only
+ * includes those columns in the SQL UPDATE statements. Data objects can optionally inherit from this class.
  *
  * @author Dan Howard
  * @since 9/15/11 7:14 AM

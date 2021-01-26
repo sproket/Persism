@@ -17,9 +17,9 @@ import java.lang.annotation.Target;
 
 /**
  * Indicates that the class represents the result of query instead of a table.
-s */
+ */
 @Retention(value = RetentionPolicy.RUNTIME)
 @Target(ElementType.TYPE)
-public @interface Query {
+public @interface NotTable {
 
 }

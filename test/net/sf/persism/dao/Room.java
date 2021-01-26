@@ -1,7 +1,7 @@
 package net.sf.persism.dao;
 
 import net.sf.persism.annotations.Column;
-import net.sf.persism.annotations.NotMapped;
+import net.sf.persism.annotations.NotColumn;
 
 import java.math.BigDecimal;
 
@@ -26,7 +26,7 @@ public final class Room {
 
     private String weird;
 
-    @NotMapped
+    @NotColumn
     private String junk;
 
     public int getRoomNo() {

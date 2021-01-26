@@ -2,7 +2,7 @@ package net.sf.persism.dao;
 
 import net.sf.persism.PersistableObject;
 import net.sf.persism.annotations.Column;
-import net.sf.persism.annotations.NotMapped;
+import net.sf.persism.annotations.NotColumn;
 import net.sf.persism.annotations.Table;
 
 import java.math.BigDecimal;
@@ -44,7 +44,7 @@ public final class Procedure extends PersistableObject<Procedure> {
 
     private int reservationType;
 
-    @NotMapped
+    @NotColumn
     private Date someDate;
 
     public int getExamCodeNo() {

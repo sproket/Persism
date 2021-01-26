@@ -5,7 +5,7 @@
   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html id="htmlId">
 <head>
-  <title>Coverage Report :: Query</title>
+  <title>Coverage Report :: NotColumn</title>
   <style type="text/css">
     @import "../../.css/coverage.css";
   </style>
@@ -20,14 +20,14 @@
     [ <a href="../index.html">net.sf.persism.annotations</a> ]
 </div>
 
-<h1>Coverage Summary for Class: Query (net.sf.persism.annotations)</h1>
+<h1>Coverage Summary for Class: NotColumn (net.sf.persism.annotations)</h1>
 
 <table class="coverageStats">
 <tr>
   <th class="name">Class</th>
 </tr>
 <tr>
-  <td class="name">Query</td>
+  <td class="name">NotColumn</td>
 </tr>
 
 </table>
@@ -44,8 +44,8 @@
 <i>6</i>&nbsp; * $Date: $
 <i>7</i>&nbsp; * Created by IntelliJ IDEA.
 <i>8</i>&nbsp; * User: DHoward
-<i>9</i>&nbsp; * Date: 9/14/11
-<i>10</i>&nbsp; * Time: 7:38 AM
+<i>9</i>&nbsp; * Date: 9/8/11
+<i>10</i>&nbsp; * Time: 6:18 AM
 <i>11</i>&nbsp; */
 <i>12</i>&nbsp;
 <i>13</i>&nbsp;import java.lang.annotation.ElementType;
@@ -54,19 +54,20 @@
 <i>16</i>&nbsp;import java.lang.annotation.Target;
 <i>17</i>&nbsp;
 <i>18</i>&nbsp;/**
-<i>19</i>&nbsp; * Indicates that the class represents the result of query instead of a table.
-<i>20</i>&nbsp;s */
-<i>21</i>&nbsp;@Retention(value = RetentionPolicy.RUNTIME)
-<i>22</i>&nbsp;@Target(ElementType.TYPE)
-<i>23</i>&nbsp;public @interface Query {
-<i>24</i>&nbsp;
-<i>25</i>&nbsp;}
+<i>19</i>&nbsp; * Indicates that the property is not mapped to a column. This annotation can appear on the class field, getter or setter.
+<i>20</i>&nbsp; * Persism ignores read-only properties so this annotation is only required where you have a read/write property which does not map to any column.
+<i>21</i>&nbsp; */
+<i>22</i>&nbsp;@Retention(RetentionPolicy.RUNTIME)
+<i>23</i>&nbsp;@Target(value = {ElementType.METHOD, ElementType.FIELD})
+<i>24</i>&nbsp;public @interface NotColumn {
+<i>25</i>&nbsp;
+<i>26</i>&nbsp;}
 </div>
 </div>
 
 <div class="footer">
     
-    <div style="float:right;">generated on 2021-01-26 05:09</div>
+    <div style="float:right;">generated on 2021-01-26 07:10</div>
 </div>
 </body>
 </html>

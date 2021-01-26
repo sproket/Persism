@@ -1,6 +1,6 @@
 package net.sf.persism;
 
-import net.sf.persism.annotations.Query;
+import net.sf.persism.annotations.NotTable;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -21,7 +21,7 @@ import java.util.Date;
  * @author Dan Howard
  * @since 1/8/2021
  */
-public class Session {
+public final class Session {
 
     private static final Log log = Log.getLogger(Session.class);
 
@@ -85,7 +85,7 @@ public class Session {
                 changedProperties = allProperties;
             }
 
-            List<Object> params = new ArrayList<Object>(primaryKeys.size());
+            List<Object> params = new ArrayList<>(primaryKeys.size());
             for (String column : changedProperties.keySet()) {
                 if (!primaryKeys.contains(column)) {
                     Object value = allProperties.get(column).getter.invoke(object);
@@ -102,10 +102,10 @@ public class Session {
 
                         if (value instanceof String) {
                             // check width
-                            PropertyInfo propertyInfo = allProperties.get(column);
+                            ColumnInfo columnInfo = metaData.getColumns(object.getClass(), connection).get(column);
                             String str = (String) value;
-                            if (str.length() > propertyInfo.length) {
-                                str = str.substring(0, propertyInfo.length);
+                            if (str.length() > columnInfo.length) {
+                                str = str.substring(0, columnInfo.length);
                                 // todo Should Persism strict should throw this as an exception?
                                 log.warn("TRUNCATION with Column: " + column + " for table: " + metaData.getTableName(object.getClass()) + ". Old value: \"" + value + "\" New value: \"" + str + "\"");
                                 value = str;
@@ -133,8 +133,7 @@ public class Session {
     }
 
     /**
-     * Inserts the data object in the database.
-     * The data object is refreshed with autoinc and other defaults that may exist.
+     * Inserts the data object in the database refreshing with autoinc and other defaults that may exist.
      *
      * @param object the data object to insert.
      * @return usually 1 to indicate rows changed via JDBC.
@@ -167,19 +166,19 @@ public class Session {
 
             boolean tableHasDefaultColumnValues = false;
 
-            List<Object> params = new ArrayList<Object>();
-            for (ColumnInfo column : columns.values()) {
+            List<Object> params = new ArrayList<>();
+            for (ColumnInfo columnInfo : columns.values()) {
 
-                PropertyInfo propertyInfo = properties.get(column.columnName);
-                if (!column.autoIncrement) {
+                PropertyInfo propertyInfo = properties.get(columnInfo.columnName);
+                if (!columnInfo.autoIncrement) {
 
                     // See MetaData getInsertStatement - Maybe we should return a new Object type for InsertStatement
-                    if (column.hasDefault) {
+                    if (columnInfo.hasDefault) {
                         // Do not include if this column has a default and no value has been
                         // set on it's associated property.
-                        if (properties.get(column.columnName).getter.invoke(object) == null) {
+                        if (properties.get(columnInfo.columnName).getter.invoke(object) == null) {
 
-                            if (column.primary) {
+                            if (columnInfo.primary) {
                                 throw new PersismException("Non-auto inc generated primary keys are not supported. Please assign your primary key value before performing an insert.");
                             }
 
@@ -207,10 +206,10 @@ public class Session {
                         if (value instanceof String) {
                             // check width
                             String str = (String) value;
-                            if (str.length() > propertyInfo.length) {
+                            if (str.length() > columnInfo.length) {
                                 // todo should Persism strict throw this as an exception?
-                                str = str.substring(0, propertyInfo.length);
-                                log.warn("TRUNCATION with Column: " + column + " for table: " + metaData.getTableName(object.getClass()) + ". Old value: \"" + value + "\" New value: \"" + str + "\"");
+                                str = str.substring(0, columnInfo.length);
+                                log.warn("TRUNCATION with Column: " + columnInfo.columnName + " for table: " + metaData.getTableName(object.getClass()) + ". Old value: \"" + value + "\" New value: \"" + str + "\"");
                                 value = str;
                             }
                         }
@@ -305,13 +304,8 @@ public class Session {
         }
     }
 
-    /**
-     * Execute an arbitrary SQL statement.
-     *
-     * @param sql        sql string
-     * @param parameters parameters
-     */
-    public void execute(String sql, Object... parameters) {
+    // For unit tests only for now.
+    void execute(String sql, Object... parameters) {
 
         if (log.isDebugEnabled()) {
             log.debug("execute: " + sql + " params: " + Arrays.asList(parameters));
@@ -346,7 +340,7 @@ public class Session {
      * @param parameters  parameters to the query.
      * @param <T>         Return type
      * @return a list of objects of the specified class using the specified SQL query and parameters.
-     * @throws PersismException If something goes wrong you get a big stack trace.s
+     * @throws PersismException If something goes wrong you get a big stack trace.
      */
     public <T> List<T> query(Class<T> objectClass, String sql, Object... parameters) throws PersismException {
         List<T> list = new ArrayList<T>(32);
@@ -356,7 +350,7 @@ public class Session {
         // If we know this type it means it's a primitive type. Not a DAO so we use a different rule to read those
         boolean readPrimitive = Types.getType(objectClass) != null;
 
-        if (!readPrimitive && objectClass.getAnnotation(Query.class) == null) {
+        if (!readPrimitive && objectClass.getAnnotation(NotTable.class) == null) {
             // Make sure columns are initialized if this is a table.
             metaData.getTableColumnsPropertyInfo(objectClass, connection);
         }
@@ -537,7 +531,7 @@ public class Session {
         assert Types.getType(objectClass) == null;
 
         Map<String, PropertyInfo> properties;
-        if (objectClass.getAnnotation(Query.class) == null) {
+        if (objectClass.getAnnotation(NotTable.class) == null) {
             properties = metaData.getTableColumnsPropertyInfo(objectClass, connection);
         } else {
             properties = metaData.getQueryColumnsPropertyInfo(objectClass, rs);
@@ -875,10 +869,8 @@ public class Session {
 
             case UtilDateType:
             case SQLDateType:
-                // todo maybe add check for property type = long. Same with TimestampType
-                break;
-
             case TimestampType:
+                // todo maybe add check for property type = long. Same with TimestampType
                 if (propertyType.equals(java.util.Date.class) || propertyType.equals(java.sql.Date.class)) {
                     if (propertyType.equals(java.sql.Date.class)) {
                         dbValue = new java.sql.Date(((Date) dbValue).getTime());

@@ -16,7 +16,6 @@ final class PropertyInfo {
     String propertyName;
     Method getter;
     Method setter;
-    int length;
 
     Map<Class<? extends Annotation>, Annotation> annotations = new HashMap<Class<? extends Annotation>, Annotation>(4);
 
@@ -30,7 +29,6 @@ final class PropertyInfo {
                 "propertyName='" + propertyName + '\'' +
                 ", getter=" + getter +
                 ", setter=" + setter +
-                ", length=" + length +
                 ", annotations=" + annotations +
                 '}';
     }

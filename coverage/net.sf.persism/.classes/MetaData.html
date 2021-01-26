@@ -61,7 +61,7 @@
     93.9%
   </span>
   <span class="absValue">
-    (387/ 412)
+    (386/ 411)
   </span>
 </td>
 </tr>
@@ -75,7 +75,7 @@
 <div class="sourceCode"><i>1</i>&nbsp;package net.sf.persism;
 <i>2</i>&nbsp;
 <i>3</i>&nbsp;import net.sf.persism.annotations.Column;
-<i>4</i>&nbsp;import net.sf.persism.annotations.NotMapped;
+<i>4</i>&nbsp;import net.sf.persism.annotations.NotColumn;
 <i>5</i>&nbsp;import net.sf.persism.annotations.Table;
 <i>6</i>&nbsp;
 <i>7</i>&nbsp;import java.lang.annotation.Annotation;
@@ -201,723 +201,710 @@
 <b class="fc"><i>127</i>&nbsp;            Map&lt;String, PropertyInfo&gt; columns = new TreeMap&lt;&gt;(String.CASE_INSENSITIVE_ORDER);</b>
 <b class="fc"><i>128</i>&nbsp;            for (int j = 1; j &lt;= columnCount; j++) {</b>
 <b class="fc"><i>129</i>&nbsp;                String realColumnName = rsmd.getColumnLabel(j);</b>
-<b class="fc"><i>130</i>&nbsp;                int length = rsmd.getColumnDisplaySize(j);</b>
-<b class="fc"><i>131</i>&nbsp;                String columnName = realColumnName.toLowerCase().replace(&quot;_&quot;, &quot;&quot;).replace(&quot; &quot;, &quot;&quot;);</b>
-<b class="fc"><i>132</i>&nbsp;                if (extraNameCharacters != null &amp;&amp; !extraNameCharacters.isEmpty()) {</b>
-<i>133</i>&nbsp;                    // also replace these characters
-<b class="fc"><i>134</i>&nbsp;                    for (int x = 0; x &lt; extraNameCharacters.length(); x++) {</b>
-<b class="fc"><i>135</i>&nbsp;                        columnName = columnName.replace(&quot;&quot; + extraNameCharacters.charAt(x), &quot;&quot;);</b>
-<i>136</i>&nbsp;                    }
-<i>137</i>&nbsp;                }
-<b class="fc"><i>138</i>&nbsp;                PropertyInfo foundProperty = null;</b>
-<b class="fc"><i>139</i>&nbsp;                for (PropertyInfo propertyInfo : properties) {</b>
-<b class="fc"><i>140</i>&nbsp;                    String propertyName = propertyInfo.propertyName.toLowerCase().replace(&quot;_&quot;, &quot;&quot;);</b>
-<b class="fc"><i>141</i>&nbsp;                    if (propertyName.equalsIgnoreCase(columnName)) {</b>
-<b class="fc"><i>142</i>&nbsp;                        foundProperty = propertyInfo;</b>
-<b class="fc"><i>143</i>&nbsp;                        break;</b>
-<i>144</i>&nbsp;                    } else {
-<i>145</i>&nbsp;                        // check annotation against column name
-<b class="fc"><i>146</i>&nbsp;                        Annotation annotation = propertyInfo.getAnnotation(Column.class);</b>
-<b class="fc"><i>147</i>&nbsp;                        if (annotation != null) {</b>
-<b class="fc"><i>148</i>&nbsp;                            if (((Column) annotation).name().equalsIgnoreCase(realColumnName)) {</b>
-<b class="fc"><i>149</i>&nbsp;                                foundProperty = propertyInfo;</b>
-<b class="fc"><i>150</i>&nbsp;                                break;</b>
-<i>151</i>&nbsp;                            }
-<i>152</i>&nbsp;                        }
-<i>153</i>&nbsp;                    }
-<b class="fc"><i>154</i>&nbsp;                }</b>
-<i>155</i>&nbsp;
-<b class="fc"><i>156</i>&nbsp;                if (foundProperty != null) {</b>
-<b class="fc"><i>157</i>&nbsp;                    foundProperty.length = length;</b>
-<b class="fc"><i>158</i>&nbsp;                    columns.put(realColumnName, foundProperty);</b>
-<i>159</i>&nbsp;                } else {
-<b class="fc"><i>160</i>&nbsp;                    log.warn(&quot;Property not found for column: &quot; + realColumnName + &quot; class: &quot; + objectClass);</b>
-<i>161</i>&nbsp;                }
-<i>162</i>&nbsp;            }
-<i>163</i>&nbsp;
-<b class="fc"><i>164</i>&nbsp;            propertyInfoMap.put(objectClass, columns);</b>
-<b class="fc"><i>165</i>&nbsp;            return columns;</b>
-<i>166</i>&nbsp;
-<b class="nc"><i>167</i>&nbsp;        } catch (SQLException e) {</b>
-<b class="nc"><i>168</i>&nbsp;            throw new PersismException(e.getMessage(), e);</b>
-<i>169</i>&nbsp;        }
-<i>170</i>&nbsp;    }
-<i>171</i>&nbsp;
-<i>172</i>&nbsp;    private synchronized &lt;T&gt; Map&lt;String, ColumnInfo&gt; determineColumnInfo(Class&lt;T&gt; objectClass, String tableName, Connection connection) {
-<b class="fc"><i>173</i>&nbsp;        if (columnInfoMap.containsKey(objectClass)) {</b>
-<b class="nc"><i>174</i>&nbsp;            return columnInfoMap.get(objectClass);</b>
-<i>175</i>&nbsp;        }
-<i>176</i>&nbsp;
-<b class="fc"><i>177</i>&nbsp;        Statement st = null;</b>
-<b class="fc"><i>178</i>&nbsp;        ResultSet rs = null;</b>
-<b class="fc"><i>179</i>&nbsp;        Map&lt;String, PropertyInfo&gt; properties = getTableColumnsPropertyInfo(objectClass, connection);</b>
-<b class="fc"><i>180</i>&nbsp;        String sd = connectionType.getKeywordStartDelimiter();</b>
-<b class="fc"><i>181</i>&nbsp;        String ed = connectionType.getKeywordEndDelimiter();</b>
+<b class="fc"><i>130</i>&nbsp;                String columnName = realColumnName.toLowerCase().replace(&quot;_&quot;, &quot;&quot;).replace(&quot; &quot;, &quot;&quot;);</b>
+<b class="fc"><i>131</i>&nbsp;                if (extraNameCharacters != null &amp;&amp; !extraNameCharacters.isEmpty()) {</b>
+<i>132</i>&nbsp;                    // also replace these characters
+<b class="fc"><i>133</i>&nbsp;                    for (int x = 0; x &lt; extraNameCharacters.length(); x++) {</b>
+<b class="fc"><i>134</i>&nbsp;                        columnName = columnName.replace(&quot;&quot; + extraNameCharacters.charAt(x), &quot;&quot;);</b>
+<i>135</i>&nbsp;                    }
+<i>136</i>&nbsp;                }
+<b class="fc"><i>137</i>&nbsp;                PropertyInfo foundProperty = null;</b>
+<b class="fc"><i>138</i>&nbsp;                for (PropertyInfo propertyInfo : properties) {</b>
+<b class="fc"><i>139</i>&nbsp;                    String propertyName = propertyInfo.propertyName.toLowerCase().replace(&quot;_&quot;, &quot;&quot;);</b>
+<b class="fc"><i>140</i>&nbsp;                    if (propertyName.equalsIgnoreCase(columnName)) {</b>
+<b class="fc"><i>141</i>&nbsp;                        foundProperty = propertyInfo;</b>
+<b class="fc"><i>142</i>&nbsp;                        break;</b>
+<i>143</i>&nbsp;                    } else {
+<i>144</i>&nbsp;                        // check annotation against column name
+<b class="fc"><i>145</i>&nbsp;                        Annotation annotation = propertyInfo.getAnnotation(Column.class);</b>
+<b class="fc"><i>146</i>&nbsp;                        if (annotation != null) {</b>
+<b class="fc"><i>147</i>&nbsp;                            if (((Column) annotation).name().equalsIgnoreCase(realColumnName)) {</b>
+<b class="fc"><i>148</i>&nbsp;                                foundProperty = propertyInfo;</b>
+<b class="fc"><i>149</i>&nbsp;                                break;</b>
+<i>150</i>&nbsp;                            }
+<i>151</i>&nbsp;                        }
+<i>152</i>&nbsp;                    }
+<b class="fc"><i>153</i>&nbsp;                }</b>
+<i>154</i>&nbsp;
+<b class="fc"><i>155</i>&nbsp;                if (foundProperty != null) {</b>
+<b class="fc"><i>156</i>&nbsp;                    columns.put(realColumnName, foundProperty);</b>
+<i>157</i>&nbsp;                } else {
+<b class="fc"><i>158</i>&nbsp;                    log.warn(&quot;Property not found for column: &quot; + realColumnName + &quot; class: &quot; + objectClass);</b>
+<i>159</i>&nbsp;                }
+<i>160</i>&nbsp;            }
+<i>161</i>&nbsp;
+<b class="fc"><i>162</i>&nbsp;            propertyInfoMap.put(objectClass, columns);</b>
+<b class="fc"><i>163</i>&nbsp;            return columns;</b>
+<i>164</i>&nbsp;
+<b class="nc"><i>165</i>&nbsp;        } catch (SQLException e) {</b>
+<b class="nc"><i>166</i>&nbsp;            throw new PersismException(e.getMessage(), e);</b>
+<i>167</i>&nbsp;        }
+<i>168</i>&nbsp;    }
+<i>169</i>&nbsp;
+<i>170</i>&nbsp;    private synchronized &lt;T&gt; Map&lt;String, ColumnInfo&gt; determineColumnInfo(Class&lt;T&gt; objectClass, String tableName, Connection connection) {
+<b class="fc"><i>171</i>&nbsp;        if (columnInfoMap.containsKey(objectClass)) {</b>
+<b class="nc"><i>172</i>&nbsp;            return columnInfoMap.get(objectClass);</b>
+<i>173</i>&nbsp;        }
+<i>174</i>&nbsp;
+<b class="fc"><i>175</i>&nbsp;        Statement st = null;</b>
+<b class="fc"><i>176</i>&nbsp;        ResultSet rs = null;</b>
+<b class="fc"><i>177</i>&nbsp;        Map&lt;String, PropertyInfo&gt; properties = getTableColumnsPropertyInfo(objectClass, connection);</b>
+<b class="fc"><i>178</i>&nbsp;        String sd = connectionType.getKeywordStartDelimiter();</b>
+<b class="fc"><i>179</i>&nbsp;        String ed = connectionType.getKeywordEndDelimiter();</b>
+<i>180</i>&nbsp;
+<i>181</i>&nbsp;        try {
 <i>182</i>&nbsp;
-<i>183</i>&nbsp;        try {
-<i>184</i>&nbsp;
-<b class="fc"><i>185</i>&nbsp;            st = connection.createStatement();</b>
-<b class="fc"><i>186</i>&nbsp;            rs = st.executeQuery(&quot;SELECT * FROM &quot; + sd + tableName + ed + &quot; WHERE 1=0&quot;);</b>
-<i>187</i>&nbsp;
-<i>188</i>&nbsp;            // Make sure primary keys sorted by column order in case we have more than 1
-<i>189</i>&nbsp;            // then we&#39;ll know the order to apply the parameters.
-<b class="fc"><i>190</i>&nbsp;            Map&lt;String, ColumnInfo&gt; map = new LinkedHashMap&lt;String, ColumnInfo&gt;(32);</b>
+<b class="fc"><i>183</i>&nbsp;            st = connection.createStatement();</b>
+<b class="fc"><i>184</i>&nbsp;            rs = st.executeQuery(&quot;SELECT * FROM &quot; + sd + tableName + ed + &quot; WHERE 1=0&quot;);</b>
+<i>185</i>&nbsp;
+<i>186</i>&nbsp;            // Make sure primary keys sorted by column order in case we have more than 1
+<i>187</i>&nbsp;            // then we&#39;ll know the order to apply the parameters.
+<b class="fc"><i>188</i>&nbsp;            Map&lt;String, ColumnInfo&gt; map = new LinkedHashMap&lt;&gt;(32);</b>
+<i>189</i>&nbsp;
+<b class="fc"><i>190</i>&nbsp;            boolean primaryKeyFound = false;</b>
 <i>191</i>&nbsp;
-<b class="fc"><i>192</i>&nbsp;            boolean primaryKeyFound = false;</b>
-<i>193</i>&nbsp;
-<i>194</i>&nbsp;            // Grab all columns and make first pass to detect primary auto-inc
-<b class="fc"><i>195</i>&nbsp;            ResultSetMetaData rsMetaData = rs.getMetaData();</b>
-<b class="fc"><i>196</i>&nbsp;            for (int i = 1; i &lt;= rsMetaData.getColumnCount(); i++) {</b>
-<i>197</i>&nbsp;                // only include columns where we have a property
-<b class="fc"><i>198</i>&nbsp;                if (properties.containsKey(rsMetaData.getColumnLabel(i))) {</b>
-<b class="fc"><i>199</i>&nbsp;                    ColumnInfo columnInfo = new ColumnInfo();</b>
-<b class="fc"><i>200</i>&nbsp;                    columnInfo.columnName = rsMetaData.getColumnLabel(i);</b>
-<b class="fc"><i>201</i>&nbsp;                    columnInfo.autoIncrement = rsMetaData.isAutoIncrement(i);</b>
-<b class="fc"><i>202</i>&nbsp;                    columnInfo.primary = columnInfo.autoIncrement;</b>
-<b class="fc"><i>203</i>&nbsp;                    columnInfo.sqlColumnType = rsMetaData.getColumnType(i);</b>
-<b class="fc"><i>204</i>&nbsp;                    columnInfo.columnType = Types.convert(columnInfo.sqlColumnType);</b>
-<i>205</i>&nbsp;
-<b class="fc"><i>206</i>&nbsp;                    if (!primaryKeyFound) {</b>
-<b class="fc"><i>207</i>&nbsp;                        primaryKeyFound = columnInfo.primary;</b>
-<i>208</i>&nbsp;                    }
-<i>209</i>&nbsp;
-<b class="fc"><i>210</i>&nbsp;                    PropertyInfo propertyInfo = properties.get(rsMetaData.getColumnLabel(i));</b>
-<b class="fc"><i>211</i>&nbsp;                    Annotation annotation = propertyInfo.getAnnotation(Column.class);</b>
-<b class="fc"><i>212</i>&nbsp;                    if (annotation != null) {</b>
-<b class="fc"><i>213</i>&nbsp;                        if (((Column) annotation).hasDefault()) {</b>
-<b class="fc"><i>214</i>&nbsp;                            columnInfo.hasDefault = true;</b>
-<i>215</i>&nbsp;                        }
-<i>216</i>&nbsp;
-<b class="fc"><i>217</i>&nbsp;                        if (((Column) annotation).primary()) {</b>
-<b class="fc"><i>218</i>&nbsp;                            columnInfo.primary = true;</b>
-<i>219</i>&nbsp;                        }
-<i>220</i>&nbsp;
-<b class="fc"><i>221</i>&nbsp;                        if (((Column) annotation).autoIncrement()) {</b>
-<b class="fc"><i>222</i>&nbsp;                            columnInfo.autoIncrement = true;</b>
-<b class="fc"><i>223</i>&nbsp;                            if (!columnInfo.columnType.isCountable()) {</b>
-<b class="fc"><i>224</i>&nbsp;                                columnInfo.autoIncrement = false;</b>
-<b class="fc"><i>225</i>&nbsp;                                log.warn(&quot;Column &quot; + columnInfo.columnName + &quot; is annotated as autoIncrement but is a non numeric type (&quot; + columnInfo.columnType + &quot;) - Ignoring.&quot;);</b>
-<i>226</i>&nbsp;                            }
-<i>227</i>&nbsp;                        }
-<i>228</i>&nbsp;
-<b class="fc"><i>229</i>&nbsp;                        if (!primaryKeyFound) {</b>
-<b class="fc"><i>230</i>&nbsp;                            primaryKeyFound = columnInfo.primary;</b>
-<i>231</i>&nbsp;                        }
-<i>232</i>&nbsp;                    }
-<i>233</i>&nbsp;
-<b class="fc"><i>234</i>&nbsp;                    map.put(columnInfo.columnName, columnInfo);</b>
-<i>235</i>&nbsp;                }
-<i>236</i>&nbsp;            }
-<b class="fc"><i>237</i>&nbsp;            rs.close();</b>
-<i>238</i>&nbsp;
-<b class="fc"><i>239</i>&nbsp;            DatabaseMetaData dmd = connection.getMetaData();</b>
-<i>240</i>&nbsp;
-<i>241</i>&nbsp;            // does not work with SQLite - See testTypes unit test
-<i>242</i>&nbsp;            // columnInfo.columnType = Types.convert(rsMetaData.getColumnType(i));
-<i>243</i>&nbsp;
-<i>244</i>&nbsp;            /*
-<i>245</i>&nbsp;             Get columns from database metadata since we don&#39;t get Type from resultSetMetaData
-<i>246</i>&nbsp;             with SQLite. + We also need to know if there&#39;s a default on a column.
-<i>247</i>&nbsp;             */
-<b class="fc"><i>248</i>&nbsp;            rs = dmd.getColumns(null, connectionType.getSchemaPattern(), tableName, null);</b>
-<b class="fc"><i>249</i>&nbsp;            while (rs.next()) {</b>
-<b class="fc"><i>250</i>&nbsp;                ColumnInfo columnInfo = map.get(rs.getString(&quot;COLUMN_NAME&quot;));</b>
-<b class="fc"><i>251</i>&nbsp;                if (columnInfo != null) {</b>
-<i>252</i>&nbsp;                    // todo do we not have autoinc info here?
-<i>253</i>&nbsp;                    // IS_AUTOINCREMENT = NO or YES - Firebase has NO ANYWAY but we should maybe check other DBs
-<b class="fc"><i>254</i>&nbsp;                    if (!columnInfo.hasDefault) {</b>
-<b class="fc"><i>255</i>&nbsp;                        columnInfo.hasDefault = Util.containsColumn(rs, &quot;COLUMN_DEF&quot;) &amp;&amp; rs.getString(&quot;COLUMN_DEF&quot;) != null;</b>
-<i>256</i>&nbsp;                    }
-<b class="fc"><i>257</i>&nbsp;                    columnInfo.columnType = Types.convert(rs.getInt(&quot;DATA_TYPE&quot;));</b>
-<i>258</i>&nbsp;                }
-<b class="fc"><i>259</i>&nbsp;            }</b>
-<b class="fc"><i>260</i>&nbsp;            rs.close();</b>
-<i>261</i>&nbsp;
-<i>262</i>&nbsp;            // Iterate primary keys and update column infos
-<b class="fc"><i>263</i>&nbsp;            rs = dmd.getPrimaryKeys(null, connectionType.getSchemaPattern(), tableName);</b>
-<b class="fc"><i>264</i>&nbsp;            while (rs.next()) {</b>
-<b class="fc"><i>265</i>&nbsp;                ColumnInfo columnInfo = map.get(rs.getString(&quot;COLUMN_NAME&quot;));</b>
-<b class="fc"><i>266</i>&nbsp;                if (columnInfo != null) {</b>
-<b class="fc"><i>267</i>&nbsp;                    columnInfo.primary = true;</b>
-<i>268</i>&nbsp;
-<b class="fc"><i>269</i>&nbsp;                    if (!primaryKeyFound) {</b>
-<b class="fc"><i>270</i>&nbsp;                        primaryKeyFound = columnInfo.primary;</b>
-<i>271</i>&nbsp;                    }
-<i>272</i>&nbsp;                }
-<b class="fc"><i>273</i>&nbsp;            }</b>
-<i>274</i>&nbsp;
-<b class="fc"><i>275</i>&nbsp;            if (!primaryKeyFound) {</b>
-<i>276</i>&nbsp;                // Should we fail-fast? Actually no, we should not fail here.
-<i>277</i>&nbsp;                // It&#39;s very possible the user has a table that they will never
-<i>278</i>&nbsp;                // update, delete or select (by primary).
-<i>279</i>&nbsp;                // They may only want to do read operations with specified queries and in that
-<i>280</i>&nbsp;                // context we don&#39;t need any primary keys. (same with insert)
-<b class="fc"><i>281</i>&nbsp;                log.warn(&quot;No primary key found for table &quot; + tableName + &quot;. Do not use with update/delete or add a primary key.&quot;);</b>
-<i>282</i>&nbsp;            }
-<i>283</i>&nbsp;
-<b class="fc"><i>284</i>&nbsp;            columnInfoMap.put(objectClass, map);</b>
-<i>285</i>&nbsp;
-<b class="fc"><i>286</i>&nbsp;            return map;</b>
-<i>287</i>&nbsp;
-<b class="nc"><i>288</i>&nbsp;        } catch (SQLException e) {</b>
-<b class="nc"><i>289</i>&nbsp;            throw new PersismException(e.getMessage(), e);</b>
-<i>290</i>&nbsp;        } finally {
-<b class="fc"><i>291</i>&nbsp;            Util.cleanup(st, rs);</b>
-<b class="nc"><i>292</i>&nbsp;        }</b>
-<i>293</i>&nbsp;    }
-<i>294</i>&nbsp;
-<i>295</i>&nbsp;//    List&lt;String&gt; getNamedParameters(String sql) {
-<i>296</i>&nbsp;//        if (namedParams.containsKey(sql)) {
-<i>297</i>&nbsp;//            return namedParams.get(sql);
-<i>298</i>&nbsp;//        }
-<i>299</i>&nbsp;//
-<i>300</i>&nbsp;//        if (!sql.contains(&quot;:&quot;)) {
-<i>301</i>&nbsp;//            return Collections.emptyList();
-<i>302</i>&nbsp;//        }
-<i>303</i>&nbsp;//
-<i>304</i>&nbsp;//        return null;
-<i>305</i>&nbsp;//    }
-<i>306</i>&nbsp;
-<i>307</i>&nbsp;    static &lt;T&gt; Collection&lt;PropertyInfo&gt; getPropertyInfo(Class&lt;T&gt; objectClass) {
-<b class="fc"><i>308</i>&nbsp;        if (propertyMap.containsKey(objectClass)) {</b>
-<b class="fc"><i>309</i>&nbsp;            return propertyMap.get(objectClass);</b>
-<i>310</i>&nbsp;        }
-<b class="fc"><i>311</i>&nbsp;        return determinePropertyInfo(objectClass);</b>
-<i>312</i>&nbsp;    }
+<i>192</i>&nbsp;            // Grab all columns and make first pass to detect primary auto-inc
+<b class="fc"><i>193</i>&nbsp;            ResultSetMetaData rsMetaData = rs.getMetaData();</b>
+<b class="fc"><i>194</i>&nbsp;            for (int i = 1; i &lt;= rsMetaData.getColumnCount(); i++) {</b>
+<i>195</i>&nbsp;                // only include columns where we have a property
+<b class="fc"><i>196</i>&nbsp;                if (properties.containsKey(rsMetaData.getColumnLabel(i))) {</b>
+<b class="fc"><i>197</i>&nbsp;                    ColumnInfo columnInfo = new ColumnInfo();</b>
+<b class="fc"><i>198</i>&nbsp;                    columnInfo.columnName = rsMetaData.getColumnLabel(i);</b>
+<b class="fc"><i>199</i>&nbsp;                    columnInfo.autoIncrement = rsMetaData.isAutoIncrement(i);</b>
+<b class="fc"><i>200</i>&nbsp;                    columnInfo.primary = columnInfo.autoIncrement;</b>
+<b class="fc"><i>201</i>&nbsp;                    columnInfo.sqlColumnType = rsMetaData.getColumnType(i);</b>
+<b class="fc"><i>202</i>&nbsp;                    columnInfo.columnType = Types.convert(columnInfo.sqlColumnType);</b>
+<b class="fc"><i>203</i>&nbsp;                    columnInfo.length = rsMetaData.getColumnDisplaySize(i);</b>
+<i>204</i>&nbsp;
+<b class="fc"><i>205</i>&nbsp;                    if (!primaryKeyFound) {</b>
+<b class="fc"><i>206</i>&nbsp;                        primaryKeyFound = columnInfo.primary;</b>
+<i>207</i>&nbsp;                    }
+<i>208</i>&nbsp;
+<b class="fc"><i>209</i>&nbsp;                    PropertyInfo propertyInfo = properties.get(rsMetaData.getColumnLabel(i));</b>
+<b class="fc"><i>210</i>&nbsp;                    Annotation annotation = propertyInfo.getAnnotation(Column.class);</b>
+<b class="fc"><i>211</i>&nbsp;                    if (annotation != null) {</b>
+<b class="fc"><i>212</i>&nbsp;                        if (((Column) annotation).hasDefault()) {</b>
+<b class="fc"><i>213</i>&nbsp;                            columnInfo.hasDefault = true;</b>
+<i>214</i>&nbsp;                        }
+<i>215</i>&nbsp;
+<b class="fc"><i>216</i>&nbsp;                        if (((Column) annotation).primary()) {</b>
+<b class="fc"><i>217</i>&nbsp;                            columnInfo.primary = true;</b>
+<i>218</i>&nbsp;                        }
+<i>219</i>&nbsp;
+<b class="fc"><i>220</i>&nbsp;                        if (((Column) annotation).autoIncrement()) {</b>
+<b class="fc"><i>221</i>&nbsp;                            columnInfo.autoIncrement = true;</b>
+<b class="fc"><i>222</i>&nbsp;                            if (!columnInfo.columnType.isCountable()) {</b>
+<b class="fc"><i>223</i>&nbsp;                                columnInfo.autoIncrement = false;</b>
+<b class="fc"><i>224</i>&nbsp;                                log.warn(&quot;Column &quot; + columnInfo.columnName + &quot; is annotated as autoIncrement but is a non numeric type (&quot; + columnInfo.columnType + &quot;) - Ignoring.&quot;);</b>
+<i>225</i>&nbsp;                            }
+<i>226</i>&nbsp;                        }
+<i>227</i>&nbsp;
+<b class="fc"><i>228</i>&nbsp;                        if (!primaryKeyFound) {</b>
+<b class="fc"><i>229</i>&nbsp;                            primaryKeyFound = columnInfo.primary;</b>
+<i>230</i>&nbsp;                        }
+<i>231</i>&nbsp;                    }
+<i>232</i>&nbsp;
+<b class="fc"><i>233</i>&nbsp;                    map.put(columnInfo.columnName, columnInfo);</b>
+<i>234</i>&nbsp;                }
+<i>235</i>&nbsp;            }
+<b class="fc"><i>236</i>&nbsp;            rs.close();</b>
+<i>237</i>&nbsp;
+<b class="fc"><i>238</i>&nbsp;            DatabaseMetaData dmd = connection.getMetaData();</b>
+<i>239</i>&nbsp;
+<i>240</i>&nbsp;            // does not work with SQLite - See testTypes unit test
+<i>241</i>&nbsp;            // columnInfo.columnType = Types.convert(rsMetaData.getColumnType(i));
+<i>242</i>&nbsp;
+<i>243</i>&nbsp;            /*
+<i>244</i>&nbsp;             Get columns from database metadata since we don&#39;t get Type from resultSetMetaData
+<i>245</i>&nbsp;             with SQLite. + We also need to know if there&#39;s a default on a column.
+<i>246</i>&nbsp;             */
+<b class="fc"><i>247</i>&nbsp;            rs = dmd.getColumns(null, connectionType.getSchemaPattern(), tableName, null);</b>
+<b class="fc"><i>248</i>&nbsp;            while (rs.next()) {</b>
+<b class="fc"><i>249</i>&nbsp;                ColumnInfo columnInfo = map.get(rs.getString(&quot;COLUMN_NAME&quot;));</b>
+<b class="fc"><i>250</i>&nbsp;                if (columnInfo != null) {</b>
+<i>251</i>&nbsp;                    // Do we not have autoinc info here? Yes.
+<i>252</i>&nbsp;                    // IS_AUTOINCREMENT = NO or YES - Firebird has NO ANYWAY but we should maybe check other DBs
+<b class="fc"><i>253</i>&nbsp;                    if (!columnInfo.hasDefault) {</b>
+<b class="fc"><i>254</i>&nbsp;                        columnInfo.hasDefault = Util.containsColumn(rs, &quot;COLUMN_DEF&quot;) &amp;&amp; rs.getString(&quot;COLUMN_DEF&quot;) != null;</b>
+<i>255</i>&nbsp;                    }
+<b class="fc"><i>256</i>&nbsp;                    columnInfo.columnType = Types.convert(rs.getInt(&quot;DATA_TYPE&quot;));</b>
+<i>257</i>&nbsp;                }
+<b class="fc"><i>258</i>&nbsp;            }</b>
+<b class="fc"><i>259</i>&nbsp;            rs.close();</b>
+<i>260</i>&nbsp;
+<i>261</i>&nbsp;            // Iterate primary keys and update column infos
+<b class="fc"><i>262</i>&nbsp;            rs = dmd.getPrimaryKeys(null, connectionType.getSchemaPattern(), tableName);</b>
+<b class="fc"><i>263</i>&nbsp;            while (rs.next()) {</b>
+<b class="fc"><i>264</i>&nbsp;                ColumnInfo columnInfo = map.get(rs.getString(&quot;COLUMN_NAME&quot;));</b>
+<b class="fc"><i>265</i>&nbsp;                if (columnInfo != null) {</b>
+<b class="fc"><i>266</i>&nbsp;                    columnInfo.primary = true;</b>
+<i>267</i>&nbsp;
+<b class="fc"><i>268</i>&nbsp;                    if (!primaryKeyFound) {</b>
+<b class="fc"><i>269</i>&nbsp;                        primaryKeyFound = columnInfo.primary;</b>
+<i>270</i>&nbsp;                    }
+<i>271</i>&nbsp;                }
+<b class="fc"><i>272</i>&nbsp;            }</b>
+<i>273</i>&nbsp;
+<b class="fc"><i>274</i>&nbsp;            if (!primaryKeyFound) {</b>
+<i>275</i>&nbsp;                // Should we fail-fast? Actually no, we should not fail here.
+<i>276</i>&nbsp;                // It&#39;s very possible the user has a table that they will never
+<i>277</i>&nbsp;                // update, delete or select (by primary).
+<i>278</i>&nbsp;                // They may only want to do read operations with specified queries and in that
+<i>279</i>&nbsp;                // context we don&#39;t need any primary keys. (same with insert)
+<b class="fc"><i>280</i>&nbsp;                log.warn(&quot;No primary key found for table &quot; + tableName + &quot;. Do not use with update/delete or add a primary key.&quot;);</b>
+<i>281</i>&nbsp;            }
+<i>282</i>&nbsp;
+<b class="fc"><i>283</i>&nbsp;            columnInfoMap.put(objectClass, map);</b>
+<i>284</i>&nbsp;
+<b class="fc"><i>285</i>&nbsp;            return map;</b>
+<i>286</i>&nbsp;
+<b class="nc"><i>287</i>&nbsp;        } catch (SQLException e) {</b>
+<b class="nc"><i>288</i>&nbsp;            throw new PersismException(e.getMessage(), e);</b>
+<i>289</i>&nbsp;        } finally {
+<b class="fc"><i>290</i>&nbsp;            Util.cleanup(st, rs);</b>
+<b class="nc"><i>291</i>&nbsp;        }</b>
+<i>292</i>&nbsp;    }
+<i>293</i>&nbsp;
+<i>294</i>&nbsp;    static &lt;T&gt; Collection&lt;PropertyInfo&gt; getPropertyInfo(Class&lt;T&gt; objectClass) {
+<b class="fc"><i>295</i>&nbsp;        if (propertyMap.containsKey(objectClass)) {</b>
+<b class="fc"><i>296</i>&nbsp;            return propertyMap.get(objectClass);</b>
+<i>297</i>&nbsp;        }
+<b class="fc"><i>298</i>&nbsp;        return determinePropertyInfo(objectClass);</b>
+<i>299</i>&nbsp;    }
+<i>300</i>&nbsp;
+<i>301</i>&nbsp;    private static synchronized &lt;T&gt; Collection&lt;PropertyInfo&gt; determinePropertyInfo(Class&lt;T&gt; objectClass) {
+<b class="fc"><i>302</i>&nbsp;        if (propertyMap.containsKey(objectClass)) {</b>
+<b class="nc"><i>303</i>&nbsp;            return propertyMap.get(objectClass);</b>
+<i>304</i>&nbsp;        }
+<i>305</i>&nbsp;
+<b class="fc"><i>306</i>&nbsp;        Map&lt;String, PropertyInfo&gt; propertyNames = new HashMap&lt;String, PropertyInfo&gt;(32);</b>
+<i>307</i>&nbsp;
+<b class="fc"><i>308</i>&nbsp;        Method[] methods = objectClass.getMethods();</b>
+<b class="fc"><i>309</i>&nbsp;        for (Method method : methods) {</b>
+<b class="fc"><i>310</i>&nbsp;            String methodName = method.getName();</b>
+<b class="fc"><i>311</i>&nbsp;            if (methodName.startsWith(&quot;set&quot;)) {</b>
+<b class="fc"><i>312</i>&nbsp;                String propertyName = methodName.substring(3).toLowerCase();</b>
 <i>313</i>&nbsp;
-<i>314</i>&nbsp;    private static synchronized &lt;T&gt; Collection&lt;PropertyInfo&gt; determinePropertyInfo(Class&lt;T&gt; objectClass) {
-<b class="fc"><i>315</i>&nbsp;        if (propertyMap.containsKey(objectClass)) {</b>
-<b class="nc"><i>316</i>&nbsp;            return propertyMap.get(objectClass);</b>
-<i>317</i>&nbsp;        }
-<i>318</i>&nbsp;
-<b class="fc"><i>319</i>&nbsp;        Map&lt;String, PropertyInfo&gt; propertyNames = new HashMap&lt;String, PropertyInfo&gt;(32);</b>
-<i>320</i>&nbsp;
-<b class="fc"><i>321</i>&nbsp;        Method[] methods = objectClass.getMethods();</b>
-<b class="fc"><i>322</i>&nbsp;        for (Method method : methods) {</b>
-<b class="fc"><i>323</i>&nbsp;            String methodName = method.getName();</b>
-<b class="fc"><i>324</i>&nbsp;            if (methodName.startsWith(&quot;set&quot;)) {</b>
-<b class="fc"><i>325</i>&nbsp;                String propertyName = methodName.substring(3).toLowerCase();</b>
-<i>326</i>&nbsp;
-<b class="fc"><i>327</i>&nbsp;                PropertyInfo propertyInfo = propertyNames.get(propertyName);</b>
-<b class="fc"><i>328</i>&nbsp;                if (propertyInfo == null) {</b>
-<b class="fc"><i>329</i>&nbsp;                    propertyInfo = new PropertyInfo();</b>
-<b class="fc"><i>330</i>&nbsp;                    propertyNames.put(propertyName, propertyInfo);</b>
-<i>331</i>&nbsp;                }
-<b class="fc"><i>332</i>&nbsp;                propertyInfo.setter = method;</b>
-<b class="fc"><i>333</i>&nbsp;                propertyInfo.propertyName = propertyName;</b>
+<b class="fc"><i>314</i>&nbsp;                PropertyInfo propertyInfo = propertyNames.get(propertyName);</b>
+<b class="fc"><i>315</i>&nbsp;                if (propertyInfo == null) {</b>
+<b class="fc"><i>316</i>&nbsp;                    propertyInfo = new PropertyInfo();</b>
+<b class="fc"><i>317</i>&nbsp;                    propertyNames.put(propertyName, propertyInfo);</b>
+<i>318</i>&nbsp;                }
+<b class="fc"><i>319</i>&nbsp;                propertyInfo.setter = method;</b>
+<b class="fc"><i>320</i>&nbsp;                propertyInfo.propertyName = propertyName;</b>
+<i>321</i>&nbsp;
+<b class="fc"><i>322</i>&nbsp;                Annotation[] annotations = method.getAnnotations();</b>
+<b class="fc"><i>323</i>&nbsp;                for (Annotation annotation : annotations) {</b>
+<b class="fc"><i>324</i>&nbsp;                    propertyInfo.annotations.put(annotation.annotationType(), annotation);</b>
+<i>325</i>&nbsp;                }
+<i>326</i>&nbsp;            }
+<i>327</i>&nbsp;
+<b class="fc"><i>328</i>&nbsp;            if (methodName.startsWith(&quot;is&quot;) || methodName.startsWith(&quot;get&quot;) &amp;&amp; !&quot;getClass&quot;.equalsIgnoreCase(methodName)) {</b>
+<b class="fc"><i>329</i>&nbsp;                int index = 3;</b>
+<b class="fc"><i>330</i>&nbsp;                if (methodName.startsWith(&quot;is&quot;)) {</b>
+<b class="fc"><i>331</i>&nbsp;                    index = 2;</b>
+<i>332</i>&nbsp;                }
+<b class="fc"><i>333</i>&nbsp;                String propertyName = methodName.substring(index).toLowerCase();</b>
 <i>334</i>&nbsp;
-<b class="fc"><i>335</i>&nbsp;                Annotation[] annotations = method.getAnnotations();</b>
-<b class="fc"><i>336</i>&nbsp;                for (Annotation annotation : annotations) {</b>
-<b class="fc"><i>337</i>&nbsp;                    propertyInfo.annotations.put(annotation.annotationType(), annotation);</b>
-<i>338</i>&nbsp;                }
-<i>339</i>&nbsp;            }
-<i>340</i>&nbsp;
-<b class="fc"><i>341</i>&nbsp;            if (methodName.startsWith(&quot;is&quot;) || methodName.startsWith(&quot;get&quot;) &amp;&amp; !&quot;getClass&quot;.equalsIgnoreCase(methodName)) {</b>
-<b class="fc"><i>342</i>&nbsp;                int index = 3;</b>
-<b class="fc"><i>343</i>&nbsp;                if (methodName.startsWith(&quot;is&quot;)) {</b>
-<b class="fc"><i>344</i>&nbsp;                    index = 2;</b>
+<b class="fc"><i>335</i>&nbsp;                PropertyInfo propertyInfo = propertyNames.get(propertyName);</b>
+<b class="fc"><i>336</i>&nbsp;                if (propertyInfo == null) {</b>
+<b class="fc"><i>337</i>&nbsp;                    propertyInfo = new PropertyInfo();</b>
+<b class="fc"><i>338</i>&nbsp;                    propertyNames.put(propertyName, propertyInfo);</b>
+<i>339</i>&nbsp;                }
+<b class="fc"><i>340</i>&nbsp;                propertyInfo.getter = method;</b>
+<b class="fc"><i>341</i>&nbsp;                propertyInfo.propertyName = propertyName;</b>
+<b class="fc"><i>342</i>&nbsp;                Annotation[] annotations = method.getAnnotations();</b>
+<b class="fc"><i>343</i>&nbsp;                for (Annotation annotation : annotations) {</b>
+<b class="fc"><i>344</i>&nbsp;                    propertyInfo.annotations.put(annotation.annotationType(), annotation);</b>
 <i>345</i>&nbsp;                }
-<b class="fc"><i>346</i>&nbsp;                String propertyName = methodName.substring(index).toLowerCase();</b>
-<i>347</i>&nbsp;
-<b class="fc"><i>348</i>&nbsp;                PropertyInfo propertyInfo = propertyNames.get(propertyName);</b>
-<b class="fc"><i>349</i>&nbsp;                if (propertyInfo == null) {</b>
-<b class="fc"><i>350</i>&nbsp;                    propertyInfo = new PropertyInfo();</b>
-<b class="fc"><i>351</i>&nbsp;                    propertyNames.put(propertyName, propertyInfo);</b>
-<i>352</i>&nbsp;                }
-<b class="fc"><i>353</i>&nbsp;                propertyInfo.getter = method;</b>
-<b class="fc"><i>354</i>&nbsp;                propertyInfo.propertyName = propertyName;</b>
-<b class="fc"><i>355</i>&nbsp;                Annotation[] annotations = method.getAnnotations();</b>
-<b class="fc"><i>356</i>&nbsp;                for (Annotation annotation : annotations) {</b>
-<b class="fc"><i>357</i>&nbsp;                    propertyInfo.annotations.put(annotation.annotationType(), annotation);</b>
-<i>358</i>&nbsp;                }
-<i>359</i>&nbsp;            }
-<i>360</i>&nbsp;        }
-<i>361</i>&nbsp;
-<b class="fc"><i>362</i>&nbsp;        Field[] fields = objectClass.getDeclaredFields();</b>
-<b class="fc"><i>363</i>&nbsp;        for (Field field : fields) {</b>
-<b class="fc"><i>364</i>&nbsp;            PropertyInfo propertyInfo = propertyNames.get(field.getName().toLowerCase());</b>
-<b class="fc"><i>365</i>&nbsp;            if (propertyInfo != null) {</b>
-<i>366</i>&nbsp;                // Add the field annotations
-<b class="fc"><i>367</i>&nbsp;                Annotation[] annotations = field.getAnnotations();</b>
-<b class="fc"><i>368</i>&nbsp;                for (Annotation annotation : annotations) {</b>
-<b class="fc"><i>369</i>&nbsp;                    propertyInfo.annotations.put(annotation.annotationType(), annotation);</b>
-<i>370</i>&nbsp;                }
-<i>371</i>&nbsp;            }
-<i>372</i>&nbsp;        }
-<i>373</i>&nbsp;
-<i>374</i>&nbsp;        // Remove any properties found with the NoColumn annotation OR ones missing a setter (meaning they are calculated properties)
-<i>375</i>&nbsp;        // http://stackoverflow.com/questions/2026104/hashmap-keyset-foreach-and-remove
-<b class="fc"><i>376</i>&nbsp;        Iterator&lt;Map.Entry&lt;String, PropertyInfo&gt;&gt; it = propertyNames.entrySet().iterator();</b>
-<b class="fc"><i>377</i>&nbsp;        while (it.hasNext()) {</b>
-<b class="fc"><i>378</i>&nbsp;            Map.Entry&lt;String, PropertyInfo&gt; entry = it.next();</b>
-<b class="fc"><i>379</i>&nbsp;            PropertyInfo info = entry.getValue();</b>
-<b class="fc"><i>380</i>&nbsp;            if (info.getAnnotation(NotMapped.class) != null || info.setter == null) {</b>
-<b class="fc"><i>381</i>&nbsp;                it.remove();</b>
-<i>382</i>&nbsp;            }
-<b class="fc"><i>383</i>&nbsp;        }</b>
-<b class="fc"><i>384</i>&nbsp;        Collection&lt;PropertyInfo&gt; properties = propertyNames.values();</b>
-<b class="fc"><i>385</i>&nbsp;        propertyMap.put(objectClass, properties);</b>
-<b class="fc"><i>386</i>&nbsp;        return Collections.unmodifiableCollection(properties);</b>
-<i>387</i>&nbsp;    }
-<i>388</i>&nbsp;
-<i>389</i>&nbsp;
-<b class="fc"><i>390</i>&nbsp;    private static final String[] tableTypes = {&quot;TABLE&quot;};</b>
+<i>346</i>&nbsp;            }
+<i>347</i>&nbsp;        }
+<i>348</i>&nbsp;
+<b class="fc"><i>349</i>&nbsp;        Field[] fields = objectClass.getDeclaredFields();</b>
+<b class="fc"><i>350</i>&nbsp;        for (Field field : fields) {</b>
+<b class="fc"><i>351</i>&nbsp;            PropertyInfo propertyInfo = propertyNames.get(field.getName().toLowerCase());</b>
+<b class="fc"><i>352</i>&nbsp;            if (propertyInfo != null) {</b>
+<i>353</i>&nbsp;                // Add the field annotations
+<b class="fc"><i>354</i>&nbsp;                Annotation[] annotations = field.getAnnotations();</b>
+<b class="fc"><i>355</i>&nbsp;                for (Annotation annotation : annotations) {</b>
+<b class="fc"><i>356</i>&nbsp;                    propertyInfo.annotations.put(annotation.annotationType(), annotation);</b>
+<i>357</i>&nbsp;                }
+<i>358</i>&nbsp;            }
+<i>359</i>&nbsp;        }
+<i>360</i>&nbsp;
+<i>361</i>&nbsp;        // Remove any properties found with the NoColumn annotation OR ones missing a setter (meaning they are calculated properties)
+<i>362</i>&nbsp;        // http://stackoverflow.com/questions/2026104/hashmap-keyset-foreach-and-remove
+<b class="fc"><i>363</i>&nbsp;        Iterator&lt;Map.Entry&lt;String, PropertyInfo&gt;&gt; it = propertyNames.entrySet().iterator();</b>
+<b class="fc"><i>364</i>&nbsp;        while (it.hasNext()) {</b>
+<b class="fc"><i>365</i>&nbsp;            Map.Entry&lt;String, PropertyInfo&gt; entry = it.next();</b>
+<b class="fc"><i>366</i>&nbsp;            PropertyInfo info = entry.getValue();</b>
+<b class="fc"><i>367</i>&nbsp;            if (info.getAnnotation(NotColumn.class) != null || info.setter == null) {</b>
+<b class="fc"><i>368</i>&nbsp;                it.remove();</b>
+<i>369</i>&nbsp;            }
+<b class="fc"><i>370</i>&nbsp;        }</b>
+<b class="fc"><i>371</i>&nbsp;        Collection&lt;PropertyInfo&gt; properties = propertyNames.values();</b>
+<b class="fc"><i>372</i>&nbsp;        propertyMap.put(objectClass, properties);</b>
+<b class="fc"><i>373</i>&nbsp;        return Collections.unmodifiableCollection(properties);</b>
+<i>374</i>&nbsp;    }
+<i>375</i>&nbsp;
+<i>376</i>&nbsp;
+<b class="fc"><i>377</i>&nbsp;    private static final String[] tableTypes = {&quot;TABLE&quot;};</b>
+<i>378</i>&nbsp;
+<i>379</i>&nbsp;    // Populates the tables list with table names from the DB.
+<i>380</i>&nbsp;    // This list is used for discovery of the table name from a class.
+<i>381</i>&nbsp;    // ONLY to be called from Init in a synchronized way.
+<i>382</i>&nbsp;    private void populateTableList(Connection con) throws PersismException {
+<i>383</i>&nbsp;
+<b class="fc"><i>384</i>&nbsp;        ResultSet rs = null;</b>
+<i>385</i>&nbsp;
+<i>386</i>&nbsp;        try {
+<i>387</i>&nbsp;            // NULL POINTER WITH
+<i>388</i>&nbsp;            // http://social.msdn.microsoft.com/Forums/en-US/sqldataaccess/thread/5c74094a-8506-4278-ac1c-f07d1bfdb266
+<i>389</i>&nbsp;            // solution:
+<i>390</i>&nbsp;            // http://stackoverflow.com/questions/8988945/java7-sqljdbc4-sql-error-08s01-on-getconnection
 <i>391</i>&nbsp;
-<i>392</i>&nbsp;    // Populates the tables list with table names from the DB.
-<i>393</i>&nbsp;    // This list is used for discovery of the table name from a class.
-<i>394</i>&nbsp;    // ONLY to be called from Init in a synchronized way.
-<i>395</i>&nbsp;    private void populateTableList(Connection con) throws PersismException {
+<b class="fc"><i>392</i>&nbsp;            rs = con.getMetaData().getTables(null, connectionType.getSchemaPattern(), null, tableTypes);</b>
+<b class="fc"><i>393</i>&nbsp;            while (rs.next()) {</b>
+<b class="fc"><i>394</i>&nbsp;                tableNames.add(rs.getString(&quot;TABLE_NAME&quot;));</b>
+<i>395</i>&nbsp;            }
 <i>396</i>&nbsp;
-<b class="fc"><i>397</i>&nbsp;        ResultSet rs = null;</b>
-<i>398</i>&nbsp;
-<i>399</i>&nbsp;        try {
-<i>400</i>&nbsp;            // NULL POINTER WITH
-<i>401</i>&nbsp;            // http://social.msdn.microsoft.com/Forums/en-US/sqldataaccess/thread/5c74094a-8506-4278-ac1c-f07d1bfdb266
-<i>402</i>&nbsp;            // solution:
-<i>403</i>&nbsp;            // http://stackoverflow.com/questions/8988945/java7-sqljdbc4-sql-error-08s01-on-getconnection
+<b class="nc"><i>397</i>&nbsp;        } catch (SQLException e) {</b>
+<b class="nc"><i>398</i>&nbsp;            throw new PersismException(e.getMessage(), e);</b>
+<i>399</i>&nbsp;
+<i>400</i>&nbsp;        } finally {
+<b class="fc"><i>401</i>&nbsp;            Util.cleanup(null, rs);</b>
+<b class="fc"><i>402</i>&nbsp;        }</b>
+<b class="fc"><i>403</i>&nbsp;    }</b>
 <i>404</i>&nbsp;
-<b class="fc"><i>405</i>&nbsp;            rs = con.getMetaData().getTables(null, connectionType.getSchemaPattern(), null, tableTypes);</b>
-<b class="fc"><i>406</i>&nbsp;            while (rs.next()) {</b>
-<b class="fc"><i>407</i>&nbsp;                tableNames.add(rs.getString(&quot;TABLE_NAME&quot;));</b>
-<i>408</i>&nbsp;            }
-<i>409</i>&nbsp;
-<b class="nc"><i>410</i>&nbsp;        } catch (SQLException e) {</b>
-<b class="nc"><i>411</i>&nbsp;            throw new PersismException(e.getMessage(), e);</b>
-<i>412</i>&nbsp;
-<i>413</i>&nbsp;        } finally {
-<b class="fc"><i>414</i>&nbsp;            Util.cleanup(null, rs);</b>
-<b class="fc"><i>415</i>&nbsp;        }</b>
-<b class="fc"><i>416</i>&nbsp;    }</b>
-<i>417</i>&nbsp;
-<i>418</i>&nbsp;    /**
-<i>419</i>&nbsp;     *
-<i>420</i>&nbsp;     * @param object
-<i>421</i>&nbsp;     * @param connection
-<i>422</i>&nbsp;     * @return sql update string
-<i>423</i>&nbsp;     * @throws NoChangesDetectedForUpdateException if the data object implements Persistable and there are no changes detected
-<i>424</i>&nbsp;     */
-<i>425</i>&nbsp;    String getUpdateStatement(Object object, Connection connection) throws PersismException, NoChangesDetectedForUpdateException {
+<i>405</i>&nbsp;    /**
+<i>406</i>&nbsp;     *
+<i>407</i>&nbsp;     * @param object
+<i>408</i>&nbsp;     * @param connection
+<i>409</i>&nbsp;     * @return sql update string
+<i>410</i>&nbsp;     * @throws NoChangesDetectedForUpdateException if the data object implements Persistable and there are no changes detected
+<i>411</i>&nbsp;     */
+<i>412</i>&nbsp;    String getUpdateStatement(Object object, Connection connection) throws PersismException, NoChangesDetectedForUpdateException {
+<i>413</i>&nbsp;
+<b class="fc"><i>414</i>&nbsp;        if (object instanceof Persistable) {</b>
+<b class="fc"><i>415</i>&nbsp;            Map&lt;String, PropertyInfo&gt; changes = getChangedProperties((Persistable) object, connection);</b>
+<b class="fc"><i>416</i>&nbsp;            if (changes.size() == 0) {</b>
+<b class="fc"><i>417</i>&nbsp;                throw new NoChangesDetectedForUpdateException();</b>
+<i>418</i>&nbsp;            }
+<i>419</i>&nbsp;            // Note we don&#39;t not add Persistable updates to updateStatementsMap since they will be different each time.
+<b class="fc"><i>420</i>&nbsp;            String sql = buildUpdateString(object, changes.keySet().iterator(), connection);</b>
+<b class="fc"><i>421</i>&nbsp;            if (log.isDebugEnabled()) {</b>
+<b class="fc"><i>422</i>&nbsp;                log.debug(&quot;getUpdateStatement for &quot; + object.getClass() + &quot; for changed fields is &quot; + sql);</b>
+<i>423</i>&nbsp;            }
+<b class="fc"><i>424</i>&nbsp;            return sql;</b>
+<i>425</i>&nbsp;        }
 <i>426</i>&nbsp;
-<b class="fc"><i>427</i>&nbsp;        if (object instanceof Persistable) {</b>
-<b class="fc"><i>428</i>&nbsp;            Map&lt;String, PropertyInfo&gt; changes = getChangedProperties((Persistable) object, connection);</b>
-<b class="fc"><i>429</i>&nbsp;            if (changes.size() == 0) {</b>
-<b class="fc"><i>430</i>&nbsp;                throw new NoChangesDetectedForUpdateException();</b>
-<i>431</i>&nbsp;            }
-<i>432</i>&nbsp;            // Note we don&#39;t not add Persistable updates to updateStatementsMap since they will be different each time.
-<b class="fc"><i>433</i>&nbsp;            String sql = buildUpdateString(object, changes.keySet().iterator(), connection);</b>
-<b class="fc"><i>434</i>&nbsp;            if (log.isDebugEnabled()) {</b>
-<b class="fc"><i>435</i>&nbsp;                log.debug(&quot;getUpdateStatement for &quot; + object.getClass() + &quot; for changed fields is &quot; + sql);</b>
-<i>436</i>&nbsp;            }
-<b class="fc"><i>437</i>&nbsp;            return sql;</b>
+<b class="fc"><i>427</i>&nbsp;        if (updateStatementsMap.containsKey(object.getClass())) {</b>
+<b class="fc"><i>428</i>&nbsp;            return updateStatementsMap.get(object.getClass());</b>
+<i>429</i>&nbsp;        }
+<i>430</i>&nbsp;
+<b class="fc"><i>431</i>&nbsp;        return determineUpdateStatement(object, connection);</b>
+<i>432</i>&nbsp;    }
+<i>433</i>&nbsp;
+<i>434</i>&nbsp;    // Used by Objects not implementing Persistable since they will always use the same update statement
+<i>435</i>&nbsp;    private synchronized String determineUpdateStatement(Object object, Connection connection) {
+<b class="fc"><i>436</i>&nbsp;        if (updateStatementsMap.containsKey(object.getClass())) {</b>
+<b class="nc"><i>437</i>&nbsp;            return updateStatementsMap.get(object.getClass());</b>
 <i>438</i>&nbsp;        }
 <i>439</i>&nbsp;
-<b class="fc"><i>440</i>&nbsp;        if (updateStatementsMap.containsKey(object.getClass())) {</b>
-<b class="fc"><i>441</i>&nbsp;            return updateStatementsMap.get(object.getClass());</b>
-<i>442</i>&nbsp;        }
+<b class="fc"><i>440</i>&nbsp;        Map&lt;String, PropertyInfo&gt; columns = getTableColumnsPropertyInfo(object.getClass(), connection);</b>
+<i>441</i>&nbsp;
+<b class="fc"><i>442</i>&nbsp;        String updateStatement = buildUpdateString(object, columns.keySet().iterator(), connection);</b>
 <i>443</i>&nbsp;
-<b class="fc"><i>444</i>&nbsp;        return determineUpdateStatement(object, connection);</b>
-<i>445</i>&nbsp;    }
+<i>444</i>&nbsp;        // Store static update statement for future use.
+<b class="fc"><i>445</i>&nbsp;        updateStatementsMap.put(object.getClass(), updateStatement);</b>
 <i>446</i>&nbsp;
-<i>447</i>&nbsp;    // Used by Objects not implementing Persistable since they will always use the same update statement
-<i>448</i>&nbsp;    private synchronized String determineUpdateStatement(Object object, Connection connection) {
-<b class="fc"><i>449</i>&nbsp;        if (updateStatementsMap.containsKey(object.getClass())) {</b>
-<b class="nc"><i>450</i>&nbsp;            return updateStatementsMap.get(object.getClass());</b>
-<i>451</i>&nbsp;        }
-<i>452</i>&nbsp;
-<b class="fc"><i>453</i>&nbsp;        Map&lt;String, PropertyInfo&gt; columns = getTableColumnsPropertyInfo(object.getClass(), connection);</b>
+<b class="fc"><i>447</i>&nbsp;        if (log.isDebugEnabled()) {</b>
+<b class="fc"><i>448</i>&nbsp;            log.debug(&quot;determineUpdateStatement for &quot; + object.getClass() + &quot; is &quot; + updateStatement);</b>
+<i>449</i>&nbsp;        }
+<i>450</i>&nbsp;
+<b class="fc"><i>451</i>&nbsp;        return updateStatement;</b>
+<i>452</i>&nbsp;    }
+<i>453</i>&nbsp;
 <i>454</i>&nbsp;
-<b class="fc"><i>455</i>&nbsp;        String updateStatement = buildUpdateString(object, columns.keySet().iterator(), connection);</b>
-<i>456</i>&nbsp;
-<i>457</i>&nbsp;        // Store static update statement for future use.
-<b class="fc"><i>458</i>&nbsp;        updateStatementsMap.put(object.getClass(), updateStatement);</b>
-<i>459</i>&nbsp;
-<b class="fc"><i>460</i>&nbsp;        if (log.isDebugEnabled()) {</b>
-<b class="fc"><i>461</i>&nbsp;            log.debug(&quot;determineUpdateStatement for &quot; + object.getClass() + &quot; is &quot; + updateStatement);</b>
-<i>462</i>&nbsp;        }
-<i>463</i>&nbsp;
-<b class="fc"><i>464</i>&nbsp;        return updateStatement;</b>
-<i>465</i>&nbsp;    }
-<i>466</i>&nbsp;
+<i>455</i>&nbsp;    // Note this will not include columns unless they have the associated property.
+<i>456</i>&nbsp;    String getInsertStatement(Object object, Connection connection) throws PersismException {
+<b class="fc"><i>457</i>&nbsp;        if (insertStatementsMap.containsKey(object.getClass())) {</b>
+<b class="fc"><i>458</i>&nbsp;            return insertStatementsMap.get(object.getClass());</b>
+<i>459</i>&nbsp;        }
+<b class="fc"><i>460</i>&nbsp;        return determineInsertStatement(object, connection);</b>
+<i>461</i>&nbsp;    }
+<i>462</i>&nbsp;
+<i>463</i>&nbsp;    private synchronized String determineInsertStatement(Object object, Connection connection) {
+<b class="fc"><i>464</i>&nbsp;        if (insertStatementsMap.containsKey(object.getClass())) {</b>
+<b class="nc"><i>465</i>&nbsp;            return insertStatementsMap.get(object.getClass());</b>
+<i>466</i>&nbsp;        }
 <i>467</i>&nbsp;
-<i>468</i>&nbsp;    // Note this will not include columns unless they have the associated property.
-<i>469</i>&nbsp;    String getInsertStatement(Object object, Connection connection) throws PersismException {
-<b class="fc"><i>470</i>&nbsp;        if (insertStatementsMap.containsKey(object.getClass())) {</b>
-<b class="fc"><i>471</i>&nbsp;            return insertStatementsMap.get(object.getClass());</b>
-<i>472</i>&nbsp;        }
-<b class="fc"><i>473</i>&nbsp;        return determineInsertStatement(object, connection);</b>
-<i>474</i>&nbsp;    }
-<i>475</i>&nbsp;
-<i>476</i>&nbsp;    private synchronized String determineInsertStatement(Object object, Connection connection) {
-<b class="fc"><i>477</i>&nbsp;        if (insertStatementsMap.containsKey(object.getClass())) {</b>
-<b class="nc"><i>478</i>&nbsp;            return insertStatementsMap.get(object.getClass());</b>
-<i>479</i>&nbsp;        }
-<i>480</i>&nbsp;
-<i>481</i>&nbsp;        try {
-<b class="fc"><i>482</i>&nbsp;            String tableName = getTableName(object.getClass(), connection);</b>
-<b class="fc"><i>483</i>&nbsp;            String sd = connectionType.getKeywordStartDelimiter();</b>
-<b class="fc"><i>484</i>&nbsp;            String ed = connectionType.getKeywordEndDelimiter();</b>
-<i>485</i>&nbsp;
-<b class="fc"><i>486</i>&nbsp;            Map&lt;String, ColumnInfo&gt; columns = getColumns(object.getClass(), connection);</b>
-<b class="fc"><i>487</i>&nbsp;            Map&lt;String, PropertyInfo&gt; properties = getTableColumnsPropertyInfo(object.getClass(), connection);</b>
-<b class="fc"><i>488</i>&nbsp;            StringBuilder sb = new StringBuilder();</b>
-<b class="fc"><i>489</i>&nbsp;            sb.append(&quot;INSERT INTO &quot;).append(sd).append(tableName).append(ed).append(&quot; (&quot;);</b>
-<b class="fc"><i>490</i>&nbsp;            String sep = &quot;&quot;;</b>
-<b class="fc"><i>491</i>&nbsp;            boolean saveInMap = true;</b>
+<i>468</i>&nbsp;        try {
+<b class="fc"><i>469</i>&nbsp;            String tableName = getTableName(object.getClass(), connection);</b>
+<b class="fc"><i>470</i>&nbsp;            String sd = connectionType.getKeywordStartDelimiter();</b>
+<b class="fc"><i>471</i>&nbsp;            String ed = connectionType.getKeywordEndDelimiter();</b>
+<i>472</i>&nbsp;
+<b class="fc"><i>473</i>&nbsp;            Map&lt;String, ColumnInfo&gt; columns = getColumns(object.getClass(), connection);</b>
+<b class="fc"><i>474</i>&nbsp;            Map&lt;String, PropertyInfo&gt; properties = getTableColumnsPropertyInfo(object.getClass(), connection);</b>
+<b class="fc"><i>475</i>&nbsp;            StringBuilder sb = new StringBuilder();</b>
+<b class="fc"><i>476</i>&nbsp;            sb.append(&quot;INSERT INTO &quot;).append(sd).append(tableName).append(ed).append(&quot; (&quot;);</b>
+<b class="fc"><i>477</i>&nbsp;            String sep = &quot;&quot;;</b>
+<b class="fc"><i>478</i>&nbsp;            boolean saveInMap = true;</b>
+<i>479</i>&nbsp;
+<b class="fc"><i>480</i>&nbsp;            for (ColumnInfo column : columns.values()) {</b>
+<b class="fc"><i>481</i>&nbsp;                if (!column.autoIncrement) {</b>
+<i>482</i>&nbsp;
+<b class="fc"><i>483</i>&nbsp;                    if (column.hasDefault) {</b>
+<i>484</i>&nbsp;
+<b class="fc"><i>485</i>&nbsp;                        saveInMap = false;</b>
+<i>486</i>&nbsp;
+<i>487</i>&nbsp;                        // Do not include if this column has a default and no value has been
+<i>488</i>&nbsp;                        // set on it&#39;s associated property.
+<b class="fc"><i>489</i>&nbsp;                        if (properties.get(column.columnName).getter.invoke(object) == null) {</b>
+<b class="fc"><i>490</i>&nbsp;                            continue;</b>
+<i>491</i>&nbsp;                        }
 <i>492</i>&nbsp;
-<b class="fc"><i>493</i>&nbsp;            for (ColumnInfo column : columns.values()) {</b>
-<b class="fc"><i>494</i>&nbsp;                if (!column.autoIncrement) {</b>
-<i>495</i>&nbsp;
-<b class="fc"><i>496</i>&nbsp;                    if (column.hasDefault) {</b>
-<i>497</i>&nbsp;
-<b class="fc"><i>498</i>&nbsp;                        saveInMap = false;</b>
-<i>499</i>&nbsp;
-<i>500</i>&nbsp;                        // Do not include if this column has a default and no value has been
-<i>501</i>&nbsp;                        // set on it&#39;s associated property.
-<b class="fc"><i>502</i>&nbsp;                        if (properties.get(column.columnName).getter.invoke(object) == null) {</b>
-<b class="fc"><i>503</i>&nbsp;                            continue;</b>
-<i>504</i>&nbsp;                        }
-<i>505</i>&nbsp;
-<i>506</i>&nbsp;                    }
-<b class="fc"><i>507</i>&nbsp;                    sb.append(sep).append(sd).append(column.columnName).append(ed);</b>
-<b class="fc"><i>508</i>&nbsp;                    sep = &quot;, &quot;;</b>
-<i>509</i>&nbsp;                }
-<b class="fc"><i>510</i>&nbsp;            }</b>
-<b class="fc"><i>511</i>&nbsp;            sb.append(&quot;) VALUES (&quot;);</b>
-<b class="fc"><i>512</i>&nbsp;            sep = &quot;&quot;;</b>
-<b class="fc"><i>513</i>&nbsp;            for (ColumnInfo column : columns.values()) {</b>
-<b class="fc"><i>514</i>&nbsp;                if (!column.autoIncrement) {</b>
-<i>515</i>&nbsp;
-<b class="fc"><i>516</i>&nbsp;                    if (column.hasDefault) {</b>
-<i>517</i>&nbsp;                        // Do not include if this column has a default and no value has been
-<i>518</i>&nbsp;                        // set on it&#39;s associated property.
-<b class="fc"><i>519</i>&nbsp;                        if (properties.get(column.columnName).getter.invoke(object) == null) {</b>
-<b class="fc"><i>520</i>&nbsp;                            continue;</b>
-<i>521</i>&nbsp;                        }
-<i>522</i>&nbsp;                    }
+<i>493</i>&nbsp;                    }
+<b class="fc"><i>494</i>&nbsp;                    sb.append(sep).append(sd).append(column.columnName).append(ed);</b>
+<b class="fc"><i>495</i>&nbsp;                    sep = &quot;, &quot;;</b>
+<i>496</i>&nbsp;                }
+<b class="fc"><i>497</i>&nbsp;            }</b>
+<b class="fc"><i>498</i>&nbsp;            sb.append(&quot;) VALUES (&quot;);</b>
+<b class="fc"><i>499</i>&nbsp;            sep = &quot;&quot;;</b>
+<b class="fc"><i>500</i>&nbsp;            for (ColumnInfo column : columns.values()) {</b>
+<b class="fc"><i>501</i>&nbsp;                if (!column.autoIncrement) {</b>
+<i>502</i>&nbsp;
+<b class="fc"><i>503</i>&nbsp;                    if (column.hasDefault) {</b>
+<i>504</i>&nbsp;                        // Do not include if this column has a default and no value has been
+<i>505</i>&nbsp;                        // set on it&#39;s associated property.
+<b class="fc"><i>506</i>&nbsp;                        if (properties.get(column.columnName).getter.invoke(object) == null) {</b>
+<b class="fc"><i>507</i>&nbsp;                            continue;</b>
+<i>508</i>&nbsp;                        }
+<i>509</i>&nbsp;                    }
+<i>510</i>&nbsp;
+<b class="fc"><i>511</i>&nbsp;                    sb.append(sep).append(&quot; ? &quot;);</b>
+<b class="fc"><i>512</i>&nbsp;                    sep = &quot;, &quot;;</b>
+<i>513</i>&nbsp;                }
+<b class="fc"><i>514</i>&nbsp;            }</b>
+<b class="fc"><i>515</i>&nbsp;            sb.append(&quot;) &quot;);</b>
+<i>516</i>&nbsp;
+<i>517</i>&nbsp;            String insertStatement;
+<b class="fc"><i>518</i>&nbsp;            insertStatement = sb.toString();</b>
+<i>519</i>&nbsp;
+<b class="fc"><i>520</i>&nbsp;            if (log.isDebugEnabled()) {</b>
+<b class="fc"><i>521</i>&nbsp;                log.debug(&quot;determineInsertStatement for &quot; + object.getClass() + &quot; is &quot; + insertStatement);</b>
+<i>522</i>&nbsp;            }
 <i>523</i>&nbsp;
-<b class="fc"><i>524</i>&nbsp;                    sb.append(sep).append(&quot; ? &quot;);</b>
-<b class="fc"><i>525</i>&nbsp;                    sep = &quot;, &quot;;</b>
-<i>526</i>&nbsp;                }
-<b class="fc"><i>527</i>&nbsp;            }</b>
-<b class="fc"><i>528</i>&nbsp;            sb.append(&quot;) &quot;);</b>
-<i>529</i>&nbsp;
-<i>530</i>&nbsp;            String insertStatement;
-<b class="fc"><i>531</i>&nbsp;            insertStatement = sb.toString();</b>
-<i>532</i>&nbsp;
-<b class="fc"><i>533</i>&nbsp;            if (log.isDebugEnabled()) {</b>
-<b class="fc"><i>534</i>&nbsp;                log.debug(&quot;determineInsertStatement for &quot; + object.getClass() + &quot; is &quot; + insertStatement);</b>
-<i>535</i>&nbsp;            }
-<i>536</i>&nbsp;
-<i>537</i>&nbsp;            // Do not put this insert statement into the map if any columns have defaults
-<i>538</i>&nbsp;            // because the insert statement will vary by different instances of the data object.
-<b class="fc"><i>539</i>&nbsp;            if (saveInMap) {</b>
-<b class="fc"><i>540</i>&nbsp;                insertStatementsMap.put(object.getClass(), insertStatement);</b>
-<i>541</i>&nbsp;            } else {
-<b class="fc"><i>542</i>&nbsp;                insertStatementsMap.remove(object.getClass()); // remove just in case</b>
-<i>543</i>&nbsp;            }
-<i>544</i>&nbsp;
-<b class="fc"><i>545</i>&nbsp;            return insertStatement;</b>
-<i>546</i>&nbsp;
-<b class="fc"><i>547</i>&nbsp;        } catch (Exception e) {</b>
-<b class="fc"><i>548</i>&nbsp;            throw new PersismException(e.getMessage(), e);</b>
+<i>524</i>&nbsp;            // Do not put this insert statement into the map if any columns have defaults
+<i>525</i>&nbsp;            // because the insert statement will vary by different instances of the data object.
+<b class="fc"><i>526</i>&nbsp;            if (saveInMap) {</b>
+<b class="fc"><i>527</i>&nbsp;                insertStatementsMap.put(object.getClass(), insertStatement);</b>
+<i>528</i>&nbsp;            } else {
+<b class="fc"><i>529</i>&nbsp;                insertStatementsMap.remove(object.getClass()); // remove just in case</b>
+<i>530</i>&nbsp;            }
+<i>531</i>&nbsp;
+<b class="fc"><i>532</i>&nbsp;            return insertStatement;</b>
+<i>533</i>&nbsp;
+<b class="fc"><i>534</i>&nbsp;        } catch (Exception e) {</b>
+<b class="fc"><i>535</i>&nbsp;            throw new PersismException(e.getMessage(), e);</b>
+<i>536</i>&nbsp;        }
+<i>537</i>&nbsp;    }
+<i>538</i>&nbsp;
+<i>539</i>&nbsp;    String getDeleteStatement(Object object, Connection connection) {
+<b class="fc"><i>540</i>&nbsp;        if (deleteStatementsMap.containsKey(object.getClass())) {</b>
+<b class="fc"><i>541</i>&nbsp;            return deleteStatementsMap.get(object.getClass());</b>
+<i>542</i>&nbsp;        }
+<b class="fc"><i>543</i>&nbsp;        return determineDeleteStatement(object, connection);</b>
+<i>544</i>&nbsp;    }
+<i>545</i>&nbsp;
+<i>546</i>&nbsp;    private synchronized String determineDeleteStatement(Object object, Connection connection) {
+<b class="fc"><i>547</i>&nbsp;        if (deleteStatementsMap.containsKey(object.getClass())) {</b>
+<b class="nc"><i>548</i>&nbsp;            return deleteStatementsMap.get(object.getClass());</b>
 <i>549</i>&nbsp;        }
-<i>550</i>&nbsp;    }
-<i>551</i>&nbsp;
-<i>552</i>&nbsp;    String getDeleteStatement(Object object, Connection connection) {
-<b class="fc"><i>553</i>&nbsp;        if (deleteStatementsMap.containsKey(object.getClass())) {</b>
-<b class="fc"><i>554</i>&nbsp;            return deleteStatementsMap.get(object.getClass());</b>
-<i>555</i>&nbsp;        }
-<b class="fc"><i>556</i>&nbsp;        return determineDeleteStatement(object, connection);</b>
-<i>557</i>&nbsp;    }
-<i>558</i>&nbsp;
-<i>559</i>&nbsp;    private synchronized String determineDeleteStatement(Object object, Connection connection) {
-<b class="fc"><i>560</i>&nbsp;        if (deleteStatementsMap.containsKey(object.getClass())) {</b>
-<b class="nc"><i>561</i>&nbsp;            return deleteStatementsMap.get(object.getClass());</b>
-<i>562</i>&nbsp;        }
-<i>563</i>&nbsp;
-<b class="fc"><i>564</i>&nbsp;        String tableName = getTableName(object.getClass(), connection);</b>
-<b class="fc"><i>565</i>&nbsp;        String sd = connectionType.getKeywordStartDelimiter();</b>
-<b class="fc"><i>566</i>&nbsp;        String ed = connectionType.getKeywordEndDelimiter();</b>
-<i>567</i>&nbsp;
-<b class="fc"><i>568</i>&nbsp;        List&lt;String&gt; primaryKeys = getPrimaryKeys(object.getClass(), connection);</b>
-<i>569</i>&nbsp;
-<b class="fc"><i>570</i>&nbsp;        StringBuilder sb = new StringBuilder();</b>
-<b class="fc"><i>571</i>&nbsp;        sb.append(&quot;DELETE FROM &quot;).append(sd).append(tableName).append(ed).append(&quot; WHERE &quot;);</b>
-<b class="fc"><i>572</i>&nbsp;        String sep = &quot;&quot;;</b>
-<b class="fc"><i>573</i>&nbsp;        for (String column : primaryKeys) {</b>
-<b class="fc"><i>574</i>&nbsp;            sb.append(sep).append(sd).append(column).append(ed).append(&quot; = ?&quot;);</b>
-<b class="fc"><i>575</i>&nbsp;            sep = &quot; AND &quot;;</b>
-<b class="fc"><i>576</i>&nbsp;        }</b>
-<i>577</i>&nbsp;
-<b class="fc"><i>578</i>&nbsp;        String deleteStatement = sb.toString();</b>
-<i>579</i>&nbsp;
-<b class="fc"><i>580</i>&nbsp;        if (log.isDebugEnabled()) {</b>
-<b class="fc"><i>581</i>&nbsp;            log.debug(&quot;determineDeleteStatement for &quot; + object.getClass() + &quot; is &quot; + deleteStatement);</b>
-<i>582</i>&nbsp;        }
-<i>583</i>&nbsp;
-<b class="fc"><i>584</i>&nbsp;        deleteStatementsMap.put(object.getClass(), deleteStatement);</b>
-<i>585</i>&nbsp;
-<b class="fc"><i>586</i>&nbsp;        return deleteStatement;</b>
-<i>587</i>&nbsp;    }
+<i>550</i>&nbsp;
+<b class="fc"><i>551</i>&nbsp;        String tableName = getTableName(object.getClass(), connection);</b>
+<b class="fc"><i>552</i>&nbsp;        String sd = connectionType.getKeywordStartDelimiter();</b>
+<b class="fc"><i>553</i>&nbsp;        String ed = connectionType.getKeywordEndDelimiter();</b>
+<i>554</i>&nbsp;
+<b class="fc"><i>555</i>&nbsp;        List&lt;String&gt; primaryKeys = getPrimaryKeys(object.getClass(), connection);</b>
+<i>556</i>&nbsp;
+<b class="fc"><i>557</i>&nbsp;        StringBuilder sb = new StringBuilder();</b>
+<b class="fc"><i>558</i>&nbsp;        sb.append(&quot;DELETE FROM &quot;).append(sd).append(tableName).append(ed).append(&quot; WHERE &quot;);</b>
+<b class="fc"><i>559</i>&nbsp;        String sep = &quot;&quot;;</b>
+<b class="fc"><i>560</i>&nbsp;        for (String column : primaryKeys) {</b>
+<b class="fc"><i>561</i>&nbsp;            sb.append(sep).append(sd).append(column).append(ed).append(&quot; = ?&quot;);</b>
+<b class="fc"><i>562</i>&nbsp;            sep = &quot; AND &quot;;</b>
+<b class="fc"><i>563</i>&nbsp;        }</b>
+<i>564</i>&nbsp;
+<b class="fc"><i>565</i>&nbsp;        String deleteStatement = sb.toString();</b>
+<i>566</i>&nbsp;
+<b class="fc"><i>567</i>&nbsp;        if (log.isDebugEnabled()) {</b>
+<b class="fc"><i>568</i>&nbsp;            log.debug(&quot;determineDeleteStatement for &quot; + object.getClass() + &quot; is &quot; + deleteStatement);</b>
+<i>569</i>&nbsp;        }
+<i>570</i>&nbsp;
+<b class="fc"><i>571</i>&nbsp;        deleteStatementsMap.put(object.getClass(), deleteStatement);</b>
+<i>572</i>&nbsp;
+<b class="fc"><i>573</i>&nbsp;        return deleteStatement;</b>
+<i>574</i>&nbsp;    }
+<i>575</i>&nbsp;
+<i>576</i>&nbsp;    String getSelectStatement(Object object, Connection connection) {
+<b class="fc"><i>577</i>&nbsp;        if (selectStatementsMap.containsKey(object.getClass())) {</b>
+<b class="fc"><i>578</i>&nbsp;            return selectStatementsMap.get(object.getClass());</b>
+<i>579</i>&nbsp;        }
+<b class="fc"><i>580</i>&nbsp;        return determineSelectStatement(object, connection);</b>
+<i>581</i>&nbsp;    }
+<i>582</i>&nbsp;
+<i>583</i>&nbsp;    private synchronized String determineSelectStatement(Object object, Connection connection) {
+<i>584</i>&nbsp;
+<b class="fc"><i>585</i>&nbsp;        if (selectStatementsMap.containsKey(object.getClass())) {</b>
+<b class="nc"><i>586</i>&nbsp;            return selectStatementsMap.get(object.getClass());</b>
+<i>587</i>&nbsp;        }
 <i>588</i>&nbsp;
-<i>589</i>&nbsp;    String getSelectStatement(Object object, Connection connection) {
-<b class="fc"><i>590</i>&nbsp;        if (selectStatementsMap.containsKey(object.getClass())) {</b>
-<b class="fc"><i>591</i>&nbsp;            return selectStatementsMap.get(object.getClass());</b>
-<i>592</i>&nbsp;        }
-<b class="fc"><i>593</i>&nbsp;        return determineSelectStatement(object, connection);</b>
-<i>594</i>&nbsp;    }
+<b class="fc"><i>589</i>&nbsp;        String sd = connectionType.getKeywordStartDelimiter();</b>
+<b class="fc"><i>590</i>&nbsp;        String ed = connectionType.getKeywordEndDelimiter();</b>
+<i>591</i>&nbsp;
+<b class="fc"><i>592</i>&nbsp;        String tableName = getTableName(object.getClass(), connection);</b>
+<i>593</i>&nbsp;
+<b class="fc"><i>594</i>&nbsp;        List&lt;String&gt; primaryKeys = getPrimaryKeys(object.getClass(), connection);</b>
 <i>595</i>&nbsp;
-<i>596</i>&nbsp;    private synchronized String determineSelectStatement(Object object, Connection connection) {
-<i>597</i>&nbsp;
-<b class="fc"><i>598</i>&nbsp;        if (selectStatementsMap.containsKey(object.getClass())) {</b>
-<b class="nc"><i>599</i>&nbsp;            return selectStatementsMap.get(object.getClass());</b>
-<i>600</i>&nbsp;        }
-<i>601</i>&nbsp;
-<b class="fc"><i>602</i>&nbsp;        String sd = connectionType.getKeywordStartDelimiter();</b>
-<b class="fc"><i>603</i>&nbsp;        String ed = connectionType.getKeywordEndDelimiter();</b>
-<i>604</i>&nbsp;
-<b class="fc"><i>605</i>&nbsp;        String tableName = getTableName(object.getClass(), connection);</b>
-<i>606</i>&nbsp;
-<b class="fc"><i>607</i>&nbsp;        List&lt;String&gt; primaryKeys = getPrimaryKeys(object.getClass(), connection);</b>
+<b class="fc"><i>596</i>&nbsp;        StringBuilder sb = new StringBuilder();</b>
+<b class="fc"><i>597</i>&nbsp;        sb.append(&quot;SELECT &quot;);</b>
+<i>598</i>&nbsp;
+<b class="fc"><i>599</i>&nbsp;        String sep = &quot;&quot;;</b>
+<i>600</i>&nbsp;
+<b class="fc"><i>601</i>&nbsp;        Map&lt;String, ColumnInfo&gt; columns = getColumns(object.getClass(), connection);</b>
+<b class="fc"><i>602</i>&nbsp;        for (String column : columns.keySet()) {</b>
+<b class="fc"><i>603</i>&nbsp;            ColumnInfo columnInfo = columns.get(column);</b>
+<b class="fc"><i>604</i>&nbsp;            sb.append(sep).append(sd).append(columnInfo.columnName).append(ed);</b>
+<b class="fc"><i>605</i>&nbsp;            sep = &quot;, &quot;;</b>
+<b class="fc"><i>606</i>&nbsp;        }</b>
+<b class="fc"><i>607</i>&nbsp;        sb.append(&quot; FROM &quot;).append(sd).append(tableName).append(ed).append(&quot; WHERE &quot;);</b>
 <i>608</i>&nbsp;
-<b class="fc"><i>609</i>&nbsp;        StringBuilder sb = new StringBuilder();</b>
-<b class="fc"><i>610</i>&nbsp;        sb.append(&quot;SELECT &quot;);</b>
-<i>611</i>&nbsp;
-<b class="fc"><i>612</i>&nbsp;        String sep = &quot;&quot;;</b>
-<i>613</i>&nbsp;
-<b class="fc"><i>614</i>&nbsp;        Map&lt;String, ColumnInfo&gt; columns = getColumns(object.getClass(), connection);</b>
-<b class="fc"><i>615</i>&nbsp;        for (String column : columns.keySet()) {</b>
-<b class="fc"><i>616</i>&nbsp;            ColumnInfo columnInfo = columns.get(column);</b>
-<b class="fc"><i>617</i>&nbsp;            sb.append(sep).append(sd).append(columnInfo.columnName).append(ed);</b>
-<b class="fc"><i>618</i>&nbsp;            sep = &quot;, &quot;;</b>
-<b class="fc"><i>619</i>&nbsp;        }</b>
-<b class="fc"><i>620</i>&nbsp;        sb.append(&quot; FROM &quot;).append(sd).append(tableName).append(ed).append(&quot; WHERE &quot;);</b>
-<i>621</i>&nbsp;
-<b class="fc"><i>622</i>&nbsp;        sep = &quot;&quot;;</b>
-<b class="fc"><i>623</i>&nbsp;        for (String column : primaryKeys) {</b>
-<b class="fc"><i>624</i>&nbsp;            sb.append(sep).append(sd).append(column).append(ed).append(&quot; = ?&quot;);</b>
-<b class="fc"><i>625</i>&nbsp;            sep = &quot; AND &quot;;</b>
-<b class="fc"><i>626</i>&nbsp;        }</b>
+<b class="fc"><i>609</i>&nbsp;        sep = &quot;&quot;;</b>
+<b class="fc"><i>610</i>&nbsp;        for (String column : primaryKeys) {</b>
+<b class="fc"><i>611</i>&nbsp;            sb.append(sep).append(sd).append(column).append(ed).append(&quot; = ?&quot;);</b>
+<b class="fc"><i>612</i>&nbsp;            sep = &quot; AND &quot;;</b>
+<b class="fc"><i>613</i>&nbsp;        }</b>
+<i>614</i>&nbsp;
+<b class="fc"><i>615</i>&nbsp;        String selectStatement = sb.toString();</b>
+<i>616</i>&nbsp;
+<b class="fc"><i>617</i>&nbsp;        if (log.isDebugEnabled()) {</b>
+<b class="fc"><i>618</i>&nbsp;            log.debug(&quot;determineSelectStatement for &quot; + object.getClass() + &quot; is &quot; + selectStatement);</b>
+<i>619</i>&nbsp;        }
+<i>620</i>&nbsp;
+<b class="fc"><i>621</i>&nbsp;        selectStatementsMap.put(object.getClass(), selectStatement);</b>
+<i>622</i>&nbsp;
+<b class="fc"><i>623</i>&nbsp;        return selectStatement;</b>
+<i>624</i>&nbsp;    }
+<i>625</i>&nbsp;
+<i>626</i>&nbsp;    private String buildUpdateString(Object object, Iterator&lt;String&gt; it, Connection connection) throws PersismException {
 <i>627</i>&nbsp;
-<b class="fc"><i>628</i>&nbsp;        String selectStatement = sb.toString();</b>
-<i>629</i>&nbsp;
-<b class="fc"><i>630</i>&nbsp;        if (log.isDebugEnabled()) {</b>
-<b class="fc"><i>631</i>&nbsp;            log.debug(&quot;determineSelectStatement for &quot; + object.getClass() + &quot; is &quot; + selectStatement);</b>
-<i>632</i>&nbsp;        }
+<b class="fc"><i>628</i>&nbsp;        String tableName = getTableName(object.getClass(), connection);</b>
+<b class="fc"><i>629</i>&nbsp;        String sd = connectionType.getKeywordStartDelimiter();</b>
+<b class="fc"><i>630</i>&nbsp;        String ed = connectionType.getKeywordEndDelimiter();</b>
+<i>631</i>&nbsp;
+<b class="fc"><i>632</i>&nbsp;        List&lt;String&gt; primaryKeys = getPrimaryKeys(object.getClass(), connection);</b>
 <i>633</i>&nbsp;
-<b class="fc"><i>634</i>&nbsp;        selectStatementsMap.put(object.getClass(), selectStatement);</b>
-<i>635</i>&nbsp;
-<b class="fc"><i>636</i>&nbsp;        return selectStatement;</b>
-<i>637</i>&nbsp;    }
-<i>638</i>&nbsp;
-<i>639</i>&nbsp;    private String buildUpdateString(Object object, Iterator&lt;String&gt; it, Connection connection) throws PersismException {
-<i>640</i>&nbsp;
-<b class="fc"><i>641</i>&nbsp;        String tableName = getTableName(object.getClass(), connection);</b>
-<b class="fc"><i>642</i>&nbsp;        String sd = connectionType.getKeywordStartDelimiter();</b>
-<b class="fc"><i>643</i>&nbsp;        String ed = connectionType.getKeywordEndDelimiter();</b>
-<i>644</i>&nbsp;
-<b class="fc"><i>645</i>&nbsp;        List&lt;String&gt; primaryKeys = getPrimaryKeys(object.getClass(), connection);</b>
-<i>646</i>&nbsp;
-<b class="fc"><i>647</i>&nbsp;        StringBuilder sb = new StringBuilder();</b>
-<b class="fc"><i>648</i>&nbsp;        sb.append(&quot;UPDATE &quot;).append(sd).append(tableName).append(ed).append(&quot; SET &quot;);</b>
-<b class="fc"><i>649</i>&nbsp;        String sep = &quot;&quot;;</b>
-<i>650</i>&nbsp;
-<b class="fc"><i>651</i>&nbsp;        Map&lt;String, ColumnInfo&gt; columns = getColumns(object.getClass(), connection);</b>
-<b class="fc"><i>652</i>&nbsp;        while (it.hasNext()) {</b>
-<b class="fc"><i>653</i>&nbsp;            String column = it.next();</b>
-<b class="fc"><i>654</i>&nbsp;            ColumnInfo columnInfo = columns.get(column);</b>
-<b class="fc"><i>655</i>&nbsp;            if (!columnInfo.autoIncrement &amp;&amp; !columnInfo.primary) {</b>
-<b class="fc"><i>656</i>&nbsp;                sb.append(sep).append(sd).append(column).append(ed).append(&quot; = ?&quot;);</b>
-<b class="fc"><i>657</i>&nbsp;                sep = &quot;, &quot;;</b>
-<i>658</i>&nbsp;            }
-<b class="fc"><i>659</i>&nbsp;        }</b>
-<b class="fc"><i>660</i>&nbsp;        sb.append(&quot; WHERE &quot;);</b>
-<b class="fc"><i>661</i>&nbsp;        sep = &quot;&quot;;</b>
-<b class="fc"><i>662</i>&nbsp;        for (String column : primaryKeys) {</b>
-<b class="fc"><i>663</i>&nbsp;            sb.append(sep).append(sd).append(column).append(ed).append(&quot; = ?&quot;);</b>
-<b class="fc"><i>664</i>&nbsp;            sep = &quot; AND &quot;;</b>
-<b class="fc"><i>665</i>&nbsp;        }</b>
-<b class="fc"><i>666</i>&nbsp;        return sb.toString();</b>
-<i>667</i>&nbsp;    }
-<i>668</i>&nbsp;
-<i>669</i>&nbsp;    Map&lt;String, PropertyInfo&gt; getChangedProperties(Persistable persistable, Connection connection) throws PersismException {
-<i>670</i>&nbsp;
-<i>671</i>&nbsp;        try {
-<b class="fc"><i>672</i>&nbsp;            Persistable original = (Persistable) persistable.getOriginalValue();</b>
-<i>673</i>&nbsp;
-<b class="fc"><i>674</i>&nbsp;            Map&lt;String, PropertyInfo&gt; columns = getTableColumnsPropertyInfo(persistable.getClass(), connection);</b>
-<b class="fc"><i>675</i>&nbsp;            if (original == null) {</b>
-<i>676</i>&nbsp;                // Could happen in the case of cloning or other operation - so it&#39;s never read so it never sets original.
-<b class="nc"><i>677</i>&nbsp;                return columns;</b>
-<i>678</i>&nbsp;            }
-<b class="fc"><i>679</i>&nbsp;            Map&lt;String, PropertyInfo&gt; changedColumns = new HashMap&lt;String, PropertyInfo&gt;(columns.keySet().size());</b>
-<i>680</i>&nbsp;
-<b class="fc"><i>681</i>&nbsp;            for (String column : columns.keySet()) {</b>
-<i>682</i>&nbsp;
-<b class="fc"><i>683</i>&nbsp;                PropertyInfo propertyInfo = columns.get(column);</b>
-<i>684</i>&nbsp;
-<b class="fc"><i>685</i>&nbsp;                Object newValue = null;</b>
-<b class="fc"><i>686</i>&nbsp;                Object orgValue = null;</b>
-<b class="fc"><i>687</i>&nbsp;                newValue = propertyInfo.getter.invoke(persistable);</b>
-<b class="fc"><i>688</i>&nbsp;                orgValue = propertyInfo.getter.invoke(original);</b>
-<i>689</i>&nbsp;
-<b class="fc"><i>690</i>&nbsp;                if (newValue != null &amp;&amp; !newValue.equals(orgValue) || orgValue != null &amp;&amp; !orgValue.equals(newValue)) {</b>
-<b class="fc"><i>691</i>&nbsp;                    changedColumns.put(column, propertyInfo);</b>
-<i>692</i>&nbsp;                }
-<b class="fc"><i>693</i>&nbsp;            }</b>
-<i>694</i>&nbsp;
-<b class="fc"><i>695</i>&nbsp;            return changedColumns;</b>
-<b class="nc"><i>696</i>&nbsp;        } catch (Exception e) {</b>
-<b class="nc"><i>697</i>&nbsp;            throw new PersismException(e.getMessage(), e);</b>
-<i>698</i>&nbsp;        }
-<i>699</i>&nbsp;    }
-<i>700</i>&nbsp;
-<i>701</i>&nbsp;    &lt;T&gt; Map&lt;String, ColumnInfo&gt; getColumns(Class&lt;T&gt; objectClass, Connection connection) throws PersismException {
-<i>702</i>&nbsp;        // Realistically at this point this objectClass will always be in the map since it&#39;s defined early
-<i>703</i>&nbsp;        // when we get the table name but I&#39;ll double check it for determineColumnInfo anyway.
-<b class="fc"><i>704</i>&nbsp;        if (columnInfoMap.containsKey(objectClass)) {</b>
-<b class="fc"><i>705</i>&nbsp;            return columnInfoMap.get(objectClass);</b>
-<i>706</i>&nbsp;        }
-<b class="nc"><i>707</i>&nbsp;        return determineColumnInfo(objectClass, getTableName(objectClass), connection);</b>
-<i>708</i>&nbsp;    }
-<i>709</i>&nbsp;
-<i>710</i>&nbsp;    &lt;T&gt; Map&lt;String, PropertyInfo&gt; getQueryColumnsPropertyInfo(Class&lt;T&gt; objectClass, ResultSet rs) throws PersismException {
-<b class="fc"><i>711</i>&nbsp;        if (propertyInfoMap.containsKey(objectClass)) {</b>
-<b class="fc"><i>712</i>&nbsp;            return propertyInfoMap.get(objectClass);</b>
-<i>713</i>&nbsp;        }
-<i>714</i>&nbsp;
-<b class="fc"><i>715</i>&nbsp;        return determinePropertyInfo(objectClass, rs);</b>
-<i>716</i>&nbsp;    }
+<b class="fc"><i>634</i>&nbsp;        StringBuilder sb = new StringBuilder();</b>
+<b class="fc"><i>635</i>&nbsp;        sb.append(&quot;UPDATE &quot;).append(sd).append(tableName).append(ed).append(&quot; SET &quot;);</b>
+<b class="fc"><i>636</i>&nbsp;        String sep = &quot;&quot;;</b>
+<i>637</i>&nbsp;
+<b class="fc"><i>638</i>&nbsp;        Map&lt;String, ColumnInfo&gt; columns = getColumns(object.getClass(), connection);</b>
+<b class="fc"><i>639</i>&nbsp;        while (it.hasNext()) {</b>
+<b class="fc"><i>640</i>&nbsp;            String column = it.next();</b>
+<b class="fc"><i>641</i>&nbsp;            ColumnInfo columnInfo = columns.get(column);</b>
+<b class="fc"><i>642</i>&nbsp;            if (!columnInfo.autoIncrement &amp;&amp; !columnInfo.primary) {</b>
+<b class="fc"><i>643</i>&nbsp;                sb.append(sep).append(sd).append(column).append(ed).append(&quot; = ?&quot;);</b>
+<b class="fc"><i>644</i>&nbsp;                sep = &quot;, &quot;;</b>
+<i>645</i>&nbsp;            }
+<b class="fc"><i>646</i>&nbsp;        }</b>
+<b class="fc"><i>647</i>&nbsp;        sb.append(&quot; WHERE &quot;);</b>
+<b class="fc"><i>648</i>&nbsp;        sep = &quot;&quot;;</b>
+<b class="fc"><i>649</i>&nbsp;        for (String column : primaryKeys) {</b>
+<b class="fc"><i>650</i>&nbsp;            sb.append(sep).append(sd).append(column).append(ed).append(&quot; = ?&quot;);</b>
+<b class="fc"><i>651</i>&nbsp;            sep = &quot; AND &quot;;</b>
+<b class="fc"><i>652</i>&nbsp;        }</b>
+<b class="fc"><i>653</i>&nbsp;        return sb.toString();</b>
+<i>654</i>&nbsp;    }
+<i>655</i>&nbsp;
+<i>656</i>&nbsp;    Map&lt;String, PropertyInfo&gt; getChangedProperties(Persistable persistable, Connection connection) throws PersismException {
+<i>657</i>&nbsp;
+<i>658</i>&nbsp;        try {
+<b class="fc"><i>659</i>&nbsp;            Persistable original = (Persistable) persistable.getOriginalValue();</b>
+<i>660</i>&nbsp;
+<b class="fc"><i>661</i>&nbsp;            Map&lt;String, PropertyInfo&gt; columns = getTableColumnsPropertyInfo(persistable.getClass(), connection);</b>
+<b class="fc"><i>662</i>&nbsp;            if (original == null) {</b>
+<i>663</i>&nbsp;                // Could happen in the case of cloning or other operation - so it&#39;s never read so it never sets original.
+<b class="nc"><i>664</i>&nbsp;                return columns;</b>
+<i>665</i>&nbsp;            }
+<b class="fc"><i>666</i>&nbsp;            Map&lt;String, PropertyInfo&gt; changedColumns = new HashMap&lt;String, PropertyInfo&gt;(columns.keySet().size());</b>
+<i>667</i>&nbsp;
+<b class="fc"><i>668</i>&nbsp;            for (String column : columns.keySet()) {</b>
+<i>669</i>&nbsp;
+<b class="fc"><i>670</i>&nbsp;                PropertyInfo propertyInfo = columns.get(column);</b>
+<i>671</i>&nbsp;
+<b class="fc"><i>672</i>&nbsp;                Object newValue = null;</b>
+<b class="fc"><i>673</i>&nbsp;                Object orgValue = null;</b>
+<b class="fc"><i>674</i>&nbsp;                newValue = propertyInfo.getter.invoke(persistable);</b>
+<b class="fc"><i>675</i>&nbsp;                orgValue = propertyInfo.getter.invoke(original);</b>
+<i>676</i>&nbsp;
+<b class="fc"><i>677</i>&nbsp;                if (newValue != null &amp;&amp; !newValue.equals(orgValue) || orgValue != null &amp;&amp; !orgValue.equals(newValue)) {</b>
+<b class="fc"><i>678</i>&nbsp;                    changedColumns.put(column, propertyInfo);</b>
+<i>679</i>&nbsp;                }
+<b class="fc"><i>680</i>&nbsp;            }</b>
+<i>681</i>&nbsp;
+<b class="fc"><i>682</i>&nbsp;            return changedColumns;</b>
+<b class="nc"><i>683</i>&nbsp;        } catch (Exception e) {</b>
+<b class="nc"><i>684</i>&nbsp;            throw new PersismException(e.getMessage(), e);</b>
+<i>685</i>&nbsp;        }
+<i>686</i>&nbsp;    }
+<i>687</i>&nbsp;
+<i>688</i>&nbsp;    &lt;T&gt; Map&lt;String, ColumnInfo&gt; getColumns(Class&lt;T&gt; objectClass, Connection connection) throws PersismException {
+<i>689</i>&nbsp;        // Realistically at this point this objectClass will always be in the map since it&#39;s defined early
+<i>690</i>&nbsp;        // when we get the table name but I&#39;ll double check it for determineColumnInfo anyway.
+<b class="fc"><i>691</i>&nbsp;        if (columnInfoMap.containsKey(objectClass)) {</b>
+<b class="fc"><i>692</i>&nbsp;            return columnInfoMap.get(objectClass);</b>
+<i>693</i>&nbsp;        }
+<b class="nc"><i>694</i>&nbsp;        return determineColumnInfo(objectClass, getTableName(objectClass), connection);</b>
+<i>695</i>&nbsp;    }
+<i>696</i>&nbsp;
+<i>697</i>&nbsp;    &lt;T&gt; Map&lt;String, PropertyInfo&gt; getQueryColumnsPropertyInfo(Class&lt;T&gt; objectClass, ResultSet rs) throws PersismException {
+<b class="fc"><i>698</i>&nbsp;        if (propertyInfoMap.containsKey(objectClass)) {</b>
+<b class="fc"><i>699</i>&nbsp;            return propertyInfoMap.get(objectClass);</b>
+<i>700</i>&nbsp;        }
+<i>701</i>&nbsp;
+<b class="fc"><i>702</i>&nbsp;        return determinePropertyInfo(objectClass, rs);</b>
+<i>703</i>&nbsp;    }
+<i>704</i>&nbsp;
+<i>705</i>&nbsp;    &lt;T&gt; Map&lt;String, PropertyInfo&gt; getTableColumnsPropertyInfo(Class&lt;T&gt; objectClass, Connection connection) throws PersismException {
+<b class="fc"><i>706</i>&nbsp;        if (propertyInfoMap.containsKey(objectClass)) {</b>
+<b class="fc"><i>707</i>&nbsp;            return propertyInfoMap.get(objectClass);</b>
+<i>708</i>&nbsp;        }
+<b class="fc"><i>709</i>&nbsp;        return determinePropertyInfo(objectClass, getTableName(objectClass), connection);</b>
+<i>710</i>&nbsp;    }
+<i>711</i>&nbsp;
+<i>712</i>&nbsp;    &lt;T&gt; String getTableName(Class&lt;T&gt; objectClass) {
+<i>713</i>&nbsp;
+<b class="fc"><i>714</i>&nbsp;        if (tableMap.containsKey(objectClass)) {</b>
+<b class="fc"><i>715</i>&nbsp;            return tableMap.get(objectClass);</b>
+<i>716</i>&nbsp;        }
 <i>717</i>&nbsp;
-<i>718</i>&nbsp;    &lt;T&gt; Map&lt;String, PropertyInfo&gt; getTableColumnsPropertyInfo(Class&lt;T&gt; objectClass, Connection connection) throws PersismException {
-<b class="fc"><i>719</i>&nbsp;        if (propertyInfoMap.containsKey(objectClass)) {</b>
-<b class="fc"><i>720</i>&nbsp;            return propertyInfoMap.get(objectClass);</b>
-<i>721</i>&nbsp;        }
-<b class="fc"><i>722</i>&nbsp;        return determinePropertyInfo(objectClass, getTableName(objectClass), connection);</b>
-<i>723</i>&nbsp;    }
+<b class="fc"><i>718</i>&nbsp;        return determineTable(objectClass);</b>
+<i>719</i>&nbsp;    }
+<i>720</i>&nbsp;
+<i>721</i>&nbsp;    // internal version to retrieve meta information about this table&#39;s columns
+<i>722</i>&nbsp;    // at the same time we find the table name itself.
+<i>723</i>&nbsp;    private &lt;T&gt; String getTableName(Class&lt;T&gt; objectClass, Connection connection) {
 <i>724</i>&nbsp;
-<i>725</i>&nbsp;    &lt;T&gt; String getTableName(Class&lt;T&gt; objectClass) {
+<b class="fc"><i>725</i>&nbsp;        String tableName = getTableName(objectClass);</b>
 <i>726</i>&nbsp;
-<b class="fc"><i>727</i>&nbsp;        if (tableMap.containsKey(objectClass)) {</b>
-<b class="fc"><i>728</i>&nbsp;            return tableMap.get(objectClass);</b>
+<b class="fc"><i>727</i>&nbsp;        if (!columnInfoMap.containsKey(objectClass)) {</b>
+<b class="fc"><i>728</i>&nbsp;            determineColumnInfo(objectClass, tableName, connection);</b>
 <i>729</i>&nbsp;        }
 <i>730</i>&nbsp;
-<b class="fc"><i>731</i>&nbsp;        return determineTable(objectClass);</b>
-<i>732</i>&nbsp;    }
-<i>733</i>&nbsp;
-<i>734</i>&nbsp;    // internal version to retrieve meta information about this table&#39;s columns
-<i>735</i>&nbsp;    // at the same time we find the table name itself.
-<i>736</i>&nbsp;    private &lt;T&gt; String getTableName(Class&lt;T&gt; objectClass, Connection connection) {
-<i>737</i>&nbsp;
-<b class="fc"><i>738</i>&nbsp;        String tableName = getTableName(objectClass);</b>
-<i>739</i>&nbsp;
-<b class="fc"><i>740</i>&nbsp;        if (!columnInfoMap.containsKey(objectClass)) {</b>
-<b class="fc"><i>741</i>&nbsp;            determineColumnInfo(objectClass, tableName, connection);</b>
-<i>742</i>&nbsp;        }
-<i>743</i>&nbsp;
-<b class="fc"><i>744</i>&nbsp;        if (!propertyInfoMap.containsKey(objectClass)) {</b>
-<b class="nc"><i>745</i>&nbsp;            determinePropertyInfo(objectClass, tableName, connection);</b>
-<i>746</i>&nbsp;        }
-<b class="fc"><i>747</i>&nbsp;        return tableName;</b>
-<i>748</i>&nbsp;    }
-<i>749</i>&nbsp;
-<i>750</i>&nbsp;    private synchronized &lt;T&gt; String determineTable(Class&lt;T&gt; objectClass) {
-<i>751</i>&nbsp;
-<b class="fc"><i>752</i>&nbsp;        if (tableMap.containsKey(objectClass)) {</b>
-<b class="nc"><i>753</i>&nbsp;            return tableMap.get(objectClass);</b>
-<i>754</i>&nbsp;        }
-<i>755</i>&nbsp;
-<i>756</i>&nbsp;        String tableName;
-<b class="fc"><i>757</i>&nbsp;        Table annotation = objectClass.getAnnotation(Table.class);</b>
-<b class="fc"><i>758</i>&nbsp;        if (annotation != null) {</b>
-<b class="fc"><i>759</i>&nbsp;            tableName = annotation.value();</b>
-<i>760</i>&nbsp;        } else {
-<b class="fc"><i>761</i>&nbsp;            tableName = guessTableName(objectClass);</b>
-<i>762</i>&nbsp;        }
-<b class="fc"><i>763</i>&nbsp;        tableMap.put(objectClass, tableName);</b>
-<b class="fc"><i>764</i>&nbsp;        return tableName;</b>
-<i>765</i>&nbsp;    }
-<i>766</i>&nbsp;
-<i>767</i>&nbsp;    // Returns the table name found in the DB in the same case as in the DB.
-<i>768</i>&nbsp;    // throws PersismException if we cannot guess any table name for this class.
-<i>769</i>&nbsp;    private &lt;T&gt; String guessTableName(Class&lt;T&gt; objectClass) throws PersismException {
-<b class="fc"><i>770</i>&nbsp;        Set&lt;String&gt; guesses = new LinkedHashSet&lt;&gt;(6); // guess order is important</b>
-<b class="fc"><i>771</i>&nbsp;        List&lt;String&gt; guessedTables = new ArrayList&lt;String&gt;(6);</b>
-<i>772</i>&nbsp;
-<b class="fc"><i>773</i>&nbsp;        String className = objectClass.getSimpleName();</b>
-<i>774</i>&nbsp;
-<b class="fc"><i>775</i>&nbsp;        addTableGuesses(className, guesses);</b>
-<b class="fc"><i>776</i>&nbsp;        for (String tableName : tableNames) {</b>
-<b class="fc"><i>777</i>&nbsp;            for (String guess : guesses) {</b>
-<b class="fc"><i>778</i>&nbsp;                if (guess.equalsIgnoreCase(tableName)) {</b>
-<b class="fc"><i>779</i>&nbsp;                    guessedTables.add(tableName);</b>
-<i>780</i>&nbsp;                }
-<b class="fc"><i>781</i>&nbsp;            }</b>
-<b class="fc"><i>782</i>&nbsp;        }</b>
-<b class="fc"><i>783</i>&nbsp;        if (guessedTables.size() == 0) {</b>
-<b class="fc"><i>784</i>&nbsp;            throw new PersismException(&quot;Could not determine a table for type: &quot; + objectClass.getName() + &quot; Guesses were: &quot; + guesses);</b>
-<i>785</i>&nbsp;        }
-<i>786</i>&nbsp;
-<b class="fc"><i>787</i>&nbsp;        if (guessedTables.size() &gt; 1) {</b>
-<b class="fc"><i>788</i>&nbsp;            throw new PersismException(&quot;Could not determine a table for type: &quot; + objectClass.getName() + &quot; Guesses were: &quot; + guesses + &quot; and we found multiple matching tables: &quot; + guessedTables);</b>
-<i>789</i>&nbsp;        }
-<b class="fc"><i>790</i>&nbsp;        return guessedTables.get(0);</b>
-<i>791</i>&nbsp;    }
+<b class="fc"><i>731</i>&nbsp;        if (!propertyInfoMap.containsKey(objectClass)) {</b>
+<b class="nc"><i>732</i>&nbsp;            determinePropertyInfo(objectClass, tableName, connection);</b>
+<i>733</i>&nbsp;        }
+<b class="fc"><i>734</i>&nbsp;        return tableName;</b>
+<i>735</i>&nbsp;    }
+<i>736</i>&nbsp;
+<i>737</i>&nbsp;    private synchronized &lt;T&gt; String determineTable(Class&lt;T&gt; objectClass) {
+<i>738</i>&nbsp;
+<b class="fc"><i>739</i>&nbsp;        if (tableMap.containsKey(objectClass)) {</b>
+<b class="nc"><i>740</i>&nbsp;            return tableMap.get(objectClass);</b>
+<i>741</i>&nbsp;        }
+<i>742</i>&nbsp;
+<i>743</i>&nbsp;        String tableName;
+<b class="fc"><i>744</i>&nbsp;        Table annotation = objectClass.getAnnotation(Table.class);</b>
+<b class="fc"><i>745</i>&nbsp;        if (annotation != null) {</b>
+<b class="fc"><i>746</i>&nbsp;            tableName = annotation.value();</b>
+<i>747</i>&nbsp;        } else {
+<b class="fc"><i>748</i>&nbsp;            tableName = guessTableName(objectClass);</b>
+<i>749</i>&nbsp;        }
+<b class="fc"><i>750</i>&nbsp;        tableMap.put(objectClass, tableName);</b>
+<b class="fc"><i>751</i>&nbsp;        return tableName;</b>
+<i>752</i>&nbsp;    }
+<i>753</i>&nbsp;
+<i>754</i>&nbsp;    // Returns the table name found in the DB in the same case as in the DB.
+<i>755</i>&nbsp;    // throws PersismException if we cannot guess any table name for this class.
+<i>756</i>&nbsp;    private &lt;T&gt; String guessTableName(Class&lt;T&gt; objectClass) throws PersismException {
+<b class="fc"><i>757</i>&nbsp;        Set&lt;String&gt; guesses = new LinkedHashSet&lt;&gt;(6); // guess order is important</b>
+<b class="fc"><i>758</i>&nbsp;        List&lt;String&gt; guessedTables = new ArrayList&lt;String&gt;(6);</b>
+<i>759</i>&nbsp;
+<b class="fc"><i>760</i>&nbsp;        String className = objectClass.getSimpleName();</b>
+<i>761</i>&nbsp;
+<b class="fc"><i>762</i>&nbsp;        addTableGuesses(className, guesses);</b>
+<b class="fc"><i>763</i>&nbsp;        for (String tableName : tableNames) {</b>
+<b class="fc"><i>764</i>&nbsp;            for (String guess : guesses) {</b>
+<b class="fc"><i>765</i>&nbsp;                if (guess.equalsIgnoreCase(tableName)) {</b>
+<b class="fc"><i>766</i>&nbsp;                    guessedTables.add(tableName);</b>
+<i>767</i>&nbsp;                }
+<b class="fc"><i>768</i>&nbsp;            }</b>
+<b class="fc"><i>769</i>&nbsp;        }</b>
+<b class="fc"><i>770</i>&nbsp;        if (guessedTables.size() == 0) {</b>
+<b class="fc"><i>771</i>&nbsp;            throw new PersismException(&quot;Could not determine a table for type: &quot; + objectClass.getName() + &quot; Guesses were: &quot; + guesses);</b>
+<i>772</i>&nbsp;        }
+<i>773</i>&nbsp;
+<b class="fc"><i>774</i>&nbsp;        if (guessedTables.size() &gt; 1) {</b>
+<b class="fc"><i>775</i>&nbsp;            throw new PersismException(&quot;Could not determine a table for type: &quot; + objectClass.getName() + &quot; Guesses were: &quot; + guesses + &quot; and we found multiple matching tables: &quot; + guessedTables);</b>
+<i>776</i>&nbsp;        }
+<b class="fc"><i>777</i>&nbsp;        return guessedTables.get(0);</b>
+<i>778</i>&nbsp;    }
+<i>779</i>&nbsp;
+<i>780</i>&nbsp;    private void addTableGuesses(String className, Collection&lt;String&gt; guesses) {
+<i>781</i>&nbsp;        // PascalCasing class name should make
+<i>782</i>&nbsp;        // PascalCasing
+<i>783</i>&nbsp;        // PascalCasings
+<i>784</i>&nbsp;        // Pascal Casing
+<i>785</i>&nbsp;        // Pascal Casings
+<i>786</i>&nbsp;        // Pascal_Casing
+<i>787</i>&nbsp;        // Pascal_Casings
+<i>788</i>&nbsp;        // Order is important.
+<i>789</i>&nbsp;
+<i>790</i>&nbsp;        String guess;
+<i>791</i>&nbsp;        String pluralClassName;
 <i>792</i>&nbsp;
-<i>793</i>&nbsp;    private void addTableGuesses(String className, Collection&lt;String&gt; guesses) {
-<i>794</i>&nbsp;        // PascalCasing class name should make
-<i>795</i>&nbsp;        // PascalCasing
-<i>796</i>&nbsp;        // PascalCasings
-<i>797</i>&nbsp;        // Pascal Casing
-<i>798</i>&nbsp;        // Pascal Casings
-<i>799</i>&nbsp;        // Pascal_Casing
-<i>800</i>&nbsp;        // Pascal_Casings
-<i>801</i>&nbsp;        // Order is important.
-<i>802</i>&nbsp;
-<i>803</i>&nbsp;        String guess;
-<i>804</i>&nbsp;        String pluralClassName;
+<b class="fc"><i>793</i>&nbsp;        if (className.endsWith(&quot;y&quot;)) {</b>
+<b class="fc"><i>794</i>&nbsp;            pluralClassName = className.substring(0, className.length() - 1) + &quot;ies&quot;;</b>
+<i>795</i>&nbsp;        } else {
+<b class="fc"><i>796</i>&nbsp;            pluralClassName = className + &quot;s&quot;;</b>
+<i>797</i>&nbsp;        }
+<i>798</i>&nbsp;
+<b class="fc"><i>799</i>&nbsp;        guesses.add(className);</b>
+<b class="fc"><i>800</i>&nbsp;        guesses.add(pluralClassName);</b>
+<i>801</i>&nbsp;
+<b class="fc"><i>802</i>&nbsp;        guess = Util.camelToTitleCase(className);</b>
+<b class="fc"><i>803</i>&nbsp;        guesses.add(guess); // name with spaces</b>
+<b class="fc"><i>804</i>&nbsp;        guesses.add(Util.replaceAll(guess, &#39; &#39;, &#39;_&#39;)); // name with spaces changed to _</b>
 <i>805</i>&nbsp;
-<b class="fc"><i>806</i>&nbsp;        if (className.endsWith(&quot;y&quot;)) {</b>
-<b class="fc"><i>807</i>&nbsp;            pluralClassName = className.substring(0, className.length() - 1) + &quot;ies&quot;;</b>
-<i>808</i>&nbsp;        } else {
-<b class="fc"><i>809</i>&nbsp;            pluralClassName = className + &quot;s&quot;;</b>
-<i>810</i>&nbsp;        }
-<i>811</i>&nbsp;
-<b class="fc"><i>812</i>&nbsp;        guesses.add(className);</b>
-<b class="fc"><i>813</i>&nbsp;        guesses.add(pluralClassName);</b>
-<i>814</i>&nbsp;
-<b class="fc"><i>815</i>&nbsp;        guess = Util.camelToTitleCase(className);</b>
-<b class="fc"><i>816</i>&nbsp;        guesses.add(guess); // name with spaces</b>
-<b class="fc"><i>817</i>&nbsp;        guesses.add(Util.replaceAll(guess, &#39; &#39;, &#39;_&#39;)); // name with spaces changed to _</b>
-<i>818</i>&nbsp;
-<b class="fc"><i>819</i>&nbsp;        guess = Util.camelToTitleCase(pluralClassName);</b>
-<b class="fc"><i>820</i>&nbsp;        guesses.add(guess); // plural name with spaces</b>
-<b class="fc"><i>821</i>&nbsp;        guesses.add(Util.replaceAll(guess, &#39; &#39;, &#39;_&#39;)); // plural name with spaces changed to _</b>
-<b class="fc"><i>822</i>&nbsp;    }</b>
-<i>823</i>&nbsp;
-<i>824</i>&nbsp;    List&lt;String&gt; getPrimaryKeys(Class objectClass, Connection connection) throws PersismException {
-<i>825</i>&nbsp;
-<i>826</i>&nbsp;        // ensures meta data will be available
-<b class="fc"><i>827</i>&nbsp;        String tableName = getTableName(objectClass, connection);</b>
-<i>828</i>&nbsp;
-<b class="fc"><i>829</i>&nbsp;        log.debug(&quot;getPrimaryKeys for &quot; + tableName);</b>
-<i>830</i>&nbsp;
-<b class="fc"><i>831</i>&nbsp;        List&lt;String&gt; primaryKeys = new ArrayList&lt;String&gt;(4);</b>
-<b class="fc"><i>832</i>&nbsp;        Map&lt;String, ColumnInfo&gt; map = getColumns(objectClass, connection);</b>
-<b class="fc"><i>833</i>&nbsp;        for (ColumnInfo col : map.values()) {</b>
-<b class="fc"><i>834</i>&nbsp;            if (col.primary) {</b>
-<b class="fc"><i>835</i>&nbsp;                primaryKeys.add(col.columnName);</b>
-<i>836</i>&nbsp;            }
-<b class="fc"><i>837</i>&nbsp;        }</b>
-<b class="fc"><i>838</i>&nbsp;        return primaryKeys;</b>
-<i>839</i>&nbsp;    }
-<i>840</i>&nbsp;}
+<b class="fc"><i>806</i>&nbsp;        guess = Util.camelToTitleCase(pluralClassName);</b>
+<b class="fc"><i>807</i>&nbsp;        guesses.add(guess); // plural name with spaces</b>
+<b class="fc"><i>808</i>&nbsp;        guesses.add(Util.replaceAll(guess, &#39; &#39;, &#39;_&#39;)); // plural name with spaces changed to _</b>
+<b class="fc"><i>809</i>&nbsp;    }</b>
+<i>810</i>&nbsp;
+<i>811</i>&nbsp;    List&lt;String&gt; getPrimaryKeys(Class objectClass, Connection connection) throws PersismException {
+<i>812</i>&nbsp;
+<i>813</i>&nbsp;        // ensures meta data will be available
+<b class="fc"><i>814</i>&nbsp;        String tableName = getTableName(objectClass, connection);</b>
+<i>815</i>&nbsp;
+<b class="fc"><i>816</i>&nbsp;        log.debug(&quot;getPrimaryKeys for &quot; + tableName);</b>
+<i>817</i>&nbsp;
+<b class="fc"><i>818</i>&nbsp;        List&lt;String&gt; primaryKeys = new ArrayList&lt;String&gt;(4);</b>
+<b class="fc"><i>819</i>&nbsp;        Map&lt;String, ColumnInfo&gt; map = getColumns(objectClass, connection);</b>
+<b class="fc"><i>820</i>&nbsp;        for (ColumnInfo col : map.values()) {</b>
+<b class="fc"><i>821</i>&nbsp;            if (col.primary) {</b>
+<b class="fc"><i>822</i>&nbsp;                primaryKeys.add(col.columnName);</b>
+<i>823</i>&nbsp;            }
+<b class="fc"><i>824</i>&nbsp;        }</b>
+<b class="fc"><i>825</i>&nbsp;        return primaryKeys;</b>
+<i>826</i>&nbsp;    }
+<i>827</i>&nbsp;}
 </div>
 </div>
 
 <div class="footer">
     
-    <div style="float:right;">generated on 2021-01-21 14:01</div>
+    <div style="float:right;">generated on 2021-01-26 07:10</div>
 </div>
 </body>
 </html>

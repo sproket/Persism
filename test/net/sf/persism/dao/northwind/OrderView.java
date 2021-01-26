@@ -1,7 +1,7 @@
 package net.sf.persism.dao.northwind;
 
-import net.sf.persism.annotations.NotMapped;
-import net.sf.persism.annotations.Query;
+import net.sf.persism.annotations.NotColumn;
+import net.sf.persism.annotations.NotTable;
 
 import java.math.BigDecimal;
 import java.util.Date;
@@ -12,7 +12,7 @@ import java.util.Date;
  * @author Dan Howard
  * @since 5/25/12 5:59 AM
  */
-@Query
+@NotTable
 public class OrderView {
 
     private int orderId;
@@ -32,7 +32,7 @@ public class OrderView {
     private String productName;
 
 
-    @NotMapped
+    @NotColumn
     private int junk;
 
     public int getOrderId() {

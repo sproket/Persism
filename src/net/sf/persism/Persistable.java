@@ -4,8 +4,8 @@ import java.lang.reflect.InvocationTargetException;
 import java.util.Collection;
 
 /**
- * Interface for PersistableObject class. You can use this interface in situations where you can't or don't want
- * your data objects to inherit PersistableObject.
+ * Indicates that Persism should keep track of changed columns in order to only include those columns in the SQL UPDATE statement.
+ * You can use this interface in situations where you can't or don't want your data objects to inherit PersistableObject.
  *
  * @author Dan Howard
  * @see PersistableObject PersistableObject for implementation.

@@ -1,6 +1,6 @@
 package net.sf.persism.dao;
 
-import net.sf.persism.annotations.NotMapped;
+import net.sf.persism.annotations.NotColumn;
 
 import java.math.BigDecimal;
 
@@ -18,7 +18,7 @@ public class Invoice {
     private int quantity;
     private double discount;
 
-    @NotMapped
+    @NotColumn
     private String junk1;
 
     private String junk2;
