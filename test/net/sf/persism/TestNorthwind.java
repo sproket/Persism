@@ -1,9 +1,3 @@
-/**
- * Comments for TestNorthwind go here.
- *
- * @author Dan Howard
- * @since 5/3/12 8:46 PM
- */
 package net.sf.persism;
 
 import junit.framework.TestCase;
@@ -16,7 +10,13 @@ import java.sql.*;
 import java.util.List;
 import java.util.Properties;
 
-// Does not share common tests - this is just to do some specific tests on SQL with Northwind DB
+
+/**
+ * Does not share common tests - this is just to do some specific tests on SQL with Northwind DB
+ *
+ * @author Dan Howard
+ * @since 5/3/12 8:46 PM
+ */
 public class TestNorthwind extends TestCase {
 
     private static final Log log = Log.getLogger(TestNorthwind.class);
@@ -50,6 +50,14 @@ public class TestNorthwind extends TestCase {
     }
 
     public void testBinaryImage() {
+
+        Category category = new Category();
+        category.setCategoryId(1);
+        boolean found = session.fetch(category);
+        assertTrue(found);
+
+
+        // Images come across as byte arrays
         try {
             List<Category> list = session.query(Category.class, "select * from categories");
 
@@ -263,6 +271,12 @@ public class TestNorthwind extends TestCase {
             Employee employee = session.fetch(Employee.class, "SELECT * FROM Employees WHERE LastName=? and FirstName=?", "Leverling", "Janet");
 
             assertTrue("employee should be found ", employee != null && employee.getEmployeeId() > 0);
+            employee.setStatus('a');
+            session.update(employee);
+
+            employee = session.fetch(Employee.class, "SELECT * FROM Employees WHERE LastName=? and FirstName=?", "Leverling", "Janet");
+            assertNotNull(employee);
+            assertEquals("status s/b 'a'", 'a', employee.getStatus());
 
             // Find shipper
             Shipper shipper = session.fetch(Shipper.class, "SELECT * FROM Shippers WHERE CompanyName=?", "Speedy Express");

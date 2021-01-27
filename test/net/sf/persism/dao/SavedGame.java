@@ -18,6 +18,7 @@ public final class SavedGame extends PersistableObject {
     private String data;
     private float gold;
     private int silver;
+    private byte[] somethingBig;
 
     public int getId() {
         return id;
@@ -49,6 +50,14 @@ public final class SavedGame extends PersistableObject {
 
     public String getData() {
         return data;
+    }
+
+    public byte[] getSomethingBig() {
+        return somethingBig;
+    }
+
+    public void setSomethingBig(byte[] somethingBig) {
+        this.somethingBig = somethingBig;
     }
 
     public void setData(String data) {

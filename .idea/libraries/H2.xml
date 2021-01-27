@@ -4,6 +4,8 @@
       <root url="jar://$PROJECT_DIR$/libs/h2/bin/h2-1.3.167.jar!/" />
     </CLASSES>
     <JAVADOC />
-    <SOURCES />
+    <SOURCES>
+      <root url="jar://$USER_HOME$/.ideaLibSources/h2-1.3.167-sources.jar!/" />
+    </SOURCES>
   </library>
 </component>

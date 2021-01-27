@@ -28,6 +28,7 @@ public class Employee {
 	[Notes] [ntext] NULL,
 	[ReportsTo] [int] NULL,
 	[PhotoPath] [nvarchar](255) NULL,
+	status char(1)
      */
 
     private int employeeId;
@@ -48,6 +49,7 @@ public class Employee {
     private String notes;
     private int reportsTo;
     private String photoPath;
+    private char status;
 
     public int getEmployeeId() {
         return employeeId;
@@ -191,5 +193,13 @@ public class Employee {
 
     public void setPhotoPath(String photoPath) {
         this.photoPath = photoPath;
+    }
+
+    public char getStatus() {
+        return status;
+    }
+
+    public void setStatus(char status) {
+        this.status = status;
     }
 }

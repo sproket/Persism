@@ -2,9 +2,7 @@ package net.sf.persism;
 
 import net.sf.persism.annotations.NotTable;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.StringWriter;
+import java.io.*;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.math.BigDecimal;
@@ -608,32 +606,17 @@ public final class Session {
     private Object readPrimitive(ResultSet rs, int column, Class returnType) throws SQLException, IOException {
         ResultSetMetaData rsmd = rs.getMetaData();
         int sqlColumnType = rsmd.getColumnType(column);
-
-        Types columnType = Types.convert(sqlColumnType); // note this could be null if we can't match a type
-        // Since there is no specific SQL column type for UUID we will use the return type to detect it.
-        if (returnType.equals(UUID.class)) {
-            // Check the return type for UUID since resultSetMetaData.getColumnType(column) has no UUID type
-            // it always returns a char or nvarchar so we'll just test and set it here. FFS.
-            columnType = Types.UUIDType;
-        }
         String columnName = rsmd.getColumnLabel(column);
-
-        Object value = read(rs, column, sqlColumnType);
-
-        // If value is null or column type is unknown - no need to try to convert anything.
-        if (value != null && columnType != null) {
-            value = convert(value, returnType, columnName);
-        }
-
+        Object value = read(rs, column, columnName, sqlColumnType, returnType);
         return value;
     }
 
     // Make an educated guess read an object from the ResultSet to get the best Class type of the object
-    private Object read(ResultSet rs, int column, int sqlColumnType) throws SQLException, IOException {
+    private Object read(ResultSet rs, int column, String columnName, int sqlColumnType, Class returnType) throws SQLException, IOException {
         Object value;
         Types columnType = Types.convert(sqlColumnType); // note this could be null if we can't match a type
-
         if (columnType != null) {
+
             switch (columnType) {
 
                 case TimestampType:
@@ -641,25 +624,31 @@ public final class Session {
                     value = rs.getTimestamp(column);
                     break;
                 case ClobType:
-                    value = rs.getClob(column);
-                    InputStream in = ((Clob) value).getAsciiStream();
-                    StringWriter write = new StringWriter();
+                    Clob clob = rs.getClob(column);
+                    try (InputStream in = clob.getAsciiStream() ) {
+                        StringWriter writer = new StringWriter();
 
-                    int c = -1;
-                    while ((c = in.read()) != -1) {
-                        write.write(c);
+                        int c = -1;
+                        while ((c = in.read()) != -1) {
+                            writer.write(c);
+                        }
+                        writer.flush();
+                        value = writer.toString();
                     }
-                    write.flush();
-                    value = write.toString();
                     break;
-//                case BlobType:
-//                    // todo BlobType
-//                case InputStreamType:
-//                    // todo InputStreamType
-//                case ReaderType:
-//                    // todo ReaderType
-//                case EnumType:
-//                    // todo EnumType - no SQL type for that
+                case BlobType:
+                    byte[] buffer = new byte[1024];
+                    Blob blob = rs.getBlob(column);
+                    try (InputStream in = blob.getBinaryStream()) {
+                        // if it goes past int length the oh well...
+                        ByteArrayOutputStream bos = new ByteArrayOutputStream((int) blob.length());
+                        for (int len; (len = in.read(buffer)) != -1; ) {
+                            bos.write(buffer, 0, len);
+                        }
+                        value = bos.toByteArray();
+                    }
+                    break;
+
                 case IntegerType:
                     value = rs.getObject(column) == null ? null : rs.getInt(column);
                     break;
@@ -693,18 +682,27 @@ public final class Session {
             value = rs.getObject(column);
         }
 
+        // If value is null or column type is unknown - no need to try to convert anything.
+        if (value != null && columnType != null) {
+            value = convert(value, returnType, columnName);
+        }
+
         return value;
     }
 
     // Make a sensible conversion of the Value read from the DB and the property type defined on the Data class.
     private Object convert(Object dbValue, Class propertyType, String columnName) {
         Types valueType = Types.getType(dbValue.getClass());
+        if (valueType == null) {
+            log.error("WTF " + dbValue.getClass());
+        }
 
         // try to convert or cast the value to the proper type.
         switch (valueType) {
 
             case booleanType:
             case BooleanType:
+                log.debug("BooleanType");
                 break;
 
             case byteType:
@@ -739,6 +737,7 @@ public final class Session {
 
             case floatType:
             case FloatType:
+                log.debug("FloatType");
                 break;
 
             case doubleType:
@@ -793,7 +792,7 @@ public final class Session {
                         // SQL or others may return STRING yyyy-MM-dd for older legacy 'date' type.
                         // https://docs.microsoft.com/en-us/sql/t-sql/data-types/date-transact-sql?view=sql-server-ver15
                         String format;
-                        if ((""+dbValue).length() > "yyyy-MM-dd".length()) {
+                        if (("" + dbValue).length() > "yyyy-MM-dd".length()) {
                             format = "yyyy-MM-dd hh:mm:ss";
                         } else {
                             format = "yyyy-MM-dd";
@@ -854,17 +853,20 @@ public final class Session {
                         throw new PersismException(msg, e);
                     }
                 } else if (propertyType.equals(Character.class) || propertyType.equals(char.class)) {
-                    String s = ""+dbValue;
+                    String s = "" + dbValue;
                     if (s.length() > 0) {
                         dbValue = s.charAt(0);
                     }
                 } else if (propertyType.equals(BigDecimal.class)) {
-                    dbValue = new BigDecimal(""+dbValue);
+                    dbValue = new BigDecimal("" + dbValue);
                 }
                 break;
 
             case characterType:
             case CharacterType:
+                // Does not occur because there's no direct single CHAR type.
+                // We get a string and handle it in the String case above.
+                log.debug("CharacterType");
                 break;
 
             case UtilDateType:
@@ -881,31 +883,12 @@ public final class Session {
                 break;
 
             case TimeType:
+                log.debug("TimeType");
                 break;
 
             case byteArrayType:
             case ByteArrayType:
-                break;
-
-            case charArrayType:
-            case CharArrayType:
-                break;
-
-            case ClobType:
-                // Convert to string
-                if (dbValue != null) {
-                    dbValue = "" + dbValue;
-                }
-                break;
-            case BlobType:
-                break;
-            case InputStreamType:
-                break;
-            case ReaderType:
-                break;
-            case EnumType:
-                break;
-            case UUIDType:
+                log.debug("ByteArrayType");
                 break;
         }
         return dbValue;

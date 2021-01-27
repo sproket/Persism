@@ -1,19 +1,22 @@
+package net.sf.persism;
+
+import net.sf.persism.dao.*;
+
+import java.io.File;
+import java.io.IOException;
+import java.math.BigDecimal;
+import java.nio.file.Files;
+import java.sql.*;
+import java.text.NumberFormat;
+import java.util.*;
+import java.util.Date;
+
 /**
  * Comments for TestH2 go here.
  *
  * @author Dan Howard
  * @since 9/25/11 8:04 AM
  */
-package net.sf.persism;
-
-import net.sf.persism.dao.*;
-
-import java.math.BigDecimal;
-import java.sql.*;
-import java.text.NumberFormat;
-import java.util.*;
-import java.util.Date;
-
 public class TestH2 extends BaseTest {
 
     // data types
@@ -431,29 +434,32 @@ public class TestH2 extends BaseTest {
                 " Timestamp TIMESTAMP NULL, " +
                 " Gold REAL NULL, " +
                 " Silver REAL NULL, " +
-                " Data TEXT NULL ) ");
+                " Data TEXT NULL, " +
+                " SomethingBig BLOB NULL) ");
 
         executeCommands(commands, con);
     }
 
-    public void testVariousTypes() throws SQLException {
+    public void testVariousTypesLikeClobAndBlob() throws SQLException, IOException {
         // note Data is read as a CLOB
-        SavedGame sg = new SavedGame();
-        sg.setName("BLAH");
-        sg.setTimeStamp(new Date());
-        sg.setData("HJ LHLH H H                     ';lk ;lk ';l k                                K HLHLHH LH LH LH LHLHLHH LH H H H LH HHLGHLJHGHGFHGFGJFDGHFDHFDGJFDKGHDGJFDD KHGD KHG DKHDTG HKG DFGHK  GLJHG LJHG LJH GLJ");
+        SavedGame saveGame = new SavedGame();
+        saveGame.setName("BLAH");
+        saveGame.setTimeStamp(new Date());
+        saveGame.setData("HJ LHLH H H                     ';lk ;lk ';l k                                K HLHLHH LH LH LH LHLHLHH LH H H H LH HHLGHLJHGHGFHGFGJFDGHFDHFDGJFDKGHDGJFDD KHGD KHG DKHDTG HKG DFGHK  GLJHG LJHG LJH GLJ");
+        saveGame.setGold(100.23f);
+        saveGame.setSilver(200);
 
-        sg.setGold(100.23f);
-        sg.setSilver(200);
-        session.insert(sg);
+        File file = new File("c:/windows/explorer.exe");
+        saveGame.setSomethingBig(Files.readAllBytes(file.toPath()));
+        int size = saveGame.getSomethingBig().length;
+        log.info("SIZE?" + saveGame.getSomethingBig().length);
+        session.insert(saveGame);
 
-        int id = sg.getId();
-
-        sg = null;
-        sg = session.fetch(SavedGame.class, "select * from SavedGames");
-        log.info("SAVED GOLD: " + sg.getGold());
-        log.info("SAVED SILVER: " + sg.getSilver());
-
+        saveGame = session.fetch(SavedGame.class, "select * from SavedGames");
+        log.info("SAVED GOLD: " + saveGame.getGold());
+        log.info("SAVED SILVER: " + saveGame.getSilver());
+        log.info("AFTER FETCH SIZE?" + saveGame.getSomethingBig().length);
+        assertEquals("size should be the same ", size, saveGame.getSomethingBig().length);
     }
 
 

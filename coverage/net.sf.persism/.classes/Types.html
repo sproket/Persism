@@ -58,10 +58,10 @@
 </td>
 <td class="coverageStat">
   <span class="percent">
-    96.2%
+    95.9%
   </span>
   <span class="absValue">
-    (75/ 78)
+    (71/ 74)
   </span>
 </td>
 </tr>
@@ -116,134 +116,131 @@
 <b class="fc"><i>42</i>&nbsp;    TimestampType(Timestamp.class),</b>
 <b class="fc"><i>43</i>&nbsp;    byteArrayType(byte[].class),</b>
 <b class="fc"><i>44</i>&nbsp;    ByteArrayType(Byte[].class),</b>
-<b class="fc"><i>45</i>&nbsp;    charArrayType(char[].class),</b>
-<b class="fc"><i>46</i>&nbsp;    CharArrayType(Character[].class),</b>
-<b class="fc"><i>47</i>&nbsp;    ClobType(Clob.class),</b>
-<b class="fc"><i>48</i>&nbsp;    BlobType(Blob.class),</b>
-<b class="fc"><i>49</i>&nbsp;    InputStreamType(InputStream.class),</b>
-<b class="fc"><i>50</i>&nbsp;    ReaderType(Reader.class),</b>
-<b class="fc"><i>51</i>&nbsp;    EnumType(Enum.class),</b>
-<b class="fc"><i>52</i>&nbsp;    UUIDType(UUID.class);</b>
+<b class="fc"><i>45</i>&nbsp;    ClobType(Clob.class),</b>
+<b class="fc"><i>46</i>&nbsp;    BlobType(Blob.class),</b>
+<b class="fc"><i>47</i>&nbsp;    EnumType(Enum.class),</b>
+<b class="fc"><i>48</i>&nbsp;    UUIDType(UUID.class);</b>
+<i>49</i>&nbsp;
+<b class="fc"><i>50</i>&nbsp;    private static final Log log = Log.getLogger(Types.class);</b>
+<i>51</i>&nbsp;
+<i>52</i>&nbsp;    private Class type;
 <i>53</i>&nbsp;
-<b class="fc"><i>54</i>&nbsp;    private static final Log log = Log.getLogger(Types.class);</b>
-<i>55</i>&nbsp;
-<i>56</i>&nbsp;    private Class type;
+<b class="fc"><i>54</i>&nbsp;    &lt;T&gt; Types(Class&lt;T&gt; type) {</b>
+<b class="fc"><i>55</i>&nbsp;        init(type);</b>
+<b class="fc"><i>56</i>&nbsp;    }</b>
 <i>57</i>&nbsp;
-<b class="fc"><i>58</i>&nbsp;    &lt;T&gt; Types(Class&lt;T&gt; type) {</b>
-<b class="fc"><i>59</i>&nbsp;        init(type);</b>
+<i>58</i>&nbsp;    private &lt;T&gt; void init(Class&lt;T&gt; type) {
+<b class="fc"><i>59</i>&nbsp;        this.type = type;</b>
 <b class="fc"><i>60</i>&nbsp;    }</b>
 <i>61</i>&nbsp;
-<i>62</i>&nbsp;    private &lt;T&gt; void init(Class&lt;T&gt; type) {
-<b class="fc"><i>63</i>&nbsp;        this.type = type;</b>
-<b class="fc"><i>64</i>&nbsp;    }</b>
-<i>65</i>&nbsp;
-<i>66</i>&nbsp;    public static &lt;T&gt; Types getType(Class&lt;T&gt; type) {
-<b class="fc"><i>67</i>&nbsp;        for (Types t : values()) {</b>
-<b class="fc"><i>68</i>&nbsp;            if (t.type.equals(type)) {</b>
-<b class="fc"><i>69</i>&nbsp;                return t;</b>
-<i>70</i>&nbsp;            }
-<i>71</i>&nbsp;        }
-<b class="fc"><i>72</i>&nbsp;        return null;</b>
-<i>73</i>&nbsp;    }
-<i>74</i>&nbsp;
-<i>75</i>&nbsp;    public static Types convert(int sqlType) {
-<b class="fc"><i>76</i>&nbsp;        Types result = null;</b>
-<i>77</i>&nbsp;
-<b class="fc"><i>78</i>&nbsp;        switch (sqlType) {</b>
-<i>79</i>&nbsp;            case java.sql.Types.CHAR:
-<i>80</i>&nbsp;            case java.sql.Types.NCHAR:
-<i>81</i>&nbsp;            case java.sql.Types.VARCHAR:
-<i>82</i>&nbsp;            case java.sql.Types.LONGVARCHAR:
-<i>83</i>&nbsp;            case java.sql.Types.NVARCHAR:
-<i>84</i>&nbsp;            case java.sql.Types.LONGNVARCHAR:
-<b class="fc"><i>85</i>&nbsp;                result = StringType;</b>
-<b class="fc"><i>86</i>&nbsp;                break;</b>
-<i>87</i>&nbsp;
-<i>88</i>&nbsp;            case java.sql.Types.NUMERIC:
-<i>89</i>&nbsp;            case java.sql.Types.DECIMAL:
-<b class="fc"><i>90</i>&nbsp;                result = DecimalType;</b>
-<b class="fc"><i>91</i>&nbsp;                break;</b>
-<i>92</i>&nbsp;
-<i>93</i>&nbsp;            case java.sql.Types.BIT:
-<i>94</i>&nbsp;            case java.sql.Types.BOOLEAN:
-<b class="fc"><i>95</i>&nbsp;                result = BooleanType;</b>
+<i>62</i>&nbsp;    public static &lt;T&gt; Types getType(Class&lt;T&gt; type) {
+<b class="fc"><i>63</i>&nbsp;        for (Types t : values()) {</b>
+<b class="fc"><i>64</i>&nbsp;            if (t.type.equals(type)) {</b>
+<b class="fc"><i>65</i>&nbsp;                return t;</b>
+<i>66</i>&nbsp;            }
+<i>67</i>&nbsp;        }
+<b class="fc"><i>68</i>&nbsp;        return null;</b>
+<i>69</i>&nbsp;    }
+<i>70</i>&nbsp;
+<i>71</i>&nbsp;    public static Types convert(int sqlType) {
+<b class="fc"><i>72</i>&nbsp;        Types result = null;</b>
+<i>73</i>&nbsp;
+<b class="fc"><i>74</i>&nbsp;        switch (sqlType) {</b>
+<i>75</i>&nbsp;            case java.sql.Types.CHAR:
+<i>76</i>&nbsp;            case java.sql.Types.NCHAR:
+<i>77</i>&nbsp;            case java.sql.Types.VARCHAR:
+<i>78</i>&nbsp;            case java.sql.Types.LONGVARCHAR:
+<i>79</i>&nbsp;            case java.sql.Types.NVARCHAR:
+<i>80</i>&nbsp;            case java.sql.Types.LONGNVARCHAR:
+<b class="fc"><i>81</i>&nbsp;                result = StringType;</b>
+<b class="fc"><i>82</i>&nbsp;                break;</b>
+<i>83</i>&nbsp;
+<i>84</i>&nbsp;            case java.sql.Types.NUMERIC:
+<i>85</i>&nbsp;            case java.sql.Types.DECIMAL:
+<b class="fc"><i>86</i>&nbsp;                result = DecimalType;</b>
+<b class="fc"><i>87</i>&nbsp;                break;</b>
+<i>88</i>&nbsp;
+<i>89</i>&nbsp;            case java.sql.Types.BIT:
+<i>90</i>&nbsp;            case java.sql.Types.BOOLEAN:
+<b class="fc"><i>91</i>&nbsp;                result = BooleanType;</b>
+<b class="fc"><i>92</i>&nbsp;                break;</b>
+<i>93</i>&nbsp;
+<i>94</i>&nbsp;            case java.sql.Types.TINYINT:
+<b class="fc"><i>95</i>&nbsp;                result = ByteType;</b>
 <b class="fc"><i>96</i>&nbsp;                break;</b>
 <i>97</i>&nbsp;
-<i>98</i>&nbsp;            case java.sql.Types.TINYINT:
-<b class="fc"><i>99</i>&nbsp;                result = ByteType;</b>
+<i>98</i>&nbsp;            case java.sql.Types.SMALLINT:
+<b class="fc"><i>99</i>&nbsp;                result = ShortType;</b>
 <b class="fc"><i>100</i>&nbsp;                break;</b>
 <i>101</i>&nbsp;
-<i>102</i>&nbsp;            case java.sql.Types.SMALLINT:
-<b class="fc"><i>103</i>&nbsp;                result = ShortType;</b>
+<i>102</i>&nbsp;            case java.sql.Types.INTEGER:
+<b class="fc"><i>103</i>&nbsp;                result = IntegerType;</b>
 <b class="fc"><i>104</i>&nbsp;                break;</b>
 <i>105</i>&nbsp;
-<i>106</i>&nbsp;            case java.sql.Types.INTEGER:
-<b class="fc"><i>107</i>&nbsp;                result = IntegerType;</b>
+<i>106</i>&nbsp;            case java.sql.Types.BIGINT:
+<b class="fc"><i>107</i>&nbsp;                result = LongType;</b>
 <b class="fc"><i>108</i>&nbsp;                break;</b>
 <i>109</i>&nbsp;
-<i>110</i>&nbsp;            case java.sql.Types.BIGINT:
-<b class="fc"><i>111</i>&nbsp;                result = LongType;</b>
-<b class="fc"><i>112</i>&nbsp;                break;</b>
+<i>110</i>&nbsp;            case java.sql.Types.FLOAT:
+<b class="nc"><i>111</i>&nbsp;                result = FloatType;</b>
+<b class="nc"><i>112</i>&nbsp;                break;</b>
 <i>113</i>&nbsp;
-<i>114</i>&nbsp;            case java.sql.Types.FLOAT:
-<b class="nc"><i>115</i>&nbsp;                result = FloatType;</b>
-<b class="nc"><i>116</i>&nbsp;                break;</b>
-<i>117</i>&nbsp;
-<i>118</i>&nbsp;            case java.sql.Types.DOUBLE:
-<i>119</i>&nbsp;            case java.sql.Types.REAL:
-<b class="fc"><i>120</i>&nbsp;                result = DoubleType;</b>
-<b class="fc"><i>121</i>&nbsp;                break;</b>
-<i>122</i>&nbsp;
-<i>123</i>&nbsp;            case java.sql.Types.BINARY:
-<i>124</i>&nbsp;            case java.sql.Types.VARBINARY:
-<i>125</i>&nbsp;            case java.sql.Types.LONGVARBINARY:
-<b class="fc"><i>126</i>&nbsp;                result = ByteArrayType;</b>
-<b class="fc"><i>127</i>&nbsp;                break;</b>
-<i>128</i>&nbsp;
-<i>129</i>&nbsp;            case java.sql.Types.DATE:
-<b class="fc"><i>130</i>&nbsp;                result = SQLDateType;</b>
-<b class="fc"><i>131</i>&nbsp;                break;</b>
-<i>132</i>&nbsp;
-<i>133</i>&nbsp;            case java.sql.Types.TIME:
-<b class="fc"><i>134</i>&nbsp;                result = TimeType;</b>
-<b class="fc"><i>135</i>&nbsp;                break;</b>
-<i>136</i>&nbsp;
-<i>137</i>&nbsp;            case java.sql.Types.TIMESTAMP:
-<b class="fc"><i>138</i>&nbsp;                result = TimestampType;</b>
-<b class="fc"><i>139</i>&nbsp;                break;</b>
-<i>140</i>&nbsp;
-<i>141</i>&nbsp;            case java.sql.Types.CLOB:
-<b class="fc"><i>142</i>&nbsp;                result = ClobType;</b>
-<i>143</i>&nbsp;                break;
-<i>144</i>&nbsp;        }
-<i>145</i>&nbsp;
-<b class="fc"><i>146</i>&nbsp;        if (result == null) {</b>
-<i>147</i>&nbsp;            // Need this for converter
-<i>148</i>&nbsp;            // https://stackoverflow.com/questions/36405320/using-the-datetimeoffset-datatype-with-jtds
-<b class="fc"><i>149</i>&nbsp;            if (sqlType == -155) {</b>
-<i>150</i>&nbsp;                // MSSQL type for DateTimeOffset
-<b class="fc"><i>151</i>&nbsp;                result = TimestampType;</b>
-<i>152</i>&nbsp;            } else {
-<b class="nc"><i>153</i>&nbsp;                log.warn(&quot;SQL TYPE: &quot; + sqlType + &quot; not found &quot;, new Throwable());</b>
-<i>154</i>&nbsp;            }
-<i>155</i>&nbsp;        }
+<i>114</i>&nbsp;            case java.sql.Types.DOUBLE:
+<i>115</i>&nbsp;            case java.sql.Types.REAL:
+<b class="fc"><i>116</i>&nbsp;                result = DoubleType;</b>
+<b class="fc"><i>117</i>&nbsp;                break;</b>
+<i>118</i>&nbsp;
+<i>119</i>&nbsp;            case java.sql.Types.BINARY:
+<i>120</i>&nbsp;            case java.sql.Types.VARBINARY:
+<i>121</i>&nbsp;            case java.sql.Types.LONGVARBINARY:
+<i>122</i>&nbsp;            case java.sql.Types.BLOB:
+<b class="fc"><i>123</i>&nbsp;                result = BlobType;</b>
+<b class="fc"><i>124</i>&nbsp;                break;</b>
+<i>125</i>&nbsp;
+<i>126</i>&nbsp;            case java.sql.Types.DATE:
+<b class="fc"><i>127</i>&nbsp;                result = SQLDateType;</b>
+<b class="fc"><i>128</i>&nbsp;                break;</b>
+<i>129</i>&nbsp;
+<i>130</i>&nbsp;            case java.sql.Types.TIME:
+<b class="fc"><i>131</i>&nbsp;                result = TimeType;</b>
+<b class="fc"><i>132</i>&nbsp;                break;</b>
+<i>133</i>&nbsp;
+<i>134</i>&nbsp;            case java.sql.Types.TIMESTAMP:
+<b class="fc"><i>135</i>&nbsp;                result = TimestampType;</b>
+<b class="fc"><i>136</i>&nbsp;                break;</b>
+<i>137</i>&nbsp;
+<i>138</i>&nbsp;            case java.sql.Types.CLOB:
+<b class="fc"><i>139</i>&nbsp;                result = ClobType;</b>
+<i>140</i>&nbsp;                break;
+<i>141</i>&nbsp;        }
+<i>142</i>&nbsp;
+<b class="fc"><i>143</i>&nbsp;        if (result == null) {</b>
+<i>144</i>&nbsp;            // Need this for converter
+<i>145</i>&nbsp;            // https://stackoverflow.com/questions/36405320/using-the-datetimeoffset-datatype-with-jtds
+<b class="fc"><i>146</i>&nbsp;            if (sqlType == -155) {</b>
+<i>147</i>&nbsp;                // MSSQL type for DateTimeOffset
+<b class="fc"><i>148</i>&nbsp;                result = TimestampType;</b>
+<i>149</i>&nbsp;            } else {
+<b class="nc"><i>150</i>&nbsp;                log.warn(&quot;SQL TYPE: &quot; + sqlType + &quot; not found &quot;, new Throwable());</b>
+<i>151</i>&nbsp;            }
+<i>152</i>&nbsp;        }
+<i>153</i>&nbsp;
+<b class="fc"><i>154</i>&nbsp;        return result;</b>
+<i>155</i>&nbsp;    }
 <i>156</i>&nbsp;
-<b class="fc"><i>157</i>&nbsp;        return result;</b>
-<i>158</i>&nbsp;    }
-<i>159</i>&nbsp;
-<i>160</i>&nbsp;    public boolean isCountable() {
-<b class="fc"><i>161</i>&nbsp;        return this == IntegerType || this == integerType || this == LongType || this == longType || this == byteType || this == ByteType</b>
-<i>162</i>&nbsp;                || this == ShortType || this == shortType || this == DoubleType || this == doubleType || this == DecimalType;
-<i>163</i>&nbsp;    }
-<i>164</i>&nbsp;}
-<i>165</i>&nbsp;
-<i>166</i>&nbsp;
+<i>157</i>&nbsp;    public boolean isCountable() {
+<b class="fc"><i>158</i>&nbsp;        return this == IntegerType || this == integerType || this == LongType || this == longType || this == byteType || this == ByteType</b>
+<i>159</i>&nbsp;                || this == ShortType || this == shortType || this == DoubleType || this == doubleType || this == DecimalType;
+<i>160</i>&nbsp;    }
+<i>161</i>&nbsp;}
+<i>162</i>&nbsp;
+<i>163</i>&nbsp;
 </div>
 </div>
 
 <div class="footer">
     
-    <div style="float:right;">generated on 2021-01-26 07:10</div>
+    <div style="float:right;">generated on 2021-01-27 07:01</div>
 </div>
 </body>
 </html>

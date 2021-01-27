@@ -26,3 +26,5 @@ PostgreSQL https://www.postgresql.org/docs/9.5/sql-insert.html
 
 DATA TYPES
 https://docs.oracle.com/cd/B28359_01/server.111/b28318/datatype.htm#CNCPT012
+
+Blob support only up to int max size (2,147,483,647)

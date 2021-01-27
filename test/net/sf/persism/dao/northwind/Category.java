@@ -14,12 +14,13 @@ import java.io.InputStream;
  * @author Dan Howard
  * @since 5/3/12 8:50 PM
  */
-public class Category {
+public final class Category {
 
     private int categoryId;
     private String categoryName;
     private String description;
     private byte[] picture;
+    private String data; // xml type in SQL
 
     private BufferedImage image = null;
 
@@ -53,6 +54,14 @@ public class Category {
 
     public void setPicture(byte[] picture) {
         this.picture = picture;
+    }
+
+    public String getData() {
+        return data;
+    }
+
+    public void setData(String data) {
+        this.data = data;
     }
 
     /**

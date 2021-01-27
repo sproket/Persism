@@ -188,17 +188,9 @@ public class UtilsForTests {
                     break;
                 case ByteArrayType:
                     break;
-                case charArrayType:
-                    break;
-                case CharArrayType:
-                    break;
                 case ClobType:
                     break;
                 case BlobType:
-                    break;
-                case InputStreamType:
-                    break;
-                case ReaderType:
                     break;
             }
 

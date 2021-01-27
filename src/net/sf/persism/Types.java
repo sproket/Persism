@@ -42,12 +42,8 @@ enum Types {
     TimestampType(Timestamp.class),
     byteArrayType(byte[].class),
     ByteArrayType(Byte[].class),
-    charArrayType(char[].class),
-    CharArrayType(Character[].class),
     ClobType(Clob.class),
     BlobType(Blob.class),
-    InputStreamType(InputStream.class),
-    ReaderType(Reader.class),
     EnumType(Enum.class),
     UUIDType(UUID.class);
 
@@ -123,7 +119,8 @@ enum Types {
             case java.sql.Types.BINARY:
             case java.sql.Types.VARBINARY:
             case java.sql.Types.LONGVARBINARY:
-                result = ByteArrayType;
+            case java.sql.Types.BLOB:
+                result = BlobType;
                 break;
 
             case java.sql.Types.DATE:
