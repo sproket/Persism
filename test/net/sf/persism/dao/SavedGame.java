@@ -10,7 +10,7 @@ import java.util.Date;
  * @author Dan Howard
  * @since 3/30/13 7:59 AM
  */
-public final class SavedGame extends PersistableObject {
+public final class SavedGame extends PersistableObject<SavedGame> {
 
     private int id;
     private String name;

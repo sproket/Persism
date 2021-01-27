@@ -14,22 +14,25 @@ public abstract class PersistableObject<T> implements Persistable<T> {
 
     private T originalValue = null;
 
+    @Override
     public final void saveReadState() throws PersismException {
         originalValue = clone();
     }
 
+    @Override
     public final T getOriginalValue() {
         return originalValue;
     }
 
     /**
      * Used for getting originalValue
+     *
      * @return Clone of T
      */
     @Override
-    public final T clone()  {
+    public final T clone() {
         try {
-            return (T)super.clone();
+            return (T) super.clone();
         } catch (CloneNotSupportedException e) {
             throw new PersismException(e.getMessage(), e);
         }
