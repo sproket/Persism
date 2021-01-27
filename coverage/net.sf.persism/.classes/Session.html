@@ -47,10 +47,10 @@
 </td>
 <td class="coverageStat">
   <span class="percent">
-    92.7%
+    92.8%
   </span>
   <span class="absValue">
-    (409/ 441)
+    (411/ 443)
   </span>
 </td>
 </tr>
@@ -88,7 +88,7 @@
     92.8%
   </span>
   <span class="absValue">
-    (410/ 442)
+    (412/ 444)
   </span>
 </td>
 </tr>
@@ -706,351 +706,334 @@
 <i>606</i>&nbsp;    private Object readPrimitive(ResultSet rs, int column, Class returnType) throws SQLException, IOException {
 <b class="fc"><i>607</i>&nbsp;        ResultSetMetaData rsmd = rs.getMetaData();</b>
 <b class="fc"><i>608</i>&nbsp;        int sqlColumnType = rsmd.getColumnType(column);</b>
-<i>609</i>&nbsp;
-<i>610</i>&nbsp;//        Types columnType = Types.convert(sqlColumnType); // note this could be null if we can&#39;t match a type
-<i>611</i>&nbsp;//        // Since there is no specific SQL column type for UUID we will use the return type to detect it.
-<i>612</i>&nbsp;//        if (returnType.equals(UUID.class)) {
-<i>613</i>&nbsp;//            // Check the return type for UUID since resultSetMetaData.getColumnType(column) has no UUID type
-<i>614</i>&nbsp;//            // it always returns a char or nvarchar so we&#39;ll just test and set it here. FFS.
-<i>615</i>&nbsp;//            columnType = Types.UUIDType;
-<i>616</i>&nbsp;//        }
-<b class="fc"><i>617</i>&nbsp;        String columnName = rsmd.getColumnLabel(column);</b>
-<b class="fc"><i>618</i>&nbsp;        Object value = read(rs, column, columnName, sqlColumnType, returnType);</b>
-<b class="fc"><i>619</i>&nbsp;        return value;</b>
-<i>620</i>&nbsp;    }
+<b class="fc"><i>609</i>&nbsp;        String columnName = rsmd.getColumnLabel(column);</b>
+<b class="fc"><i>610</i>&nbsp;        Object value = read(rs, column, columnName, sqlColumnType, returnType);</b>
+<b class="fc"><i>611</i>&nbsp;        return value;</b>
+<i>612</i>&nbsp;    }
+<i>613</i>&nbsp;
+<i>614</i>&nbsp;    // Make an educated guess read an object from the ResultSet to get the best Class type of the object
+<i>615</i>&nbsp;    private Object read(ResultSet rs, int column, String columnName, int sqlColumnType, Class returnType) throws SQLException, IOException {
+<i>616</i>&nbsp;        Object value;
+<b class="fc"><i>617</i>&nbsp;        Types columnType = Types.convert(sqlColumnType); // note this could be null if we can&#39;t match a type</b>
+<b class="fc"><i>618</i>&nbsp;        if (columnType != null) {</b>
+<i>619</i>&nbsp;
+<b class="fc"><i>620</i>&nbsp;            switch (columnType) {</b>
 <i>621</i>&nbsp;
-<i>622</i>&nbsp;    // Make an educated guess read an object from the ResultSet to get the best Class type of the object
-<i>623</i>&nbsp;    private Object read(ResultSet rs, int column, String columnName, int sqlColumnType, Class returnType) throws SQLException, IOException {
-<i>624</i>&nbsp;        Object value;
-<b class="fc"><i>625</i>&nbsp;        Types columnType = Types.convert(sqlColumnType); // note this could be null if we can&#39;t match a type</b>
-<b class="fc"><i>626</i>&nbsp;        if (columnType != null) {</b>
-<i>627</i>&nbsp;
-<i>628</i>&nbsp;            StringWriter writer;
-<i>629</i>&nbsp;            InputStream in;
+<i>622</i>&nbsp;                case TimestampType:
+<i>623</i>&nbsp;                    // work around to Oracle reading a oracle.sql.TIMESTAMP class with getObject
+<b class="fc"><i>624</i>&nbsp;                    value = rs.getTimestamp(column);</b>
+<b class="fc"><i>625</i>&nbsp;                    break;</b>
+<i>626</i>&nbsp;                case ClobType:
+<b class="fc"><i>627</i>&nbsp;                    Clob clob = rs.getClob(column);</b>
+<b class="fc"><i>628</i>&nbsp;                    try (InputStream in = clob.getAsciiStream() ) {</b>
+<b class="fc"><i>629</i>&nbsp;                        StringWriter writer = new StringWriter();</b>
 <i>630</i>&nbsp;
-<b class="fc"><i>631</i>&nbsp;            switch (columnType) {</b>
-<i>632</i>&nbsp;
-<i>633</i>&nbsp;                case TimestampType:
-<i>634</i>&nbsp;                    // work around to Oracle reading a oracle.sql.TIMESTAMP class with getObject
-<b class="fc"><i>635</i>&nbsp;                    value = rs.getTimestamp(column);</b>
-<b class="fc"><i>636</i>&nbsp;                    break;</b>
-<i>637</i>&nbsp;                case ClobType:
-<b class="fc"><i>638</i>&nbsp;                    value = rs.getClob(column);</b>
-<b class="fc"><i>639</i>&nbsp;                    in = ((Clob) value).getAsciiStream();</b>
-<b class="fc"><i>640</i>&nbsp;                    writer = new StringWriter();</b>
-<i>641</i>&nbsp;
-<b class="fc"><i>642</i>&nbsp;                    int c = -1;</b>
-<b class="fc"><i>643</i>&nbsp;                    while ((c = in.read()) != -1) {</b>
-<b class="fc"><i>644</i>&nbsp;                        writer.write(c);</b>
-<i>645</i>&nbsp;                    }
-<b class="fc"><i>646</i>&nbsp;                    writer.flush();</b>
-<b class="fc"><i>647</i>&nbsp;                    value = writer.toString();</b>
-<b class="fc"><i>648</i>&nbsp;                    break;</b>
-<i>649</i>&nbsp;                case BlobType:
-<b class="fc"><i>650</i>&nbsp;                    byte[] buffer = new byte[1024];</b>
-<b class="fc"><i>651</i>&nbsp;                    Blob blob = rs.getBlob(column);</b>
-<b class="fc"><i>652</i>&nbsp;                    in = blob.getBinaryStream();</b>
-<b class="fc"><i>653</i>&nbsp;                    ByteArrayOutputStream bos = new ByteArrayOutputStream((int) blob.length()); // if it goes past int length the oh well...</b>
-<b class="fc"><i>654</i>&nbsp;                    for (int len; (len = in.read(buffer)) != -1;) {</b>
-<b class="fc"><i>655</i>&nbsp;                        bos.write(buffer, 0, len);</b>
-<i>656</i>&nbsp;                    }
-<b class="fc"><i>657</i>&nbsp;                    value = bos.toByteArray();</b>
-<i>658</i>&nbsp;
-<i>659</i>&nbsp;                    // todo test this.
-<i>660</i>&nbsp;                    // one way
-<i>661</i>&nbsp;//                    byte[] bytes = rs.getBytes(column);
-<i>662</i>&nbsp;//                    value = bytes;
-<i>663</i>&nbsp;
-<i>664</i>&nbsp;                    // another way
-<i>665</i>&nbsp;//                    Blob blob = rs.getBlob(column);
-<i>666</i>&nbsp;//                    value = blob.getBytes(1, (int) blob.length());
-<b class="fc"><i>667</i>&nbsp;                    break;</b>
-<i>668</i>&nbsp;
-<i>669</i>&nbsp;                case IntegerType:
-<b class="fc"><i>670</i>&nbsp;                    value = rs.getObject(column) == null ? null : rs.getInt(column);</b>
-<b class="fc"><i>671</i>&nbsp;                    break;</b>
-<i>672</i>&nbsp;                case LongType:
-<b class="fc"><i>673</i>&nbsp;                    value = rs.getObject(column) == null ? null : rs.getLong(column);</b>
-<b class="fc"><i>674</i>&nbsp;                    break;</b>
-<i>675</i>&nbsp;                case FloatType:
-<b class="nc"><i>676</i>&nbsp;                    value = rs.getObject(column) == null ? null : rs.getFloat(column);</b>
-<b class="nc"><i>677</i>&nbsp;                    break;</b>
-<i>678</i>&nbsp;                case DoubleType:
-<b class="fc"><i>679</i>&nbsp;                    value = rs.getObject(column) == null ? null : rs.getDouble(column);</b>
-<b class="fc"><i>680</i>&nbsp;                    break;</b>
-<i>681</i>&nbsp;                case DecimalType:
-<b class="fc"><i>682</i>&nbsp;                    value = rs.getBigDecimal(column);</b>
-<b class="fc"><i>683</i>&nbsp;                    break;</b>
-<i>684</i>&nbsp;                case TimeType:
-<b class="fc"><i>685</i>&nbsp;                    value = rs.getTime(column);</b>
-<b class="fc"><i>686</i>&nbsp;                    break;</b>
-<i>687</i>&nbsp;// We can&#39;t assume rs.getDate will work. SQLITE actually has a long value in here.
-<i>688</i>&nbsp;// We can live with rs.getObject and the convert method will handle it.
-<i>689</i>&nbsp;//                case SQLDateType:
-<i>690</i>&nbsp;//                case UtilDateType:DateType:
-<i>691</i>&nbsp;//                    value = rs.getDate(column);
-<i>692</i>&nbsp;//                    break;
-<i>693</i>&nbsp;                default:
-<b class="fc"><i>694</i>&nbsp;                    value = rs.getObject(column);</b>
-<i>695</i>&nbsp;            }
-<i>696</i>&nbsp;
-<i>697</i>&nbsp;        } else {
-<b class="nc"><i>698</i>&nbsp;            log.warn(&quot;Column type not known for SQL type &quot; + sqlColumnType, new Throwable());</b>
-<b class="nc"><i>699</i>&nbsp;            value = rs.getObject(column);</b>
-<i>700</i>&nbsp;        }
-<i>701</i>&nbsp;
-<i>702</i>&nbsp;        // If value is null or column type is unknown - no need to try to convert anything.
-<b class="fc"><i>703</i>&nbsp;        if (value != null &amp;&amp; columnType != null) {</b>
-<b class="fc"><i>704</i>&nbsp;            value = convert(value, returnType, columnName);</b>
-<i>705</i>&nbsp;        }
-<i>706</i>&nbsp;
-<b class="fc"><i>707</i>&nbsp;        return value;</b>
-<i>708</i>&nbsp;    }
-<i>709</i>&nbsp;
-<i>710</i>&nbsp;    // Make a sensible conversion of the Value read from the DB and the property type defined on the Data class.
-<i>711</i>&nbsp;    private Object convert(Object dbValue, Class propertyType, String columnName) {
-<b class="fc"><i>712</i>&nbsp;        Types valueType = Types.getType(dbValue.getClass());</b>
-<b class="fc"><i>713</i>&nbsp;        if (valueType == null) {</b>
-<b class="nc"><i>714</i>&nbsp;            log.error(&quot;WTF &quot; + dbValue.getClass());</b>
-<i>715</i>&nbsp;        }
-<i>716</i>&nbsp;
-<i>717</i>&nbsp;        // try to convert or cast the value to the proper type.
-<b class="fc"><i>718</i>&nbsp;        switch (valueType) {</b>
+<b class="fc"><i>631</i>&nbsp;                        int c = -1;</b>
+<b class="fc"><i>632</i>&nbsp;                        while ((c = in.read()) != -1) {</b>
+<b class="fc"><i>633</i>&nbsp;                            writer.write(c);</b>
+<i>634</i>&nbsp;                        }
+<b class="fc"><i>635</i>&nbsp;                        writer.flush();</b>
+<b class="fc"><i>636</i>&nbsp;                        value = writer.toString();</b>
+<b class="fc"><i>637</i>&nbsp;                    }</b>
+<b class="fc"><i>638</i>&nbsp;                    break;</b>
+<i>639</i>&nbsp;                case BlobType:
+<b class="fc"><i>640</i>&nbsp;                    byte[] buffer = new byte[1024];</b>
+<b class="fc"><i>641</i>&nbsp;                    Blob blob = rs.getBlob(column);</b>
+<b class="fc"><i>642</i>&nbsp;                    try (InputStream in = blob.getBinaryStream()) {</b>
+<i>643</i>&nbsp;                        // if it goes past int length the oh well...
+<b class="fc"><i>644</i>&nbsp;                        ByteArrayOutputStream bos = new ByteArrayOutputStream((int) blob.length());</b>
+<b class="fc"><i>645</i>&nbsp;                        for (int len; (len = in.read(buffer)) != -1; ) {</b>
+<b class="fc"><i>646</i>&nbsp;                            bos.write(buffer, 0, len);</b>
+<i>647</i>&nbsp;                        }
+<b class="fc"><i>648</i>&nbsp;                        value = bos.toByteArray();</b>
+<b class="fc"><i>649</i>&nbsp;                    }</b>
+<b class="fc"><i>650</i>&nbsp;                    break;</b>
+<i>651</i>&nbsp;
+<i>652</i>&nbsp;                case IntegerType:
+<b class="fc"><i>653</i>&nbsp;                    value = rs.getObject(column) == null ? null : rs.getInt(column);</b>
+<b class="fc"><i>654</i>&nbsp;                    break;</b>
+<i>655</i>&nbsp;                case LongType:
+<b class="fc"><i>656</i>&nbsp;                    value = rs.getObject(column) == null ? null : rs.getLong(column);</b>
+<b class="fc"><i>657</i>&nbsp;                    break;</b>
+<i>658</i>&nbsp;                case FloatType:
+<b class="nc"><i>659</i>&nbsp;                    value = rs.getObject(column) == null ? null : rs.getFloat(column);</b>
+<b class="nc"><i>660</i>&nbsp;                    break;</b>
+<i>661</i>&nbsp;                case DoubleType:
+<b class="fc"><i>662</i>&nbsp;                    value = rs.getObject(column) == null ? null : rs.getDouble(column);</b>
+<b class="fc"><i>663</i>&nbsp;                    break;</b>
+<i>664</i>&nbsp;                case DecimalType:
+<b class="fc"><i>665</i>&nbsp;                    value = rs.getBigDecimal(column);</b>
+<b class="fc"><i>666</i>&nbsp;                    break;</b>
+<i>667</i>&nbsp;                case TimeType:
+<b class="fc"><i>668</i>&nbsp;                    value = rs.getTime(column);</b>
+<b class="fc"><i>669</i>&nbsp;                    break;</b>
+<i>670</i>&nbsp;// We can&#39;t assume rs.getDate will work. SQLITE actually has a long value in here.
+<i>671</i>&nbsp;// We can live with rs.getObject and the convert method will handle it.
+<i>672</i>&nbsp;//                case SQLDateType:
+<i>673</i>&nbsp;//                case UtilDateType:DateType:
+<i>674</i>&nbsp;//                    value = rs.getDate(column);
+<i>675</i>&nbsp;//                    break;
+<i>676</i>&nbsp;                default:
+<b class="fc"><i>677</i>&nbsp;                    value = rs.getObject(column);</b>
+<i>678</i>&nbsp;            }
+<i>679</i>&nbsp;
+<i>680</i>&nbsp;        } else {
+<b class="nc"><i>681</i>&nbsp;            log.warn(&quot;Column type not known for SQL type &quot; + sqlColumnType, new Throwable());</b>
+<b class="nc"><i>682</i>&nbsp;            value = rs.getObject(column);</b>
+<i>683</i>&nbsp;        }
+<i>684</i>&nbsp;
+<i>685</i>&nbsp;        // If value is null or column type is unknown - no need to try to convert anything.
+<b class="fc"><i>686</i>&nbsp;        if (value != null &amp;&amp; columnType != null) {</b>
+<b class="fc"><i>687</i>&nbsp;            value = convert(value, returnType, columnName);</b>
+<i>688</i>&nbsp;        }
+<i>689</i>&nbsp;
+<b class="fc"><i>690</i>&nbsp;        return value;</b>
+<i>691</i>&nbsp;    }
+<i>692</i>&nbsp;
+<i>693</i>&nbsp;    // Make a sensible conversion of the Value read from the DB and the property type defined on the Data class.
+<i>694</i>&nbsp;    private Object convert(Object dbValue, Class propertyType, String columnName) {
+<b class="fc"><i>695</i>&nbsp;        Types valueType = Types.getType(dbValue.getClass());</b>
+<b class="fc"><i>696</i>&nbsp;        if (valueType == null) {</b>
+<b class="nc"><i>697</i>&nbsp;            log.error(&quot;WTF &quot; + dbValue.getClass());</b>
+<i>698</i>&nbsp;        }
+<i>699</i>&nbsp;
+<i>700</i>&nbsp;        // try to convert or cast the value to the proper type.
+<b class="fc"><i>701</i>&nbsp;        switch (valueType) {</b>
+<i>702</i>&nbsp;
+<i>703</i>&nbsp;            case booleanType:
+<i>704</i>&nbsp;            case BooleanType:
+<b class="fc"><i>705</i>&nbsp;                log.debug(&quot;BooleanType&quot;);</b>
+<b class="fc"><i>706</i>&nbsp;                break;</b>
+<i>707</i>&nbsp;
+<i>708</i>&nbsp;            case byteType:
+<i>709</i>&nbsp;            case ByteType:
+<i>710</i>&nbsp;            case shortType:
+<i>711</i>&nbsp;            case ShortType:
+<i>712</i>&nbsp;            case integerType:
+<i>713</i>&nbsp;            case IntegerType:
+<i>714</i>&nbsp;                // int to bool
+<b class="fc"><i>715</i>&nbsp;                if (propertyType == Boolean.class || propertyType == boolean.class) {</b>
+<b class="fc"><i>716</i>&nbsp;                    dbValue = (Integer.valueOf(&quot;&quot; + dbValue) == 0) ? false : true;</b>
+<i>717</i>&nbsp;                }
+<i>718</i>&nbsp;                break;
 <i>719</i>&nbsp;
-<i>720</i>&nbsp;            case booleanType:
-<i>721</i>&nbsp;            case BooleanType:
-<b class="fc"><i>722</i>&nbsp;                log.debug(&quot;BooleanType&quot;);</b>
-<b class="fc"><i>723</i>&nbsp;                break;</b>
-<i>724</i>&nbsp;
-<i>725</i>&nbsp;            case byteType:
-<i>726</i>&nbsp;            case ByteType:
-<i>727</i>&nbsp;            case shortType:
-<i>728</i>&nbsp;            case ShortType:
-<i>729</i>&nbsp;            case integerType:
-<i>730</i>&nbsp;            case IntegerType:
-<i>731</i>&nbsp;                // int to bool
-<b class="fc"><i>732</i>&nbsp;                if (propertyType == Boolean.class || propertyType == boolean.class) {</b>
-<b class="fc"><i>733</i>&nbsp;                    dbValue = (Integer.valueOf(&quot;&quot; + dbValue) == 0) ? false : true;</b>
+<i>720</i>&nbsp;            case longType:
+<i>721</i>&nbsp;            case LongType:
+<i>722</i>&nbsp;                // long to date
+<b class="fc"><i>723</i>&nbsp;                if (propertyType.equals(java.util.Date.class) || propertyType.equals(java.sql.Date.class)) {</b>
+<b class="fc"><i>724</i>&nbsp;                    long lval = Long.valueOf(&quot;&quot; + dbValue);</b>
+<i>725</i>&nbsp;
+<b class="fc"><i>726</i>&nbsp;                    if (propertyType.equals(java.sql.Date.class)) {</b>
+<b class="fc"><i>727</i>&nbsp;                        dbValue = new java.sql.Date(lval);</b>
+<i>728</i>&nbsp;                    } else {
+<b class="fc"><i>729</i>&nbsp;                        dbValue = new java.util.Date(lval);</b>
+<i>730</i>&nbsp;                    }
+<b class="fc"><i>731</i>&nbsp;                } else if (propertyType == Integer.class || propertyType == int.class) {</b>
+<b class="fc"><i>732</i>&nbsp;                    warnOverflow(&quot;Possible overflow column &quot; + columnName + &quot; - Property is INT and column value is LONG&quot;);</b>
+<b class="fc"><i>733</i>&nbsp;                    dbValue = Integer.parseInt(&quot;&quot; + dbValue);</b>
 <i>734</i>&nbsp;                }
-<i>735</i>&nbsp;                break;
-<i>736</i>&nbsp;
-<i>737</i>&nbsp;            case longType:
-<i>738</i>&nbsp;            case LongType:
-<i>739</i>&nbsp;                // long to date
-<b class="fc"><i>740</i>&nbsp;                if (propertyType.equals(java.util.Date.class) || propertyType.equals(java.sql.Date.class)) {</b>
-<b class="fc"><i>741</i>&nbsp;                    long lval = Long.valueOf(&quot;&quot; + dbValue);</b>
+<i>735</i>&nbsp;
+<i>736</i>&nbsp;                break;
+<i>737</i>&nbsp;
+<i>738</i>&nbsp;            case floatType:
+<i>739</i>&nbsp;            case FloatType:
+<b class="nc"><i>740</i>&nbsp;                log.debug(&quot;FloatType&quot;);</b>
+<b class="nc"><i>741</i>&nbsp;                break;</b>
 <i>742</i>&nbsp;
-<b class="fc"><i>743</i>&nbsp;                    if (propertyType.equals(java.sql.Date.class)) {</b>
-<b class="fc"><i>744</i>&nbsp;                        dbValue = new java.sql.Date(lval);</b>
-<i>745</i>&nbsp;                    } else {
-<b class="fc"><i>746</i>&nbsp;                        dbValue = new java.util.Date(lval);</b>
-<i>747</i>&nbsp;                    }
-<b class="fc"><i>748</i>&nbsp;                } else if (propertyType == Integer.class || propertyType == int.class) {</b>
-<b class="fc"><i>749</i>&nbsp;                    warnOverflow(&quot;Possible overflow column &quot; + columnName + &quot; - Property is INT and column value is LONG&quot;);</b>
-<b class="fc"><i>750</i>&nbsp;                    dbValue = Integer.parseInt(&quot;&quot; + dbValue);</b>
-<i>751</i>&nbsp;                }
-<i>752</i>&nbsp;
-<i>753</i>&nbsp;                break;
-<i>754</i>&nbsp;
-<i>755</i>&nbsp;            case floatType:
-<i>756</i>&nbsp;            case FloatType:
-<b class="nc"><i>757</i>&nbsp;                log.debug(&quot;FloatType&quot;);</b>
-<b class="nc"><i>758</i>&nbsp;                break;</b>
-<i>759</i>&nbsp;
-<i>760</i>&nbsp;            case doubleType:
-<i>761</i>&nbsp;            case DoubleType:
-<i>762</i>&nbsp;                // float or doubles to BigDecimal
-<b class="fc"><i>763</i>&nbsp;                if (propertyType == BigDecimal.class) {</b>
-<b class="fc"><i>764</i>&nbsp;                    dbValue = new BigDecimal(&quot;&quot; + dbValue);</b>
-<b class="fc"><i>765</i>&nbsp;                } else if (propertyType == Float.class || propertyType == float.class) {</b>
-<b class="fc"><i>766</i>&nbsp;                    warnOverflow(&quot;Possible overflow column &quot; + columnName + &quot; - Property is FLOAT and column value is DOUBLE&quot;);</b>
-<b class="fc"><i>767</i>&nbsp;                    dbValue = Float.parseFloat(&quot;&quot; + dbValue);</b>
-<b class="fc"><i>768</i>&nbsp;                } else if (propertyType == Integer.class || propertyType == int.class) {</b>
-<b class="fc"><i>769</i>&nbsp;                    warnOverflow(&quot;Possible overflow column &quot; + columnName + &quot; - Property is INT and column value is DOUBLE&quot;);</b>
-<b class="fc"><i>770</i>&nbsp;                    String val = &quot;&quot; + dbValue;</b>
-<b class="fc"><i>771</i>&nbsp;                    if (val.contains(&quot;.&quot;)) {</b>
-<b class="fc"><i>772</i>&nbsp;                        val = val.substring(0, val.indexOf(&quot;.&quot;));</b>
-<i>773</i>&nbsp;                    }
-<b class="fc"><i>774</i>&nbsp;                    dbValue = Integer.parseInt(val);</b>
-<b class="fc"><i>775</i>&nbsp;                }</b>
-<i>776</i>&nbsp;                break;
-<i>777</i>&nbsp;
-<i>778</i>&nbsp;            case DecimalType:
-<b class="fc"><i>779</i>&nbsp;                if (propertyType == Float.class || propertyType == float.class) {</b>
-<b class="fc"><i>780</i>&nbsp;                    dbValue = ((BigDecimal) dbValue).floatValue();</b>
-<b class="fc"><i>781</i>&nbsp;                    warnOverflow(&quot;Possible overflow column &quot; + columnName + &quot; - Property is Float and column value is BigDecimal&quot;);</b>
-<b class="fc"><i>782</i>&nbsp;                } else if (propertyType == Double.class || propertyType == double.class) {</b>
-<b class="fc"><i>783</i>&nbsp;                    dbValue = ((BigDecimal) dbValue).doubleValue();</b>
-<b class="fc"><i>784</i>&nbsp;                    warnOverflow(&quot;Possible overflow column &quot; + columnName + &quot; - Property is Double and column value is BigDecimal&quot;);</b>
-<b class="fc"><i>785</i>&nbsp;                } else if (propertyType == Long.class || propertyType == long.class) {</b>
-<b class="fc"><i>786</i>&nbsp;                    dbValue = ((BigDecimal) dbValue).longValue();</b>
-<b class="fc"><i>787</i>&nbsp;                    warnOverflow(&quot;Possible overflow column &quot; + columnName + &quot; - Property is Long and column value is BigDecimal&quot;);</b>
-<b class="fc"><i>788</i>&nbsp;                } else if (propertyType == Integer.class || propertyType == int.class) {</b>
-<b class="fc"><i>789</i>&nbsp;                    dbValue = ((BigDecimal) dbValue).intValue();</b>
-<b class="fc"><i>790</i>&nbsp;                    warnOverflow(&quot;Possible overflow column &quot; + columnName + &quot; - Property is Integer and column value is BigDecimal&quot;);</b>
-<b class="fc"><i>791</i>&nbsp;                } else if (propertyType == Boolean.class || propertyType == boolean.class) {</b>
-<i>792</i>&nbsp;                    // BigDecimal to Boolean. Oracle (sigh) - Additional for a Char to Boolean as then (see TestOracle for links)
-<b class="fc"><i>793</i>&nbsp;                    dbValue = ((BigDecimal) dbValue).intValue() == 1;</b>
-<b class="fc"><i>794</i>&nbsp;                    warnOverflow(&quot;Possible overflow column &quot; + columnName + &quot; - Property is Boolean and column value is BigDecimal - seems a bit overkill?&quot;);</b>
-<b class="fc"><i>795</i>&nbsp;                } else if (propertyType == String.class) {</b>
-<b class="fc"><i>796</i>&nbsp;                    dbValue = (dbValue).toString();</b>
-<i>797</i>&nbsp;                }
-<i>798</i>&nbsp;                break;
-<i>799</i>&nbsp;
-<i>800</i>&nbsp;            case StringType:
-<i>801</i>&nbsp;
-<i>802</i>&nbsp;                // Read a string but we want a date
-<b class="fc"><i>803</i>&nbsp;                if (propertyType.equals(java.util.Date.class) || propertyType.equals(java.sql.Date.class)) {</b>
-<i>804</i>&nbsp;                    // This condition occurs in SQLite when you have a datetime with default annotated
-<i>805</i>&nbsp;                    // the format returned is 2012-06-02 19:59:49
-<b class="fc"><i>806</i>&nbsp;                    java.util.Date dval = null;</b>
-<i>807</i>&nbsp;                    try {
-<i>808</i>&nbsp;                        // Used for SQLite returning dates as Strings under some conditions
-<i>809</i>&nbsp;                        // SQL or others may return STRING yyyy-MM-dd for older legacy &#39;date&#39; type.
-<i>810</i>&nbsp;                        // https://docs.microsoft.com/en-us/sql/t-sql/data-types/date-transact-sql?view=sql-server-ver15
-<i>811</i>&nbsp;                        String format;
-<b class="fc"><i>812</i>&nbsp;                        if ((&quot;&quot; + dbValue).length() &gt; &quot;yyyy-MM-dd&quot;.length()) {</b>
-<b class="fc"><i>813</i>&nbsp;                            format = &quot;yyyy-MM-dd hh:mm:ss&quot;;</b>
-<i>814</i>&nbsp;                        } else {
-<b class="fc"><i>815</i>&nbsp;                            format = &quot;yyyy-MM-dd&quot;;</b>
-<i>816</i>&nbsp;                        }
-<b class="fc"><i>817</i>&nbsp;                        DateFormat df = new SimpleDateFormat(format);</b>
-<b class="fc"><i>818</i>&nbsp;                        dval = df.parse(&quot;&quot; + dbValue);</b>
-<b class="nc"><i>819</i>&nbsp;                    } catch (ParseException e) {</b>
-<b class="nc"><i>820</i>&nbsp;                        String msg = e.getMessage() + &quot;. Column: &quot; + columnName + &quot; Type of property: &quot; + propertyType + &quot; - Type read: &quot; + dbValue.getClass() + &quot; VALUE: &quot; + dbValue;</b>
-<b class="nc"><i>821</i>&nbsp;                        throw new PersismException(msg, e);</b>
-<b class="fc"><i>822</i>&nbsp;                    }</b>
-<i>823</i>&nbsp;
-<b class="fc"><i>824</i>&nbsp;                    if (propertyType.equals(java.sql.Date.class)) {</b>
-<b class="fc"><i>825</i>&nbsp;                        dbValue = new java.sql.Date(dval.getTime());</b>
-<i>826</i>&nbsp;                    } else {
-<b class="fc"><i>827</i>&nbsp;                        dbValue = dval;</b>
-<i>828</i>&nbsp;                    }
-<i>829</i>&nbsp;
-<b class="fc"><i>830</i>&nbsp;                } else if (propertyType.equals(java.sql.Timestamp.class)) {</b>
-<i>831</i>&nbsp;                    // String to timestamp?
-<i>832</i>&nbsp;                    // value = new Timestamp()
-<b class="fc"><i>833</i>&nbsp;                    java.util.Date dval = null;</b>
-<b class="fc"><i>834</i>&nbsp;                    DateFormat df = new SimpleDateFormat(&quot;yyyy-MM-dd hh:mm:ss&quot;);</b>
-<i>835</i>&nbsp;                    try {
-<b class="fc"><i>836</i>&nbsp;                        dval = df.parse(&quot;&quot; + dbValue);</b>
-<b class="fc"><i>837</i>&nbsp;                        dbValue = new Timestamp(dval.getTime());</b>
-<b class="nc"><i>838</i>&nbsp;                    } catch (ParseException e) {</b>
-<b class="nc"><i>839</i>&nbsp;                        String msg = e.getMessage() + &quot;. Column: &quot; + columnName + &quot; Type of property: &quot; + propertyType + &quot; - Type read: &quot; + dbValue.getClass() + &quot; VALUE: &quot; + dbValue;</b>
-<b class="nc"><i>840</i>&nbsp;                        throw new PersismException(msg, e);</b>
-<b class="fc"><i>841</i>&nbsp;                    }</b>
-<i>842</i>&nbsp;
-<b class="fc"><i>843</i>&nbsp;                } else if (propertyType.isEnum()) {</b>
-<i>844</i>&nbsp;                    // If this is an enum do a case insensitive comparison
-<b class="fc"><i>845</i>&nbsp;                    Object[] enumConstants = propertyType.getEnumConstants();</b>
-<b class="fc"><i>846</i>&nbsp;                    for (Object element : enumConstants) {</b>
-<b class="fc"><i>847</i>&nbsp;                        if ((&quot;&quot; + dbValue).equalsIgnoreCase(element.toString())) {</b>
-<b class="fc"><i>848</i>&nbsp;                            dbValue = element;</b>
-<b class="fc"><i>849</i>&nbsp;                            break;</b>
-<i>850</i>&nbsp;                        }
-<i>851</i>&nbsp;                    }
-<b class="fc"><i>852</i>&nbsp;                } else if (propertyType.equals(UUID.class)) {</b>
-<b class="fc"><i>853</i>&nbsp;                    dbValue = UUID.fromString(&quot;&quot; + dbValue);</b>
-<i>854</i>&nbsp;
-<b class="fc"><i>855</i>&nbsp;                } else if (propertyType.equals(Boolean.class) || propertyType.equals(boolean.class)) {</b>
-<i>856</i>&nbsp;                    // String to Boolean - true or 1 - otherwise false (or null)
-<b class="fc"><i>857</i>&nbsp;                    if (dbValue != null) {</b>
-<b class="fc"><i>858</i>&nbsp;                        String bval = &quot;&quot; + dbValue;</b>
-<b class="fc"><i>859</i>&nbsp;                        dbValue = (bval.equalsIgnoreCase(&quot;true&quot;) || bval.equals(&quot;1&quot;));</b>
-<b class="fc"><i>860</i>&nbsp;                    }</b>
-<i>861</i>&nbsp;
-<b class="fc"><i>862</i>&nbsp;                } else if (propertyType.equals(Time.class)) {</b>
-<i>863</i>&nbsp;                    // MSSQL works, JTDS returns Varchar in format below
-<b class="fc"><i>864</i>&nbsp;                    DateFormat df = new SimpleDateFormat(&quot;hh:mm:ss.SSSSS&quot;);</b>
-<i>865</i>&nbsp;                    try {
-<b class="fc"><i>866</i>&nbsp;                        Date d = df.parse(dbValue + &quot;&quot;);</b>
-<b class="fc"><i>867</i>&nbsp;                        dbValue = new Time(d.getTime());</b>
-<b class="nc"><i>868</i>&nbsp;                    } catch (ParseException e) {</b>
-<b class="nc"><i>869</i>&nbsp;                        String msg = e.getMessage() + &quot;. Column: &quot; + columnName + &quot; Type of property: &quot; + propertyType + &quot; - Type read: &quot; + dbValue.getClass() + &quot; VALUE: &quot; + dbValue;</b>
-<b class="nc"><i>870</i>&nbsp;                        throw new PersismException(msg, e);</b>
-<b class="fc"><i>871</i>&nbsp;                    }</b>
-<b class="fc"><i>872</i>&nbsp;                } else if (propertyType.equals(Character.class) || propertyType.equals(char.class)) {</b>
-<b class="fc"><i>873</i>&nbsp;                    String s = &quot;&quot; + dbValue;</b>
-<b class="fc"><i>874</i>&nbsp;                    if (s.length() &gt; 0) {</b>
-<b class="fc"><i>875</i>&nbsp;                        dbValue = s.charAt(0);</b>
-<i>876</i>&nbsp;                    }
-<b class="fc"><i>877</i>&nbsp;                } else if (propertyType.equals(BigDecimal.class)) {</b>
-<b class="fc"><i>878</i>&nbsp;                    dbValue = new BigDecimal(&quot;&quot; + dbValue);</b>
-<i>879</i>&nbsp;                }
-<i>880</i>&nbsp;                break;
-<i>881</i>&nbsp;
-<i>882</i>&nbsp;            case characterType:
-<i>883</i>&nbsp;            case CharacterType:
-<i>884</i>&nbsp;                // Does not occur because there&#39;s no direct single CHAR type.
-<i>885</i>&nbsp;                // We get a string and handle it in the String case above.
-<b class="nc"><i>886</i>&nbsp;                log.debug(&quot;CharacterType&quot;);</b>
-<b class="nc"><i>887</i>&nbsp;                break;</b>
+<i>743</i>&nbsp;            case doubleType:
+<i>744</i>&nbsp;            case DoubleType:
+<i>745</i>&nbsp;                // float or doubles to BigDecimal
+<b class="fc"><i>746</i>&nbsp;                if (propertyType == BigDecimal.class) {</b>
+<b class="fc"><i>747</i>&nbsp;                    dbValue = new BigDecimal(&quot;&quot; + dbValue);</b>
+<b class="fc"><i>748</i>&nbsp;                } else if (propertyType == Float.class || propertyType == float.class) {</b>
+<b class="fc"><i>749</i>&nbsp;                    warnOverflow(&quot;Possible overflow column &quot; + columnName + &quot; - Property is FLOAT and column value is DOUBLE&quot;);</b>
+<b class="fc"><i>750</i>&nbsp;                    dbValue = Float.parseFloat(&quot;&quot; + dbValue);</b>
+<b class="fc"><i>751</i>&nbsp;                } else if (propertyType == Integer.class || propertyType == int.class) {</b>
+<b class="fc"><i>752</i>&nbsp;                    warnOverflow(&quot;Possible overflow column &quot; + columnName + &quot; - Property is INT and column value is DOUBLE&quot;);</b>
+<b class="fc"><i>753</i>&nbsp;                    String val = &quot;&quot; + dbValue;</b>
+<b class="fc"><i>754</i>&nbsp;                    if (val.contains(&quot;.&quot;)) {</b>
+<b class="fc"><i>755</i>&nbsp;                        val = val.substring(0, val.indexOf(&quot;.&quot;));</b>
+<i>756</i>&nbsp;                    }
+<b class="fc"><i>757</i>&nbsp;                    dbValue = Integer.parseInt(val);</b>
+<b class="fc"><i>758</i>&nbsp;                }</b>
+<i>759</i>&nbsp;                break;
+<i>760</i>&nbsp;
+<i>761</i>&nbsp;            case DecimalType:
+<b class="fc"><i>762</i>&nbsp;                if (propertyType == Float.class || propertyType == float.class) {</b>
+<b class="fc"><i>763</i>&nbsp;                    dbValue = ((BigDecimal) dbValue).floatValue();</b>
+<b class="fc"><i>764</i>&nbsp;                    warnOverflow(&quot;Possible overflow column &quot; + columnName + &quot; - Property is Float and column value is BigDecimal&quot;);</b>
+<b class="fc"><i>765</i>&nbsp;                } else if (propertyType == Double.class || propertyType == double.class) {</b>
+<b class="fc"><i>766</i>&nbsp;                    dbValue = ((BigDecimal) dbValue).doubleValue();</b>
+<b class="fc"><i>767</i>&nbsp;                    warnOverflow(&quot;Possible overflow column &quot; + columnName + &quot; - Property is Double and column value is BigDecimal&quot;);</b>
+<b class="fc"><i>768</i>&nbsp;                } else if (propertyType == Long.class || propertyType == long.class) {</b>
+<b class="fc"><i>769</i>&nbsp;                    dbValue = ((BigDecimal) dbValue).longValue();</b>
+<b class="fc"><i>770</i>&nbsp;                    warnOverflow(&quot;Possible overflow column &quot; + columnName + &quot; - Property is Long and column value is BigDecimal&quot;);</b>
+<b class="fc"><i>771</i>&nbsp;                } else if (propertyType == Integer.class || propertyType == int.class) {</b>
+<b class="fc"><i>772</i>&nbsp;                    dbValue = ((BigDecimal) dbValue).intValue();</b>
+<b class="fc"><i>773</i>&nbsp;                    warnOverflow(&quot;Possible overflow column &quot; + columnName + &quot; - Property is Integer and column value is BigDecimal&quot;);</b>
+<b class="fc"><i>774</i>&nbsp;                } else if (propertyType == Boolean.class || propertyType == boolean.class) {</b>
+<i>775</i>&nbsp;                    // BigDecimal to Boolean. Oracle (sigh) - Additional for a Char to Boolean as then (see TestOracle for links)
+<b class="fc"><i>776</i>&nbsp;                    dbValue = ((BigDecimal) dbValue).intValue() == 1;</b>
+<b class="fc"><i>777</i>&nbsp;                    warnOverflow(&quot;Possible overflow column &quot; + columnName + &quot; - Property is Boolean and column value is BigDecimal - seems a bit overkill?&quot;);</b>
+<b class="fc"><i>778</i>&nbsp;                } else if (propertyType == String.class) {</b>
+<b class="fc"><i>779</i>&nbsp;                    dbValue = (dbValue).toString();</b>
+<i>780</i>&nbsp;                }
+<i>781</i>&nbsp;                break;
+<i>782</i>&nbsp;
+<i>783</i>&nbsp;            case StringType:
+<i>784</i>&nbsp;
+<i>785</i>&nbsp;                // Read a string but we want a date
+<b class="fc"><i>786</i>&nbsp;                if (propertyType.equals(java.util.Date.class) || propertyType.equals(java.sql.Date.class)) {</b>
+<i>787</i>&nbsp;                    // This condition occurs in SQLite when you have a datetime with default annotated
+<i>788</i>&nbsp;                    // the format returned is 2012-06-02 19:59:49
+<b class="fc"><i>789</i>&nbsp;                    java.util.Date dval = null;</b>
+<i>790</i>&nbsp;                    try {
+<i>791</i>&nbsp;                        // Used for SQLite returning dates as Strings under some conditions
+<i>792</i>&nbsp;                        // SQL or others may return STRING yyyy-MM-dd for older legacy &#39;date&#39; type.
+<i>793</i>&nbsp;                        // https://docs.microsoft.com/en-us/sql/t-sql/data-types/date-transact-sql?view=sql-server-ver15
+<i>794</i>&nbsp;                        String format;
+<b class="fc"><i>795</i>&nbsp;                        if ((&quot;&quot; + dbValue).length() &gt; &quot;yyyy-MM-dd&quot;.length()) {</b>
+<b class="fc"><i>796</i>&nbsp;                            format = &quot;yyyy-MM-dd hh:mm:ss&quot;;</b>
+<i>797</i>&nbsp;                        } else {
+<b class="fc"><i>798</i>&nbsp;                            format = &quot;yyyy-MM-dd&quot;;</b>
+<i>799</i>&nbsp;                        }
+<b class="fc"><i>800</i>&nbsp;                        DateFormat df = new SimpleDateFormat(format);</b>
+<b class="fc"><i>801</i>&nbsp;                        dval = df.parse(&quot;&quot; + dbValue);</b>
+<b class="nc"><i>802</i>&nbsp;                    } catch (ParseException e) {</b>
+<b class="nc"><i>803</i>&nbsp;                        String msg = e.getMessage() + &quot;. Column: &quot; + columnName + &quot; Type of property: &quot; + propertyType + &quot; - Type read: &quot; + dbValue.getClass() + &quot; VALUE: &quot; + dbValue;</b>
+<b class="nc"><i>804</i>&nbsp;                        throw new PersismException(msg, e);</b>
+<b class="fc"><i>805</i>&nbsp;                    }</b>
+<i>806</i>&nbsp;
+<b class="fc"><i>807</i>&nbsp;                    if (propertyType.equals(java.sql.Date.class)) {</b>
+<b class="fc"><i>808</i>&nbsp;                        dbValue = new java.sql.Date(dval.getTime());</b>
+<i>809</i>&nbsp;                    } else {
+<b class="fc"><i>810</i>&nbsp;                        dbValue = dval;</b>
+<i>811</i>&nbsp;                    }
+<i>812</i>&nbsp;
+<b class="fc"><i>813</i>&nbsp;                } else if (propertyType.equals(java.sql.Timestamp.class)) {</b>
+<i>814</i>&nbsp;                    // String to timestamp?
+<i>815</i>&nbsp;                    // value = new Timestamp()
+<b class="fc"><i>816</i>&nbsp;                    java.util.Date dval = null;</b>
+<b class="fc"><i>817</i>&nbsp;                    DateFormat df = new SimpleDateFormat(&quot;yyyy-MM-dd hh:mm:ss&quot;);</b>
+<i>818</i>&nbsp;                    try {
+<b class="fc"><i>819</i>&nbsp;                        dval = df.parse(&quot;&quot; + dbValue);</b>
+<b class="fc"><i>820</i>&nbsp;                        dbValue = new Timestamp(dval.getTime());</b>
+<b class="nc"><i>821</i>&nbsp;                    } catch (ParseException e) {</b>
+<b class="nc"><i>822</i>&nbsp;                        String msg = e.getMessage() + &quot;. Column: &quot; + columnName + &quot; Type of property: &quot; + propertyType + &quot; - Type read: &quot; + dbValue.getClass() + &quot; VALUE: &quot; + dbValue;</b>
+<b class="nc"><i>823</i>&nbsp;                        throw new PersismException(msg, e);</b>
+<b class="fc"><i>824</i>&nbsp;                    }</b>
+<i>825</i>&nbsp;
+<b class="fc"><i>826</i>&nbsp;                } else if (propertyType.isEnum()) {</b>
+<i>827</i>&nbsp;                    // If this is an enum do a case insensitive comparison
+<b class="fc"><i>828</i>&nbsp;                    Object[] enumConstants = propertyType.getEnumConstants();</b>
+<b class="fc"><i>829</i>&nbsp;                    for (Object element : enumConstants) {</b>
+<b class="fc"><i>830</i>&nbsp;                        if ((&quot;&quot; + dbValue).equalsIgnoreCase(element.toString())) {</b>
+<b class="fc"><i>831</i>&nbsp;                            dbValue = element;</b>
+<b class="fc"><i>832</i>&nbsp;                            break;</b>
+<i>833</i>&nbsp;                        }
+<i>834</i>&nbsp;                    }
+<b class="fc"><i>835</i>&nbsp;                } else if (propertyType.equals(UUID.class)) {</b>
+<b class="fc"><i>836</i>&nbsp;                    dbValue = UUID.fromString(&quot;&quot; + dbValue);</b>
+<i>837</i>&nbsp;
+<b class="fc"><i>838</i>&nbsp;                } else if (propertyType.equals(Boolean.class) || propertyType.equals(boolean.class)) {</b>
+<i>839</i>&nbsp;                    // String to Boolean - true or 1 - otherwise false (or null)
+<b class="fc"><i>840</i>&nbsp;                    if (dbValue != null) {</b>
+<b class="fc"><i>841</i>&nbsp;                        String bval = &quot;&quot; + dbValue;</b>
+<b class="fc"><i>842</i>&nbsp;                        dbValue = (bval.equalsIgnoreCase(&quot;true&quot;) || bval.equals(&quot;1&quot;));</b>
+<b class="fc"><i>843</i>&nbsp;                    }</b>
+<i>844</i>&nbsp;
+<b class="fc"><i>845</i>&nbsp;                } else if (propertyType.equals(Time.class)) {</b>
+<i>846</i>&nbsp;                    // MSSQL works, JTDS returns Varchar in format below
+<b class="fc"><i>847</i>&nbsp;                    DateFormat df = new SimpleDateFormat(&quot;hh:mm:ss.SSSSS&quot;);</b>
+<i>848</i>&nbsp;                    try {
+<b class="fc"><i>849</i>&nbsp;                        Date d = df.parse(dbValue + &quot;&quot;);</b>
+<b class="fc"><i>850</i>&nbsp;                        dbValue = new Time(d.getTime());</b>
+<b class="nc"><i>851</i>&nbsp;                    } catch (ParseException e) {</b>
+<b class="nc"><i>852</i>&nbsp;                        String msg = e.getMessage() + &quot;. Column: &quot; + columnName + &quot; Type of property: &quot; + propertyType + &quot; - Type read: &quot; + dbValue.getClass() + &quot; VALUE: &quot; + dbValue;</b>
+<b class="nc"><i>853</i>&nbsp;                        throw new PersismException(msg, e);</b>
+<b class="fc"><i>854</i>&nbsp;                    }</b>
+<b class="fc"><i>855</i>&nbsp;                } else if (propertyType.equals(Character.class) || propertyType.equals(char.class)) {</b>
+<b class="fc"><i>856</i>&nbsp;                    String s = &quot;&quot; + dbValue;</b>
+<b class="fc"><i>857</i>&nbsp;                    if (s.length() &gt; 0) {</b>
+<b class="fc"><i>858</i>&nbsp;                        dbValue = s.charAt(0);</b>
+<i>859</i>&nbsp;                    }
+<b class="fc"><i>860</i>&nbsp;                } else if (propertyType.equals(BigDecimal.class)) {</b>
+<b class="fc"><i>861</i>&nbsp;                    dbValue = new BigDecimal(&quot;&quot; + dbValue);</b>
+<i>862</i>&nbsp;                }
+<i>863</i>&nbsp;                break;
+<i>864</i>&nbsp;
+<i>865</i>&nbsp;            case characterType:
+<i>866</i>&nbsp;            case CharacterType:
+<i>867</i>&nbsp;                // Does not occur because there&#39;s no direct single CHAR type.
+<i>868</i>&nbsp;                // We get a string and handle it in the String case above.
+<b class="nc"><i>869</i>&nbsp;                log.debug(&quot;CharacterType&quot;);</b>
+<b class="nc"><i>870</i>&nbsp;                break;</b>
+<i>871</i>&nbsp;
+<i>872</i>&nbsp;            case UtilDateType:
+<i>873</i>&nbsp;            case SQLDateType:
+<i>874</i>&nbsp;            case TimestampType:
+<i>875</i>&nbsp;                // todo maybe add check for property type = long. Same with TimestampType
+<b class="fc"><i>876</i>&nbsp;                if (propertyType.equals(java.util.Date.class) || propertyType.equals(java.sql.Date.class)) {</b>
+<b class="fc"><i>877</i>&nbsp;                    if (propertyType.equals(java.sql.Date.class)) {</b>
+<b class="fc"><i>878</i>&nbsp;                        dbValue = new java.sql.Date(((Date) dbValue).getTime());</b>
+<i>879</i>&nbsp;                    } else {
+<b class="fc"><i>880</i>&nbsp;                        dbValue = new java.util.Date(((Date) dbValue).getTime());</b>
+<i>881</i>&nbsp;                    }
+<i>882</i>&nbsp;                }
+<i>883</i>&nbsp;                break;
+<i>884</i>&nbsp;
+<i>885</i>&nbsp;            case TimeType:
+<b class="fc"><i>886</i>&nbsp;                log.debug(&quot;TimeType&quot;);</b>
+<b class="fc"><i>887</i>&nbsp;                break;</b>
 <i>888</i>&nbsp;
-<i>889</i>&nbsp;            case UtilDateType:
-<i>890</i>&nbsp;            case SQLDateType:
-<i>891</i>&nbsp;            case TimestampType:
-<i>892</i>&nbsp;                // todo maybe add check for property type = long. Same with TimestampType
-<b class="fc"><i>893</i>&nbsp;                if (propertyType.equals(java.util.Date.class) || propertyType.equals(java.sql.Date.class)) {</b>
-<b class="fc"><i>894</i>&nbsp;                    if (propertyType.equals(java.sql.Date.class)) {</b>
-<b class="fc"><i>895</i>&nbsp;                        dbValue = new java.sql.Date(((Date) dbValue).getTime());</b>
-<i>896</i>&nbsp;                    } else {
-<b class="fc"><i>897</i>&nbsp;                        dbValue = new java.util.Date(((Date) dbValue).getTime());</b>
-<i>898</i>&nbsp;                    }
-<i>899</i>&nbsp;                }
-<i>900</i>&nbsp;                break;
+<i>889</i>&nbsp;            case byteArrayType:
+<i>890</i>&nbsp;            case ByteArrayType:
+<b class="fc"><i>891</i>&nbsp;                log.debug(&quot;ByteArrayType&quot;);</b>
+<i>892</i>&nbsp;                break;
+<i>893</i>&nbsp;        }
+<b class="fc"><i>894</i>&nbsp;        return dbValue;</b>
+<i>895</i>&nbsp;    }
+<i>896</i>&nbsp;
+<i>897</i>&nbsp;    private &lt;T&gt; T getTypedValueReturnedFromGeneratedKeys(Class&lt;T&gt; type, ResultSet rs) throws SQLException {
+<i>898</i>&nbsp;
+<b class="fc"><i>899</i>&nbsp;        Object value = null;</b>
+<b class="fc"><i>900</i>&nbsp;        Types types = Types.getType(type);</b>
 <i>901</i>&nbsp;
-<i>902</i>&nbsp;            case TimeType:
-<b class="fc"><i>903</i>&nbsp;                log.debug(&quot;TimeType&quot;);</b>
-<b class="fc"><i>904</i>&nbsp;                break;</b>
-<i>905</i>&nbsp;
-<i>906</i>&nbsp;            case byteArrayType:
-<i>907</i>&nbsp;            case ByteArrayType:
-<b class="fc"><i>908</i>&nbsp;                log.debug(&quot;ByteArrayType&quot;);</b>
-<i>909</i>&nbsp;                break;
-<i>910</i>&nbsp;        }
-<b class="fc"><i>911</i>&nbsp;        return dbValue;</b>
-<i>912</i>&nbsp;    }
+<b class="fc"><i>902</i>&nbsp;        if (types == null) {</b>
+<b class="nc"><i>903</i>&nbsp;            log.warn(&quot;Unhandled type &quot; + type);</b>
+<b class="nc"><i>904</i>&nbsp;            return (T) rs.getObject(1);</b>
+<i>905</i>&nbsp;        }
+<i>906</i>&nbsp;
+<b class="fc"><i>907</i>&nbsp;        switch (types) {</b>
+<i>908</i>&nbsp;
+<i>909</i>&nbsp;            case integerType:
+<i>910</i>&nbsp;            case IntegerType:
+<b class="fc"><i>911</i>&nbsp;                value = rs.getInt(1);</b>
+<b class="fc"><i>912</i>&nbsp;                break;</b>
 <i>913</i>&nbsp;
-<i>914</i>&nbsp;    private &lt;T&gt; T getTypedValueReturnedFromGeneratedKeys(Class&lt;T&gt; type, ResultSet rs) throws SQLException {
-<i>915</i>&nbsp;
-<b class="fc"><i>916</i>&nbsp;        Object value = null;</b>
-<b class="fc"><i>917</i>&nbsp;        Types types = Types.getType(type);</b>
-<i>918</i>&nbsp;
-<b class="fc"><i>919</i>&nbsp;        if (types == null) {</b>
-<b class="nc"><i>920</i>&nbsp;            log.warn(&quot;Unhandled type &quot; + type);</b>
-<b class="nc"><i>921</i>&nbsp;            return (T) rs.getObject(1);</b>
-<i>922</i>&nbsp;        }
-<i>923</i>&nbsp;
-<b class="fc"><i>924</i>&nbsp;        switch (types) {</b>
-<i>925</i>&nbsp;
-<i>926</i>&nbsp;            case integerType:
-<i>927</i>&nbsp;            case IntegerType:
-<b class="fc"><i>928</i>&nbsp;                value = rs.getInt(1);</b>
-<b class="fc"><i>929</i>&nbsp;                break;</b>
-<i>930</i>&nbsp;
-<i>931</i>&nbsp;            case longType:
-<i>932</i>&nbsp;            case LongType:
-<b class="fc"><i>933</i>&nbsp;                value = rs.getLong(1);</b>
-<i>934</i>&nbsp;                break;
-<i>935</i>&nbsp;        }
-<b class="fc"><i>936</i>&nbsp;        return (T) value;</b>
-<i>937</i>&nbsp;    }
-<i>938</i>&nbsp;
-<i>939</i>&nbsp;    // Prevent duplicate &quot;Possible overflow column&quot; messages
-<i>940</i>&nbsp;    private static void warnOverflow(String message) {
-<b class="fc"><i>941</i>&nbsp;        if (!warnings.contains(message)) {</b>
-<b class="fc"><i>942</i>&nbsp;            warnings.add(message);</b>
-<b class="fc"><i>943</i>&nbsp;            log.warn(message);</b>
-<i>944</i>&nbsp;        }
-<b class="fc"><i>945</i>&nbsp;    }</b>
-<i>946</i>&nbsp;
-<i>947</i>&nbsp;}
+<i>914</i>&nbsp;            case longType:
+<i>915</i>&nbsp;            case LongType:
+<b class="fc"><i>916</i>&nbsp;                value = rs.getLong(1);</b>
+<i>917</i>&nbsp;                break;
+<i>918</i>&nbsp;        }
+<b class="fc"><i>919</i>&nbsp;        return (T) value;</b>
+<i>920</i>&nbsp;    }
+<i>921</i>&nbsp;
+<i>922</i>&nbsp;    // Prevent duplicate &quot;Possible overflow column&quot; messages
+<i>923</i>&nbsp;    private static void warnOverflow(String message) {
+<b class="fc"><i>924</i>&nbsp;        if (!warnings.contains(message)) {</b>
+<b class="fc"><i>925</i>&nbsp;            warnings.add(message);</b>
+<b class="fc"><i>926</i>&nbsp;            log.warn(message);</b>
+<i>927</i>&nbsp;        }
+<b class="fc"><i>928</i>&nbsp;    }</b>
+<i>929</i>&nbsp;
+<i>930</i>&nbsp;}
 </div>
 </div>
 
 <div class="footer">
     
-    <div style="float:right;">generated on 2021-01-27 07:01</div>
+    <div style="float:right;">generated on 2021-01-27 15:10</div>
 </div>
 </body>
 </html>

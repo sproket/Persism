@@ -88,33 +88,36 @@
 <i>14</i>&nbsp;
 <b class="fc"><i>15</i>&nbsp;    private T originalValue = null;</b>
 <i>16</i>&nbsp;
-<i>17</i>&nbsp;    public final void saveReadState() throws PersismException {
-<b class="fc"><i>18</i>&nbsp;        originalValue = clone();</b>
-<b class="fc"><i>19</i>&nbsp;    }</b>
-<i>20</i>&nbsp;
-<i>21</i>&nbsp;    public final T getOriginalValue() {
-<b class="fc"><i>22</i>&nbsp;        return originalValue;</b>
-<i>23</i>&nbsp;    }
-<i>24</i>&nbsp;
-<i>25</i>&nbsp;    /**
-<i>26</i>&nbsp;     * Used for getting originalValue
-<i>27</i>&nbsp;     * @return Clone of T
-<i>28</i>&nbsp;     */
-<i>29</i>&nbsp;    @Override
-<i>30</i>&nbsp;    public final T clone()  {
-<i>31</i>&nbsp;        try {
-<b class="fc"><i>32</i>&nbsp;            return (T)super.clone();</b>
-<b class="nc"><i>33</i>&nbsp;        } catch (CloneNotSupportedException e) {</b>
-<b class="nc"><i>34</i>&nbsp;            throw new PersismException(e.getMessage(), e);</b>
-<i>35</i>&nbsp;        }
-<i>36</i>&nbsp;    }
-<i>37</i>&nbsp;}
+<i>17</i>&nbsp;    @Override
+<i>18</i>&nbsp;    public final void saveReadState() throws PersismException {
+<b class="fc"><i>19</i>&nbsp;        originalValue = clone();</b>
+<b class="fc"><i>20</i>&nbsp;    }</b>
+<i>21</i>&nbsp;
+<i>22</i>&nbsp;    @Override
+<i>23</i>&nbsp;    public final T getOriginalValue() {
+<b class="fc"><i>24</i>&nbsp;        return originalValue;</b>
+<i>25</i>&nbsp;    }
+<i>26</i>&nbsp;
+<i>27</i>&nbsp;    /**
+<i>28</i>&nbsp;     * Used for getting originalValue
+<i>29</i>&nbsp;     *
+<i>30</i>&nbsp;     * @return Clone of T
+<i>31</i>&nbsp;     */
+<i>32</i>&nbsp;    @Override
+<i>33</i>&nbsp;    public final T clone() {
+<i>34</i>&nbsp;        try {
+<b class="fc"><i>35</i>&nbsp;            return (T) super.clone();</b>
+<b class="nc"><i>36</i>&nbsp;        } catch (CloneNotSupportedException e) {</b>
+<b class="nc"><i>37</i>&nbsp;            throw new PersismException(e.getMessage(), e);</b>
+<i>38</i>&nbsp;        }
+<i>39</i>&nbsp;    }
+<i>40</i>&nbsp;}
 </div>
 </div>
 
 <div class="footer">
     
-    <div style="float:right;">generated on 2021-01-27 07:01</div>
+    <div style="float:right;">generated on 2021-01-27 15:10</div>
 </div>
 </body>
 </html>

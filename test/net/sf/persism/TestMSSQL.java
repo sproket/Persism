@@ -76,11 +76,25 @@ public class TestMSSQL extends BaseTest {
         for (Procedure procedure : list) {
             log.info(procedure.getExamCodeNo() + " " + procedure.getDescription() + " " + procedure.getModalityId());
         }
+
         log.info("time to display procs: " + (System.currentTimeMillis() - now));
 
         Procedure proc1 = new Procedure();
         proc1.setDescription("COW");
         session.insert(proc1);
+
+        // Instantiate a new and do an update
+        Procedure procedure = new Procedure();
+        procedure.setExamCodeNo(proc1.getExamCodeNo());
+        procedure.setDescription(proc1.getDescription());
+        session.update(procedure);
+
+        session.fetch(procedure);
+        procedure.setDescription(null);
+        session.update(procedure);
+        session.fetch(procedure);
+        log.warn("NULL? " + procedure.getDescription());
+
 
         assertTrue("proc1 should have an id? ", proc1.getExamCodeNo() > 0);
 
@@ -186,6 +200,14 @@ public class TestMSSQL extends BaseTest {
         c1.setCompanyName("ABC INC");
         c1.setRegion(Regions.East);
         session.insert(c1);
+
+        Customer cx = new Customer();
+        cx.setCustomerId("123");
+        cx.setCompanyName("ABC INC");
+        cx.setRegion(Regions.East);
+        cx.setAddress("asasasas");
+        cx.setStatus('e');
+        session.update(cx);
 
         assertNotNull("Should be defaulted", c1.getDateRegistered());
 

@@ -58,10 +58,10 @@
 </td>
 <td class="coverageStat">
   <span class="percent">
-    93.9%
+    94.2%
   </span>
   <span class="absValue">
-    (386/ 411)
+    (387/ 411)
   </span>
 </td>
 </tr>
@@ -733,178 +733,179 @@
 <b class="fc"><i>659</i>&nbsp;            Persistable original = (Persistable) persistable.getOriginalValue();</b>
 <i>660</i>&nbsp;
 <b class="fc"><i>661</i>&nbsp;            Map&lt;String, PropertyInfo&gt; columns = getTableColumnsPropertyInfo(persistable.getClass(), connection);</b>
-<b class="fc"><i>662</i>&nbsp;            if (original == null) {</b>
-<i>663</i>&nbsp;                // Could happen in the case of cloning or other operation - so it&#39;s never read so it never sets original.
-<b class="nc"><i>664</i>&nbsp;                return columns;</b>
-<i>665</i>&nbsp;            }
-<b class="fc"><i>666</i>&nbsp;            Map&lt;String, PropertyInfo&gt; changedColumns = new HashMap&lt;String, PropertyInfo&gt;(columns.keySet().size());</b>
-<i>667</i>&nbsp;
-<b class="fc"><i>668</i>&nbsp;            for (String column : columns.keySet()) {</b>
+<i>662</i>&nbsp;
+<b class="fc"><i>663</i>&nbsp;            if (original == null) {</b>
+<i>664</i>&nbsp;                // Could happen in the case of cloning or other operation - so it&#39;s never read so it never sets original.
+<b class="fc"><i>665</i>&nbsp;                return columns;</b>
+<i>666</i>&nbsp;            } else {
+<b class="fc"><i>667</i>&nbsp;                Map&lt;String, PropertyInfo&gt; changedColumns = new HashMap&lt;&gt;(columns.keySet().size());</b>
+<b class="fc"><i>668</i>&nbsp;                for (String column : columns.keySet()) {</b>
 <i>669</i>&nbsp;
-<b class="fc"><i>670</i>&nbsp;                PropertyInfo propertyInfo = columns.get(column);</b>
+<b class="fc"><i>670</i>&nbsp;                    PropertyInfo propertyInfo = columns.get(column);</b>
 <i>671</i>&nbsp;
-<b class="fc"><i>672</i>&nbsp;                Object newValue = null;</b>
-<b class="fc"><i>673</i>&nbsp;                Object orgValue = null;</b>
-<b class="fc"><i>674</i>&nbsp;                newValue = propertyInfo.getter.invoke(persistable);</b>
-<b class="fc"><i>675</i>&nbsp;                orgValue = propertyInfo.getter.invoke(original);</b>
+<b class="fc"><i>672</i>&nbsp;                    Object newValue = null;</b>
+<b class="fc"><i>673</i>&nbsp;                    Object orgValue = null;</b>
+<b class="fc"><i>674</i>&nbsp;                    newValue = propertyInfo.getter.invoke(persistable);</b>
+<b class="fc"><i>675</i>&nbsp;                    orgValue = propertyInfo.getter.invoke(original);</b>
 <i>676</i>&nbsp;
-<b class="fc"><i>677</i>&nbsp;                if (newValue != null &amp;&amp; !newValue.equals(orgValue) || orgValue != null &amp;&amp; !orgValue.equals(newValue)) {</b>
-<b class="fc"><i>678</i>&nbsp;                    changedColumns.put(column, propertyInfo);</b>
-<i>679</i>&nbsp;                }
-<b class="fc"><i>680</i>&nbsp;            }</b>
-<i>681</i>&nbsp;
-<b class="fc"><i>682</i>&nbsp;            return changedColumns;</b>
-<b class="nc"><i>683</i>&nbsp;        } catch (Exception e) {</b>
-<b class="nc"><i>684</i>&nbsp;            throw new PersismException(e.getMessage(), e);</b>
-<i>685</i>&nbsp;        }
-<i>686</i>&nbsp;    }
-<i>687</i>&nbsp;
-<i>688</i>&nbsp;    &lt;T&gt; Map&lt;String, ColumnInfo&gt; getColumns(Class&lt;T&gt; objectClass, Connection connection) throws PersismException {
-<i>689</i>&nbsp;        // Realistically at this point this objectClass will always be in the map since it&#39;s defined early
-<i>690</i>&nbsp;        // when we get the table name but I&#39;ll double check it for determineColumnInfo anyway.
-<b class="fc"><i>691</i>&nbsp;        if (columnInfoMap.containsKey(objectClass)) {</b>
-<b class="fc"><i>692</i>&nbsp;            return columnInfoMap.get(objectClass);</b>
-<i>693</i>&nbsp;        }
-<b class="nc"><i>694</i>&nbsp;        return determineColumnInfo(objectClass, getTableName(objectClass), connection);</b>
-<i>695</i>&nbsp;    }
-<i>696</i>&nbsp;
-<i>697</i>&nbsp;    &lt;T&gt; Map&lt;String, PropertyInfo&gt; getQueryColumnsPropertyInfo(Class&lt;T&gt; objectClass, ResultSet rs) throws PersismException {
-<b class="fc"><i>698</i>&nbsp;        if (propertyInfoMap.containsKey(objectClass)) {</b>
-<b class="fc"><i>699</i>&nbsp;            return propertyInfoMap.get(objectClass);</b>
-<i>700</i>&nbsp;        }
-<i>701</i>&nbsp;
-<b class="fc"><i>702</i>&nbsp;        return determinePropertyInfo(objectClass, rs);</b>
-<i>703</i>&nbsp;    }
-<i>704</i>&nbsp;
-<i>705</i>&nbsp;    &lt;T&gt; Map&lt;String, PropertyInfo&gt; getTableColumnsPropertyInfo(Class&lt;T&gt; objectClass, Connection connection) throws PersismException {
-<b class="fc"><i>706</i>&nbsp;        if (propertyInfoMap.containsKey(objectClass)) {</b>
-<b class="fc"><i>707</i>&nbsp;            return propertyInfoMap.get(objectClass);</b>
-<i>708</i>&nbsp;        }
-<b class="fc"><i>709</i>&nbsp;        return determinePropertyInfo(objectClass, getTableName(objectClass), connection);</b>
-<i>710</i>&nbsp;    }
-<i>711</i>&nbsp;
-<i>712</i>&nbsp;    &lt;T&gt; String getTableName(Class&lt;T&gt; objectClass) {
-<i>713</i>&nbsp;
-<b class="fc"><i>714</i>&nbsp;        if (tableMap.containsKey(objectClass)) {</b>
-<b class="fc"><i>715</i>&nbsp;            return tableMap.get(objectClass);</b>
-<i>716</i>&nbsp;        }
-<i>717</i>&nbsp;
-<b class="fc"><i>718</i>&nbsp;        return determineTable(objectClass);</b>
-<i>719</i>&nbsp;    }
-<i>720</i>&nbsp;
-<i>721</i>&nbsp;    // internal version to retrieve meta information about this table&#39;s columns
-<i>722</i>&nbsp;    // at the same time we find the table name itself.
-<i>723</i>&nbsp;    private &lt;T&gt; String getTableName(Class&lt;T&gt; objectClass, Connection connection) {
-<i>724</i>&nbsp;
-<b class="fc"><i>725</i>&nbsp;        String tableName = getTableName(objectClass);</b>
-<i>726</i>&nbsp;
-<b class="fc"><i>727</i>&nbsp;        if (!columnInfoMap.containsKey(objectClass)) {</b>
-<b class="fc"><i>728</i>&nbsp;            determineColumnInfo(objectClass, tableName, connection);</b>
-<i>729</i>&nbsp;        }
-<i>730</i>&nbsp;
-<b class="fc"><i>731</i>&nbsp;        if (!propertyInfoMap.containsKey(objectClass)) {</b>
-<b class="nc"><i>732</i>&nbsp;            determinePropertyInfo(objectClass, tableName, connection);</b>
-<i>733</i>&nbsp;        }
-<b class="fc"><i>734</i>&nbsp;        return tableName;</b>
-<i>735</i>&nbsp;    }
-<i>736</i>&nbsp;
-<i>737</i>&nbsp;    private synchronized &lt;T&gt; String determineTable(Class&lt;T&gt; objectClass) {
-<i>738</i>&nbsp;
-<b class="fc"><i>739</i>&nbsp;        if (tableMap.containsKey(objectClass)) {</b>
-<b class="nc"><i>740</i>&nbsp;            return tableMap.get(objectClass);</b>
-<i>741</i>&nbsp;        }
-<i>742</i>&nbsp;
-<i>743</i>&nbsp;        String tableName;
-<b class="fc"><i>744</i>&nbsp;        Table annotation = objectClass.getAnnotation(Table.class);</b>
-<b class="fc"><i>745</i>&nbsp;        if (annotation != null) {</b>
-<b class="fc"><i>746</i>&nbsp;            tableName = annotation.value();</b>
-<i>747</i>&nbsp;        } else {
-<b class="fc"><i>748</i>&nbsp;            tableName = guessTableName(objectClass);</b>
-<i>749</i>&nbsp;        }
-<b class="fc"><i>750</i>&nbsp;        tableMap.put(objectClass, tableName);</b>
-<b class="fc"><i>751</i>&nbsp;        return tableName;</b>
-<i>752</i>&nbsp;    }
-<i>753</i>&nbsp;
-<i>754</i>&nbsp;    // Returns the table name found in the DB in the same case as in the DB.
-<i>755</i>&nbsp;    // throws PersismException if we cannot guess any table name for this class.
-<i>756</i>&nbsp;    private &lt;T&gt; String guessTableName(Class&lt;T&gt; objectClass) throws PersismException {
-<b class="fc"><i>757</i>&nbsp;        Set&lt;String&gt; guesses = new LinkedHashSet&lt;&gt;(6); // guess order is important</b>
-<b class="fc"><i>758</i>&nbsp;        List&lt;String&gt; guessedTables = new ArrayList&lt;String&gt;(6);</b>
-<i>759</i>&nbsp;
-<b class="fc"><i>760</i>&nbsp;        String className = objectClass.getSimpleName();</b>
-<i>761</i>&nbsp;
-<b class="fc"><i>762</i>&nbsp;        addTableGuesses(className, guesses);</b>
-<b class="fc"><i>763</i>&nbsp;        for (String tableName : tableNames) {</b>
-<b class="fc"><i>764</i>&nbsp;            for (String guess : guesses) {</b>
-<b class="fc"><i>765</i>&nbsp;                if (guess.equalsIgnoreCase(tableName)) {</b>
-<b class="fc"><i>766</i>&nbsp;                    guessedTables.add(tableName);</b>
-<i>767</i>&nbsp;                }
-<b class="fc"><i>768</i>&nbsp;            }</b>
-<b class="fc"><i>769</i>&nbsp;        }</b>
-<b class="fc"><i>770</i>&nbsp;        if (guessedTables.size() == 0) {</b>
-<b class="fc"><i>771</i>&nbsp;            throw new PersismException(&quot;Could not determine a table for type: &quot; + objectClass.getName() + &quot; Guesses were: &quot; + guesses);</b>
-<i>772</i>&nbsp;        }
-<i>773</i>&nbsp;
-<b class="fc"><i>774</i>&nbsp;        if (guessedTables.size() &gt; 1) {</b>
-<b class="fc"><i>775</i>&nbsp;            throw new PersismException(&quot;Could not determine a table for type: &quot; + objectClass.getName() + &quot; Guesses were: &quot; + guesses + &quot; and we found multiple matching tables: &quot; + guessedTables);</b>
-<i>776</i>&nbsp;        }
-<b class="fc"><i>777</i>&nbsp;        return guessedTables.get(0);</b>
-<i>778</i>&nbsp;    }
-<i>779</i>&nbsp;
-<i>780</i>&nbsp;    private void addTableGuesses(String className, Collection&lt;String&gt; guesses) {
-<i>781</i>&nbsp;        // PascalCasing class name should make
-<i>782</i>&nbsp;        // PascalCasing
-<i>783</i>&nbsp;        // PascalCasings
-<i>784</i>&nbsp;        // Pascal Casing
-<i>785</i>&nbsp;        // Pascal Casings
-<i>786</i>&nbsp;        // Pascal_Casing
-<i>787</i>&nbsp;        // Pascal_Casings
-<i>788</i>&nbsp;        // Order is important.
-<i>789</i>&nbsp;
-<i>790</i>&nbsp;        String guess;
-<i>791</i>&nbsp;        String pluralClassName;
-<i>792</i>&nbsp;
-<b class="fc"><i>793</i>&nbsp;        if (className.endsWith(&quot;y&quot;)) {</b>
-<b class="fc"><i>794</i>&nbsp;            pluralClassName = className.substring(0, className.length() - 1) + &quot;ies&quot;;</b>
-<i>795</i>&nbsp;        } else {
-<b class="fc"><i>796</i>&nbsp;            pluralClassName = className + &quot;s&quot;;</b>
-<i>797</i>&nbsp;        }
-<i>798</i>&nbsp;
-<b class="fc"><i>799</i>&nbsp;        guesses.add(className);</b>
-<b class="fc"><i>800</i>&nbsp;        guesses.add(pluralClassName);</b>
-<i>801</i>&nbsp;
-<b class="fc"><i>802</i>&nbsp;        guess = Util.camelToTitleCase(className);</b>
-<b class="fc"><i>803</i>&nbsp;        guesses.add(guess); // name with spaces</b>
-<b class="fc"><i>804</i>&nbsp;        guesses.add(Util.replaceAll(guess, &#39; &#39;, &#39;_&#39;)); // name with spaces changed to _</b>
-<i>805</i>&nbsp;
-<b class="fc"><i>806</i>&nbsp;        guess = Util.camelToTitleCase(pluralClassName);</b>
-<b class="fc"><i>807</i>&nbsp;        guesses.add(guess); // plural name with spaces</b>
-<b class="fc"><i>808</i>&nbsp;        guesses.add(Util.replaceAll(guess, &#39; &#39;, &#39;_&#39;)); // plural name with spaces changed to _</b>
-<b class="fc"><i>809</i>&nbsp;    }</b>
-<i>810</i>&nbsp;
-<i>811</i>&nbsp;    List&lt;String&gt; getPrimaryKeys(Class objectClass, Connection connection) throws PersismException {
-<i>812</i>&nbsp;
-<i>813</i>&nbsp;        // ensures meta data will be available
-<b class="fc"><i>814</i>&nbsp;        String tableName = getTableName(objectClass, connection);</b>
-<i>815</i>&nbsp;
-<b class="fc"><i>816</i>&nbsp;        log.debug(&quot;getPrimaryKeys for &quot; + tableName);</b>
-<i>817</i>&nbsp;
-<b class="fc"><i>818</i>&nbsp;        List&lt;String&gt; primaryKeys = new ArrayList&lt;String&gt;(4);</b>
-<b class="fc"><i>819</i>&nbsp;        Map&lt;String, ColumnInfo&gt; map = getColumns(objectClass, connection);</b>
-<b class="fc"><i>820</i>&nbsp;        for (ColumnInfo col : map.values()) {</b>
-<b class="fc"><i>821</i>&nbsp;            if (col.primary) {</b>
-<b class="fc"><i>822</i>&nbsp;                primaryKeys.add(col.columnName);</b>
-<i>823</i>&nbsp;            }
-<b class="fc"><i>824</i>&nbsp;        }</b>
-<b class="fc"><i>825</i>&nbsp;        return primaryKeys;</b>
-<i>826</i>&nbsp;    }
-<i>827</i>&nbsp;}
+<b class="fc"><i>677</i>&nbsp;                    if (newValue != null &amp;&amp; !newValue.equals(orgValue) || orgValue != null &amp;&amp; !orgValue.equals(newValue)) {</b>
+<b class="fc"><i>678</i>&nbsp;                        changedColumns.put(column, propertyInfo);</b>
+<i>679</i>&nbsp;                    }
+<b class="fc"><i>680</i>&nbsp;                }</b>
+<b class="fc"><i>681</i>&nbsp;                return changedColumns;</b>
+<i>682</i>&nbsp;            }
+<i>683</i>&nbsp;
+<b class="nc"><i>684</i>&nbsp;        } catch (Exception e) {</b>
+<b class="nc"><i>685</i>&nbsp;            throw new PersismException(e.getMessage(), e);</b>
+<i>686</i>&nbsp;        }
+<i>687</i>&nbsp;    }
+<i>688</i>&nbsp;
+<i>689</i>&nbsp;    &lt;T&gt; Map&lt;String, ColumnInfo&gt; getColumns(Class&lt;T&gt; objectClass, Connection connection) throws PersismException {
+<i>690</i>&nbsp;        // Realistically at this point this objectClass will always be in the map since it&#39;s defined early
+<i>691</i>&nbsp;        // when we get the table name but I&#39;ll double check it for determineColumnInfo anyway.
+<b class="fc"><i>692</i>&nbsp;        if (columnInfoMap.containsKey(objectClass)) {</b>
+<b class="fc"><i>693</i>&nbsp;            return columnInfoMap.get(objectClass);</b>
+<i>694</i>&nbsp;        }
+<b class="nc"><i>695</i>&nbsp;        return determineColumnInfo(objectClass, getTableName(objectClass), connection);</b>
+<i>696</i>&nbsp;    }
+<i>697</i>&nbsp;
+<i>698</i>&nbsp;    &lt;T&gt; Map&lt;String, PropertyInfo&gt; getQueryColumnsPropertyInfo(Class&lt;T&gt; objectClass, ResultSet rs) throws PersismException {
+<b class="fc"><i>699</i>&nbsp;        if (propertyInfoMap.containsKey(objectClass)) {</b>
+<b class="fc"><i>700</i>&nbsp;            return propertyInfoMap.get(objectClass);</b>
+<i>701</i>&nbsp;        }
+<i>702</i>&nbsp;
+<b class="fc"><i>703</i>&nbsp;        return determinePropertyInfo(objectClass, rs);</b>
+<i>704</i>&nbsp;    }
+<i>705</i>&nbsp;
+<i>706</i>&nbsp;    &lt;T&gt; Map&lt;String, PropertyInfo&gt; getTableColumnsPropertyInfo(Class&lt;T&gt; objectClass, Connection connection) throws PersismException {
+<b class="fc"><i>707</i>&nbsp;        if (propertyInfoMap.containsKey(objectClass)) {</b>
+<b class="fc"><i>708</i>&nbsp;            return propertyInfoMap.get(objectClass);</b>
+<i>709</i>&nbsp;        }
+<b class="fc"><i>710</i>&nbsp;        return determinePropertyInfo(objectClass, getTableName(objectClass), connection);</b>
+<i>711</i>&nbsp;    }
+<i>712</i>&nbsp;
+<i>713</i>&nbsp;    &lt;T&gt; String getTableName(Class&lt;T&gt; objectClass) {
+<i>714</i>&nbsp;
+<b class="fc"><i>715</i>&nbsp;        if (tableMap.containsKey(objectClass)) {</b>
+<b class="fc"><i>716</i>&nbsp;            return tableMap.get(objectClass);</b>
+<i>717</i>&nbsp;        }
+<i>718</i>&nbsp;
+<b class="fc"><i>719</i>&nbsp;        return determineTable(objectClass);</b>
+<i>720</i>&nbsp;    }
+<i>721</i>&nbsp;
+<i>722</i>&nbsp;    // internal version to retrieve meta information about this table&#39;s columns
+<i>723</i>&nbsp;    // at the same time we find the table name itself.
+<i>724</i>&nbsp;    private &lt;T&gt; String getTableName(Class&lt;T&gt; objectClass, Connection connection) {
+<i>725</i>&nbsp;
+<b class="fc"><i>726</i>&nbsp;        String tableName = getTableName(objectClass);</b>
+<i>727</i>&nbsp;
+<b class="fc"><i>728</i>&nbsp;        if (!columnInfoMap.containsKey(objectClass)) {</b>
+<b class="fc"><i>729</i>&nbsp;            determineColumnInfo(objectClass, tableName, connection);</b>
+<i>730</i>&nbsp;        }
+<i>731</i>&nbsp;
+<b class="fc"><i>732</i>&nbsp;        if (!propertyInfoMap.containsKey(objectClass)) {</b>
+<b class="nc"><i>733</i>&nbsp;            determinePropertyInfo(objectClass, tableName, connection);</b>
+<i>734</i>&nbsp;        }
+<b class="fc"><i>735</i>&nbsp;        return tableName;</b>
+<i>736</i>&nbsp;    }
+<i>737</i>&nbsp;
+<i>738</i>&nbsp;    private synchronized &lt;T&gt; String determineTable(Class&lt;T&gt; objectClass) {
+<i>739</i>&nbsp;
+<b class="fc"><i>740</i>&nbsp;        if (tableMap.containsKey(objectClass)) {</b>
+<b class="nc"><i>741</i>&nbsp;            return tableMap.get(objectClass);</b>
+<i>742</i>&nbsp;        }
+<i>743</i>&nbsp;
+<i>744</i>&nbsp;        String tableName;
+<b class="fc"><i>745</i>&nbsp;        Table annotation = objectClass.getAnnotation(Table.class);</b>
+<b class="fc"><i>746</i>&nbsp;        if (annotation != null) {</b>
+<b class="fc"><i>747</i>&nbsp;            tableName = annotation.value();</b>
+<i>748</i>&nbsp;        } else {
+<b class="fc"><i>749</i>&nbsp;            tableName = guessTableName(objectClass);</b>
+<i>750</i>&nbsp;        }
+<b class="fc"><i>751</i>&nbsp;        tableMap.put(objectClass, tableName);</b>
+<b class="fc"><i>752</i>&nbsp;        return tableName;</b>
+<i>753</i>&nbsp;    }
+<i>754</i>&nbsp;
+<i>755</i>&nbsp;    // Returns the table name found in the DB in the same case as in the DB.
+<i>756</i>&nbsp;    // throws PersismException if we cannot guess any table name for this class.
+<i>757</i>&nbsp;    private &lt;T&gt; String guessTableName(Class&lt;T&gt; objectClass) throws PersismException {
+<b class="fc"><i>758</i>&nbsp;        Set&lt;String&gt; guesses = new LinkedHashSet&lt;&gt;(6); // guess order is important</b>
+<b class="fc"><i>759</i>&nbsp;        List&lt;String&gt; guessedTables = new ArrayList&lt;String&gt;(6);</b>
+<i>760</i>&nbsp;
+<b class="fc"><i>761</i>&nbsp;        String className = objectClass.getSimpleName();</b>
+<i>762</i>&nbsp;
+<b class="fc"><i>763</i>&nbsp;        addTableGuesses(className, guesses);</b>
+<b class="fc"><i>764</i>&nbsp;        for (String tableName : tableNames) {</b>
+<b class="fc"><i>765</i>&nbsp;            for (String guess : guesses) {</b>
+<b class="fc"><i>766</i>&nbsp;                if (guess.equalsIgnoreCase(tableName)) {</b>
+<b class="fc"><i>767</i>&nbsp;                    guessedTables.add(tableName);</b>
+<i>768</i>&nbsp;                }
+<b class="fc"><i>769</i>&nbsp;            }</b>
+<b class="fc"><i>770</i>&nbsp;        }</b>
+<b class="fc"><i>771</i>&nbsp;        if (guessedTables.size() == 0) {</b>
+<b class="fc"><i>772</i>&nbsp;            throw new PersismException(&quot;Could not determine a table for type: &quot; + objectClass.getName() + &quot; Guesses were: &quot; + guesses);</b>
+<i>773</i>&nbsp;        }
+<i>774</i>&nbsp;
+<b class="fc"><i>775</i>&nbsp;        if (guessedTables.size() &gt; 1) {</b>
+<b class="fc"><i>776</i>&nbsp;            throw new PersismException(&quot;Could not determine a table for type: &quot; + objectClass.getName() + &quot; Guesses were: &quot; + guesses + &quot; and we found multiple matching tables: &quot; + guessedTables);</b>
+<i>777</i>&nbsp;        }
+<b class="fc"><i>778</i>&nbsp;        return guessedTables.get(0);</b>
+<i>779</i>&nbsp;    }
+<i>780</i>&nbsp;
+<i>781</i>&nbsp;    private void addTableGuesses(String className, Collection&lt;String&gt; guesses) {
+<i>782</i>&nbsp;        // PascalCasing class name should make
+<i>783</i>&nbsp;        // PascalCasing
+<i>784</i>&nbsp;        // PascalCasings
+<i>785</i>&nbsp;        // Pascal Casing
+<i>786</i>&nbsp;        // Pascal Casings
+<i>787</i>&nbsp;        // Pascal_Casing
+<i>788</i>&nbsp;        // Pascal_Casings
+<i>789</i>&nbsp;        // Order is important.
+<i>790</i>&nbsp;
+<i>791</i>&nbsp;        String guess;
+<i>792</i>&nbsp;        String pluralClassName;
+<i>793</i>&nbsp;
+<b class="fc"><i>794</i>&nbsp;        if (className.endsWith(&quot;y&quot;)) {</b>
+<b class="fc"><i>795</i>&nbsp;            pluralClassName = className.substring(0, className.length() - 1) + &quot;ies&quot;;</b>
+<i>796</i>&nbsp;        } else {
+<b class="fc"><i>797</i>&nbsp;            pluralClassName = className + &quot;s&quot;;</b>
+<i>798</i>&nbsp;        }
+<i>799</i>&nbsp;
+<b class="fc"><i>800</i>&nbsp;        guesses.add(className);</b>
+<b class="fc"><i>801</i>&nbsp;        guesses.add(pluralClassName);</b>
+<i>802</i>&nbsp;
+<b class="fc"><i>803</i>&nbsp;        guess = Util.camelToTitleCase(className);</b>
+<b class="fc"><i>804</i>&nbsp;        guesses.add(guess); // name with spaces</b>
+<b class="fc"><i>805</i>&nbsp;        guesses.add(Util.replaceAll(guess, &#39; &#39;, &#39;_&#39;)); // name with spaces changed to _</b>
+<i>806</i>&nbsp;
+<b class="fc"><i>807</i>&nbsp;        guess = Util.camelToTitleCase(pluralClassName);</b>
+<b class="fc"><i>808</i>&nbsp;        guesses.add(guess); // plural name with spaces</b>
+<b class="fc"><i>809</i>&nbsp;        guesses.add(Util.replaceAll(guess, &#39; &#39;, &#39;_&#39;)); // plural name with spaces changed to _</b>
+<b class="fc"><i>810</i>&nbsp;    }</b>
+<i>811</i>&nbsp;
+<i>812</i>&nbsp;    List&lt;String&gt; getPrimaryKeys(Class objectClass, Connection connection) throws PersismException {
+<i>813</i>&nbsp;
+<i>814</i>&nbsp;        // ensures meta data will be available
+<b class="fc"><i>815</i>&nbsp;        String tableName = getTableName(objectClass, connection);</b>
+<i>816</i>&nbsp;
+<b class="fc"><i>817</i>&nbsp;        log.debug(&quot;getPrimaryKeys for &quot; + tableName);</b>
+<i>818</i>&nbsp;
+<b class="fc"><i>819</i>&nbsp;        List&lt;String&gt; primaryKeys = new ArrayList&lt;String&gt;(4);</b>
+<b class="fc"><i>820</i>&nbsp;        Map&lt;String, ColumnInfo&gt; map = getColumns(objectClass, connection);</b>
+<b class="fc"><i>821</i>&nbsp;        for (ColumnInfo col : map.values()) {</b>
+<b class="fc"><i>822</i>&nbsp;            if (col.primary) {</b>
+<b class="fc"><i>823</i>&nbsp;                primaryKeys.add(col.columnName);</b>
+<i>824</i>&nbsp;            }
+<b class="fc"><i>825</i>&nbsp;        }</b>
+<b class="fc"><i>826</i>&nbsp;        return primaryKeys;</b>
+<i>827</i>&nbsp;    }
+<i>828</i>&nbsp;}
 </div>
 </div>
 
 <div class="footer">
     
-    <div style="float:right;">generated on 2021-01-27 07:01</div>
+    <div style="float:right;">generated on 2021-01-27 15:10</div>
 </div>
 </body>
 </html>

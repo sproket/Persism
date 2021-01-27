@@ -459,6 +459,10 @@
             <fileset dir="${project.basedir}/src"/>
         </cobertura-report>
 
+        <cobertura-report format="xml" destdir="${release.dir}">
+            <fileset dir="${project.basedir}/src"/>
+        </cobertura-report>
+
     </target>
 
 </project>

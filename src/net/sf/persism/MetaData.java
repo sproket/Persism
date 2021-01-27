@@ -659,27 +659,28 @@ final class MetaData {
             Persistable original = (Persistable) persistable.getOriginalValue();
 
             Map<String, PropertyInfo> columns = getTableColumnsPropertyInfo(persistable.getClass(), connection);
+
             if (original == null) {
                 // Could happen in the case of cloning or other operation - so it's never read so it never sets original.
                 return columns;
-            }
-            Map<String, PropertyInfo> changedColumns = new HashMap<String, PropertyInfo>(columns.keySet().size());
+            } else {
+                Map<String, PropertyInfo> changedColumns = new HashMap<>(columns.keySet().size());
+                for (String column : columns.keySet()) {
 
-            for (String column : columns.keySet()) {
+                    PropertyInfo propertyInfo = columns.get(column);
 
-                PropertyInfo propertyInfo = columns.get(column);
+                    Object newValue = null;
+                    Object orgValue = null;
+                    newValue = propertyInfo.getter.invoke(persistable);
+                    orgValue = propertyInfo.getter.invoke(original);
 
-                Object newValue = null;
-                Object orgValue = null;
-                newValue = propertyInfo.getter.invoke(persistable);
-                orgValue = propertyInfo.getter.invoke(original);
-
-                if (newValue != null && !newValue.equals(orgValue) || orgValue != null && !orgValue.equals(newValue)) {
-                    changedColumns.put(column, propertyInfo);
+                    if (newValue != null && !newValue.equals(orgValue) || orgValue != null && !orgValue.equals(newValue)) {
+                        changedColumns.put(column, propertyInfo);
+                    }
                 }
+                return changedColumns;
             }
 
-            return changedColumns;
         } catch (Exception e) {
             throw new PersismException(e.getMessage(), e);
         }
