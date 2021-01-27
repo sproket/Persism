@@ -53,6 +53,10 @@ public class TestMSSQL extends BaseTest {
         } finally {
             UtilsForTests.cleanup(st, null);
         }
+
+        // https://www.baeldung.com/java-size-of-object#:~:text=Objects%2C%20References%20and%20Wrapper%20Classes,a%20multiple%20of%204%20bytes.
+        // https://stackoverflow.com/questions/52353/in-java-what-is-the-best-way-to-determine-the-size-of-an-object
+        log.warn("SESSION: " + InstrumentationAgent.getObjectSize(session));
         super.tearDown();
     }
 

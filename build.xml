@@ -163,6 +163,7 @@
     <property name="instrumented.classes.dir" value="${project.basedir}/instrumented-classes"/>
     <property name="release.dir" value="${project.basedir}/release"/>
     <property name="src.dir" value="${project.basedir}/src"/>
+    <property name="lib.dir" value="${project.basedir}/libs"/>
 
 
     <path id="persism.module.bootclasspath">
@@ -330,6 +331,29 @@
                 windowtitle="Persism"
         >
         </javadoc>
+    </target>
+
+    <target name="jar.instrument.agent" depends="build" description="build JAR FOR FAGGOT INSTRUMENTATION">
+        <tstamp/>
+
+        <jar destfile="${lib.dir}/instrument.jar">
+
+            <manifest id="${release.version}">
+                <attribute name="Built-By" value="Dan Howard"/>
+                <attribute name="Premain-Class" value="net.sf.persism.InstrumentationAgent"/>
+                <section name="Persism">
+                    <attribute name="Specification-Title" value="Persism"/>
+                    <attribute name="Specification-Version" value="${release.version}"/>
+                    <attribute name="Implementation-Title" value="Persism"/>
+                    <attribute name="Implementation-Version" value="${release.version} ${TODAY}"/>
+                </section>
+            </manifest>
+
+            <fileset dir="${test.dist.dir}">
+                <include name="**/*InstrumentationAgent*.class"/>
+            </fileset>
+        </jar>
+
     </target>
 
     <target name="release" depends="build, javadoc" description="build all">
