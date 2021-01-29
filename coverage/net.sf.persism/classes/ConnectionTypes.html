@@ -58,10 +58,10 @@
 </td>
 <td class="coverageStat">
   <span class="percent">
-    95%
+    95.3%
   </span>
   <span class="absValue">
-    (38/ 40)
+    (41/ 43)
   </span>
 </td>
 </tr>
@@ -84,80 +84,85 @@
 <b class="fc"><i>10</i>&nbsp;    PostgreSQL(null, &quot;\&quot;&quot;, &quot;\&quot;&quot;),</b>
 <b class="fc"><i>11</i>&nbsp;    SQLite(null, &quot;[&quot;, &quot;]&quot;),</b>
 <b class="fc"><i>12</i>&nbsp;    Firebird(null, &quot;\&quot;&quot;, &quot;\&quot;&quot;),</b>
-<b class="fc"><i>13</i>&nbsp;    Other(null, &quot;&quot;, &quot;&quot;)</b>
-<i>14</i>&nbsp;    ;
-<i>15</i>&nbsp;
-<i>16</i>&nbsp;    private String schemaPattern;
-<i>17</i>&nbsp;    private String keywordStartDelimiter;
-<i>18</i>&nbsp;    private String keywordEndDelimiter;
-<i>19</i>&nbsp;
-<b class="fc"><i>20</i>&nbsp;    ConnectionTypes(String schemaPattern, String keywordStartDelimiter, String keywordEndDelimiter) {</b>
-<b class="fc"><i>21</i>&nbsp;        this.schemaPattern = schemaPattern;</b>
-<b class="fc"><i>22</i>&nbsp;        this.keywordStartDelimiter = keywordStartDelimiter;</b>
-<b class="fc"><i>23</i>&nbsp;        this.keywordEndDelimiter = keywordEndDelimiter;</b>
-<b class="fc"><i>24</i>&nbsp;    }</b>
-<i>25</i>&nbsp;
-<i>26</i>&nbsp;    public static ConnectionTypes get(String connectionUrl) {
-<b class="fc"><i>27</i>&nbsp;        if (connectionUrl == null) {</b>
-<b class="nc"><i>28</i>&nbsp;            return null;</b>
-<i>29</i>&nbsp;        }
-<i>30</i>&nbsp;
-<b class="fc"><i>31</i>&nbsp;        if (connectionUrl.startsWith(&quot;jdbc:h2&quot;)) {</b>
-<b class="fc"><i>32</i>&nbsp;            return H2;</b>
-<i>33</i>&nbsp;        }
-<i>34</i>&nbsp;
-<b class="fc"><i>35</i>&nbsp;        if (connectionUrl.startsWith(&quot;jdbc:jtds&quot;)) {</b>
-<b class="fc"><i>36</i>&nbsp;            return JTDS;</b>
-<i>37</i>&nbsp;        }
-<i>38</i>&nbsp;
-<b class="fc"><i>39</i>&nbsp;        if (connectionUrl.startsWith(&quot;jdbc:sqlserver&quot;)) {</b>
-<b class="fc"><i>40</i>&nbsp;            return MSSQL;</b>
-<i>41</i>&nbsp;        }
-<i>42</i>&nbsp;
-<b class="fc"><i>43</i>&nbsp;        if (connectionUrl.startsWith(&quot;jdbc:oracle&quot;)) {</b>
-<b class="fc"><i>44</i>&nbsp;            return Oracle;</b>
-<i>45</i>&nbsp;        }
-<i>46</i>&nbsp;
-<b class="fc"><i>47</i>&nbsp;        if (connectionUrl.startsWith(&quot;jdbc:sqlite&quot;)) {</b>
-<b class="fc"><i>48</i>&nbsp;            return SQLite;</b>
-<i>49</i>&nbsp;        }
-<i>50</i>&nbsp;
-<b class="fc"><i>51</i>&nbsp;        if (connectionUrl.startsWith(&quot;jdbc:derby&quot;)) {</b>
-<b class="fc"><i>52</i>&nbsp;            return Derby;</b>
-<i>53</i>&nbsp;        }
-<i>54</i>&nbsp;
-<b class="fc"><i>55</i>&nbsp;        if (connectionUrl.startsWith(&quot;jdbc:mysql&quot;)) {</b>
-<b class="fc"><i>56</i>&nbsp;            return MySQL;</b>
-<i>57</i>&nbsp;        }
-<i>58</i>&nbsp;
-<b class="fc"><i>59</i>&nbsp;        if (connectionUrl.startsWith(&quot;jdbc:postgresql&quot;)) {</b>
-<b class="fc"><i>60</i>&nbsp;            return PostgreSQL;</b>
-<i>61</i>&nbsp;        }
-<i>62</i>&nbsp;        
-<b class="fc"><i>63</i>&nbsp;        if (connectionUrl.startsWith(&quot;jdbc:firebirdsql&quot;)) {</b>
-<b class="fc"><i>64</i>&nbsp;            return Firebird;</b>
-<i>65</i>&nbsp;        }
-<b class="nc"><i>66</i>&nbsp;        return Other;</b>
-<i>67</i>&nbsp;    }
-<i>68</i>&nbsp;
-<i>69</i>&nbsp;    public String getSchemaPattern() {
-<b class="fc"><i>70</i>&nbsp;        return schemaPattern;</b>
-<i>71</i>&nbsp;    }
-<i>72</i>&nbsp;
-<i>73</i>&nbsp;    public String getKeywordStartDelimiter() {
-<b class="fc"><i>74</i>&nbsp;        return keywordStartDelimiter;</b>
-<i>75</i>&nbsp;    }
-<i>76</i>&nbsp;
-<i>77</i>&nbsp;    public String getKeywordEndDelimiter() {
-<b class="fc"><i>78</i>&nbsp;        return keywordEndDelimiter;</b>
-<i>79</i>&nbsp;    }
-<i>80</i>&nbsp;}
+<b class="fc"><i>13</i>&nbsp;    HSQLDB(null, &quot;&quot;, &quot;&quot;),</b>
+<b class="fc"><i>14</i>&nbsp;    Other(null, &quot;&quot;, &quot;&quot;)</b>
+<i>15</i>&nbsp;    ;
+<i>16</i>&nbsp;
+<i>17</i>&nbsp;    private String schemaPattern;
+<i>18</i>&nbsp;    private String keywordStartDelimiter;
+<i>19</i>&nbsp;    private String keywordEndDelimiter;
+<i>20</i>&nbsp;
+<b class="fc"><i>21</i>&nbsp;    ConnectionTypes(String schemaPattern, String keywordStartDelimiter, String keywordEndDelimiter) {</b>
+<b class="fc"><i>22</i>&nbsp;        this.schemaPattern = schemaPattern;</b>
+<b class="fc"><i>23</i>&nbsp;        this.keywordStartDelimiter = keywordStartDelimiter;</b>
+<b class="fc"><i>24</i>&nbsp;        this.keywordEndDelimiter = keywordEndDelimiter;</b>
+<b class="fc"><i>25</i>&nbsp;    }</b>
+<i>26</i>&nbsp;
+<i>27</i>&nbsp;    public static ConnectionTypes get(String connectionUrl) {
+<b class="fc"><i>28</i>&nbsp;        if (connectionUrl == null) {</b>
+<b class="nc"><i>29</i>&nbsp;            return null;</b>
+<i>30</i>&nbsp;        }
+<i>31</i>&nbsp;
+<b class="fc"><i>32</i>&nbsp;        if (connectionUrl.startsWith(&quot;jdbc:h2&quot;)) {</b>
+<b class="fc"><i>33</i>&nbsp;            return H2;</b>
+<i>34</i>&nbsp;        }
+<i>35</i>&nbsp;
+<b class="fc"><i>36</i>&nbsp;        if (connectionUrl.startsWith(&quot;jdbc:jtds&quot;)) {</b>
+<b class="fc"><i>37</i>&nbsp;            return JTDS;</b>
+<i>38</i>&nbsp;        }
+<i>39</i>&nbsp;
+<b class="fc"><i>40</i>&nbsp;        if (connectionUrl.startsWith(&quot;jdbc:sqlserver&quot;)) {</b>
+<b class="fc"><i>41</i>&nbsp;            return MSSQL;</b>
+<i>42</i>&nbsp;        }
+<i>43</i>&nbsp;
+<b class="fc"><i>44</i>&nbsp;        if (connectionUrl.startsWith(&quot;jdbc:oracle&quot;)) {</b>
+<b class="fc"><i>45</i>&nbsp;            return Oracle;</b>
+<i>46</i>&nbsp;        }
+<i>47</i>&nbsp;
+<b class="fc"><i>48</i>&nbsp;        if (connectionUrl.startsWith(&quot;jdbc:sqlite&quot;)) {</b>
+<b class="fc"><i>49</i>&nbsp;            return SQLite;</b>
+<i>50</i>&nbsp;        }
+<i>51</i>&nbsp;
+<b class="fc"><i>52</i>&nbsp;        if (connectionUrl.startsWith(&quot;jdbc:derby&quot;)) {</b>
+<b class="fc"><i>53</i>&nbsp;            return Derby;</b>
+<i>54</i>&nbsp;        }
+<i>55</i>&nbsp;
+<b class="fc"><i>56</i>&nbsp;        if (connectionUrl.startsWith(&quot;jdbc:mysql&quot;)) {</b>
+<b class="fc"><i>57</i>&nbsp;            return MySQL;</b>
+<i>58</i>&nbsp;        }
+<i>59</i>&nbsp;
+<b class="fc"><i>60</i>&nbsp;        if (connectionUrl.startsWith(&quot;jdbc:postgresql&quot;)) {</b>
+<b class="fc"><i>61</i>&nbsp;            return PostgreSQL;</b>
+<i>62</i>&nbsp;        }
+<i>63</i>&nbsp;        
+<b class="fc"><i>64</i>&nbsp;        if (connectionUrl.startsWith(&quot;jdbc:firebirdsql&quot;)) {</b>
+<b class="fc"><i>65</i>&nbsp;            return Firebird;</b>
+<i>66</i>&nbsp;        }
+<i>67</i>&nbsp;
+<b class="fc"><i>68</i>&nbsp;        if (connectionUrl.startsWith(&quot;jdbc:hsqldb&quot;)) {</b>
+<b class="fc"><i>69</i>&nbsp;            return HSQLDB;</b>
+<i>70</i>&nbsp;        }
+<b class="nc"><i>71</i>&nbsp;        return Other;</b>
+<i>72</i>&nbsp;    }
+<i>73</i>&nbsp;
+<i>74</i>&nbsp;    public String getSchemaPattern() {
+<b class="fc"><i>75</i>&nbsp;        return schemaPattern;</b>
+<i>76</i>&nbsp;    }
+<i>77</i>&nbsp;
+<i>78</i>&nbsp;    public String getKeywordStartDelimiter() {
+<b class="fc"><i>79</i>&nbsp;        return keywordStartDelimiter;</b>
+<i>80</i>&nbsp;    }
+<i>81</i>&nbsp;
+<i>82</i>&nbsp;    public String getKeywordEndDelimiter() {
+<b class="fc"><i>83</i>&nbsp;        return keywordEndDelimiter;</b>
+<i>84</i>&nbsp;    }
+<i>85</i>&nbsp;}
 </div>
 </div>
 
 <div class="footer">
     
-    <div style="float:right;">generated on 2021-01-29 07:48</div>
+    <div style="float:right;">generated on 2021-01-29 18:13</div>
 </div>
 </body>
 </html>
