@@ -1,11 +1,8 @@
 package net.sf.persism;
 
-/**
- * $RCSfile: $
- * $Revision: $
- * $Date: $
+/*
  * Created by IntelliJ IDEA.
- * User: DHowardf
+ * User: DHoward
  * Date: 9/21/11
  * Time: 2:31 PM
  */
@@ -90,7 +87,8 @@ public class TestOracle extends BaseTest {
         order.setName("MOO3");
         session.insert(order);
 
-        log.info("MOO:" + session.query(Order.class, "select * from ORDERS"));
+        List<Order> list = session.query(Order.class, "select * from ORDERS");
+        log.info("MOO:" + list);
 
     }
 

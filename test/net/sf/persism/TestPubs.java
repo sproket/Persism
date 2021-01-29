@@ -9,6 +9,7 @@ package net.sf.persism;
 import junit.framework.TestCase;
 import net.sf.persism.dao.pubs.Author;
 import net.sf.persism.dao.pubs.JobType;
+import net.sf.persism.dao.pubs.PublisherInfo;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -93,6 +94,9 @@ public class TestPubs extends TestCase {
 
             List<Author> list = session.query(Author.class, "Select * From authors");
             log.info(list.size());
+
+            List<PublisherInfo> publishers = session.query(PublisherInfo.class, "select * from pub_info");
+            log.info(publishers);
 
         } catch (Exception e) {
             log.error(e.getMessage(), e);

@@ -2,6 +2,7 @@ package net.sf.persism;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.math.BigDecimal;
 import java.net.URL;
 import java.sql.*;
 import java.sql.ResultSet;
@@ -23,24 +24,6 @@ final class Util {
     private Util() {
     }
 
-    // Place code conversions here to prevent type exceptions on setObject
-    static void setParameters(PreparedStatement st, Object[] parameters) throws SQLException {
-        if (log.isDebugEnabled()) {
-            log.debug("PARAMS: " + Arrays.asList(parameters));
-        }
-
-        int n = 1;
-        for (Object o : parameters) {
-            if (o instanceof UUID) {
-                st.setString(n, o.toString());
-            } else if (o instanceof Character) {
-                st.setObject(n,""+o);
-            } else {
-                st.setObject(n, o);
-            }
-            n++;
-        }
-    }
 
     static void rollback(Connection con) {
         try {
@@ -52,6 +35,7 @@ final class Util {
         }
 
     }
+
     static void cleanup(Statement st, ResultSet rs) {
         try {
             if (rs != null) {

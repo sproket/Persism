@@ -93,6 +93,7 @@ public class TestMySQL extends BaseTest {
     public void testSomething() {
         Customer customer = new Customer();
         customer.setCustomerId("123");
+        customer.setContactName("Fred");
         customer.setRegion(Regions.East);
         customer.setStatus('1');
         customer.setAddress("123 Sesame Street");
@@ -101,5 +102,13 @@ public class TestMySQL extends BaseTest {
 
         List<Customer> customers = session.query(Customer.class, "SELECT * FROM CUSTOMERS");
         log.info(customers);
+
+        String result = session.fetch(String.class, "select `Contact_Name` from Customers where Customer_ID = ?", 123);
+        log.info(result);
+        assertEquals("should be Fred", "Fred", result);
+
+        int count = session.fetch(int.class, "select count(*) from Customers where Region = ?", Regions.East);
+        assertEquals("should be 1", 1, count);
+        log.info("count " + count);
     }
 }

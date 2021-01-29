@@ -12,6 +12,8 @@ import net.sf.persism.dao.*;
 import java.math.BigDecimal;
 import java.sql.*;
 import java.sql.Date;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.time.LocalTime;
 import java.util.*;
 
@@ -56,17 +58,26 @@ public class TestMSSQL extends BaseTest {
 
         // https://www.baeldung.com/java-size-of-object#:~:text=Objects%2C%20References%20and%20Wrapper%20Classes,a%20multiple%20of%204%20bytes.
         // https://stackoverflow.com/questions/52353/in-java-what-is-the-best-way-to-determine-the-size-of-an-object
-        log.warn("SESSION: " + InstrumentationAgent.getObjectSize(session));
+        // log.warn("SESSION: " + InstrumentationAgent.getObjectSize(session));
         super.tearDown();
     }
 
-    public void testProcedure() {
+    public void testProcedure() throws SQLException {
 
+        Procedure procx = new Procedure();
+        procx.setDescription("COW2");
+        session.insert(procx);
+
+        boolean fail = false;
         try {
+            con.setAutoCommit(false);
             session.query(Procedure.class, "SELECT ExamCode_No, EXAMTYPE_NO, DESC_E FROM EXAMCODE");
         } catch (PersismException e) {
+            fail = true;
             assertTrue("exception should be 'Object class net.sf.persism.dao.Procedure was not properly initialized.'", e.getMessage().startsWith("Object class net.sf.persism.dao.Procedure was not properly initialized"));
+            con.setAutoCommit(true);
         }
+        assertTrue(fail);
 
         long now = System.currentTimeMillis();
         List<Procedure> list = session.query(Procedure.class, "SELECT * FROM EXAMCODE");
@@ -103,18 +114,18 @@ public class TestMSSQL extends BaseTest {
         assertTrue("proc1 should have an id? ", proc1.getExamCodeNo() > 0);
 
         // test fetch
-        Procedure proc2 = session.fetch(Procedure.class, "select * from EXAMCODE WHERE ExamCode_No=?", 1);
+        Procedure proc2 = session.fetch(Procedure.class, "select * from EXAMCODE WHERE ExamCode_No=?", 2);
         assertNotNull("proc2 should be found ", proc2);
 
         Procedure proc3 = session.fetch(Procedure.class, "select * from EXAMCODE WHERE ExamCode_No=?", -99);
         assertNull("proc3 should NOT be found ", proc3);
 
-        Procedure proc4 = session.fetch(Procedure.class, "select * from EXAMCODE WHERE ExamCode_No=?", 1);
+        Procedure proc4 = session.fetch(Procedure.class, "select * from EXAMCODE WHERE ExamCode_No=?", 2);
         assertNotNull("proc4 should be found ", proc4);
 
 
         now = System.currentTimeMillis();
-        list = session.query(Procedure.class, "select * from EXAMCODE WHERE ExamCode_No=?", 1);
+        list = session.query(Procedure.class, "select * from EXAMCODE WHERE ExamCode_No=?", 2);
         log.info("time to read procs 3: " + (System.currentTimeMillis() - now));
         assertEquals("should only have 1 proc in the list", 1, list.size());
 
@@ -240,6 +251,14 @@ public class TestMSSQL extends BaseTest {
         // Both forms should work - the 1st is a cleaner way but this should be supported
         list = session.query(CustomerOrder.class, "{call [spCustomerOrders](?) }", "123");
         log.info(list);
+
+        // query orders by date
+        //DateFormat df = new SimpleDateFormat("MM/dd/yyyy");
+        DateFormat df = new SimpleDateFormat("yyyyMMdd");
+        String created = df.format(order.getCreated());
+        List<Order> orders = session.query(Order.class, "select * from Orders where CONVERT(varchar, created, 112) = ?", created);
+
+        log.info("ORDERS?" + orders);
     }
 
     public void testQuery() {

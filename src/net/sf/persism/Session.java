@@ -89,10 +89,6 @@ public final class Session {
                     Object value = allProperties.get(column).getter.invoke(object);
 
                     if (value != null) {
-                        if (value.getClass().isEnum()) {
-                            value = "" + value; // convert enum to string.
-                        }
-
                         if (value instanceof java.util.Date) {
                             java.util.Date dt = (java.util.Date) value;
                             value = new Timestamp(dt.getTime());
@@ -117,7 +113,7 @@ public final class Session {
             for (String column : primaryKeys) {
                 params.add(allProperties.get(column).getter.invoke(object));
             }
-            Util.setParameters(st, params.toArray());
+            setParameters(st, params.toArray());
             int ret = st.executeUpdate();
             return ret;
 
@@ -185,21 +181,15 @@ public final class Session {
                         }
                     }
 
-
                     Object value = propertyInfo.getter.invoke(object);
 
                     if (value != null) {
-
-                        if (value.getClass().isEnum()) {
-                            value = "" + value; // convert enum to string.
-                        }
-
                         // sql.Date is a subclass so this would be true
+                        // same with sql.Time
                         if (value instanceof java.util.Date) {
                             java.util.Date dt = (java.util.Date) value;
                             value = new Timestamp(dt.getTime());
                         }
-
 
                         if (value instanceof String) {
                             // check width
@@ -219,7 +209,7 @@ public final class Session {
             // https://forums.oracle.com/forums/thread.jspa?threadID=879222
             // http://download.oracle.com/javase/1.4.2/docs/guide/jdbc/getstart/statement.html
             //int ret = st.executeUpdate(insertStatement, Statement.RETURN_GENERATED_KEYS);
-            Util.setParameters(st, params.toArray());
+            setParameters(st, params.toArray());
             int ret = st.executeUpdate();
             if (log.isDebugEnabled()) {
                 log.debug("insert ret: " + ret);
@@ -289,7 +279,7 @@ public final class Session {
             for (String column : primaryKeys) {
                 params.add(columns.get(column).getter.invoke(object));
             }
-            Util.setParameters(st, params.toArray());
+            setParameters(st, params.toArray());
             int ret = st.executeUpdate();
             return ret;
 
@@ -302,7 +292,7 @@ public final class Session {
         }
     }
 
-    // For unit tests only for now.
+    // For unit tests only for now. todo If we ever use this need to add tests for String (length) and Timestamp like we do in insert and update
     void execute(String sql, Object... parameters) {
 
         if (log.isDebugEnabled()) {
@@ -317,7 +307,7 @@ public final class Session {
             } else {
                 st = connection.prepareStatement(sql);
                 PreparedStatement pst = (PreparedStatement) st;
-                Util.setParameters(pst, parameters);
+                setParameters(pst, parameters);
                 pst.execute();
             }
 
@@ -507,7 +497,7 @@ public final class Session {
             result.st = connection.prepareStatement(sql);
 
             PreparedStatement pst = (PreparedStatement) result.st;
-            Util.setParameters(pst, parameters);
+            setParameters(pst, parameters);
             result.rs = pst.executeQuery();
         } else {
             if (!sql.toLowerCase().startsWith("{call")) {
@@ -516,7 +506,7 @@ public final class Session {
             result.st = connection.prepareCall(sql);
 
             CallableStatement cst = (CallableStatement) result.st;
-            Util.setParameters(cst, parameters);
+            setParameters(cst, parameters);
             result.rs = cst.executeQuery();
         }
         return result;
@@ -625,7 +615,7 @@ public final class Session {
                     break;
                 case ClobType:
                     Clob clob = rs.getClob(column);
-                    try (InputStream in = clob.getAsciiStream() ) {
+                    try (InputStream in = clob.getAsciiStream()) {
                         StringWriter writer = new StringWriter();
 
                         int c = -1;
@@ -918,6 +908,123 @@ public final class Session {
         }
         return (T) value;
     }
+
+    // Place code conversions here to prevent type exceptions on setObject
+    private static void setParameters(PreparedStatement st, Object[] parameters) throws SQLException {
+        if (log.isDebugEnabled()) {
+            log.debug("PARAMS: " + Arrays.asList(parameters));
+        }
+
+        int n = 1;
+        for (Object param : parameters) {
+
+            if (param != null) {
+
+                Types type;
+                if (param.getClass().isEnum()) {
+                    type = Types.EnumType;
+                } else {
+                    type = Types.getType(param.getClass());
+                }
+
+                assert type != null;
+
+                switch (type) {
+
+                    case booleanType:
+                    case BooleanType:
+                        st.setBoolean(n, (Boolean) param);
+                        break;
+
+                    case byteType:
+                    case ByteType:
+                        st.setByte(n, (Byte) param);
+                        break;
+
+                    case shortType:
+                    case ShortType:
+                        st.setShort(n, (Short) param);
+                        break;
+
+                    case integerType:
+                    case IntegerType:
+                        st.setInt(n, (Integer) param);
+                        break;
+
+                    case longType:
+                    case LongType:
+                        st.setLong(n, (Long) param);
+                        break;
+
+                    case floatType:
+                    case FloatType:
+                        st.setFloat(n, (Float) param);
+                        break;
+
+                    case doubleType:
+                    case DoubleType:
+                        st.setDouble(n, (Double) param);
+                        break;
+
+                    case DecimalType:
+                        st.setBigDecimal(n, (BigDecimal) param);
+                        break;
+
+                    case StringType:
+                        st.setString(n, (String) param);
+                        break;
+
+                    case characterType:
+                    case CharacterType:
+                        st.setObject(n, "" + param);
+                        break;
+
+                    case UtilDateType:
+                    case SQLDateType:
+                        java.util.Date date = (Date) param;
+                        st.setDate(n, new java.sql.Date(date.getTime()));
+                        break;
+
+                    case TimeType:
+                    case TimestampType:
+                        // For Time we convert to Timestamp anyway
+                        st.setTimestamp(n, (Timestamp) param);
+                        break;
+
+                    case byteArrayType:
+                    case ByteArrayType:
+                        // Blob maps to byte array
+                        st.setObject(n, param);
+                        break;
+
+                    case ClobType:
+                        log.debug("ClobType"); // doesn't occur since Clobs are mapped into Strings
+                        st.setClob(n, (Clob) param);
+                        break;
+
+                    case BlobType:
+                        log.debug("BlobType"); // doesn't occur since Blobs are mapped into byte arrays
+                        st.setBlob(n, (Blob) param);
+                        break;
+
+                    case EnumType:
+                        st.setString(n, param.toString());
+                        break;
+
+                    case UUIDType:
+                        st.setString(n, param.toString());
+                        break;
+                }
+
+            } else {
+                // param is null
+                st.setObject(n, param);
+            }
+
+            n++;
+        }
+    }
+
 
     // Prevent duplicate "Possible overflow column" messages
     private static void warnOverflow(String message) {

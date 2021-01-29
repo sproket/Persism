@@ -49,66 +49,52 @@ public class TestH2 extends BaseTest {
         super.tearDown();
     }
 
-    public void testH2InsertAndReadBack() {
-
-        try {
+    public void testH2InsertAndReadBack() throws SQLException {
 
 
-            Order order = DAOFactory.newOrder(con);
-            order.setName("COW");
-            order.setCreated(new java.util.Date(System.currentTimeMillis()));
+        Order order = DAOFactory.newOrder(con);
+        order.setName("COW");
+        order.setCreated(new java.util.Date(System.currentTimeMillis()));
 
-            log.info("testH2InsertAndReadBack BEFORE INSERT: " + order);
+        log.info("testH2InsertAndReadBack BEFORE INSERT: " + order);
 
-            session.insert(order);
-            assertTrue("order id > 0", order.getId() > 0);
+        session.insert(order);
+        assertTrue("order id > 0", order.getId() > 0);
 
-            log.info("testH2InsertAndReadBack AFTER INSERT: " + order);
+        log.info("testH2InsertAndReadBack AFTER INSERT: " + order);
 
-            List<Order> list = session.query(Order.class, "SELECT * FROM ORDERS");
-            log.info(list);
-            assertEquals("list should be 1", 1, list.size());
-
-
-            order = DAOFactory.newOrder(con);
-            order.setName("MOOO");
-            session.insert(order);
-
-            order = DAOFactory.newOrder(con);
-            order.setName("MEOW");
-            session.insert(order);
-
-            order = DAOFactory.newOrder(con);
-            order.setName("PHHHH");
-            session.insert(order);
-
-            list = session.query(Order.class, "SELECT * FROM Orders ORDER BY ID");
-            assertEquals("list size s/b 4", 4, list.size());
-            log.info(list);
-
-            order = list.get(0);
-            assertEquals("name s/b COW", "COW", order.getName());
-
-            order = list.get(1);
-            assertEquals("name s/b MOOO", "MOOO", order.getName());
-
-            order = list.get(2);
-            assertEquals("name s/b MEOW", "MEOW", order.getName());
-
-            order = list.get(3);
-            assertEquals("name s/b PHHHH", "PHHHH", order.getName());
+        List<Order> list = session.query(Order.class, "SELECT * FROM ORDERS");
+        log.info(list);
+        assertEquals("list should be 1", 1, list.size());
 
 
-//            CachedRowSet cachedRowSet = new CachedRowSetImpl();
-//            WebRowSet priceList = new WebRowSetImpl();
-//            ResultSet
+        order = DAOFactory.newOrder(con);
+        order.setName("MOOO");
+        session.insert(order);
 
-//            RowSetProvider.newFactory()
-        } catch (Exception e) {
-            log.error(e.getMessage(), e);
-            fail(e.getMessage());
-        }
+        order = DAOFactory.newOrder(con);
+        order.setName("MEOW");
+        session.insert(order);
 
+        order = DAOFactory.newOrder(con);
+        order.setName("PHHHH");
+        session.insert(order);
+
+        list = session.query(Order.class, "SELECT * FROM Orders ORDER BY ID");
+        assertEquals("list size s/b 4", 4, list.size());
+        log.info(list);
+
+        order = list.get(0);
+        assertEquals("name s/b COW", "COW", order.getName());
+
+        order = list.get(1);
+        assertEquals("name s/b MOOO", "MOOO", order.getName());
+
+        order = list.get(2);
+        assertEquals("name s/b MEOW", "MEOW", order.getName());
+
+        order = list.get(3);
+        assertEquals("name s/b PHHHH", "PHHHH", order.getName());
     }
 
     public void testInvoice() {
@@ -266,7 +252,7 @@ public class TestH2 extends BaseTest {
             rs = dmd.getColumns(null, null, "ORDERS", null);
             while (rs.next()) {
                 Object x = rs.getObject("COLUMN_DEFAULT");
-                log.info(rs.getObject("COLUMN_NAME") + " " + x);
+                log.info("COLUMN DEFAULT " + rs.getObject("COLUMN_NAME") + " " + x);
                 if (x != null) {
                     log.info(x.getClass());
                 }
@@ -435,6 +421,7 @@ public class TestH2 extends BaseTest {
                 " Gold REAL NULL, " +
                 " Silver REAL NULL, " +
                 " Data TEXT NULL, " +
+                " WhatTimeIsIt Time NULL, " +
                 " SomethingBig BLOB NULL) ");
 
         executeCommands(commands, con);
@@ -448,6 +435,7 @@ public class TestH2 extends BaseTest {
         saveGame.setData("HJ LHLH H H                     ';lk ;lk ';l k                                K HLHLHH LH LH LH LHLHLHH LH H H H LH HHLGHLJHGHGFHGFGJFDGHFDHFDGJFDKGHDGJFDD KHGD KHG DKHDTG HKG DFGHK  GLJHG LJHG LJH GLJ");
         saveGame.setGold(100.23f);
         saveGame.setSilver(200);
+        saveGame.setWhatTimeIsIt(new Time(System.currentTimeMillis()));
 
         File file = new File("c:/windows/explorer.exe");
         saveGame.setSomethingBig(Files.readAllBytes(file.toPath()));
@@ -456,6 +444,7 @@ public class TestH2 extends BaseTest {
         session.insert(saveGame);
 
         saveGame = session.fetch(SavedGame.class, "select * from SavedGames");
+        assertNotNull(saveGame);
         log.info("SAVED GOLD: " + saveGame.getGold());
         log.info("SAVED SILVER: " + saveGame.getSilver());
         log.info("AFTER FETCH SIZE?" + saveGame.getSomethingBig().length);

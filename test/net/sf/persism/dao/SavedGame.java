@@ -2,6 +2,7 @@ package net.sf.persism.dao;
 
 import net.sf.persism.PersistableObject;
 
+import java.sql.Time;
 import java.util.Date;
 
 /**
@@ -19,6 +20,7 @@ public final class SavedGame extends PersistableObject<SavedGame> {
     private float gold;
     private int silver;
     private byte[] somethingBig;
+    private Time whatTimeIsIt;
 
     public int getId() {
         return id;
@@ -78,5 +80,13 @@ public final class SavedGame extends PersistableObject<SavedGame> {
 
     public void setSilver(int silver) {
         this.silver = silver;
+    }
+
+    public Time getWhatTimeIsIt() {
+        return whatTimeIsIt;
+    }
+
+    public void setWhatTimeIsIt(Time whatTimeIsIt) {
+        this.whatTimeIsIt = whatTimeIsIt;
     }
 }

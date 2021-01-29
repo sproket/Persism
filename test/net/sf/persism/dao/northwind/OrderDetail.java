@@ -1,7 +1,5 @@
 package net.sf.persism.dao.northwind;
 
-import net.sf.persism.annotations.Column;
-
 import java.math.BigDecimal;
 
 /**
@@ -12,23 +10,11 @@ import java.math.BigDecimal;
  */
 public class OrderDetail {
 
-    /*
-	[OrderID] [int] NOT NULL,
-	[ProductID] [int] NOT NULL,
-	[UnitPrice] [money] NOT NULL,
-	[Quantity] [smallint] NOT NULL,
-	[Discount] [real] NOT NULL,
-     */
-
-    //@Column(primary = true)
     private int orderId;
-
-    //@Column(primary = true)
     private int productId;
-
-    private BigDecimal unitPrice;
+    private double unitPrice;
     private int quantity;
-    private BigDecimal discount;
+    private double discount;
 
     public int getOrderId() {
         return orderId;
@@ -46,11 +32,11 @@ public class OrderDetail {
         this.productId = productId;
     }
 
-    public BigDecimal getUnitPrice() {
+    public double getUnitPrice() {
         return unitPrice;
     }
 
-    public void setUnitPrice(BigDecimal unitPrice) {
+    public void setUnitPrice(double unitPrice) {
         this.unitPrice = unitPrice;
     }
 
@@ -62,11 +48,11 @@ public class OrderDetail {
         this.quantity = quantity;
     }
 
-    public BigDecimal getDiscount() {
+    public double getDiscount() {
         return discount;
     }
 
-    public void setDiscount(BigDecimal discount) {
+    public void setDiscount(double discount) {
         this.discount = discount;
     }
 }

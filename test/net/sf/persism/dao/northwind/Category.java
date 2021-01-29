@@ -1,6 +1,8 @@
 package net.sf.persism.dao.northwind;
 
-import javax.imageio.ImageIO;
+import javafx.embed.swing.SwingFXUtils;
+import javafx.scene.image.Image;
+
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -77,10 +79,10 @@ public final class Category {
             // OLE header is 1st 78 bytes so we strip it.
             byte[] imageData = new String(picture).substring(78).getBytes();
 
-            InputStream in = new ByteArrayInputStream(imageData);
-            image = ImageIO.read(in);
-            in.close();
-
+            try (InputStream in = new ByteArrayInputStream(imageData)) {
+                Image image1 = new Image(in);
+                image = SwingFXUtils.fromFXImage(image1, null);
+            }
         }
         return image;
     }

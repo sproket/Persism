@@ -237,9 +237,6 @@ final class MetaData {
 
             DatabaseMetaData dmd = connection.getMetaData();
 
-            // does not work with SQLite - See testTypes unit test
-            // columnInfo.columnType = Types.convert(rsMetaData.getColumnType(i));
-
             /*
              Get columns from database metadata since we don't get Type from resultSetMetaData
              with SQLite. + We also need to know if there's a default on a column.
@@ -248,12 +245,23 @@ final class MetaData {
             while (rs.next()) {
                 ColumnInfo columnInfo = map.get(rs.getString("COLUMN_NAME"));
                 if (columnInfo != null) {
-                    // Do we not have autoinc info here? Yes.
-                    // IS_AUTOINCREMENT = NO or YES - Firebird has NO ANYWAY but we should maybe check other DBs
                     if (!columnInfo.hasDefault) {
                         columnInfo.hasDefault = Util.containsColumn(rs, "COLUMN_DEF") && rs.getString("COLUMN_DEF") != null;
                     }
-                    columnInfo.columnType = Types.convert(rs.getInt("DATA_TYPE"));
+
+                    // Do we not have autoinc info here? Yes.
+                    // IS_AUTOINCREMENT = NO or YES - Firebird has NO ANYWAY but we should maybe check other DBs
+                    if (!columnInfo.autoIncrement) {
+                        columnInfo.autoIncrement = Util.containsColumn(rs, "IS_AUTOINCREMENT") && "YES".equalsIgnoreCase(rs.getString("IS_AUTOINCREMENT"));
+                    }
+
+                    // Re-assert the type since older version of SQLite could not detect types with empty resultsets
+                    // It seems OK now in the newer JDBC driver.
+                    // See testTypes unit test in TestSQLite
+                    if (Util.containsColumn(rs, "DATA_TYPE")) {
+                        columnInfo.sqlColumnType = rs.getInt("DATA_TYPE");
+                        columnInfo.columnType = Types.convert(columnInfo.sqlColumnType);
+                    }
                 }
             }
             rs.close();

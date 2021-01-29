@@ -1,5 +1,6 @@
 package net.sf.persism.dao.northwind;
 
+import java.sql.Time;
 import java.util.Date;
 
 /**
@@ -29,6 +30,7 @@ public class Employee {
 	[ReportsTo] [int] NULL,
 	[PhotoPath] [nvarchar](255) NULL,
 	status char(1)
+	WhatTimeIsIt (time)
      */
 
     private int employeeId;
@@ -50,6 +52,7 @@ public class Employee {
     private int reportsTo;
     private String photoPath;
     private char status;
+    private Time whatTimeIsIt;
 
     public int getEmployeeId() {
         return employeeId;
@@ -201,5 +204,13 @@ public class Employee {
 
     public void setStatus(char status) {
         this.status = status;
+    }
+
+    public Time getWhatTimeIsIt() {
+        return whatTimeIsIt;
+    }
+
+    public void setWhatTimeIsIt(Time whatTimeIsIt) {
+        this.whatTimeIsIt = whatTimeIsIt;
     }
 }

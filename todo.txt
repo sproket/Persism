@@ -63,3 +63,8 @@ todo     @Column(name = "IsCompound") - yeah we do a simple "is" check but I nee
 
 
 TODO DOCUMENTATION Example how to implement Persistable
+
+TODO MAYBE https://github.com/JSQLParser/JSqlParser/releases/tag/jsqlparser-4.0
+
+TODO Support new DateTime APIs https://stackoverflow.com/questions/32548331/missed-opportunity-to-fix-jdbc-date-handling-in-java-8
+TODO https://jdbc.postgresql.org/documentation/head/8-date-time.html

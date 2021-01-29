@@ -7,6 +7,7 @@ import javax.imageio.ImageIO;
 import java.io.File;
 import java.math.BigDecimal;
 import java.sql.*;
+import java.text.DecimalFormat;
 import java.util.List;
 import java.util.Properties;
 
@@ -272,6 +273,7 @@ public class TestNorthwind extends TestCase {
 
             assertTrue("employee should be found ", employee != null && employee.getEmployeeId() > 0);
             employee.setStatus('a');
+            employee.setWhatTimeIsIt(new Time(System.currentTimeMillis()));
             session.update(employee);
 
             employee = session.fetch(Employee.class, "SELECT * FROM Employees WHERE LastName=? and FirstName=?", "Leverling", "Janet");
@@ -305,28 +307,38 @@ public class TestNorthwind extends TestCase {
             OrderDetail orderDetail = new OrderDetail();
             orderDetail.setProductId(product.getProductId());
             orderDetail.setOrderId(order.getOrderId());
-            orderDetail.setDiscount(new BigDecimal(".23"));
+            //orderDetail.setDiscount(new BigDecimal(".23"));
+            orderDetail.setDiscount(.23d);
             orderDetail.setQuantity(100);
-            orderDetail.setUnitPrice(new BigDecimal("10.32"));
+//            orderDetail.setUnitPrice(new BigDecimal("10.32"));
+            orderDetail.setUnitPrice(10.32d);
 
             session.insert(orderDetail);
 
             // query back
 
-            orderDetail.setDiscount(null);
+//            orderDetail.setDiscount(null);
+            orderDetail.setDiscount(0);
             orderDetail.setQuantity(0);
-            orderDetail.setUnitPrice(null);
+//            orderDetail.setUnitPrice(null);
+            orderDetail.setUnitPrice(0);
             session.fetch(orderDetail);
-            assertEquals("discount should be 0.23", "0.23", "" + orderDetail.getDiscount().setScale(2, BigDecimal.ROUND_HALF_EVEN));
+//            assertEquals("discount should be 0.23", "0.23", "" + orderDetail.getDiscount().setScale(2, BigDecimal.ROUND_HALF_EVEN));
+            DecimalFormat f = new DecimalFormat("#0.00");
+            assertEquals("discount should be 0.23", "0.23", "" + f.format(orderDetail.getDiscount()));
             assertEquals("quantity should be 100", 100, orderDetail.getQuantity());
-            assertEquals("unit price should be 10.3200", "10.3200", "" + orderDetail.getUnitPrice());
+//            assertEquals("unit price should be 10.3200", "10.3200", "" + f.format(orderDetail.getUnitPrice()));
+            assertEquals("unit price should be 10.32", "10.32", "" + f.format(orderDetail.getUnitPrice()));
 
-            orderDetail.setDiscount(BigDecimal.valueOf(.50d));
+//            orderDetail.setDiscount(BigDecimal.valueOf(.50d));
+            orderDetail.setDiscount(.50d);
             session.update(orderDetail);
 
-            orderDetail.setDiscount(null);
+//            orderDetail.setDiscount(null);
+            orderDetail.setDiscount(0);
             session.fetch(orderDetail);
-            assertEquals("discount should be 0.50", "0.50", "" + orderDetail.getDiscount().setScale(2, BigDecimal.ROUND_HALF_EVEN));
+            //assertEquals("discount should be 0.50", "0.50", "" + orderDetail.getDiscount().setScale(2, BigDecimal.ROUND_HALF_EVEN));
+            assertEquals("discount should be 0.50", "0.50", "" + f.format(orderDetail.getDiscount()));
 
 
             assertEquals("delete should return 1", 1, session.delete(orderDetail));
