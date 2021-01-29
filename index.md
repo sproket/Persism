@@ -1,42 +1,32 @@
-## Welcome to Persism
+# Welcome to Persism
 
 Persism is a wood simple, auto discovery, auto configuration, and convention over configuration ORM (Object Relational Mapping) library for Java.
 
-You can use the [editor on GitHub](https://github.com/sproket/Persism/edit/gh-pages/index.md) to maintain and preview the content for your website in Markdown files.
+## Simple
 
-Whenever you commit to this repository, GitHub Pages will run [Jekyll](https://jekyllrb.com/) to rebuild the pages in your site, from the content in your Markdown files.
+The API for Persism is small. There are 2 primary classes: The Query for reading things from your database and the Command for updating things in your database. See the manual for details.
+
+## Auto-Discovery
+Persism figures things out for you. Create a table, write a JavaBean, run a query. Persism uses simple mapping rules to find your table and column names and only requires an annotation where it can’t find a match.
+
+## Convention over configuration
+Persism requires no configuration. Drop the JAR into your project and go.
+
+Persism has annotations though they are only needed where something is outside the conventions. In most cases you probably don't even need them.
+
+Persism can usually detect the table and column mappings including primary/generated keys and columns with defaults.
+
+## Smart
+Persism will do the correct thing by default. Persism understands that your class is called Customer and your table is called CUSTOMERS. It understands that your table column is CUSTOMER_ID and your property is customerId. Persism gets it. Heck Persism even understands when your class is called Category and your table is called CATEGORIES. No problem. Don’t even bother annotating that stuff. Persism uses annotations as a fall back – annotate only when something is outside the conventions.
+
+## Tiny
+Persism is under 50k. Yeah, fit it on a floppy if you want. Persism has Zero dependencies however it will utilize logging based on whatever is available at runtime - SLF4J, LOG4J or JUL.
+
+## Unobtrusive
+Persism gets out of your way.  The philosophy of Persism is to be the library that you almost don’t even know your using.
+
 
 [Code Coverage](/coverage/index.html)
 
 [MANUAL](/manual.md)
-### Markdown
 
-Markdown is a lightweight and easy-to-use syntax for styling your writing. It includes conventions for
-
-```markdown
-Syntax highlighted code block
-
-# Header 1
-## Header 2
-### Header 3
-
-- Bulleted
-- List
-
-1. Numbered
-2. List
-
-**Bold** and _Italic_ and `Code` text
-
-[Link](url) and ![Image](src)
-```
-
-For more details see [GitHub Flavored Markdown](https://guides.github.com/features/mastering-markdown/).
-
-### Jekyll Themes
-
-Your Pages site will use the layout and styles from the Jekyll theme you have selected in your [repository settings](https://github.com/sproket/Persism/settings). The name of this theme is saved in the Jekyll `_config.yml` configuration file.
-
-### Support or Contact
-
-Having trouble with Pages? Check out our [documentation](https://docs.github.com/categories/github-pages-basics/) or [contact support](https://support.github.com/contact) and we’ll help you sort it out.

@@ -2,7 +2,7 @@
 
 ## Getting started
 
-Download Persism here and add it your project.
+Download Persism [here](https://github.com/sproket/Persism/releases) and add it your project.
 
 Persism uses a standard Connection object so all you need to do is Create the Session object 
 passing in the Connection.
@@ -196,7 +196,7 @@ In this situation, Persism will log a warning if it needs to 'downcast' because 
 you specified in your class.
 
 ```
-WARN  Jan 28 17:39:13 net.sf.persism.Session - Possible overflow column UnitPrice - Property is Double and column value is BigDecimal
+WARN - Possible overflow column UnitPrice - Property is Double and column value is BigDecimal
 ```
 
 ## Annotations
@@ -259,5 +259,13 @@ None.
 
 ## Data types for properties etc...
 
-TODO Add support in Java 8 for new DateTime api
+TODO Add support in Java 8 for new DateTime api DONE minues tinezome
+
+## Known Issues
+
+- No support yet for newer Timezone related date types
+- Boolean type columns using "Is" style names will require annotations 
+- Generated primary keys only work with Auto-increment types. UUID/String types with generated defaults do not return into the inserted object
+- Singular/plural table name guessing does not work with words like Tax - Taxes, Fax - Faxes
+
 
