@@ -8,6 +8,7 @@ import java.math.BigDecimal;
 import java.nio.file.Files;
 import java.sql.*;
 import java.text.NumberFormat;
+import java.time.LocalDate;
 import java.util.*;
 import java.util.Date;
 
@@ -54,7 +55,7 @@ public class TestH2 extends BaseTest {
 
         Order order = DAOFactory.newOrder(con);
         order.setName("COW");
-        order.setCreated(new java.util.Date(System.currentTimeMillis()));
+        order.setCreated(LocalDate.now());
 
         log.info("testH2InsertAndReadBack BEFORE INSERT: " + order);
 
@@ -207,7 +208,7 @@ public class TestH2 extends BaseTest {
             Order order = DAOFactory.newOrder(con);
             order.setCustomerId("123");
             order.setName("name");
-            order.setCreated(new java.util.Date());
+            order.setCreated(LocalDate.now());
             order.setPaid(true);
 
             session.insert(order);
@@ -354,7 +355,8 @@ public class TestH2 extends BaseTest {
                 " NAME VARCHAR(30) NULL, " +
                 " PAID BIT NULL, " +
                 " Customer_ID VARCHAR(10) NULL, " +
-                " Created TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL " +
+                " Created TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL, " +
+                " Date_Paid TIMESTAMP NULL " +
                 ") ";
 
         commands.add(sql);

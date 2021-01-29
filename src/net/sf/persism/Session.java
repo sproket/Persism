@@ -10,6 +10,10 @@ import java.sql.*;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.time.Instant;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.*;
 import java.util.Date;
 
@@ -718,9 +722,17 @@ public final class Session {
                     } else {
                         dbValue = new java.util.Date(lval);
                     }
-                } else if (propertyType == Integer.class || propertyType == int.class) {
+
+                } else if (propertyType.equals(Integer.class) || propertyType.equals(int.class)) {
                     warnOverflow("Possible overflow column " + columnName + " - Property is INT and column value is LONG");
                     dbValue = Integer.parseInt("" + dbValue);
+
+                } else if (propertyType.equals(LocalDate.class) ) {
+                    // SQLite reads long as date.....
+                    dbValue = new Timestamp((long)dbValue).toLocalDateTime().toLocalDate();
+
+                } else if (propertyType.equals(LocalDateTime.class)) {
+                    dbValue = new Timestamp((long)dbValue).toLocalDateTime();
                 }
 
                 break;
@@ -812,6 +824,33 @@ public final class Session {
                         String msg = e.getMessage() + ". Column: " + columnName + " Type of property: " + propertyType + " - Type read: " + dbValue.getClass() + " VALUE: " + dbValue;
                         throw new PersismException(msg, e);
                     }
+                } else if (propertyType.equals(LocalDate.class)) {
+                    DateFormat df = new SimpleDateFormat("yyyy-MM-dd");
+                    java.util.Date dval = null;
+                    try {
+                        dval = df.parse("" + dbValue);
+                        dbValue = Instant.ofEpochMilli(dval.getTime())
+                                .atZone(ZoneId.systemDefault())
+                                .toLocalDate();
+                    } catch (ParseException e) {
+                        String msg = e.getMessage() + ". Column: " + columnName + " Type of property: " + propertyType + " - Type read: " + dbValue.getClass() + " VALUE: " + dbValue;
+                        throw new PersismException(msg, e);
+                    }
+// This block should maybe have occurred because SQLite usually reads dates as strings
+// but for whatever reason getObject call in the read() method returns LONG so we
+// never get here. The convert to LocalDateTime is made under the Long case
+//                } else if (propertyType.equals(LocalDateTime.class)) {
+//                    DateFormat df = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss");
+//                    java.util.Date dval = null;
+//                    try {
+//                        dval = df.parse("" + dbValue);
+//                        dbValue = Instant.ofEpochMilli(dval.getTime())
+//                                .atZone(ZoneId.systemDefault())
+//                                .toLocalDate();
+//                    } catch (ParseException e) {
+//                        String msg = e.getMessage() + ". Column: " + columnName + " Type of property: " + propertyType + " - Type read: " + dbValue.getClass() + " VALUE: " + dbValue;
+//                        throw new PersismException(msg, e);
+//                    }
 
                 } else if (propertyType.isEnum()) {
                     // If this is an enum do a case insensitive comparison
@@ -869,6 +908,13 @@ public final class Session {
                     } else {
                         dbValue = new java.util.Date(((Date) dbValue).getTime());
                     }
+                }
+
+                if (propertyType.equals(LocalDate.class) || propertyType.equals(LocalDateTime.class)) {
+                    Date dt = (Date) dbValue;
+                    dbValue = Instant.ofEpochMilli(dt.getTime())
+                            .atZone(ZoneId.systemDefault())
+                            .toLocalDate();
                 }
                 break;
 
@@ -991,6 +1037,26 @@ public final class Session {
                         st.setTimestamp(n, (Timestamp) param);
                         break;
 
+                    case LocalDate:
+                        LocalDate localDate = (LocalDate) param;
+                        st.setTimestamp(n, Timestamp.valueOf(localDate.atStartOfDay()));
+                        break;
+
+                    case LocalDateTime:
+                        LocalDateTime ldt = (LocalDateTime) param;
+                        st.setTimestamp(n, Timestamp.valueOf(ldt));
+                        break;
+
+                    case Instant:
+                        // todo Instant
+                        break;
+                    case OffsetDateTime:
+                        // todo OffsetDateTime
+                        break;
+                    case ZonedDateTime:
+                        // todo ZonedDateTime
+                        break;
+
                     case byteArrayType:
                     case ByteArrayType:
                         // Blob maps to byte array
@@ -1014,6 +1080,9 @@ public final class Session {
                     case UUIDType:
                         st.setString(n, param.toString());
                         break;
+
+                    default:
+                        st.setObject(n, param);
                 }
 
             } else {

@@ -57,7 +57,8 @@ public class TestPostgreSQL extends BaseTest {
                 " NAME VARCHAR(30) NULL, " +
                 " PAID BOOLEAN NULL, " +
                 " Customer_ID VARCHAR(10) NULL, " +
-                " Created TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL " +
+                " Created TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL, " +
+                " Date_Paid TIMESTAMP NULL " +
                 ") ";
 
         commands.add(sql);

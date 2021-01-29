@@ -1,9 +1,9 @@
 package net.sf.persism.dao;
 
 import net.sf.persism.PersistableObject;
-import net.sf.persism.annotations.Column;
 
-import java.util.Date;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 /**
  * Example of extending PersistableObject without specifying the generic type.
@@ -18,9 +18,10 @@ public class Order extends PersistableObject {
 
     private long id;
     private String name;
-    private Date created;
+    private LocalDate created;
     private String customerId;
     private Boolean paid;
+    private LocalDateTime datePaid;
 
     public long getId() {
         return id;
@@ -38,11 +39,11 @@ public class Order extends PersistableObject {
         this.name = name;
     }
 
-    public Date getCreated() {
+    public LocalDate getCreated() {
         return created;
     }
 
-    public void setCreated(Date created) {
+    public void setCreated(LocalDate created) {
         this.created = created;
     }
 
@@ -62,12 +63,21 @@ public class Order extends PersistableObject {
         this.paid = paid;
     }
 
+    public LocalDateTime getDatePaid() {
+        return datePaid;
+    }
+
+    public void setDatePaid(LocalDateTime datePaid) {
+        this.datePaid = datePaid;
+    }
+
     @Override
     public String toString() {
         return "Order{" +
                 "id=" + id +
                 ", name='" + name + '\'' +
                 ", created=" + created +
+                ", paidDate=" + datePaid +
                 ", customerId='" + customerId + '\'' +
                 ", paid=" + paid +
                 '}';

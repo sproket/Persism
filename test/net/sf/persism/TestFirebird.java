@@ -54,7 +54,8 @@ public class TestFirebird extends BaseTest {
                 " NAME VARCHAR(30), " +
                 " PAID BOOLEAN, " +
                 " CUSTOMER_ID VARCHAR(10), " +
-                " CREATED TIMESTAMP DEFAULT 'NOW' " +
+                " CREATED TIMESTAMP DEFAULT 'NOW', " +
+                " DATE_PAID TIMESTAMP " +
                 "); ";
 
         commands.add(sql);

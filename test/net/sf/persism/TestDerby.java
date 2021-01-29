@@ -5,6 +5,7 @@ import net.sf.persism.dao.DAOFactory;
 import net.sf.persism.dao.Order;
 
 import java.sql.*;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -85,7 +86,7 @@ public class TestDerby extends BaseTest {
             Order order = DAOFactory.newOrder(con);;
             order.setCustomerId("123");
             order.setName("name");
-            order.setCreated(new java.util.Date());
+            order.setCreated(LocalDate.now());
             order.setPaid(true);
 
             session.insert(order);
@@ -139,7 +140,8 @@ public class TestDerby extends BaseTest {
                 " NAME VARCHAR(30), " +
                 " PAID BOOLEAN, " +
                 " Customer_ID VARCHAR(10), " +
-                " Created TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL " +
+                " Created TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL, " +
+                " DatePaid TIMESTAMP" +
                 ") ";
 
         commands.add(sql);

@@ -36,5 +36,6 @@
     <orderEntry type="library" name="logback" level="project" />
     <orderEntry type="library" name="log4j" level="project" />
     <orderEntry type="library" name="jaybird" level="project" />
+    <orderEntry type="library" name="hsqldb" level="project" />
   </component>
 </module>

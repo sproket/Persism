@@ -1,7 +1,5 @@
 package net.sf.persism;
 
-import java.io.InputStream;
-import java.io.Reader;
 import java.math.BigDecimal;
 import java.sql.Blob;
 import java.sql.Clob;
@@ -16,7 +14,6 @@ import java.util.UUID;
  * @since 10/8/11 5:36 PM
  */
 enum Types {
-
 
     booleanType(boolean.class),
     BooleanType(Boolean.class),
@@ -40,6 +37,11 @@ enum Types {
     SQLDateType(java.sql.Date.class),
     TimeType(Time.class),
     TimestampType(Timestamp.class),
+    LocalDate(java.time.LocalDate.class),
+    LocalDateTime(java.time.LocalDateTime.class),
+    Instant(java.time.Instant.class),
+    OffsetDateTime(java.time.OffsetDateTime.class),
+    ZonedDateTime(java.time.ZonedDateTime.class),
     byteArrayType(byte[].class),
     ByteArrayType(Byte[].class),
     ClobType(Clob.class),

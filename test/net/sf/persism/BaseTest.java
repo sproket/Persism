@@ -8,6 +8,7 @@ import java.sql.Date;
 import java.sql.ResultSet;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
+import java.time.LocalDate;
 import java.util.*;
 
 /**
@@ -186,78 +187,81 @@ public abstract class BaseTest extends TestCase {
         assertEquals("region s/b north ", Regions.North, c2.getRegion());
     }
 
-    public void testQueryResult() {
-        try {
-            StringBuilder sb = new StringBuilder();
-            sb.append("SELECT c.Customer_ID, c.Company_Name, o.ID Order_ID, o.Name AS Description, o.Created AS DateCreated, o.PAID ");
-            sb.append(" FROM ORDERS o");
-            sb.append(" JOIN Customers c ON o.Customer_ID = c.Customer_ID");
+    public void testQueryResult() throws Exception {
 
-            Customer c1 = new Customer();
-            c1.setCustomerId("123");
-            c1.setCompanyName("ABC INC");
-            c1.setStatus('x');
-            session.insert(c1);
+        StringBuilder sb = new StringBuilder();
+        sb.append("SELECT c.Customer_ID, c.Company_Name, o.ID Order_ID, o.Name AS Description, o.Created AS DateCreated, o.PAID ");
+        sb.append(" FROM ORDERS o");
+        sb.append(" JOIN Customers c ON o.Customer_ID = c.Customer_ID");
 
-            Customer c2 = new Customer();
-            c2.setCustomerId("456");
-            c2.setCompanyName("XYZ INC");
-            c2.setStatus('2');
-            session.insert(c2);
+        Customer c1 = new Customer();
+        c1.setCustomerId("123");
+        c1.setCompanyName("ABC INC");
+        c1.setStatus('x');
+        session.insert(c1);
 
-            Order order;
-            order = DAOFactory.newOrder(con);
-            order.setCustomerId("123");
-            order.setName("ORDER 1");
-            order.setCreated(new java.sql.Date(System.currentTimeMillis()));
-            order.setPaid(true);
-            session.insert(order);
+        Customer c2 = new Customer();
+        c2.setCustomerId("456");
+        c2.setCompanyName("XYZ INC");
+        c2.setStatus('2');
+        session.insert(c2);
 
-            assertTrue("order # > 0", order.getId() > 0);
+        Order order;
+        order = DAOFactory.newOrder(con);
+        order.setCustomerId("123");
+        order.setName("ORDER 1");
+        order.setCreated(LocalDate.now());
+        order.setPaid(true);
+        session.insert(order);
 
-            List<Order> orders = session.query(Order.class, "select * from orders");
-            assertEquals("should have 1 order", 1, orders.size());
-            assertTrue("order id s/b > 0", orders.get(0).getId() > 0);
+//        Order order2;
+//        order2 = DAOFactory.newOrder(con);
+//        order2.setCustomerId("446");
+//        order2.setName("ORDER 2");
+//        order2.setCreated(LocalDate.now());
+//        order2.setPaid(true);
+//        session.insert(order);
 
-            order = DAOFactory.newOrder(con);
-            order.setCustomerId("123");
-            order.setName("ORDER 2");
-            order.setCreated(new java.sql.Date(System.currentTimeMillis()));
-            session.insert(order);
+        assertTrue("order # > 0", order.getId() > 0);
 
-            order = DAOFactory.newOrder(con);
-            order.setCustomerId("456");
-            order.setName("ORDER 3");
-            order.setCreated(new java.sql.Date(System.currentTimeMillis()));
-            session.insert(order);
+        List<Order> orders = session.query(Order.class, "select * from orders");
+        assertEquals("should have 1 order", 1, orders.size());
+        assertTrue("order id s/b > 0", orders.get(0).getId() > 0);
 
-            order = DAOFactory.newOrder(con);
-            order.setCustomerId("456");
-            order.setName("ORDER 4");
-            order.setCreated(new java.sql.Date(System.currentTimeMillis()));
-            session.insert(order);
+        order = DAOFactory.newOrder(con);
+        order.setCustomerId("123");
+        order.setName("ORDER 2");
+        order.setCreated(LocalDate.now());
+        session.insert(order);
 
-            String sql = sb.toString();
-            log.info(sql);
+        order = DAOFactory.newOrder(con);
+        order.setCustomerId("456");
+        order.setName("ORDER 3");
+        order.setCreated(LocalDate.now());
+        session.insert(order);
 
-            List<CustomerOrder> results = session.query(CustomerOrder.class, sql);
-            log.info(results);
-            assertEquals("size should be 4", 4, results.size());
+        order = DAOFactory.newOrder(con);
+        order.setCustomerId("456");
+        order.setName("ORDER 4");
+        order.setCreated(LocalDate.now());
+        session.insert(order);
 
-            // ORDER 1 s/b paid = true others paid = false
-            for (CustomerOrder customerOrder : results) {
-                if ("ORDER 1".equals(customerOrder.getDescription())) {
-                    assertTrue("order 1 s/b paid", customerOrder.isPaid());
-                } else {
-                    assertFalse("order OTHER s/b NOT paid", customerOrder.isPaid());
-                }
+        String sql = sb.toString();
+        log.info(sql);
+
+        List<CustomerOrder> results = session.query(CustomerOrder.class, sql);
+        log.info(results);
+        assertEquals("size should be 4", 4, results.size());
+
+        // ORDER 1 s/b paid = true others paid = false
+        for (CustomerOrder customerOrder : results) {
+            if ("ORDER 1".equals(customerOrder.getDescription())) {
+                assertTrue("order 1 s/b paid", customerOrder.isPaid());
+            } else {
+                assertFalse("order OTHER s/b NOT paid", customerOrder.isPaid());
             }
-
-
-        } catch (Exception e) {
-            log.error(e.getMessage(), e);
-            fail(e.getMessage());
         }
+
     }
 
 

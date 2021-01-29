@@ -83,7 +83,8 @@ public class TestMySQL extends BaseTest {
                 " NAME VARCHAR(30) NULL, " +
                 " PAID BIT NULL, " +
                 " Customer_ID VARCHAR(10) NULL, " +
-                " Created TIMESTAMP " +
+                " Created TIMESTAMP, " +
+                " Date_Paid DATE NULL" +
                 ") ");
 
         executeCommands(commands, con);

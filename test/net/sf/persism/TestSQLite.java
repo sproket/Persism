@@ -1,15 +1,17 @@
 package net.sf.persism;
 
-/**
+/*
  * Created by IntelliJ IDEA.
  * User: DHoward
  * Date: 9/22/11
- * Time: 11:08 AM 
+ * Time: 11:08 AM
  */
 
 import net.sf.persism.dao.*;
 
 import java.sql.*;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -51,60 +53,53 @@ public class TestSQLite extends BaseTest {
         super.tearDown();
     }
 
-    public void testOrders() {
+    public void testOrders() throws Exception {
+
+        Order order = DAOFactory.newOrder(con);
+        order.setName("COW");
+        order.setPaid(true);
+        order.setDatePaid(LocalDateTime.now());
+        session.insert(order);
+        assertTrue("order id > 0", order.getId() > 0);
+
+        assertTrue("paid", order.isPaid());
+
+        order = DAOFactory.newOrder(con);
+        order.setName("MOOO");
+        order.setPaid(false);
+        session.insert(order);
+
+        order = DAOFactory.newOrder(con);
+        order.setName("MEOW");
+        session.insert(order);
+
+        order = DAOFactory.newOrder(con);
+        order.setName("PHHHH");
+        session.insert(order);
+
+        List<Order> list = session.query(Order.class, "SELECT * FROM Orders ORDER BY ID");
+        assertEquals("list size s/b 4", 4, list.size());
+
+        order = list.get(0);
+        assertEquals("name s/b COW", "COW", order.getName());
+        assertTrue("paid s/b true", order.isPaid());
 
 
-        try {
-            Order order = DAOFactory.newOrder(con);
-            order.setName("COW");
-            order.setPaid(true);
-            session.insert(order);
-            assertTrue("order id > 0", order.getId() > 0);
+        order = list.get(1);
+        assertEquals("name s/b MOOO", "MOOO", order.getName());
+        assertFalse("paid s/b false", order.isPaid());
 
-            assertTrue("paid", order.isPaid());
+        order = list.get(2);
+        assertEquals("name s/b MEOW", "MEOW", order.getName());
+        assertNull("paid s/b NULL", order.isPaid());
 
-            order = DAOFactory.newOrder(con);
-            order.setName("MOOO");
-            order.setPaid(false);
-            session.insert(order);
+        order = list.get(3);
+        assertEquals("name s/b PHHHH", "PHHHH", order.getName());
 
-            order = DAOFactory.newOrder(con);
-            order.setName("MEOW");
-            session.insert(order);
+        Object x = new Date(System.currentTimeMillis());
+        log.info(x.getClass());
 
-            order = DAOFactory.newOrder(con);
-            order.setName("PHHHH");
-            session.insert(order);
-
-            List<Order> list = session.query(Order.class, "SELECT * FROM Orders ORDER BY ID");
-            assertEquals("list size s/b 4", 4, list.size());
-
-            order = list.get(0);
-            assertEquals("name s/b COW", "COW", order.getName());
-            assertTrue("paid s/b true", order.isPaid());
-
-
-            order = list.get(1);
-            assertEquals("name s/b MOOO", "MOOO", order.getName());
-            assertFalse("paid s/b false", order.isPaid());
-
-            order = list.get(2);
-            assertEquals("name s/b MEOW", "MEOW", order.getName());
-            assertNull("paid s/b NULL", order.isPaid());
-
-            order = list.get(3);
-            assertEquals("name s/b PHHHH", "PHHHH", order.getName());
-
-            Object x = new Date(System.currentTimeMillis());
-            log.info(x.getClass());
-
-//        java.util.Date d = new java.sql.Date(System.currentTimeMillis());
-        } catch (SQLException e) {
-            log.error(e.getMessage(), e);
-            fail(e.getMessage());
-        }
     }
-
 
 
     public void testCustomers() {
@@ -282,7 +277,7 @@ public class TestSQLite extends BaseTest {
             Customer customer = new Customer();
             customer.setCustomerId("123");
             customer.setContactName("FRED");
-            customer.setDateOfLastOrder(new Date(System.currentTimeMillis()-1000000l));
+            customer.setDateOfLastOrder(new Date(System.currentTimeMillis() - 1000000l));
             session.insert(customer);
 
 
@@ -298,7 +293,7 @@ public class TestSQLite extends BaseTest {
             Order order = DAOFactory.newOrder(con);
             order.setCustomerId("123");
             order.setName("name");
-            order.setCreated(new java.util.Date());
+            order.setCreated(LocalDate.now());
             order.setPaid(true);
 
             session.insert(order);
@@ -422,7 +417,8 @@ public class TestSQLite extends BaseTest {
                 " ROW_ID VARCHAR(30) NULL, " +
                 " Customer_ID VARCHAR(10) NULL, " +
                 " PAID BIT NULL, " +
-                " CREATED datetime DEFAULT CURRENT_TIMESTAMP" +
+                " CREATED datetime DEFAULT CURRENT_TIMESTAMP, " +
+                " DATE_PAID datetime NULL" +
                 ") ");
 
 
@@ -443,7 +439,7 @@ public class TestSQLite extends BaseTest {
                 " Phone VARCHAR(30) NULL, " +
                 " STATUS CHAR(1) NULL, " +
                 " Fax VARCHAR(30) NULL, " +
-               // " Date_Registered datetime default CURRENT_TIMESTAMP, " +
+                // " Date_Registered datetime default CURRENT_TIMESTAMP, " +
                 " Date_Registered datetime default  (datetime('now','localtime')), " +
                 " Date_Of_Last_Order datetime " +
                 ") ");

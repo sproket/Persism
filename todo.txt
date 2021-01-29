@@ -2,9 +2,6 @@ Blog
 http://sourceforge.net/u/sproketboy/blog/2012/04/simple-logging-wrapper-to-avoid-runtime-dependencies/
 http://logwrapper.blogspot.ca/ (blocked by dzone)
 
-good SQL reference site for ALL common DB TYPES
-http://sqlzoo.net/howto/source/z.dir/tip000001/sqlite
-
 DONE we'll need synchronization of some kind - to make sure internal maps are written once.
     ConcurrentMap + private synchronized "determine" methods to do double check in the map.
 
@@ -20,12 +17,6 @@ persistent
 persevere
 tenacity
 persism! CHOSEN NOW MOVE ON.
-
-// read a DAO by primary key and return true if found. Object should be not null. t cannot be null
-public boolean read(Object object) throws PersismException;
-
-// read a DAO or primitive by class and SQL
-public <T> T read(Class<T> objectClass, String sql, Object... parameters) throws PersismException;
 
 
 Add a ResultSet class with similar interface to java.sql.ResultSet
@@ -44,17 +35,10 @@ GIT
 http://eikke.com/importing-a-git-tree-into-a-subversion-repository/
 
 
-ADD Firebird?
-Add Sybase?
+ADD Firebird? Done.
+Add Sybase DB2 Ingres Informix hsqldb? .....
 
-Back to Java 6 for instrumentation since it doesn't work under Java 8
-- Put back JTDS
-- Set Ant to 1.8.2
-
-Note for next release. Renamed Command executeSQL to execute
-
-NOPE this would be a downcast
-net.sf.persism.PersismException: argument type mismatch Object class com.thermallube.revision.models.SalesOrderAllocation. Column: AllocationType Type of property: byte - Type read: class java.lang.Short VALUE: 0
+TODO Note for next release. Renamed Command executeSQL to execute - made package private
 
 TODO Handle X words Tax - Taxes, Fax - Faxes - plural rules
 
@@ -68,3 +52,7 @@ TODO MAYBE https://github.com/JSQLParser/JSqlParser/releases/tag/jsqlparser-4.0
 
 TODO Support new DateTime APIs https://stackoverflow.com/questions/32548331/missed-opportunity-to-fix-jdbc-date-handling-in-java-8
 TODO https://jdbc.postgresql.org/documentation/head/8-date-time.html
+TODO https://stackoverflow.com/questions/44091688/using-zoneddatetime-with-datetimeoffset-in-sqlserver
+
+
+NOTE: Checks for setting for a default depend on an Object Type - will not work with primitive types.

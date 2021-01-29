@@ -7,6 +7,7 @@ package net.sf.persism;
  * Time: 6:10 AM
  */
 
+import microsoft.sql.DateTimeOffset;
 import net.sf.persism.dao.*;
 
 import java.math.BigDecimal;
@@ -14,7 +15,9 @@ import java.sql.*;
 import java.sql.Date;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
+import java.time.LocalDate;
 import java.time.LocalTime;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 
 public class TestMSSQL extends BaseTest {
@@ -235,14 +238,14 @@ public class TestMSSQL extends BaseTest {
         order = DAOFactory.newOrder(con);
         order.setCustomerId("123");
         order.setName("ORDER 1");
-        order.setCreated(new java.sql.Date(System.currentTimeMillis()));
+        order.setCreated(LocalDate.now());
         order.setPaid(true);
         session.insert(order);
 
         order = DAOFactory.newOrder(con);
         order.setCustomerId("123");
         order.setName("ORDER 2");
-        order.setCreated(new java.sql.Date(System.currentTimeMillis()));
+        order.setCreated(LocalDate.now());
         order.setPaid(false);
         session.insert(order);
 
@@ -254,11 +257,13 @@ public class TestMSSQL extends BaseTest {
 
         // query orders by date
         //DateFormat df = new SimpleDateFormat("MM/dd/yyyy");
-        DateFormat df = new SimpleDateFormat("yyyyMMdd");
-        String created = df.format(order.getCreated());
-        List<Order> orders = session.query(Order.class, "select * from Orders where CONVERT(varchar, created, 112) = ?", created);
+        //DateTimeFormatter df = DateTimeFormatter.ISO_DATE;
 
-        log.info("ORDERS?" + orders);
+        List<Order> orders = session.query(Order.class, "select * from Orders where CONVERT(varchar, created, 112) = ?", order.getCreated().format(DateTimeFormatter.ISO_LOCAL_DATE));
+        log.info("ORDERS? \n" + orders);
+
+        orders = session.query(Order.class, "select * from Orders where created = ?", order.getCreated().format(DateTimeFormatter.ISO_LOCAL_DATE));
+        log.info("ORDERS AGAIN? \n" + orders);
     }
 
     public void testQuery() {
@@ -574,7 +579,7 @@ public class TestMSSQL extends BaseTest {
 
     }
 
-    public void testDateTimeOffset() {
+    public void testDateTimeOffset() throws Exception {
         /*
         Notes:
             JTDS 1.2.5, 1.3.1 reads value as TimeStamp SQL TYPE 93
@@ -584,32 +589,21 @@ public class TestMSSQL extends BaseTest {
             To convert back see.
             https://stackoverflow.com/questions/36405320/using-the-datetimeoffset-datatype-with-jtds
          */
-        try {
+        User user = new User();
+        user.setDepartment(2);
+        user.setName("test 1");
+        user.setTypeOfUser("X");
+        user.setStatus("Z");
+        user.setUserName("ABC");
 
+        session.insert(user);
 
-            User user = new User();
-            user.setDepartment(2);
-            user.setName("test 1");
-            user.setTypeOfUser("X");
-            user.setStatus("Z");
-            user.setUserName("ABC");
+        log.info(user);
 
-            session.insert(user);
-
-            log.info(user);
-
-//            user = new User();
-//            user.setDepartment(2);
-//            user.setName("test 2");
-//            user.setTypeOfUser("X");
-//            user.setStatus("Z");
-//            user.setUserName("XYZ");
-//            user.setSomeDate();
-
-        } catch (Exception e) {
-            log.error(e.getMessage(), e);
-            fail(e.getMessage());
-        }
+        User user2 = new User();
+        user2.setId(user.getId());
+        session.fetch(user2);
+        log.info(user2);
     }
 
 
@@ -641,7 +635,8 @@ public class TestMSSQL extends BaseTest {
                 " Customer_ID VARCHAR(10) NULL, " +
                 " PAID BIT NULL, " +
                 " STATUS CHAR(1) NULL, " +
-                " CREATED datetime " +
+                " CREATED datetime, " +
+                " DATEPAID datetime " +
                 ") ");
 
         commands.add("ALTER TABLE [dbo].[Orders] ADD  CONSTRAINT [DF_Orders_CREATED]  DEFAULT (getdate()) FOR [CREATED]");

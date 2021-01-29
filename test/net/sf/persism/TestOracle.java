@@ -184,6 +184,7 @@ end;
                 "\"CUSTOMER_ID\" VARCHAR(10), " +
                 "\"PAID\" NUMBER(3), " +
                 "\"CREATED\" DATE DEFAULT CURRENT_TIMESTAMP, " +
+                "\"DATE_PAID\" DATE, " +
                 "\"BIT1\" CHAR(1), " + // BIT TEST
                 "\"BIT2\" NUMBER(3), " + // BIT TEST
                 " CONSTRAINT \"ORDERS_PK\" PRIMARY KEY (\"ID\") ENABLE" +
