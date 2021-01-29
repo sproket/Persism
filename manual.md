@@ -7,30 +7,29 @@ passing in the Connection.
 
 Here's a common method to do this:
 ```
-    Properties props = new Properties();
-    props.load(getClass().getResourceAsStream("/mydb.properties"));
-    
-    String driver = props.getProperty("database.driver");
-    String url = props.getProperty("database.url");
-    String username = props.getProperty("database.username");
-    String password = props.getProperty("database.password");
-    
-    Class.forName(driver);
-    
-    Connection con = DriverManager.getConnection(url, username, password);
-    
-    // Instantiate a Persism session object with the connection
-    Session session = new Session(con);
+Properties props = new Properties();
+props.load(getClass().getResourceAsStream("/mydb.properties"));
+
+String driver = props.getProperty("database.driver");
+String url = props.getProperty("database.url");
+String username = props.getProperty("database.username");
+String password = props.getProperty("database.password");
+
+Class.forName(driver);
+
+Connection con = DriverManager.getConnection(url, username, password);
+
+// Instantiate a Persism session object with the connection
+Session session = new Session(con);
 ```
 
 ## Querying Data
 
 With the session object you can then run queries to retrieve lists of objects:
 ```
-    List<Customer> list = session.query(Customer.class,"select * from Customers where name = ?", "Fred");
-    // or
-    List<Customer> list = session.query(Customer.class, "sp_FindCustomers(?)", "Fred");
-
+List<Customer> list = session.query(Customer.class,"select * from Customers where name = ?", "Fred");
+// or
+List<Customer> list = session.query(Customer.class, "sp_FindCustomers(?)", "Fred");
 ```
 
 **Note:** Generics are in place here. If you try querying for a list of a mismatched type, 
@@ -40,23 +39,23 @@ parameterized queries, and you can also use stored procedures instead of query s
 You can also read a single object with a query string like this:
 
 ```
-    Customer customer;
-    customer = session.query(Customer.class, "select * from Customers where name = ?", "Fred");
-    // or   customer = session.query(Customer.class, "sp_FindCustomer(?)", "Fred");
-    if (customer != null) {
-        // etc...
-    }
+Customer customer;
+customer = session.query(Customer.class, "select * from Customers where name = ?", "Fred");
+// or   customer = session.query(Customer.class, "sp_FindCustomer(?)", "Fred");
+if (customer != null) {
+    // etc...
+}
 ```
 This method returns null if the customer was not found.
 
 You can also quickly initialize an Object from the database by specifying the Object's primary key. This way you do not need any SQL statement.
 
 ```
-    Customer customer = new Customer();
-    customer.setCustomerId(123);
-    if (session.fetch(customer)) {
-        // customer found
-    } 
+Customer customer = new Customer();
+customer.setCustomerId(123);
+if (session.fetch(customer)) {
+    // customer found
+} 
 ```
 This method returns true to indicate the object was found and initialized. Note you do this 
 by pre-instantiating your object first. This allows you to control memory usage of your objects, 
@@ -64,9 +63,9 @@ so you can re-use the same object if you need to run multiple queries.
 
 The query can also return primitive Java types by simply using them directly.
 ```
-    String result = session.query(String.class, "select Name from Customers where ID = ?", 10);
-    int count = session.query(int.class, "select count(*) from Customers where Region = ?", Region.West)
-    // Note Enums are supported 
+String result = session.query(String.class, "select Name from Customers where ID = ?", 10);
+int count = session.query(int.class, "select count(*) from Customers where Region = ?", Region.West)
+// Note Enums are supported 
 ```
 
 ## Updating Data
@@ -98,8 +97,8 @@ before inserting into the DB - avoiding a DB Truncation error. Persism will log 
 
 ### Update
 ```
-    customer.setCustomerName("Barney");
-    sesion.update(customer); // Update Customer   
+customer.setCustomerName("Barney");
+sesion.update(customer); // Update Customer   
 ```
 
 **Note:** If your POJO extends *PersistableObject* or implements *Persistable* then only the changed columns will 
