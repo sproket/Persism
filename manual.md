@@ -199,7 +199,7 @@ you specified in your class.
 WARN  Jan 28 17:39:13 net.sf.persism.Session - Possible overflow column UnitPrice - Property is Double and column value is BigDecimal
 ```
 
-### Annotations
+## Annotations
 
 Persism uses annotation in situations where it can't discover the mapping for you.
 
@@ -238,15 +238,15 @@ public class Author {
 
 Persism uses the following annotations for Table which need to be specified on the Class:
 
-> - *Table* - used to specify the table name in the database.
-> - *NotTable* - used to specify that this class represents the result of a query - that there is no 
+- *Table* - used to specify the table name in the database.
+- *NotTable* - used to specify that this class represents the result of a query - that there is no 
 single table associated with it.
 
 Persism uses the following annotations for Columns.
 
-> - *Column* - used to specify the column name and whether the column is primary, autoincrement or has a default. 
+- *Column* - used to specify the column name and whether the column is primary, autoincrement or has a default. 
 The 3 parameters are optional.
-> - *NotColumn* - used to specify that this property has no matching column. Ie that it's a calculated value and not read from the database.
+- *NotColumn* - used to specify that this property has no matching column. Ie that it's a calculated value and not read from the database.
 
 **Note:** These annotations can be specified on the field or on the getter or setter. 
 
@@ -258,3 +258,6 @@ read-only property would not be in the database.
 None.
 
 ## Data types for properties etc...
+
+TODO Add support in Java 8 for new DateTime api
+
