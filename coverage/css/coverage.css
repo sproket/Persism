@@ -46,12 +46,12 @@ table.coverageStats th.coverageStat {
 }
 
 table.coverageStats th.sortedDesc a {
-  background: #fff url(../.img/arrowDown.gif) no-repeat 100% 0;
+  background: #fff url(../img/arrowDown.gif) no-repeat 100% 0;
   padding-right: 20px;
 }
 
 table.coverageStats th.sortedAsc a {
-  background: #fff url(../.img/arrowUp.gif) no-repeat 100% 0;
+  background: #fff url(../img/arrowUp.gif) no-repeat 100% 0;
   padding-right: 20px;
 }
 
