@@ -1,5 +1,3 @@
-# Persism Manual
-
 ## Getting started
 
 Download Persism [here](https://github.com/sproket/Persism/releases) and add it your project.

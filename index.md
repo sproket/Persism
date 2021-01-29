@@ -1,5 +1,3 @@
-# Welcome to Persism
-
 Persism is a wood simple, auto discovery, auto configuration, and convention over configuration ORM (Object Relational Mapping) library for Java.
 
 ## Simple
@@ -25,8 +23,11 @@ Persism is under 50k. Yeah, fit it on a floppy if you want. Persism has Zero dep
 ## Unobtrusive
 Persism gets out of your way.  The philosophy of Persism is to be the library that you almost don’t even know your using.
 
+[MANUAL](/manual.md)
+
+[Javadoc](/javadoc/index.html)
 
 [Code Coverage](/coverage/index.html)
 
-[MANUAL](/manual.md)
+
 
