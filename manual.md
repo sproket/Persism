@@ -40,8 +40,8 @@ You can also read a single object with a query string like this:
 
 ```
 Customer customer;
-customer = session.query(Customer.class, "select * from Customers where name = ?", "Fred");
-// or   customer = session.query(Customer.class, "sp_FindCustomer(?)", "Fred");
+customer = session.fetch(Customer.class, "select * from Customers where name = ?", "Fred");
+// or   customer = session.fetch(Customer.class, "sp_FindCustomer(?)", "Fred");
 if (customer != null) {
     // etc...
 }
@@ -63,10 +63,15 @@ so you can re-use the same object if you need to run multiple queries.
 
 The query can also return primitive Java types by simply using them directly.
 ```
-String result = session.query(String.class, "select Name from Customers where ID = ?", 10);
-int count = session.query(int.class, "select count(*) from Customers where Region = ?", Region.West)
+String result = session.fetch(String.class, "select Name from Customers where ID = ?", 10);
+
+int count = session.fetch(int.class, "select count(*) from Customers where Region = ?", Region.West);
 // Note Enums are supported 
+
+List<String> names = session.query(String.class, "select Name from Customers Order By Name");
 ```
+
+**Note:** Use the query method for lists, and the fetch method for single results.
 
 ## Updating Data
 
@@ -252,17 +257,102 @@ read-only property would not be in the database.
 
 
 ## Support for hierarchical objects
-None.
+A somewhat common but misguided way to model data is to have POJO type objects inside other POJOs.
 
-## Data types for properties etc...
+example:
+```
+public class Customer {
+    private String customerId;
+    private String companyName;
+    private String contactName;
+    private String contactTitle;
+    // etc...
+    
+    private List<Order> orders;
+    
+    // Getters and Setters etc...
+}
 
-TODO Add support in Java 8 for new DateTime api DONE minues tinezome
+public class Order {
+    private int orderId;
+    private String customerId;
+    private Date orderDate;
+    private Date requiredDate;
+    private Date shippedDate;
+
+    private List<OrderDetail> details;
+    
+    // Getters and Setters etc...
+}
+```
+This might seem like a logical approach, but it is often very expensive for the database because it may
+need to query for all the orders and all the line items and product details etc every time you just want
+list of Customers.
+
+Persism can support this but it's left up to you on when you want to read all that data. A better approach 
+is to write a class representing the columns returned from a joining query and use that. You'll see much better performance.
+
+This is how you can do it thought if you need to:
+```
+public class Customer {
+    private String customerId;
+    private String companyName;
+    private String contactName;
+    private String contactTitle;
+    // etc...
+    
+    @NotColumn
+    private List<Order> orders;
+    
+    // Getters and Setters etc...
+}
+
+public class Order {
+    private int orderId;
+    private String customerId;
+    private Date orderDate;
+    private Date requiredDate;
+    private Date shippedDate;
+
+    @NotColumn
+    private List<OrderDetail> details;
+    
+    // Getters and Setters etc...
+}
+```
+We annotate these as *@NotColumn* so they'll be ignored by the SQL query. Then you can define these yourself as required:
+```
+Customer customer;
+List<Order> orders;
+customer = session.fetch(Customer.class, "select * from Customers where name = ?", "Fred");
+orders = session.query(Order.class, "select * from orders where customerId = ", customer.getCustomerId());
+customer.orders(orders);
+// etc...
+```
+
+## SQL Data types for Java properties
+
+| Java Type(s) | SQL Data Type(s)       | Notes |
+| :-------------    | :----------:                  | :----------: |
+|  boolean          | BIT, INT, SHORT, BYTE, NUMBER, CHAR(1)| Oracle doesn't have a bit so it reads number types as BigDecimal or Char(1) - 1 or '1' for true |
+|  short, int, long     | INT, BIGINT, LONG, AUTOINCREMENT  | Any whole number maps fine but you may see downcast warnings |
+|  float, double, BigDecimal    | NUMBER, REAL, FLOAT, DOUBLE  | Any floating point type maps fine  but you may see downcast warnings |
+|  byte[]    | BLOB  | Binary large objects will be read as a byte array |
+|  String  | CHAR, VARCHAR, NVARCHAR, TEXT, CLOB  | Large or small char types map to String |
+|  enum  | VARCHAR and similar  | Enum types are stored and read back as a String type and then converted |
+|  UUID  | VARCHAR and similar  | UUID types read as String types and then converted |
+|  Time, Timestamp, util.Date, sql.Date, LocalDate, LocalDateTime  | various DATE, DATETIME (specific to vendor) | Date types are generally read as sql.Timestamp and converted as appropriate |
+
+**Note:** Although Java primitive types like int, float, double, boolean are fully supported you should use 
+the Object types if you need to support *NULL*. It's especially important if you have defaults in
+your database since primitive types can never detect not being set. 
 
 ## Known Issues
 
 - No support yet for newer Timezone related date types
 - Boolean type columns using "Is" style names will require annotations 
-- Generated primary keys only work with Auto-increment types. UUID/String types with generated defaults do not return into the inserted object
+- Generated primary keys only work with Autoincrement types. UUID/String types with generated 
+  defaults do not return into the inserted object as primary keys.
 - Singular/plural table name guessing does not work with words like Tax - Taxes, Fax - Faxes
 
 
