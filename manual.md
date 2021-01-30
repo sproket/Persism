@@ -495,8 +495,8 @@ Here's an example logback configuration for logging with Persism:
 
 ## Known Issues
 
-- No support yet for newer Timezone related date types yet
-- No support yet for XML type  
+- No support for newer Timezone related date types yet
+- No support for XML type yet  
 - Boolean type columns using "Is" style names will require annotations 
 - Generated primary keys only work with Autoincrement types. UUID/String types with generated 
   defaults do not return into the inserted object as primary keys.
@@ -504,11 +504,6 @@ Here's an example logback configuration for logging with Persism:
 
 ## Special Thanks
 
-Thanks to the various JDBC and database developers MSSQL Oralce, ert.ccc.... For making Persism possible. We can work together!
-
-
-
-
-
+Thanks to the various JDBC and database developers for helping to make this possible.
 
 ------------------------------------------

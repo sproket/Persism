@@ -29,8 +29,6 @@ Persism is under 50k. Yeah, fit it on a floppy. Persism has *Zero* dependencies 
 
 [Code Coverage](/coverage/index.html)
 
-
----------------------
 ###Supported Databases
 
-![](img/mssql.png) ![](img/mysql.png) ![](img/jtds.png) ![](img/derby.png) ![](img/firebird.png) ![](img/h2.png) ![](img/hsqldb.jpg) ![](img/oracle.png) ![](img/postgresql.png) ![](img/sqlite.png)
+![MSSQL](img/mssql.png) ![MySQL](img/mysql.png) ![JTDS](img/jtds.png) ![Derby](img/derby.png) ![Firebird](img/firebird.png) ![H2](img/h2.png) ![HQSLDB](img/hsqldb.jpg) ![Oracle](img/oracle.png) ![PostgreSQL](img/postgresql.png) ![SQLite](img/sqlite.png)
