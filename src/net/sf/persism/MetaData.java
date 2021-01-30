@@ -221,7 +221,7 @@ final class MetaData {
                             columnInfo.autoIncrement = true;
                             if (!columnInfo.columnType.isCountable()) {
                                 columnInfo.autoIncrement = false;
-                                log.warn("Column " + columnInfo.columnName + " is annotated as autoIncrement but is a non numeric type (" + columnInfo.columnType + ") - Ignoring.");
+                                log.warn("Column " + columnInfo.columnName + " is annotated as autoIncrement but is a non-numeric type (" + columnInfo.columnType + ") - Ignoring.");
                             }
                         }
 
@@ -285,7 +285,7 @@ final class MetaData {
                 // update, delete or select (by primary).
                 // They may only want to do read operations with specified queries and in that
                 // context we don't need any primary keys. (same with insert)
-                log.warn("No primary key found for table " + tableName + ". Do not use with update/delete or add a primary key.");
+                log.warn("No primary key found for table " + tableName + ". Do not use with update/delete/fetch or add a primary key.");
             }
 
             columnInfoMap.put(objectClass, map);

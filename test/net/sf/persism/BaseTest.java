@@ -339,6 +339,19 @@ public abstract class BaseTest extends TestCase {
         DatabaseMetaData dmd = con.getMetaData();
         log.info("GetDbMetaData for " + dmd.getDatabaseProductName());
 
+        // todo maybe auto map NotTable classes to the stored proc name?
+        ResultSet result = dmd.getProcedures(null, "%", "%");
+        for (int i = 1; i<= result.getMetaData().getColumnCount(); i++) {
+            System.out.println(i + " - " + result.getMetaData().getColumnLabel(i));
+        }
+
+        System.out.println("Catalog\tSchema\tName");
+        while (result.next()) {
+            System.out.println(result.getString("PROCEDURE_CAT") +
+                    " - " + result.getString("PROCEDURE_SCHEM") +
+                    " - " + result.getString("PROCEDURE_NAME"));
+        }
+
         String[] tableTypes = {"TABLE"};
 
         ResultSetMetaData rsmd;

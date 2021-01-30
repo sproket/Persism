@@ -62,7 +62,7 @@ public final class Session {
     public int update(Object object) throws PersismException {
         List<String> primaryKeys = metaData.getPrimaryKeys(object.getClass(), connection);
         if (primaryKeys.size() == 0) {
-            throw new PersismException("Cannot perform update. " + metaData.getTableName(object.getClass()) + " has no primary keys.");
+            throw new PersismException("Cannot perform UPDATE - " + metaData.getTableName(object.getClass()) + " has no primary keys.");
         }
 
         PreparedStatement st = null;
@@ -225,17 +225,16 @@ public final class Session {
                     if (rs.next()) {
 
                         Method setter = properties.get(column).setter;
-
                         if (setter != null) {
                             Object value = getTypedValueReturnedFromGeneratedKeys(setter.getParameterTypes()[0], rs);
 
                             if (log.isDebugEnabled()) {
-                                log.debug(column + " generated " + value); // HERE!
-                                log.debug(setter);
+                                log.debug(column + " generated " + value);
                             }
                             setter.invoke(object, value);
 
                         } else {
+                            // Should never occur
                             log.warn("no setter found for column " + column);
                         }
                     }
@@ -268,7 +267,7 @@ public final class Session {
 
         List<String> primaryKeys = metaData.getPrimaryKeys(object.getClass(), connection);
         if (primaryKeys.size() == 0) {
-            throw new PersismException("Cannot perform delete. " + metaData.getTableName(object.getClass()) + " has no primary keys.");
+            throw new PersismException("Cannot perform DELETE - " + metaData.getTableName(object.getClass()) + " has no primary keys.");
         }
 
         PreparedStatement st = null;
@@ -388,12 +387,13 @@ public final class Session {
         // If we know this type it means it's a primitive type. This method cannot be used for primitives
         boolean readPrimitive = Types.getType(objectClass) != null;
         if (readPrimitive) {
+            // For unit tests
             throw new PersismException("Cannot read a primitive type object with this method.");
         }
 
         List<String> primaryKeys = metaData.getPrimaryKeys(objectClass, connection);
         if (primaryKeys.size() == 0) {
-            throw new PersismException("Cannot perform readObjectByPrimary. " + metaData.getTableName(objectClass) + " has no primary keys.");
+            throw new PersismException("Cannot perform FETCH - " + metaData.getTableName(objectClass) + " has no primary keys.");
         }
 
         Map<String, PropertyInfo> properties = metaData.getTableColumnsPropertyInfo(object.getClass(), connection);
@@ -686,9 +686,13 @@ public final class Session {
 
     // Make a sensible conversion of the Value read from the DB and the property type defined on the Data class.
     private Object convert(Object dbValue, Class propertyType, String columnName) {
+        assert dbValue != null;
+
         Types valueType = Types.getType(dbValue.getClass());
+
         if (valueType == null) {
-            log.error("WTF " + dbValue.getClass());
+            log.warn("Conversion: Unknown Persism type " + dbValue.getClass() + " - no conversion performed.");
+            return dbValue;
         }
 
         // try to convert or cast the value to the proper type.
@@ -727,12 +731,12 @@ public final class Session {
                     warnOverflow("Possible overflow column " + columnName + " - Property is INT and column value is LONG");
                     dbValue = Integer.parseInt("" + dbValue);
 
-                } else if (propertyType.equals(LocalDate.class) ) {
+                } else if (propertyType.equals(LocalDate.class)) {
                     // SQLite reads long as date.....
-                    dbValue = new Timestamp((long)dbValue).toLocalDateTime().toLocalDate();
+                    dbValue = new Timestamp((long) dbValue).toLocalDateTime().toLocalDate();
 
                 } else if (propertyType.equals(LocalDateTime.class)) {
-                    dbValue = new Timestamp((long)dbValue).toLocalDateTime();
+                    dbValue = new Timestamp((long) dbValue).toLocalDateTime();
                 }
 
                 break;

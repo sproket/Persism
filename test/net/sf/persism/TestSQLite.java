@@ -362,8 +362,8 @@ public class TestSQLite extends BaseTest {
             session.update(junk);
         } catch (PersismException e) {
             shouldFail = true;
-            assertEquals("Message s/b 'Cannot perform update. TABLENOPRIMARY has no primary keys.'",
-                    "Cannot perform update. TABLENOPRIMARY has no primary keys.",
+            assertEquals("Message s/b 'Cannot perform UPDATE - TABLENOPRIMARY has no primary keys.'",
+                    "Cannot perform UPDATE - TABLENOPRIMARY has no primary keys.",
                     e.getMessage());
         }
         assertTrue(shouldFail);

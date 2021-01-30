@@ -8,7 +8,7 @@ import java.sql.Timestamp;
 import java.util.UUID;
 
 /**
- * Type mapper used for fast switch statements in getTypedValue method,
+ * Type mapper used for fast switch statements
  *
  * @author Dan Howard
  * @since 10/8/11 5:36 PM
@@ -77,8 +77,8 @@ enum Types {
             case java.sql.Types.CHAR:
             case java.sql.Types.NCHAR:
             case java.sql.Types.VARCHAR:
-            case java.sql.Types.LONGVARCHAR:
             case java.sql.Types.NVARCHAR:
+            case java.sql.Types.LONGVARCHAR:
             case java.sql.Types.LONGNVARCHAR:
                 result = StringType;
                 break;
@@ -138,6 +138,7 @@ enum Types {
                 break;
 
             case java.sql.Types.CLOB:
+            case java.sql.Types.NCLOB:
                 result = ClobType;
                 break;
         }

@@ -408,7 +408,7 @@
             <fileset dir="${project.basedir}/javadoc"/>
         </jar>
 
-        <copy file="/readme.md" tofile="${release.dir}/readme.md"/>
+        <copy file="${project.basedir}/readme.md" tofile="${release.dir}/readme.md"/>
         <copy file="${project.basedir}/license.txt" tofile="${release.dir}/license.txt"/>
 
         <zip destfile="${release.dir}/persism-${release.version}.zip">

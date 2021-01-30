@@ -8,3 +8,4 @@ reports/
 cobertura.ser
 *.log
 .idea/workspace.xml
+/coverage/
