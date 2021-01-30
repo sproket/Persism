@@ -2,7 +2,7 @@
 
 Download Persism [here](https://github.com/sproket/Persism/releases) and add it your project.
 
-Persism uses a standard Connection object so all you need to do is Create the Session object 
+Persism uses a standard Connection object so all you need to do is create the Session object 
 passing in the Connection.
 
 Here's a common method to do this:
@@ -287,12 +287,13 @@ public class Order {
 ```
 This might seem like a logical approach, but it is often very expensive for the database because it may
 need to query for all the orders and all the line items and product details etc every time you just want
-list of Customers.
+a list of Customers.
 
-Persism can support this but it's left up to you on when you want to read all that data. A better approach 
-is to write a class representing the columns returned from a joining query and use that. You'll see much better performance.
+Persism can support this, but it's left up to you on when you want to read the data. A better approach 
+is to write a class representing the columns returned from a joining query and use the *@NotTable* annotation. 
+You'll usually see much better performance.
 
-This is how you can do it thought if you need to:
+This is how you can do it though if you need to:
 ```
 public class Customer {
     private String customerId;
@@ -326,13 +327,13 @@ Customer customer;
 List<Order> orders;
 customer = session.fetch(Customer.class, "select * from Customers where name = ?", "Fred");
 orders = session.query(Order.class, "select * from orders where customerId = ", customer.getCustomerId());
-customer.orders(orders);
+customer.setOrders(orders);
 // etc...
 ```
 
-## SQL Data types for Java properties
+## Java types to SQL types
 
-| Java Type(s) | SQL Data Type(s)       | Notes |
+| Java Type(s) | SQL Type(s)       | Notes |
 | :-------------    | :----------:                  | :----------: |
 |  boolean          | BIT, INT, SHORT, BYTE, NUMBER, CHAR(1)| Oracle doesn't have a bit so it reads number types as BigDecimal or Char(1) - 1 or '1' for true |
 |  short, int, long     | INT, BIGINT, LONG, AUTOINCREMENT  | Any whole number maps fine but you may see downcast warnings |
@@ -340,19 +341,174 @@ customer.orders(orders);
 |  byte[]    | BLOB  | Binary large objects will be read as a byte array |
 |  String  | CHAR, VARCHAR, NVARCHAR, TEXT, CLOB  | Large or small char types map to String |
 |  enum  | VARCHAR and similar  | Enum types are stored and read back as a String type and then converted |
-|  UUID  | VARCHAR and similar  | UUID types read as String types and then converted |
+|  UUID  | VARCHAR and similar  | UUID types are read as String types and then converted |
 |  Time, Timestamp, util.Date, sql.Date, LocalDate, LocalDateTime  | various DATE, DATETIME (specific to vendor) | Date types are generally read as sql.Timestamp and converted as appropriate |
 
 **Note:** Although Java primitive types like int, float, double, boolean are fully supported you should use 
 the Object types if you need to support *NULL*. It's especially important if you have defaults in
 your database since primitive types can never detect not being set. 
 
+## Unsupported SQL Types
+
+The following is a list of SQL types defined in ```java.sql.Types``` which are currently not supported.
+
+```
+OTHER       = 1111
+JAVA_OBJECT = 2000
+DISTINCT    = 2001
+STRUCT      = 2002
+ARRAY       = 2003
+REF         = 2006
+DATALINK    = 70
+ROWID       = -8
+SQLXML      = 2009
+
+- also the Microsoft specific DateTimeOffset ( -155? ) is not supported 
+```
+
+## Warning and Error Messages 
+
+### Warnings
+
+> Column is annotated as autoIncrement but is a non-numeric type - Ignoring.
+
+Occurs if you happen to annotate a String or other type as an autoincrement value.
+
+> Unknown connection type. Please contact Persism to add support.
+
+Occurs if you are using an unknown JDBC connection - Persism should work fine as long as it's JDBC compliant. 
+Ping me - I'll add it and add some unit tests.  
+
+> Property not found for column on class.
+
+Occurs if you have a column in your database table where you have no associated property.
+
+
+> No primary key found for table. Do not use with update/delete/fetch or add a primary key.
+
+Occurs in cases where Persism detects a table with no primary key. 
+This kind of table could only be used by Persism for querying. 
+
+> TRUNCATION with Column: 'column name' for table: 'table name'.
+
+Occurs if you have a String value too wide for the associated column in the database.
+
+> Column type not known for SQL type 
+
+Occurs when querying data where the SQL type read is not defined in ```java.sql.Types```. 
+It will be treated by Persim as Object type.   
+
+> Conversion: Unknown Persism type 'class name' - no conversion performed.
+
+This can occur in cases where Persism doesn't know about a type defined in ```java.sql.Types```. 
+See [unsupported types](#unsupported-sql-types)
+
+
+### Errors
+
+Below is the list of specific Exceptions Persism may throw.
+
+> Could not determine a table for type: 'POJO class name' Guesses were: 'list of guesses' 
+
+This occurs when Persism cannot determine the table name in the database from the POJO class name. 
+You can resolve this by adding an annotation to specify the table name.  
+
+
+> Cannot perform UPDATE/FETCH/DELETE - 'table name' has no primary keys.
+
+This occurs when Persism is attempting an operation on the database that requires a primary be defined.
+
+> Non-auto inc generated primary keys are not supported. Please assign your primary key value before performing an insert.
+
+This occurs if you INSERT and have a String type (CHAR or UUID etc) as a primary and you are attempting to assign it 
+from a default in the database. Currently, retrieving this value back from the database in not supported by JDBC. 
+It is possible to do this in database specific ways but not possible with some databases. To resolve this make sure to 
+assign your primary keys values from Java in these cases.  
+
+
+> Object 'POJO class name' was not properly initialized. Some properties not initialized in the queried columns ('list of missing columns')
+ 
+Persism throws this exception because your POJO would not be properly initialized if you miss some columns in your query.
+This could cause NullPointerExceptions in your code. Either include all columns (or use ```SELECT *```) or annotate 
+the propertiy in you class with *@NotColumn*.
+
+> Parse Exception 
+
+This can occur in specific cases where the JDBC returns a Date type as a String. The format used to convert it to 
+a date type is ```yyyy-MM-dd hh:mm:ss``` for DateTime types and ```yyyy-MM-dd``` for Date types.
+
+
+**Note:** Persism may log errors when cleaning up ResultSet or Statement objects or when rolling back an SQL transaction.
+
+
+## Logging
+
+Here's an example logback configuration for logging with Persism:
+
+```
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!-- For assistance related to logback-translator or configuration  -->
+<!-- files in general, please contact the logback user mailing list -->
+<!-- at http://www.qos.ch/mailman/listinfo/logback-user             -->
+<!--                                                                -->
+<!-- For professional support please see                            -->
+<!--    http://www.qos.ch/shop/products/professionalSupport         -->
+<!--                                                                -->
+<configuration>
+    <appender name="A1" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder>
+            <pattern>%-5p %d{MMM dd HH:mm:ss} %c - %m%n</pattern>
+        </encoder>
+    </appender>
+    <appender name="R" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <!--See http://logback.qos.ch/manual/appenders.html#RollingFileAppender-->
+        <!--and http://logback.qos.ch/manual/appenders.html#TimeBasedRollingPolicy-->
+        <!--for further documentation-->
+        <File>${user.home}/logs/persism.log</File>
+        <encoder>
+            <pattern>%-5p %d{MMM dd HH:mm:ss} %c - %m%n</pattern>
+        </encoder>
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <fileNamePattern>${user.home}/logs/persism.%d.log</fileNamePattern>
+            <maxHistory>4</maxHistory>
+        </rollingPolicy>
+    </appender>
+    <logger name="org" level="ERROR"/>
+    <logger name="net" level="ERROR"/>
+    <logger name="net.sf.persism" level="WARN"/>
+
+    <!-- These can be used for JDBC level logging -->
+    <!-- ERROR, WARN, INFO, DEBUG, OFF -->
+    <logger name="jdbc.sqlonly" level="OFF"/>
+    <logger name="jdbc.audit" level="OFF"/>
+    <logger name="jdbc.sqltiming" level="OFF"/>
+    <logger name="jdbc.connection" level="OFF"/>
+    <logger name="jdbc.resultset" level="OFF"/>
+    
+    <root level="INFO">
+        <appender-ref ref="A1"/>
+        <appender-ref ref="R"/>
+    </root>
+</configuration>
+```
+
 ## Known Issues
 
-- No support yet for newer Timezone related date types
+- No support yet for newer Timezone related date types yet
+- No support yet for XML type  
 - Boolean type columns using "Is" style names will require annotations 
 - Generated primary keys only work with Autoincrement types. UUID/String types with generated 
   defaults do not return into the inserted object as primary keys.
 - Singular/plural table name guessing does not work with words like Tax - Taxes, Fax - Faxes
 
+## Special Thanks
 
+Thanks to the various JDBC and database developers MSSQL Oralce, ert.ccc.... For making Persism possible. We can work together!
+
+
+
+
+
+
+------------------------------------------

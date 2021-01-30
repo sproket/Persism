@@ -21,7 +21,7 @@ Persism can usually detect the table and column mappings for you including prima
 Persism will do the correct thing by default. Persism understands that your class is called Customer and your table is called CUSTOMERS. It understands that your table column is CUSTOMER_ID and your property is customerId. Persism gets it. Heck Persism even understands when your class is called Category and your table is called CATEGORIES. No problem. Don’t even bother annotating that stuff. Persism uses annotations as a fall back – annotate only when something is outside the conventions.
 
 ## Tiny
-Persism is under 50k. Yeah, fit it on a floppy if you want. Persism has Zero dependencies however it will utilize logging based on whatever is available at runtime - SLF4J, LOG4J or JUL.
+Persism is under 50k. Yeah, fit it on a floppy. Persism has *Zero* dependencies however it will utilize logging based on whatever is available at runtime - SLF4J, LOG4J or JUL.
 
 [Manual](/manual.md)
 
@@ -30,4 +30,7 @@ Persism is under 50k. Yeah, fit it on a floppy if you want. Persism has Zero dep
 [Code Coverage](/coverage/index.html)
 
 
+---------------------
+####Supported Databses
 
+![](img/mssql.png) ![](img/mysql.png) ![](img/jtds.png) ![](img/derby.png) ![](img/firebird.png) ![](img/h2.png) ![](img/hsqldb.jpg) ![](img/oracle.png) ![](img/postgresql.png) ![](img/sqlite.png)
