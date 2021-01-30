@@ -295,7 +295,7 @@
 <b class="fc"><i>221</i>&nbsp;                            columnInfo.autoIncrement = true;</b>
 <b class="fc"><i>222</i>&nbsp;                            if (!columnInfo.columnType.isCountable()) {</b>
 <b class="fc"><i>223</i>&nbsp;                                columnInfo.autoIncrement = false;</b>
-<b class="fc"><i>224</i>&nbsp;                                log.warn(&quot;Column &quot; + columnInfo.columnName + &quot; is annotated as autoIncrement but is a non numeric type (&quot; + columnInfo.columnType + &quot;) - Ignoring.&quot;);</b>
+<b class="fc"><i>224</i>&nbsp;                                log.warn(&quot;Column &quot; + columnInfo.columnName + &quot; is annotated as autoIncrement but is a non-numeric type (&quot; + columnInfo.columnType + &quot;) - Ignoring.&quot;);</b>
 <i>225</i>&nbsp;                            }
 <i>226</i>&nbsp;                        }
 <i>227</i>&nbsp;
@@ -359,7 +359,7 @@
 <i>285</i>&nbsp;                // update, delete or select (by primary).
 <i>286</i>&nbsp;                // They may only want to do read operations with specified queries and in that
 <i>287</i>&nbsp;                // context we don&#39;t need any primary keys. (same with insert)
-<b class="fc"><i>288</i>&nbsp;                log.warn(&quot;No primary key found for table &quot; + tableName + &quot;. Do not use with update/delete or add a primary key.&quot;);</b>
+<b class="fc"><i>288</i>&nbsp;                log.warn(&quot;No primary key found for table &quot; + tableName + &quot;. Do not use with update/delete/fetch or add a primary key.&quot;);</b>
 <i>289</i>&nbsp;            }
 <i>290</i>&nbsp;
 <b class="fc"><i>291</i>&nbsp;            columnInfoMap.put(objectClass, map);</b>
@@ -913,7 +913,7 @@
 
 <div class="footer">
     
-    <div style="float:right;">generated on 2021-01-29 18:13</div>
+    <div style="float:right;">generated on 2021-01-30 13:49</div>
 </div>
 </body>
 </html>
