@@ -5,7 +5,8 @@ out/
 release/
 javadoc/
 reports/
+coverage/
 cobertura.ser
 *.log
 .idea/workspace.xml
-/coverage/
+

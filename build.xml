@@ -317,6 +317,7 @@
 
         <!--        stylesheetfile="${project.basedir}/persism.css"-->
 
+        <!-- TODO FIX group footer header and description -->
         <javadoc
                 sourcepathref="persism.module.sourcepath"
                 destdir="${project.basedir}/javadoc"
