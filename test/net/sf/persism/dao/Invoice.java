@@ -26,6 +26,9 @@ public class Invoice {
     private BigDecimal total;
     private boolean paid;
 
+    // Used as a primitive to test for warning about using primitives on columns with defaults
+    private int status;
+
     public String getCustomerId() {
         return customerId;
     }
@@ -96,6 +99,14 @@ public class Invoice {
             junk2 = junk1 + " COW";
         }
         return junk2;
+    }
+
+    public int getStatus() {
+        return status;
+    }
+
+    public void setStatus(int status) {
+        this.status = status;
     }
 
     @Override

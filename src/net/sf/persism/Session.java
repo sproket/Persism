@@ -173,6 +173,12 @@ public final class Session {
                     if (columnInfo.hasDefault) {
                         // Do not include if this column has a default and no value has been
                         // set on it's associated property.
+
+                        if (propertyInfo.getter.getReturnType().isPrimitive()) {
+                            warnNoDuplicates("Property " + propertyInfo.propertyName + " for column " + columnInfo.columnName +
+                                    " should be an Object type to properly detect NULL for defaults (change it from the primitive type to its Boxed version).");
+                        }
+
                         if (propertyInfo.getter.invoke(object) == null) {
 
                             if (columnInfo.primary) {
