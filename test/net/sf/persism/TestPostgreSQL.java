@@ -1,26 +1,27 @@
-/**
- * Comments for TestPostgreSQL go here.
- *
- * @author Dan Howard
- * @since 6/21/12 6:05 AM
- */
 package net.sf.persism;
 
 import net.sf.persism.dao.Contact;
 import net.sf.persism.dao.Customer;
 
 import java.sql.*;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
+import java.sql.Date;
+import java.time.LocalTime;
+import java.util.*;
 
+/**
+ * Comments for TestPostgreSQL go here.
+ *
+ * @author Dan Howard
+ * @since 6/21/12 6:05 AM
+ */
 public class TestPostgreSQL extends BaseTest {
 
     private static final Log log = Log.getLogger(TestPostgreSQL.class);
 
     protected void setUp() throws Exception {
         super.setUp();
+
+        // https://jdbc.postgresql.org/documentation/head/connect.html
 
         Properties props = new Properties();
         props.load(getClass().getResourceAsStream("/postgresql.properties"));
@@ -29,7 +30,7 @@ public class TestPostgreSQL extends BaseTest {
         String username = props.getProperty("database.username");
         String password = props.getProperty("database.password");
         Class.forName(driver);
-        con = DriverManager.getConnection(url, username, password);
+        con = DriverManager.getConnection(url, props);
 
         con = new net.sf.log4jdbc.ConnectionSpy(con);
 
@@ -47,6 +48,8 @@ public class TestPostgreSQL extends BaseTest {
 
         List<String> commands = new ArrayList<String>(12);
         String sql;
+//sql = "CREATE EXTENSION IF NOT EXISTS \"uuid-ossp\";";
+//executeCommand(sql, con);
         if (UtilsForTests.isTableInDatabase("Orders", con)) {
             sql = "DROP TABLE Orders";
             commands.add(sql);
@@ -111,7 +114,69 @@ public class TestPostgreSQL extends BaseTest {
 
         commands.add("ALTER TABLE TABLEMULTIPRIMARY ADD PRIMARY KEY (ID, CUSTOMER_NAME)");
 
+        if (UtilsForTests.isTableInDatabase("Contacts", con)) {
+            sql = "DROP TABLE Contacts";
+            commands.add(sql);
+        }
+
+        sql = "CREATE TABLE Contacts ( " +
+                " identity uuid PRIMARY KEY DEFAULT uuid_generate_v1(), " +
+                " PartnerID uuid NULL, " +
+                " Type char(2) NOT NULL, " +
+                " Firstname varchar(50) NULL, " +
+                " Lastname varchar(50) NULL, " +
+                " ContactName varchar(50) NULL, " +
+                " Company varchar(50) NULL, " +
+                " Division varchar(50) NULL, " +
+                " Email varchar(50) NULL, " +
+                " Address1 varchar(50) NULL, " +
+                " Address2 varchar(50) NULL, " +
+                " City varchar(50) NULL, " +
+                " StateProvince varchar(50) NULL, " +
+                " ZipPostalCode varchar(10) NULL, " +
+                " Country varchar(50) NULL, " +
+                " DateAdded Timestamp NULL, " +
+                " LastModified Timestamp NULL, " +
+                " Notes text NULL, " +
+                " AmountOwed float NULL, " +
+                " WhatTimeIsIt time NULL " +
+                ")";
+        commands.add(sql);
+
         executeCommands(commands, con);
+    }
+
+    public void testContacts() throws Exception {
+
+        // Insert specify GUID
+        Contact contact = new Contact();
+        //contact.setIdentity(UUID.randomUUID());
+        contact.setFirstname("Fred");
+        contact.setLastname("Flintstone");
+        contact.setDivision("DIVISION X");
+        contact.setLastModified(new Date(System.currentTimeMillis() - 100000000l));
+        contact.setContactName("Fred Flintstone");
+        contact.setAddress1("123 Sesame Street");
+        contact.setAddress2("Appt #0 (garbage can)");
+        contact.setCompany("Grouch Inc");
+        contact.setCountry("US");
+        contact.setCity("Philly?");
+        contact.setType("X");
+        contact.setDateAdded(new Date(System.currentTimeMillis()));
+        contact.setAmountOwed(100.23f);
+        contact.setNotes("B:AH B:AH VBLAH\r\n BLAH BLAY!");
+        contact.setWhatTimeIsIt(Time.valueOf(LocalTime.now()));
+        session.insert(contact);
+
+        log.info("contact after insert: " + contact);
+        assertNotNull("should not be null identity", contact.getIdentity());
+
+        session.fetch(contact);
+
+        contact.setDivision("DIVISION Y");
+        session.update(contact);
+
+        session.delete(contact);
     }
 
     public void testDefaultDate() throws SQLException {
@@ -131,29 +196,43 @@ public class TestPostgreSQL extends BaseTest {
         // this was a test to see if I could prepare a statement and return all colums. Nope.....
 
         // ensure metadata is there
-        log.info(session.query(Customer.class, "select * from Customers"));
+        log.info(session.query(Contact.class, "select * from Contacts"));
 
-        String insertStatement = "INSERT INTO Customers (Customer_ID, Company_Name, Contact_Name) VALUES ( ?, ?, ? ) ";
+//        String insertStatement = "INSERT INTO Customers (Customer_ID, Company_Name, Contact_Name) VALUES ( ?, ?, ? ) ";
+        String insertStatement = "INSERT INTO Contacts (FirstName, LastName, Type) VALUES ( ?, ?, ? ) ";
 
         PreparedStatement st = null;
         ResultSet rs = null;
 
-        Map<String, ColumnInfo> columns = session.getMetaData().getColumns(Customer.class, con);
-
-        String[] columnNames = columns.keySet().toArray(new String[0]);
+        // Map<String, ColumnInfo> columns = session.getMetaData().getColumns(Contact.class, con);
+        List<String> keys = session.getMetaData().getPrimaryKeys(Contact.class, con);
+//        String[] columnNames = columns.keySet().toArray(new String[0]);
+        String[] columnNames = keys.toArray(new String[0]);
         st = con.prepareStatement(insertStatement, columnNames);
-        st.setString(1, "123");
-        st.setString(2, "Slate Quarry");
-        st.setString(3, "Fred");
+//        st.setString(1, "123");
+        st.setString(1, "Slate Quarry");
+        st.setString(2, "Fred");
+        st.setString(3, "X");
 
 
         int ret = st.executeUpdate();
         log.info("rows insetred " + ret);
         rs = st.getGeneratedKeys();
         log.info("resultset? " + st.getResultSet());
+
+        ResultSetMetaData rsmd = rs.getMetaData();
         while (rs.next()) {
-            log.info("NOPE: " + rs.getObject(1));
+            for (int j = 1; j<= rsmd.getColumnCount(); j++) {
+                log.info(j + " " + rsmd.getColumnLabel(j) + " " + rsmd.getColumnTypeName(j) + " " + rs.getObject(j));
+            }
         }
+
+//        PreparedStatement pstmt = con.prepareStatement("insert into some_table (some_value) values (?)", new String[]{"id"});
+//        pstmt.setInt(1, 42);
+//        pstmt.executeUpdate();
+//        ResultSet rs  = pstmt.getGeneratedKeys();
+//        UUID id = null;
+//        if (rs.next()) id = rs.getObject(1, UUID.class);
 
 
     }

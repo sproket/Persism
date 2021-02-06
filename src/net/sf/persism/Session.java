@@ -150,7 +150,7 @@ public final class Session {
 
             List<String> generatedKeys = new ArrayList<>(1);
             for (ColumnInfo column : columns.values()) {
-                if (column.autoIncrement) {
+                if (column.autoIncrement || (column.primary && column.hasDefault)) {
                     generatedKeys.add(column.columnName);
                 }
             }
@@ -170,14 +170,16 @@ public final class Session {
                 PropertyInfo propertyInfo = properties.get(columnInfo.columnName);
                 if (!columnInfo.autoIncrement) {
 
-                    // See MetaData getInsertStatement - Maybe we should return a new Object type for InsertStatement
                     if (columnInfo.hasDefault) {
                         // Do not include if this column has a default and no value has been
                         // set on it's associated property.
-                        if (properties.get(columnInfo.columnName).getter.invoke(object) == null) {
+                        if (propertyInfo.getter.invoke(object) == null) {
 
                             if (columnInfo.primary) {
-                                throw new PersismException("Non-auto inc generated primary keys are not supported. Please assign your primary key value before performing an insert.");
+                                // This is supported with PostgreSQL but otherwise throw this an exception
+                                if ( !(metaData.connectionType == ConnectionTypes.PostgreSQL)) {
+                                    throw new PersismException("Non-auto inc generated primary keys are not supported. Please assign your primary key value before performing an insert.");
+                                }
                             }
 
                             tableHasDefaultColumnValues = true;
@@ -188,6 +190,7 @@ public final class Session {
                     Object value = propertyInfo.getter.invoke(object);
 
                     if (value != null) {
+                        // todo these tests should be moved to the setParameters method - duplicated in update method
                         // sql.Date is a subclass so this would be true
                         // same with sql.Time
                         if (value instanceof java.util.Date) {
@@ -568,7 +571,7 @@ public final class Session {
                     try {
                         columnProperty.setter.invoke(object, value);
                     } catch (IllegalArgumentException e) {
-                        String msg = e.getMessage() + " Object " + objectClass + ". Column: " + columnName + " Type of property: " + getterType + " - Type read: " + value.getClass() + " VALUE: " + value;
+                        String msg = "Object " + objectClass + ". Column: " + columnName + " Type of property: " + getterType + " - Type read: " + value.getClass() + " VALUE: " + value;
                         throw new PersismException(msg, e);
                     }
 
@@ -728,7 +731,7 @@ public final class Session {
                     }
 
                 } else if (propertyType.equals(Integer.class) || propertyType.equals(int.class)) {
-                    warnOverflow("Possible overflow column " + columnName + " - Property is INT and column value is LONG");
+                    warnNoDuplicates("Possible overflow column " + columnName + " - Property is INT and column value is LONG");
                     dbValue = Integer.parseInt("" + dbValue);
 
                 } else if (propertyType.equals(LocalDate.class)) {
@@ -752,10 +755,11 @@ public final class Session {
                 if (propertyType == BigDecimal.class) {
                     dbValue = new BigDecimal("" + dbValue);
                 } else if (propertyType == Float.class || propertyType == float.class) {
-                    warnOverflow("Possible overflow column " + columnName + " - Property is FLOAT and column value is DOUBLE");
+                    warnNoDuplicates("Possible overflow column " + columnName + " - Property is FLOAT and column value is DOUBLE");
                     dbValue = Float.parseFloat("" + dbValue);
                 } else if (propertyType == Integer.class || propertyType == int.class) {
-                    warnOverflow("Possible overflow column " + columnName + " - Property is INT and column value is DOUBLE");
+                    // todo Long?
+                    warnNoDuplicates("Possible overflow column " + columnName + " - Property is INT and column value is DOUBLE");
                     String val = "" + dbValue;
                     if (val.contains(".")) {
                         val = val.substring(0, val.indexOf("."));
@@ -767,20 +771,20 @@ public final class Session {
             case DecimalType:
                 if (propertyType == Float.class || propertyType == float.class) {
                     dbValue = ((BigDecimal) dbValue).floatValue();
-                    warnOverflow("Possible overflow column " + columnName + " - Property is Float and column value is BigDecimal");
+                    warnNoDuplicates("Possible overflow column " + columnName + " - Property is Float and column value is BigDecimal");
                 } else if (propertyType == Double.class || propertyType == double.class) {
                     dbValue = ((BigDecimal) dbValue).doubleValue();
-                    warnOverflow("Possible overflow column " + columnName + " - Property is Double and column value is BigDecimal");
+                    warnNoDuplicates("Possible overflow column " + columnName + " - Property is Double and column value is BigDecimal");
                 } else if (propertyType == Long.class || propertyType == long.class) {
                     dbValue = ((BigDecimal) dbValue).longValue();
-                    warnOverflow("Possible overflow column " + columnName + " - Property is Long and column value is BigDecimal");
+                    warnNoDuplicates("Possible overflow column " + columnName + " - Property is Long and column value is BigDecimal");
                 } else if (propertyType == Integer.class || propertyType == int.class) {
                     dbValue = ((BigDecimal) dbValue).intValue();
-                    warnOverflow("Possible overflow column " + columnName + " - Property is Integer and column value is BigDecimal");
+                    warnNoDuplicates("Possible overflow column " + columnName + " - Property is Integer and column value is BigDecimal");
                 } else if (propertyType == Boolean.class || propertyType == boolean.class) {
                     // BigDecimal to Boolean. Oracle (sigh) - Additional for a Char to Boolean as then (see TestOracle for links)
                     dbValue = ((BigDecimal) dbValue).intValue() == 1;
-                    warnOverflow("Possible overflow column " + columnName + " - Property is Boolean and column value is BigDecimal - seems a bit overkill?");
+                    warnNoDuplicates("Possible overflow column " + columnName + " - Property is Boolean and column value is BigDecimal - seems a bit overkill?");
                 } else if (propertyType == String.class) {
                     dbValue = (dbValue).toString();
                 }
@@ -934,17 +938,17 @@ public final class Session {
         return dbValue;
     }
 
-    private <T> T getTypedValueReturnedFromGeneratedKeys(Class<T> type, ResultSet rs) throws SQLException {
+    private <T> T getTypedValueReturnedFromGeneratedKeys(Class<T> objectClass, ResultSet rs) throws SQLException {
 
         Object value = null;
-        Types types = Types.getType(type);
+        Types type = Types.getType(objectClass);
 
-        if (types == null) {
-            log.warn("Unhandled type " + type);
+        if (type == null) {
+            log.warn("Unhandled type " + objectClass);
             return (T) rs.getObject(1);
         }
 
-        switch (types) {
+        switch (type) {
 
             case integerType:
             case IntegerType:
@@ -955,12 +959,15 @@ public final class Session {
             case LongType:
                 value = rs.getLong(1);
                 break;
+
+            default:
+                value = rs.getObject(1);
         }
         return (T) value;
     }
 
     // Place code conversions here to prevent type exceptions on setObject
-    private static void setParameters(PreparedStatement st, Object[] parameters) throws SQLException {
+    private void setParameters(PreparedStatement st, Object[] parameters) throws SQLException {
         if (log.isDebugEnabled()) {
             log.debug("PARAMS: " + Arrays.asList(parameters));
         }
@@ -1082,7 +1089,12 @@ public final class Session {
                         break;
 
                     case UUIDType:
-                        st.setString(n, param.toString());
+                        if (metaData.connectionType == ConnectionTypes.PostgreSQL) {
+                            // postgress does work with setObject but not setString unless you set the connection property stringtype=unspecified
+                            st.setObject(n, param);
+                        } else {
+                            st.setString(n, param.toString());
+                        }
                         break;
 
                     default:
@@ -1099,8 +1111,8 @@ public final class Session {
     }
 
 
-    // Prevent duplicate "Possible overflow column" messages
-    private static void warnOverflow(String message) {
+    // Prevent duplicate "Possible overflow column" and other possibly repeating messages
+    private static void warnNoDuplicates(String message) {
         if (!warnings.contains(message)) {
             warnings.add(message);
             log.warn(message);
