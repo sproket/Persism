@@ -47,7 +47,8 @@ enum Types {
     ClobType(Clob.class),
     BlobType(Blob.class),
     EnumType(Enum.class),
-    UUIDType(UUID.class);
+    UUIDType(UUID.class),
+    ObjectType(Object.class);
 
     private static final Log log = Log.getLogger(Types.class);
 
@@ -141,6 +142,9 @@ enum Types {
             case java.sql.Types.NCLOB:
                 result = ClobType;
                 break;
+
+            case java.sql.Types.OTHER:
+                result = ObjectType;
         }
 
         if (result == null) {
