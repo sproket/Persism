@@ -17,6 +17,8 @@ final class ColumnInfo {
 
     int sqlColumnType;
 
+    String sqlColumnTypeName;
+
     // indicates this column is generated. Only for Auto-Inc for now
     boolean autoIncrement;
 
@@ -33,6 +35,7 @@ final class ColumnInfo {
                 "columnName='" + columnName + '\'' +
                 ", columnType=" + columnType +
                 ", sqlColumnType=" + sqlColumnType +
+                ", sqlColumnTypeName=" + sqlColumnTypeName +
                 ", autoIncrement=" + autoIncrement +
                 ", primary=" + primary +
                 ", hasDefault=" + hasDefault +

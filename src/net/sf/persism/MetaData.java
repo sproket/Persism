@@ -11,6 +11,8 @@ import java.sql.*;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
+import static net.sf.persism.Util.*;
+
 /**
  * Meta data collected in a map singleton based on connection url
  *
@@ -107,7 +109,7 @@ final class MetaData {
         } catch (SQLException e) {
             throw new PersismException(e.getMessage(), e);
         } finally {
-            Util.cleanup(st, rs);
+            cleanup(st, rs);
         }
     }
 
@@ -199,6 +201,7 @@ final class MetaData {
                     columnInfo.autoIncrement = rsMetaData.isAutoIncrement(i);
                     columnInfo.primary = columnInfo.autoIncrement;
                     columnInfo.sqlColumnType = rsMetaData.getColumnType(i);
+                    columnInfo.sqlColumnTypeName = rsMetaData.getColumnTypeName(i);
                     columnInfo.columnType = Types.convert(columnInfo.sqlColumnType);
                     columnInfo.length = rsMetaData.getColumnDisplaySize(i);
 
@@ -246,20 +249,23 @@ final class MetaData {
                 ColumnInfo columnInfo = map.get(rs.getString("COLUMN_NAME"));
                 if (columnInfo != null) {
                     if (!columnInfo.hasDefault) {
-                        columnInfo.hasDefault = Util.containsColumn(rs, "COLUMN_DEF") && rs.getString("COLUMN_DEF") != null;
+                        columnInfo.hasDefault = containsColumn(rs, "COLUMN_DEF") && rs.getString("COLUMN_DEF") != null;
                     }
 
                     // Do we not have autoinc info here? Yes.
                     // IS_AUTOINCREMENT = NO or YES - Firebird has NO ANYWAY but we should maybe check other DBs
                     if (!columnInfo.autoIncrement) {
-                        columnInfo.autoIncrement = Util.containsColumn(rs, "IS_AUTOINCREMENT") && "YES".equalsIgnoreCase(rs.getString("IS_AUTOINCREMENT"));
+                        columnInfo.autoIncrement = containsColumn(rs, "IS_AUTOINCREMENT") && "YES".equalsIgnoreCase(rs.getString("IS_AUTOINCREMENT"));
                     }
 
                     // Re-assert the type since older version of SQLite could not detect types with empty resultsets
                     // It seems OK now in the newer JDBC driver.
                     // See testTypes unit test in TestSQLite
-                    if (Util.containsColumn(rs, "DATA_TYPE")) {
+                    if (containsColumn(rs, "DATA_TYPE")) {
                         columnInfo.sqlColumnType = rs.getInt("DATA_TYPE");
+                        if (containsColumn(rs, "TYPE_NAME")) {
+                            columnInfo.sqlColumnTypeName = rs.getString("TYPE_NAME");
+                        }
                         columnInfo.columnType = Types.convert(columnInfo.sqlColumnType);
                     }
                 }
@@ -295,7 +301,7 @@ final class MetaData {
         } catch (SQLException e) {
             throw new PersismException(e.getMessage(), e);
         } finally {
-            Util.cleanup(st, rs);
+            cleanup(st, rs);
         }
     }
 
@@ -406,7 +412,7 @@ final class MetaData {
             throw new PersismException(e.getMessage(), e);
 
         } finally {
-            Util.cleanup(null, rs);
+            cleanup(null, rs);
         }
     }
 
@@ -808,13 +814,13 @@ final class MetaData {
         guesses.add(className);
         guesses.add(pluralClassName);
 
-        guess = Util.camelToTitleCase(className);
+        guess = camelToTitleCase(className);
         guesses.add(guess); // name with spaces
-        guesses.add(Util.replaceAll(guess, ' ', '_')); // name with spaces changed to _
+        guesses.add(replaceAll(guess, ' ', '_')); // name with spaces changed to _
 
-        guess = Util.camelToTitleCase(pluralClassName);
+        guess = camelToTitleCase(pluralClassName);
         guesses.add(guess); // plural name with spaces
-        guesses.add(Util.replaceAll(guess, ' ', '_')); // plural name with spaces changed to _
+        guesses.add(replaceAll(guess, ' ', '_')); // plural name with spaces changed to _
     }
 
     List<String> getPrimaryKeys(Class objectClass, Connection connection) throws PersismException {
@@ -822,14 +828,15 @@ final class MetaData {
         // ensures meta data will be available
         String tableName = getTableName(objectClass, connection);
 
-        log.debug("getPrimaryKeys for " + tableName);
-
         List<String> primaryKeys = new ArrayList<String>(4);
         Map<String, ColumnInfo> map = getColumns(objectClass, connection);
         for (ColumnInfo col : map.values()) {
             if (col.primary) {
                 primaryKeys.add(col.columnName);
             }
+        }
+        if (log.isDebugEnabled()) {
+            log.debug("getPrimaryKeys for " + tableName + " " + primaryKeys);
         }
         return primaryKeys;
     }
