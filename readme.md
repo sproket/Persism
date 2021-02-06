@@ -1,4 +1,4 @@
-![](img/logo1.png)
+![](logo1.png)
 
 # Welcome
 
