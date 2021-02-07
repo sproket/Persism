@@ -25,3 +25,6 @@ Persism will do the correct thing by default. Persism understands that your clas
 ## Tiny
 Persism is under 50k. Yeah, fit it on a floppy if you want. Persism has Zero dependencies however it will utilize logging based on whatever is available at runtime - SLF4J, LOG4J or JUL.
 
+[Have a look here for the getting started guide, code coverage and Javadoc](https://sproket.github.io/Persism/)
+
+Thanks!
