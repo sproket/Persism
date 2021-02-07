@@ -37,11 +37,11 @@ enum Types {
     SQLDateType(java.sql.Date.class),
     TimeType(Time.class),
     TimestampType(Timestamp.class),
-    LocalDate(java.time.LocalDate.class),
-    LocalDateTime(java.time.LocalDateTime.class),
-    Instant(java.time.Instant.class),
-    OffsetDateTime(java.time.OffsetDateTime.class),
-    ZonedDateTime(java.time.ZonedDateTime.class),
+    LocalDateType(java.time.LocalDate.class),
+    LocalDateTimeType(java.time.LocalDateTime.class),
+    InstantType(java.time.Instant.class),
+    OffsetDateTimeType(java.time.OffsetDateTime.class),
+    ZonedDateTimeType(java.time.ZonedDateTime.class),
     byteArrayType(byte[].class),
     ByteArrayType(Byte[].class),
     ClobType(Clob.class),
@@ -121,6 +121,9 @@ enum Types {
 
             case java.sql.Types.BINARY:
             case java.sql.Types.VARBINARY:
+                result = ByteArrayType;
+                break;
+
             case java.sql.Types.LONGVARBINARY:
             case java.sql.Types.BLOB:
                 result = BlobType;
@@ -159,6 +162,10 @@ enum Types {
         }
 
         return result;
+    }
+
+    public Class getJavaType() {
+        return type;
     }
 
     public boolean isCountable() {

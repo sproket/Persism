@@ -1,9 +1,13 @@
 package net.sf.persism;
 
+import net.sf.persism.dao.Contact;
 import net.sf.persism.dao.Customer;
 
 import java.sql.DriverManager;
 import java.sql.SQLException;
+import java.sql.Time;
+import java.sql.Timestamp;
+import java.time.LocalTime;
 import java.util.*;
 
 public class TestFirebird extends BaseTest {
@@ -55,7 +59,8 @@ public class TestFirebird extends BaseTest {
                 " PAID BOOLEAN, " +
                 " CUSTOMER_ID VARCHAR(10), " +
                 " CREATED TIMESTAMP DEFAULT 'NOW', " +
-                " DATE_PAID TIMESTAMP " +
+                " DATE_PAID TIMESTAMP, " +
+                " DATE_SOMETHING TIMESTAMP " +
                 "); ";
 
         commands.add(sql);
@@ -88,11 +93,75 @@ public class TestFirebird extends BaseTest {
                 "  CONSTRAINT PK_CUSTOMER PRIMARY KEY (CUSTOMER_ID) " +
                 "); ";
         commands.add(sql);
-//       executeCommand(sql, con);
+        executeCommands(commands, con);
 
+        if (UtilsForTests.isTableInDatabase("Contacts", con)) {
+            executeCommand("DROP TABLE Contacts", con);
+        }
+        // FIREBIRD and Derby don't like NOT NULL
+        sql = "CREATE TABLE Contacts( " +
+                "   identity binary(16) NOT NULL PRIMARY KEY, \n" +  // test binary(16)
+                "   PartnerID varchar(36) NOT NULL, \n" + // test varchar(36)
+                "   Type char(2) NOT NULL, \n" +
+                "   Firstname varchar(50) NOT NULL, \n" +
+                "   Lastname varchar(50) NOT NULL, \n" +
+                "   ContactName varchar(50) NOT NULL, \n" +
+                "   Company varchar(50) NOT NULL, \n" +
+                "   Division varchar(50), \n" +
+                "   Email varchar(50), \n" +
+                "   Address1 varchar(50), \n" +
+                "   Address2 varchar(50), \n" +
+                "   City varchar(50), \n" +
+                "   StateProvince varchar(50), \n" +
+                "   ZipPostalCode varchar(10), \n" +
+                "   Country varchar(50), \n" +
+                "   DateAdded Date, \n" +
+                "   LastModified TIMESTAMP, \n" +
+                "   Notes BLOB SUB_TYPE TEXT, \n" +
+                "   AmountOwed REAL, \n" +
+                "   WhatTimeIsIt TIME ) ";
 
+        executeCommand(sql, con);
 
-      executeCommands(commands, con);
+    }
+
+    @Override
+    public void testContactTable() throws SQLException {
+        UUID identity = UUID.randomUUID();
+        UUID partnerId = UUID.randomUUID();
+
+        Contact contact = new Contact();
+        contact.setIdentity(identity);
+        contact.setPartnerId(partnerId);
+        contact.setFirstname("Fred");
+        contact.setLastname("Flintstone");
+        contact.setDivision("DIVISION X");
+        contact.setLastModified(new Timestamp(System.currentTimeMillis() - 100000000l));
+        contact.setContactName("Fred Flintstone");
+        contact.setAddress1("123 Sesame Street");
+        contact.setAddress2("Appt #0 (garbage can)");
+        contact.setCompany("Grouch Inc");
+        contact.setCountry("US");
+        contact.setCity("Philly?");
+        contact.setType("X");
+        contact.setDateAdded(new java.sql.Date(System.currentTimeMillis()));
+        contact.setAmountOwed(100.23f);
+        contact.setNotes("B:AH B:AH VBLAH\r\n BLAH BLAY!");
+        contact.setWhatTimeIsIt(Time.valueOf(LocalTime.now()));
+        session.insert(contact);
+
+        Contact contact2 = new Contact();
+        contact2.setIdentity(identity);
+        assertTrue(session.fetch(contact2));
+        assertNotNull(contact2.getPartnerId());
+        assertEquals(contact2.getIdentity(), identity);
+        assertEquals(contact2.getPartnerId(), partnerId);
+
+        contact.setDivision("Y");
+        session.update(contact);
+
+        assertEquals("1?", 1, session.delete(contact));
+
     }
 
     public void testSomething() {

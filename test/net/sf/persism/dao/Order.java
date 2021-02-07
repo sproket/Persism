@@ -2,6 +2,7 @@ package net.sf.persism.dao;
 
 import net.sf.persism.PersistableObject;
 
+import java.sql.Timestamp;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 
@@ -22,6 +23,7 @@ public class Order extends PersistableObject {
     private String customerId;
     private Boolean paid;
     private LocalDateTime datePaid;
+    private Timestamp dateSomething;
 
     public long getId() {
         return id;
@@ -69,6 +71,14 @@ public class Order extends PersistableObject {
 
     public void setDatePaid(LocalDateTime datePaid) {
         this.datePaid = datePaid;
+    }
+
+    public Timestamp getDateSomething() {
+        return dateSomething;
+    }
+
+    public void setDateSomething(Timestamp dateSomething) {
+        this.dateSomething = dateSomething;
     }
 
     @Override

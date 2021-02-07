@@ -27,6 +27,9 @@ public abstract class BaseTest extends TestCase {
 
     static boolean mssqlmode = true;
 
+    protected abstract void createTables() throws SQLException;
+    protected abstract void testContactTable() throws SQLException;
+
     @Override
     protected void setUp() throws Exception {
         super.setUp();
@@ -61,13 +64,13 @@ public abstract class BaseTest extends TestCase {
 
          */
 
-        String dateOfLastOrder = "20120528192835";
+        String dateOfLastOrder = "20120528000000"; //sql.date - no time in it.
         String dateRegistered = "20110612185225";
         DateFormat df = new SimpleDateFormat("yyyyMMddHHmmss");
 
         customer.setDateOfLastOrder(new java.sql.Date(UtilsForTests.getCalendarFromAnsiDateString(dateOfLastOrder).getTime().getTime()));
         log.info(customer.getDateOfLastOrder());
-        customer.setDateRegistered(new java.sql.Date(UtilsForTests.getCalendarFromAnsiDateString(dateRegistered).getTimeInMillis()));
+        customer.setDateRegistered(new java.sql.Timestamp(UtilsForTests.getCalendarFromAnsiDateString(dateRegistered).getTimeInMillis()));
         log.info(customer.getDateRegistered());
 
         assertEquals("date of last order s/b", dateOfLastOrder, df.format(customer.getDateOfLastOrder()));
@@ -102,7 +105,7 @@ public abstract class BaseTest extends TestCase {
             customer1.setContactName("fred flintstone");
             customer1.setContactTitle("Lord");
             customer1.setCountry("US");
-            customer1.setDateRegistered(new java.sql.Date(System.currentTimeMillis()));
+            customer1.setDateRegistered(new java.sql.Timestamp(System.currentTimeMillis()));
             customer1.setFax("123-456-7890");
             customer1.setPhone("456-678-1234");
             customer1.setPostalCode("54321");
@@ -154,7 +157,7 @@ public abstract class BaseTest extends TestCase {
         customer.setContactName("fred flintstone");
         customer.setContactTitle("Lord");
         customer.setCountry("US");
-        customer.setDateRegistered(new java.sql.Date(System.currentTimeMillis()));
+        customer.setDateRegistered(new java.sql.Timestamp(System.currentTimeMillis()));
         customer.setFax("123-456-7890");
         customer.setPhone("456-678-1234");
         customer.setPostalCode("54321");
@@ -275,7 +278,7 @@ public abstract class BaseTest extends TestCase {
         customer.setContactName("fred flintstone");
         customer.setContactTitle("Lord");
         customer.setCountry("US");
-        customer.setDateRegistered(new java.sql.Date(System.currentTimeMillis()));
+        customer.setDateRegistered(new java.sql.Timestamp(System.currentTimeMillis()));
         customer.setFax("123-456-7890");
         customer.setPhone("456-678-1234");
         customer.setPostalCode("54321");
@@ -390,46 +393,20 @@ public abstract class BaseTest extends TestCase {
 
     }
 
-    protected abstract void createTables() throws SQLException;
-
     void executeCommands(List<String> commands, Connection con) throws SQLException {
-        Statement st = null;
-        try {
-            st = con.createStatement();
+        try (Statement st = con.createStatement()) {
             for (String command : commands) {
                 log.info(command);
                 st.execute(command);
-
-            }
-
-        } finally {
-            try {
-                if (st != null) {
-                    st.close();
-                }
-            } catch (SQLException e) {
-                log.error(e.getMessage(), e);
             }
         }
-
     }
 
     // use if you want to run commands one at a time for debugging or testing
     void executeCommand(String command, Connection con) throws SQLException {
-        Statement st = null;
-        try {
-            st = con.createStatement();
+        try (Statement st = con.createStatement()) {
             log.info(command);
             st.execute(command);
-        } finally {
-            try {
-                if (st != null) {
-                    st.close();
-                }
-            } catch (SQLException e) {
-                log.error(e.getMessage(), e);
-            }
         }
-
     }
 }

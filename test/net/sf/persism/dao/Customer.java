@@ -2,6 +2,8 @@ package net.sf.persism.dao;
 
 import net.sf.persism.annotations.Column;
 
+import java.sql.Timestamp;
+
 /**
  * General customer class for database types.
  *
@@ -23,7 +25,7 @@ public class Customer {
     private char status;
 
     @Column (hasDefault = true)
-    private java.util.Date dateRegistered;
+    private Timestamp dateRegistered;
 
     private java.sql.Date dateOfLastOrder;
 
@@ -115,11 +117,11 @@ public class Customer {
         this.fax = fax;
     }
 
-    public java.util.Date getDateRegistered() {
+    public Timestamp getDateRegistered() {
         return dateRegistered;
     }
 
-    public void setDateRegistered(java.util.Date dateRegistered) {
+    public void setDateRegistered(Timestamp dateRegistered) {
         this.dateRegistered = dateRegistered;
     }
 

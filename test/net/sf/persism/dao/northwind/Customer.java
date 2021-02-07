@@ -1,6 +1,10 @@
 package net.sf.persism.dao.northwind;
 
+import net.sf.persism.annotations.NotColumn;
+
 import java.sql.Date;
+import java.time.Instant;
+import java.time.LocalDateTime;
 
 /**
  * NORTHWIND CUSTOMER OBJECT
@@ -21,9 +25,13 @@ public final class Customer {
     private String country;
     private String phone;
     private String fax;
-    private Date dateOfLastResort;
+    private java.util.Date dateOfLastResort;
     private Date dateOfDoom;
-    private Date dateOfOffset;
+    private LocalDateTime dateOfOffset; // this is a DateTimeOffset in the DB - KEEP to test for normal DateTime or double check because we use this with DB retuning the type as VARCHAR
+    @NotColumn //todo Instant not yet supported
+    private Instant nowMF;
+
+    private String wtfDate;
 
     public String getCustomerId() {
         return customerId;
@@ -113,11 +121,11 @@ public final class Customer {
         this.fax = fax;
     }
 
-    public Date getDateOfLastResort() {
+    public java.util.Date getDateOfLastResort() {
         return dateOfLastResort;
     }
 
-    public void setDateOfLastResort(Date dateOfLastResort) {
+    public void setDateOfLastResort(java.util.Date dateOfLastResort) {
         this.dateOfLastResort = dateOfLastResort;
     }
 
@@ -129,12 +137,28 @@ public final class Customer {
         this.dateOfDoom = dateOfDoom;
     }
 
-    public Date getDateOfOffset() {
+    public LocalDateTime getDateOfOffset() {
         return dateOfOffset;
     }
 
-    public void setDateOfOffset(Date dateOfOffset) {
+    public void setDateOfOffset(LocalDateTime dateOfOffset) {
         this.dateOfOffset = dateOfOffset;
+    }
+
+    public Instant getNowMF() {
+        return nowMF;
+    }
+
+    public void setNowMF(Instant nowMF) {
+        this.nowMF = nowMF;
+    }
+
+    public String getWtfDate() {
+        return wtfDate;
+    }
+
+    public void setWtfDate(String wtfDate) {
+        this.wtfDate = wtfDate;
     }
 
     @Override

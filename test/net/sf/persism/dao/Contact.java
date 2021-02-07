@@ -6,6 +6,7 @@ import net.sf.persism.annotations.Column;
 
 import java.sql.Date;
 import java.sql.Time;
+import java.sql.Timestamp;
 import java.util.UUID;
 
 /**
@@ -13,7 +14,7 @@ import java.util.UUID;
  */
 public final class Contact implements Persistable<Contact> {
 
-    @Column(primary = true)
+    //@Column(primary = true)
     private UUID identity;
 
     private UUID partnerId;
@@ -31,7 +32,7 @@ public final class Contact implements Persistable<Contact> {
     private String zipPostalCode;
     private String country;
     private Date dateAdded;
-    private Date lastModified;
+    private Timestamp lastModified;
     private float amountOwed;
     private String notes;
     private Time whatTimeIsIt;
@@ -167,11 +168,11 @@ public final class Contact implements Persistable<Contact> {
         this.dateAdded = dateAdded;
     }
 
-    public Date getLastModified() {
+    public Timestamp getLastModified() {
         return lastModified;
     }
 
-    public void setLastModified(Date lastModified) {
+    public void setLastModified(Timestamp lastModified) {
         this.lastModified = lastModified;
     }
 

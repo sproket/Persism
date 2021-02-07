@@ -54,18 +54,17 @@ public class UtilsForTests {
         return lsNewStr.toString();
     }
 
-    public static boolean isTableInDatabase(String table, Connection con) {
+    public static boolean isTableInDatabase(String tableName, Connection con) {
 
         boolean result = false;
-        java.sql.ResultSet r = null;
+        ResultSet rs = null;
         try {
             DatabaseMetaData dma = con.getMetaData();
             String[] types = {"TABLE"};
-            r = dma.getTables(null, null, null, types);
+            rs = dma.getTables(null, null, null, types);
 
-            while (r.next()) {
-                String tableName = r.getString("TABLE_NAME");
-                if (table.equalsIgnoreCase(tableName)) {
+            while (rs.next()) {
+                if (tableName.equalsIgnoreCase(rs.getString("TABLE_NAME"))) {
                     result = true;
                     break;
                 }
@@ -74,8 +73,39 @@ public class UtilsForTests {
             log.error(e.getMessage(), e);
         } finally {
             try {
-                if (r != null) {
-                    r.close();
+                if (rs != null) {
+                    rs.close();
+                }
+            } catch (SQLException e) {
+                log.warn(e.getMessage());
+            }
+        }
+
+        return result;
+    }
+
+    public static boolean isProcedureInDatabase(String procName, Connection con) {
+
+        boolean result = false;
+        ResultSet rs = null;
+        try {
+            DatabaseMetaData dma = con.getMetaData();
+            rs = dma.getProcedures(null, null, "%");
+
+            while (rs.next()) {
+                String proc = rs.getString("PROCEDURE_NAME");
+                // looks like spCustomerOrders;1 == where ;1 indicate # params
+                if (proc != null && proc.toLowerCase().startsWith(proc.toLowerCase())) {
+                    result = true;
+                    break;
+                }
+            }
+        } catch (SQLException e) {
+            log.error(e.getMessage(), e);
+        } finally {
+            try {
+                if (rs != null) {
+                    rs.close();
                 }
             } catch (SQLException e) {
                 log.warn(e.getMessage());

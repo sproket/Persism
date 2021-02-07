@@ -61,7 +61,8 @@ public class TestPostgreSQL extends BaseTest {
                 " PAID BOOLEAN NULL, " +
                 " Customer_ID VARCHAR(10) NULL, " +
                 " Created TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL, " +
-                " Date_Paid TIMESTAMP NULL " +
+                " Date_Paid TIMESTAMP NULL, " +
+                " Date_Something TIMESTAMP NULL " +
                 ") ";
 
         commands.add(sql);
@@ -146,15 +147,16 @@ public class TestPostgreSQL extends BaseTest {
         executeCommands(commands, con);
     }
 
-    public void testContacts() throws Exception {
 
+    @Override
+    public void testContactTable() throws SQLException {
         // Insert specify GUID
         Contact contact = new Contact();
         //contact.setIdentity(UUID.randomUUID());
         contact.setFirstname("Fred");
         contact.setLastname("Flintstone");
         contact.setDivision("DIVISION X");
-        contact.setLastModified(new Date(System.currentTimeMillis() - 100000000l));
+        contact.setLastModified(new Timestamp(System.currentTimeMillis() - 100000000l));
         contact.setContactName("Fred Flintstone");
         contact.setAddress1("123 Sesame Street");
         contact.setAddress2("Appt #0 (garbage can)");

@@ -10,12 +10,13 @@ package net.sf.persism;
 import net.sf.persism.dao.*;
 
 import java.sql.*;
+import java.sql.Date;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
+import java.time.LocalTime;
+import java.util.*;
+
+import static net.sf.persism.UtilsForTests.*;
 
 public class TestSQLite extends BaseTest {
 
@@ -34,8 +35,8 @@ public class TestSQLite extends BaseTest {
         props.load(getClass().getResourceAsStream("/sqlite.properties"));
         Class.forName(props.getProperty("database.driver"));
 
-        home = UtilsForTests.createHomeFolder("pinfsqlite");
-        String url = UtilsForTests.replace(props.getProperty("database.url"), "{$home}", home);
+        home = createHomeFolder("pinfsqlite");
+        String url = replace(props.getProperty("database.url"), "{$home}", home);
         log.info(url);
 
         con = DriverManager.getConnection(url);
@@ -119,7 +120,7 @@ public class TestSQLite extends BaseTest {
 
         customer.setCustomerId("MOO");
         customer.setDateOfLastOrder(new Date(System.currentTimeMillis()));
-        customer.setDateRegistered(new java.util.Date(System.currentTimeMillis() - 10000000l));
+        customer.setDateRegistered(new Timestamp(System.currentTimeMillis() - 10000000l));
         session.insert(customer); // this should be ok now.
 
         log.warn("Customer 1 ?" + customer);
@@ -157,7 +158,7 @@ public class TestSQLite extends BaseTest {
 
 
         customer.setCustomerId("MOO");
-        customer.setDateRegistered(new java.sql.Date(System.currentTimeMillis()));
+        customer.setDateRegistered(new java.sql.Timestamp(System.currentTimeMillis()));
 
         log.info(customer.getDateRegistered());
         session.update(customer);
@@ -367,6 +368,28 @@ public class TestSQLite extends BaseTest {
                     e.getMessage());
         }
         assertTrue(shouldFail);
+
+        shouldFail = false;
+        try {
+            session.fetch(junk);
+        } catch (PersismException e) {
+            shouldFail = true;
+            assertEquals("Message s/b 'Cannot perform FETCH - TABLENOPRIMARY has no primary keys.'",
+                    "Cannot perform FETCH - TABLENOPRIMARY has no primary keys.",
+                    e.getMessage());
+        }
+        assertTrue(shouldFail);
+
+        shouldFail = false;
+        try {
+            session.delete(junk);
+        } catch (PersismException e) {
+            shouldFail = true;
+            assertEquals("Message s/b 'Cannot perform DELETE - TABLENOPRIMARY has no primary keys.'",
+                    "Cannot perform DELETE - TABLENOPRIMARY has no primary keys.",
+                    e.getMessage());
+        }
+        assertTrue(shouldFail);
     }
 
     public void testColumnDefaults() {
@@ -376,7 +399,7 @@ public class TestSQLite extends BaseTest {
 
         try {
             st = con.createStatement();
-            if (UtilsForTests.isTableInDatabase("t", con)) {
+            if (isTableInDatabase("t", con)) {
                 st.execute("drop table t");
             }
             st.execute("create table t (a datetime default CURRENT_TIMESTAMP, b text)");
@@ -403,7 +426,7 @@ public class TestSQLite extends BaseTest {
 
         Statement st = null;
         List<String> commands = new ArrayList<String>(3);
-        if (UtilsForTests.isTableInDatabase("Orders", con)) {
+        if (isTableInDatabase("Orders", con)) {
 
             //st.execute("TRUNCATE TABLE Orders");  next to lines are the equivalent
             //commands.add("DELETE FROM Orders");
@@ -418,11 +441,12 @@ public class TestSQLite extends BaseTest {
                 " Customer_ID VARCHAR(10) NULL, " +
                 " PAID BIT NULL, " +
                 " CREATED datetime DEFAULT CURRENT_TIMESTAMP, " +
-                " DATE_PAID datetime NULL" +
+                " DATE_PAID datetime NULL, " +
+                " DATE_SOMETHING datetime NULL" +
                 ") ");
 
 
-        if (UtilsForTests.isTableInDatabase("Customers", con)) {
+        if (isTableInDatabase("Customers", con)) {
             commands.add("DROP TABLE Customers");
         }
 
@@ -439,12 +463,11 @@ public class TestSQLite extends BaseTest {
                 " Phone VARCHAR(30) NULL, " +
                 " STATUS CHAR(1) NULL, " +
                 " Fax VARCHAR(30) NULL, " +
-                // " Date_Registered datetime default CURRENT_TIMESTAMP, " +
                 " Date_Registered datetime default  (datetime('now','localtime')), " +
                 " Date_Of_Last_Order datetime " +
                 ") ");
 
-        if (UtilsForTests.isTableInDatabase("TABLENOPRIMARY", con)) {
+        if (isTableInDatabase("TABLENOPRIMARY", con)) {
             commands.add("DROP TABLE TABLENOPRIMARY");
         }
 
@@ -461,7 +484,76 @@ public class TestSQLite extends BaseTest {
                 ") ");
 
         executeCommands(commands, con);
+
+        if (isTableInDatabase("CONTACTS", con)) {
+            executeCommand("DROP TABLE CONTACTS", con);
+        }
+
+        String sql = "CREATE TABLE CONTACTS ( " +
+                " identity VARCHAR(36) PRIMARY KEY UNIQUE NOT NULL, " +
+                " PartnerID BLOB NOT NULL, " +
+                " Type char(2) NOT NULL, " +
+                " Firstname varchar(50) NULL, " +
+                " Lastname varchar(50) NULL, " +
+                " ContactName varchar(50) NULL, " +
+                " Company varchar(50) NULL, " +
+                " Division varchar(50) NULL, " +
+                " Email varchar(50) NULL, " +
+                " Address1 varchar(50) NULL, " +
+                " Address2 varchar(50) NULL, " +
+                " City varchar(50) NULL, " +
+                " StateProvince varchar(50) NULL, " +
+                " ZipPostalCode varchar(10) NULL, " +
+                " Country varchar(50) NULL, " +
+                " DateAdded timestamp NULL, " +
+                " LastModified datetime NULL, " +
+                " Notes text NULL, " +
+                " AmountOwed float NULL, " +
+                " WhatTimeIsIt time NULL " +
+                ") ";
+        executeCommand(sql, con);
     }
 
+    @Override
+    public void testContactTable() throws SQLException {
 
+        UUID identity = UUID.randomUUID();
+        UUID partnerId = UUID.randomUUID();
+
+        // Insert specify GUID
+        Contact contact = new Contact();
+        contact.setIdentity(identity);
+        contact.setPartnerId(partnerId);
+        contact.setFirstname("Fred");
+        contact.setLastname("Flintstone");
+        contact.setDivision("DIVISION X");
+        contact.setLastModified(new Timestamp(System.currentTimeMillis() - 100000000l));
+        contact.setContactName("Fred Flintstone");
+        contact.setAddress1("123 Sesame Street");
+        contact.setAddress2("Appt #0 (garbage can)");
+        contact.setCompany("Grouch Inc");
+        contact.setCountry("US");
+        contact.setCity("Philly?");
+        contact.setType("X");
+        contact.setDateAdded(new Date(System.currentTimeMillis()));
+        contact.setAmountOwed(100.23f);
+        contact.setNotes("B:AH B:AH VBLAH\r\n BLAH BLAY!");
+        contact.setWhatTimeIsIt(Time.valueOf(LocalTime.now()));
+        session.insert(contact);
+
+        log.info("contact after insert: " + contact);
+        assertNotNull("should not be null identity", contact.getIdentity());
+
+        assertTrue("should fetch", session.fetch(contact));
+
+        assertEquals("identity s/b =", identity, contact.getIdentity());
+        assertEquals("partnerId s/b =", partnerId, contact.getPartnerId());
+
+
+        contact.setDivision("DIVISION Y");
+        session.update(contact);
+
+        session.delete(contact);
+
+    }
 }

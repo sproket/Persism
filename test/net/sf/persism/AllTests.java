@@ -20,15 +20,16 @@ public class AllTests {
 
         // Order is important TestMSSQL is listed twice and TestOracle switches modes from mssql to jtds for the 2nd instance
         theTestSuite.addTestSuite(TestH2.class);
+        theTestSuite.addTestSuite(TestHSQLDB.class);
+        theTestSuite.addTestSuite(TestDerby.class);
+        theTestSuite.addTestSuite(TestSQLite.class);
+
         theTestSuite.addTestSuite(TestMSSQL.class);
         theTestSuite.addTestSuite(TestOracle.class);
         theTestSuite.addTestSuite(TestMSSQL.class);
-        theTestSuite.addTestSuite(TestSQLite.class);
-        theTestSuite.addTestSuite(TestDerby.class);
         theTestSuite.addTestSuite(TestMySQL.class);
         theTestSuite.addTestSuite(TestPostgreSQL.class);
         theTestSuite.addTestSuite(TestFirebird.class);
-        theTestSuite.addTestSuite(TestHSQLDB.class);
 
         theTestSuite.addTestSuite(TestMetaData.class);
         theTestSuite.addTestSuite(TestNorthwind.class);

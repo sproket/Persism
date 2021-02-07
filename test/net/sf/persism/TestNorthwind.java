@@ -8,6 +8,8 @@ import java.io.File;
 import java.math.BigDecimal;
 import java.sql.*;
 import java.text.DecimalFormat;
+import java.time.Instant;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Properties;
 
@@ -368,8 +370,10 @@ public class TestNorthwind extends TestCase {
         customer.setPostalCode("54321");
         customer.setRegion("East");
         customer.setDateOfDoom(new Date(System.currentTimeMillis()));
-        customer.setDateOfOffset(new Date(System.currentTimeMillis()));
+        customer.setDateOfOffset(LocalDateTime.now());
         customer.setDateOfLastResort(new Date(System.currentTimeMillis()));
+        customer.setNowMF(Instant.now()); // todo Instant support
+        customer.setWtfDate("1998-02-17 10:43:22");
         session.delete(customer); // in case it already exists.
         session.insert(customer);
 
@@ -394,13 +398,27 @@ public class TestNorthwind extends TestCase {
         assertTrue("Should not be able to read fields if there are missing properties", failOnMissingProperties);
 
         // Make sure all columns are NOT the CASE of the ones in the DB.
-        List<Customer> list = session.query(Customer.class, "SELECT companyNAME, contacttitle, pHone, rEGion, postalCODE, FAX, ADDress, CUStomerid, conTacTname, coUntry, cIty, DAteOfLastResort,DATEOFDOOM, daTeoFOFFSET  from CuStOMeRS WHERE CustomerID='MOo'");
+        List<Customer> list = session.query(Customer.class, "SELECT companyNAME, contacttitle, pHone, rEGion, postalCODE, FAX, ADDress, CUStomerid, conTacTname, coUntry, cIty, DAteOfLastResort,DATEOFDOOM, daTeoFOFFSET, wtfDATE  from CuStOMeRS WHERE CustomerID='MOo'");
 
         log.info(list);
         assertEquals("list should be 1", 1, list.size());
 
         Customer c2 = list.get(0);
         assertEquals("region s/b north ", "North", c2.getRegion());
+
+        c2.setWtfDate("WHY WOULD YOU DO THIS?");
+        boolean shouldFail = false;
+
+        try {
+            session.update(c2);
+        } catch (PersismException e) {
+            log.info(e.getMessage());
+            shouldFail = true;
+            assertEquals("s/b 'Unparseable date: \"WHY WOULD YOU DO THIS?\". Column: wtfDate Target Conversion: class java.sql.Timestamp - Type read: class java.lang.String VALUE: WHY WOULD YOU DO THIS?'",
+                    "Unparseable date: \"WHY WOULD YOU DO THIS?\". Column: wtfDate Target Conversion: class java.sql.Timestamp - Type read: class java.lang.String VALUE: WHY WOULD YOU DO THIS?",
+                    e.getMessage());
+        }
+        assertTrue(shouldFail);
     }
 
 

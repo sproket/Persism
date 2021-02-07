@@ -53,6 +53,28 @@ TODO MAYBE https://github.com/JSQLParser/JSqlParser/releases/tag/jsqlparser-4.0
 TODO Support new DateTime APIs https://stackoverflow.com/questions/32548331/missed-opportunity-to-fix-jdbc-date-handling-in-java-8
 TODO https://jdbc.postgresql.org/documentation/head/8-date-time.html
 TODO https://stackoverflow.com/questions/44091688/using-zoneddatetime-with-datetimeoffset-in-sqlserver
-
+TODO https://www.baeldung.com/java-daylight-savings
 
 NOTE: Checks for setting for a default depend on an Object Type - will not work with primitive types.
+
+TODO conversions between LocalDate and LocalDateTime (with downcast warning)
+Exception in thread "main" net.sf.persism.PersismException: argument type mismatch Object class javaapplication1.models.Customer. Column: date_of_last_order Type of property: class java.time.LocalDateTime - Type read: class java.time.LocalDate VALUE: 1997-03-03
+	at net.sf.persism.Session.fetch(Session.java:422)
+	at javaapplication1.JavaApplication1.test(JavaApplication1.java:57)
+	at javaapplication1.JavaApplication1.main(JavaApplication1.java:32)
+Caused by: net.sf.persism.PersismException: argument type mismatch Object class javaapplication1.models.Customer. Column: date_of_last_order Type of property: class java.time.LocalDateTime - Type read: class java.time.LocalDate VALUE: 1997-03-03
+	at net.sf.persism.Session.readObject(Session.java:572)
+	at net.sf.persism.Session.fetch(Session.java:415)
+	... 2 more
+Caused by: java.lang.IllegalArgumentException: argument type mismatch
+	at java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+	at java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:64)
+	at java.base/jdk.internal.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:564)
+	at net.sf.persism.Session.readObject(Session.java:569)
+	... 3 more
+
+todo check each DB type for char or uddi type GeneratedKeys I think only PostgreSQL supports it.
+
+
+https://www.cis.upenn.edu/~bcpierce/courses/629/jdkdocs/guide/jdbc/getstart/mapping.doc.html

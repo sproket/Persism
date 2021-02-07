@@ -9,6 +9,7 @@ import java.nio.file.Files;
 import java.sql.*;
 import java.text.NumberFormat;
 import java.time.LocalDate;
+import java.time.LocalTime;
 import java.util.*;
 import java.util.Date;
 
@@ -48,6 +49,164 @@ public class TestH2 extends BaseTest {
 
     protected void tearDown() throws Exception {
         super.tearDown();
+    }
+
+
+    @Override
+    protected void createTables() throws SQLException {
+        List<String> commands = new ArrayList<String>(12);
+        String sql;
+        if (UtilsForTests.isTableInDatabase("Orders", con)) {
+            sql = "DROP TABLE Orders";
+            commands.add(sql);
+        }
+
+        sql = "CREATE TABLE Orders ( " +
+                " ID IDENTITY PRIMARY KEY, " +
+                " NAME VARCHAR(30) NULL, " +
+                " PAID BIT NULL, " +
+                " Customer_ID VARCHAR(10) NULL, " +
+                " Created TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL, " +
+                " Date_Paid TIMESTAMP NULL, " +
+                " Date_Something TIMESTAMP NULL " +
+                ") ";
+
+        commands.add(sql);
+
+        if (UtilsForTests.isTableInDatabase("Customers", con)) {
+            commands.add("DROP TABLE Customers");
+        }
+
+        commands.add("CREATE TABLE Customers ( " +
+                " Customer_ID varchar(10) PRIMARY KEY NOT NULL, " +
+                " Company_Name VARCHAR(30) NULL, " +
+                " Contact_Name VARCHAR(30) NULL, " +
+                " Contact_Title VARCHAR(10) NULL, " +
+                " Address VARCHAR(40) NULL, " +
+                " City VARCHAR(30) NULL, " +
+                " Region VARCHAR(10) NULL, " +
+                " Postal_Code VARCHAR(10) NULL, " +
+                " Country VARCHAR(2) NOT NULL DEFAULT 'US', " +
+                " Phone VARCHAR(30) NULL, " +
+                " Fax VARCHAR(30) NULL, " +
+                " Status CHAR(1) NULL, " +
+                " Date_Registered datetime default current_timestamp, " +
+                " Date_Of_Last_Order datetime " +
+                ") ");
+
+        if (UtilsForTests.isTableInDatabase("Invoices", con)) {
+            commands.add("DROP TABLE Invoices");
+        }
+
+        commands.add("CREATE TABLE Invoices ( " +
+                " Invoice_ID IDENTITY PRIMARY KEY, " +
+                " Customer_ID varchar(10) NOT NULL, " +
+                " Paid BIT NOT NULL, " +
+                " Price NUMERIC(7,3) NOT NULL, " +
+                " Status INT DEFAULT 1, " +
+                " Quantity NUMERIC(10) NOT NULL, " +
+                " Total NUMERIC(10,3) NOT NULL, " +
+                " Discount NUMERIC(10,3) NOT NULL " +
+                ") ");
+
+
+        if (UtilsForTests.isTableInDatabase("TABLEMULTIPRIMARY", con)) {
+            commands.add("DROP TABLE TABLEMULTIPRIMARY");
+        }
+
+        if (UtilsForTests.isTableInDatabase("SavedGames", con)) {
+            commands.add("DROP TABLE SavedGames");
+        }
+
+        commands.add("CREATE TABLE TABLEMULTIPRIMARY ( " +
+                " OrderID INT NOT NULL, " +
+                " ProductID INT NOT NULL, " +
+                " UnitPrice DECIMAL NOT NULL, " +
+                " Quantity SMALLINT NOT NULL, " +
+                " Discount REAL NOT NULL " +
+                ") ");
+
+        commands.add("ALTER TABLE TABLEMULTIPRIMARY ADD PRIMARY KEY (OrderID, ProductID)");
+
+
+        commands.add("CREATE TABLE SavedGames ( " +
+                " ID INT IDENTITY PRIMARY KEY, " +
+                " Name VARCHAR(100), " +
+                " Timestamp TIMESTAMP NULL, " +
+                " Gold REAL NULL, " +
+                " Silver REAL NULL, " +
+                " Data TEXT NULL, " +
+                " WhatTimeIsIt Time NULL, " +
+                " SomethingBig BLOB NULL) ");
+
+        executeCommands(commands, con);
+
+        if (UtilsForTests.isTableInDatabase("Contacts", con)) {
+            executeCommand("DROP TABLE Contacts", con);
+        }
+
+        sql = "CREATE TABLE Contacts( " +
+                "   identity binary(16) NOT NULL PRIMARY KEY, " +  // test binary(16)
+                "   PartnerID varchar(36) NOT NULL, " + // test varchar(36)
+                "   Type char(2) NOT NULL, " +
+                "   Firstname varchar(50) NOT NULL, " +
+                "   Lastname varchar(50) NOT NULL, " +
+                "   ContactName varchar(50) NOT NULL, " +
+                "   Company varchar(50) NOT NULL, " +
+                "   Division varchar(50) NULL, " +
+                "   Email varchar(50) NULL, " +
+                "   Address1 varchar(50) NULL, " +
+                "   Address2 varchar(50) NULL, " +
+                "   City varchar(50) NULL, " +
+                "   StateProvince varchar(50) NULL, " +
+                "   ZipPostalCode varchar(10) NULL, " +
+                "   Country varchar(50) NULL, " +
+                "   DateAdded Date NULL, " +
+                "   LastModified DateTime NULL, " +
+                "   Notes text NULL, " +
+                "   AmountOwed REAL NULL, " +
+                "   WhatTimeIsIt TIME NULL) ";
+
+        executeCommand(sql, con);
+
+    }
+
+    @Override
+    public void testContactTable() throws SQLException {
+        UUID identity = UUID.randomUUID();
+        UUID partnerId = UUID.randomUUID();
+
+        Contact contact = new Contact();
+        contact.setIdentity(identity);
+        contact.setPartnerId(partnerId);
+        contact.setFirstname("Fred");
+        contact.setLastname("Flintstone");
+        contact.setDivision("DIVISION X");
+        contact.setLastModified(new Timestamp(System.currentTimeMillis() - 100000000l));
+        contact.setContactName("Fred Flintstone");
+        contact.setAddress1("123 Sesame Street");
+        contact.setAddress2("Appt #0 (garbage can)");
+        contact.setCompany("Grouch Inc");
+        contact.setCountry("US");
+        contact.setCity("Philly?");
+        contact.setType("X");
+        contact.setDateAdded(new java.sql.Date(System.currentTimeMillis()));
+        contact.setAmountOwed(100.23f);
+        contact.setNotes("B:AH B:AH VBLAH\r\n BLAH BLAY!");
+        contact.setWhatTimeIsIt(Time.valueOf(LocalTime.now()));
+        session.insert(contact);
+
+        Contact contact2 = new Contact();
+        contact2.setIdentity(identity);
+        assertTrue(session.fetch(contact2));
+        assertNotNull(contact2.getPartnerId());
+        assertEquals(contact2.getIdentity(), identity);
+        assertEquals(contact2.getPartnerId(), partnerId);
+
+        contact.setDivision("Y");
+        session.update(contact);
+
+        assertEquals("1?", 1, session.delete(contact));
     }
 
     public void testH2InsertAndReadBack() throws SQLException {
@@ -108,7 +267,7 @@ public class TestH2 extends BaseTest {
         customer.setContactName("fred flintstone");
         customer.setContactTitle("Lord");
         customer.setCountry("US");
-        customer.setDateRegistered(new java.sql.Date(System.currentTimeMillis()));
+        customer.setDateRegistered(new java.sql.Timestamp(System.currentTimeMillis()));
         customer.setFax("123-456-7890");
         customer.setPhone("456-678-1234");
         customer.setPostalCode("54321");
@@ -338,96 +497,6 @@ public class TestH2 extends BaseTest {
             Util.cleanup(st, rs);
         }
 
-    }
-
-
-    @Override
-    protected void createTables() throws SQLException {
-        List<String> commands = new ArrayList<String>(12);
-        String sql;
-        if (UtilsForTests.isTableInDatabase("Orders", con)) {
-            sql = "DROP TABLE Orders";
-            commands.add(sql);
-        }
-
-        sql = "CREATE TABLE Orders ( " +
-                " ID IDENTITY PRIMARY KEY, " +
-                " NAME VARCHAR(30) NULL, " +
-                " PAID BIT NULL, " +
-                " Customer_ID VARCHAR(10) NULL, " +
-                " Created TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL, " +
-                " Date_Paid TIMESTAMP NULL " +
-                ") ";
-
-        commands.add(sql);
-
-        if (UtilsForTests.isTableInDatabase("Customers", con)) {
-            commands.add("DROP TABLE Customers");
-        }
-
-        commands.add("CREATE TABLE Customers ( " +
-                " Customer_ID varchar(10) PRIMARY KEY NOT NULL, " +
-                " Company_Name VARCHAR(30) NULL, " +
-                " Contact_Name VARCHAR(30) NULL, " +
-                " Contact_Title VARCHAR(10) NULL, " +
-                " Address VARCHAR(40) NULL, " +
-                " City VARCHAR(30) NULL, " +
-                " Region VARCHAR(10) NULL, " +
-                " Postal_Code VARCHAR(10) NULL, " +
-                " Country VARCHAR(2) NOT NULL DEFAULT 'US', " +
-                " Phone VARCHAR(30) NULL, " +
-                " Fax VARCHAR(30) NULL, " +
-                " Status CHAR(1) NULL, " +
-                " Date_Registered datetime default current_timestamp, " +
-                " Date_Of_Last_Order datetime " +
-                ") ");
-
-        if (UtilsForTests.isTableInDatabase("Invoices", con)) {
-            commands.add("DROP TABLE Invoices");
-        }
-
-        commands.add("CREATE TABLE Invoices ( " +
-                " Invoice_ID IDENTITY PRIMARY KEY, " +
-                " Customer_ID varchar(10) NOT NULL, " +
-                " Paid BIT NOT NULL, " +
-                " Price NUMERIC(7,3) NOT NULL, " +
-                " Status INT DEFAULT 1, " +
-                " Quantity NUMERIC(10) NOT NULL, " +
-                " Total NUMERIC(10,3) NOT NULL, " +
-                " Discount NUMERIC(10,3) NOT NULL " +
-                ") ");
-
-
-        if (UtilsForTests.isTableInDatabase("TABLEMULTIPRIMARY", con)) {
-            commands.add("DROP TABLE TABLEMULTIPRIMARY");
-        }
-
-        if (UtilsForTests.isTableInDatabase("SavedGames", con)) {
-            commands.add("DROP TABLE SavedGames");
-        }
-
-        commands.add("CREATE TABLE TABLEMULTIPRIMARY ( " +
-                " OrderID INT NOT NULL, " +
-                " ProductID INT NOT NULL, " +
-                " UnitPrice DECIMAL NOT NULL, " +
-                " Quantity SMALLINT NOT NULL, " +
-                " Discount REAL NOT NULL " +
-                ") ");
-
-        commands.add("ALTER TABLE TABLEMULTIPRIMARY ADD PRIMARY KEY (OrderID, ProductID)");
-
-
-        commands.add("CREATE TABLE SavedGames ( " +
-                " ID INT IDENTITY PRIMARY KEY, " +
-                " Name VARCHAR(100), " +
-                " Timestamp TIMESTAMP NULL, " +
-                " Gold REAL NULL, " +
-                " Silver REAL NULL, " +
-                " Data TEXT NULL, " +
-                " WhatTimeIsIt Time NULL, " +
-                " SomethingBig BLOB NULL) ");
-
-        executeCommands(commands, con);
     }
 
     public void testVariousTypesLikeClobAndBlob() throws SQLException, IOException {

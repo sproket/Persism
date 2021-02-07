@@ -25,6 +25,7 @@ public final class ContactFail {
     private Date dateAdded;
     private Date lastModified;
 
+    private boolean fail; // extra property to fail since it's not in the DB and not marked @NotColumn
 
     public UUID getIdentity() {
         return identity;
@@ -162,7 +163,6 @@ public final class ContactFail {
         this.lastModified = lastModified;
     }
 
-    private boolean fail;
     public boolean isFail() {
         return fail;
     }

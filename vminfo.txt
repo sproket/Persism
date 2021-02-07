@@ -1,0 +1,26 @@
+Eventually I will build an OVA of a Linux box with all the DBs since Microsoft
+finally supports running MSSQL on Linux. Using CentOS 7 core.
+
+https://docs.microsoft.com/en-us/sql/linux/quickstart-install-connect-red-hat?view=sql-server-ver15
+
+pinf linux vm
+
+hostname pinf-centos
+
+
+root/pinf
+
+admin user pinf - no pw
+
+sql 
+sa Pinfp1nf
+db user pinf pinf 
+
+
+check disk space df --total
+
+
+Helpful with KVM switch ? is it really,,,,,,?
+
+VBoxManage setextradata "VM name" GUI/HidLedsSync "1" 
+

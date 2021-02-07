@@ -4,7 +4,7 @@ enum ConnectionTypes {
     Oracle("%", "\"", "\""),
     MSSQL(null, "[", "]"),
     JTDS(null, "[", "]"),
-    Derby(null, "", ""),
+    Derby(null, "\"", "\""),
     H2(null, "\"", "\""),
     MySQL(null, "`", "`"),
     PostgreSQL(null, "\"", "\""),

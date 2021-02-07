@@ -51,6 +51,10 @@ public class TestOracle extends BaseTest {
         createTables();
 
         session = new Session(con);
+
+        // Possible UUID
+        // https://www.reddit.com/r/java/comments/l9gv6d/announcing_persism_100_a_no_nonsense_orm_for_java/glwk625/
+
     }
 
 
@@ -58,8 +62,13 @@ public class TestOracle extends BaseTest {
         super.tearDown();
     }
 
+    @Override
+    public void testContactTable() throws SQLException {
+        // todo
+    }
 
     public void testInsert() throws Exception {
+
         OracleOrder order = (OracleOrder) DAOFactory.newOrder(con);
         order.setName("MOO");
         order.setPaid(true);
@@ -68,9 +77,13 @@ public class TestOracle extends BaseTest {
         try {
             session.insert(order);
         } catch (PersismException e) {
+            log.error("ANYTHING?", e);
             // net.sf.persism.PersismException: ORA-01722: invalid number
             // Anything is not a number. Really?
-            assertTrue("should contain invalid number", e.getMessage().contains("invalid number"));
+            // Changed this to handle inside Persism. So we now get NumberFormatException rather than passing it to the DB to error out.
+            assertNotNull("message should not be null?", e.getMessage());
+            //assertTrue("should contain invalid number", e.getMessage().contains("invalid number"));
+            assertTrue("should contain NumberFormatException", e.getMessage().contains("NumberFormatException"));
         }
 
         order.setBit2("1");
@@ -185,6 +198,7 @@ end;
                 "\"PAID\" NUMBER(3), " +
                 "\"CREATED\" DATE DEFAULT CURRENT_TIMESTAMP, " +
                 "\"DATE_PAID\" DATE, " +
+                "\"DATE_SOMETHING\" DATE, " +
                 "\"BIT1\" CHAR(1), " + // BIT TEST
                 "\"BIT2\" NUMBER(3), " + // BIT TEST
                 " CONSTRAINT \"ORDERS_PK\" PRIMARY KEY (\"ID\") ENABLE" +

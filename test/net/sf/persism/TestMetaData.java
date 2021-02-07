@@ -75,6 +75,11 @@ public final class TestMetaData extends BaseTest {
         executeCommands(commands, con);
     }
 
+    @Override
+    public void testContactTable() throws SQLException {
+        // probably don't need anything here.
+    }
+
     public void testGuessing() throws SQLException {
 
         // catch the 2 guess exceptions
