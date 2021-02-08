@@ -118,11 +118,16 @@ session.delete(customer); // Delete Customer
 ```
 
 Persism will use the primary keys for the update and delete methods and will set the primary key 
-for you if it is and autoincrement when you do an insert. 
+for you if it's an autoincrement when you do an insert. 
 
-Persism will usually auto-discover the primary keys, so you usually do not have to specify them 
-in your POJO. Persism will also set defaults to properties if they were not defined and there's 
-a default defined for that mapped column in the database.
+## Defaults and Primary Keys
+
+Persism will usually discover primary keys, so you usually do not have to specify them 
+in your POJO with Annotations. Persism will also set defaults to properties if they were 
+not set and there's a default defined for that mapped column in the database.
+
+**Note:** Wherever you have defaults you should not use primitve types since there's no way to 
+detect NULL. Best practice is to use Object types for these cases.
 
 ## Writing Data Objects (POJOs)
 
@@ -341,7 +346,7 @@ customer.setOrders(orders);
 |  byte[]    | BLOB  | Binary large objects will be read as a byte array |
 |  String  | CHAR, VARCHAR, NVARCHAR, TEXT, CLOB  | Large or small char types map to String |
 |  enum  | VARCHAR and similar  | Enum types are stored and read back as a String type and then converted |
-|  UUID  | VARCHAR and similar  | UUID types are read as String types and then converted |
+|  UUID  | VARCHAR, BINARY(16) or Native (PostgreSQL or MSSQL only)  | UUID types are read as String types and then converted |
 |  Time, Timestamp, util.Date, sql.Date, LocalDate, LocalDateTime  | various DATE, DATETIME (specific to vendor) | Date types are generally read as sql.Timestamp and converted as appropriate |
 
 **Note:** Although Java primitive types like int, float, double, boolean are fully supported you should use 
@@ -363,78 +368,84 @@ DATALINK    = 70
 ROWID       = -8
 SQLXML      = 2009
 
-- also the Microsoft specific DateTimeOffset ( -155? ) is not supported 
+- Microsoft specific DateTimeOffset ( -155 )
 ```
 
 ## Warning and Error Messages 
 
 ### Warnings
 
-> Column is annotated as autoIncrement but is a non-numeric type - Ignoring.
+**Column is annotated as autoIncrement but is a non-numeric type - Ignoring.**
 
-Occurs if you happen to annotate a String or other type as an autoincrement value.
+> Occurs if you happen to annotate a String or other type as an autoincrement value.
 
-> Unknown connection type. Please contact Persism to add support.
+**Unknown connection type. Please contact Persism to add support.**
 
-Occurs if you are using an unknown JDBC connection - Persism should work fine as long as it's JDBC compliant. 
+> Occurs if you are using an unknown JDBC connection - Persism should work fine as long as it's JDBC compliant. 
 Ping me - I'll add it and add some unit tests.  
 
-> Property not found for column on class.
+**Property not found for column 'X' on class 'Z'.**
 
-Occurs if you have a column in your database table where you have no associated property.
+> Occurs if you have a column in your database table where you have no associated property.
 
+**No primary key found for table. Do not use with update/delete/fetch or add a primary key.**
 
-> No primary key found for table. Do not use with update/delete/fetch or add a primary key.
+> Occurs in cases where Persism detects a table with no primary key. 
+> This kind of table could only be used by Persism for querying. 
 
-Occurs in cases where Persism detects a table with no primary key. 
-This kind of table could only be used by Persism for querying. 
+**TRUNCATION with Column: 'column name' for table: 'table name'.**
 
-> TRUNCATION with Column: 'column name' for table: 'table name'.
+> Occurs if you have a String value too wide for the associated column in the database.
 
-Occurs if you have a String value too wide for the associated column in the database.
+**Column type not known for SQL type** 
 
-> Column type not known for SQL type 
-
-Occurs when querying data where the SQL type read is not defined in ```java.sql.Types```. 
+> Occurs when querying data where the SQL type read is not defined in ```java.sql.Types```. 
 It will be treated by Persim as Object type.   
 
-> Conversion: Unknown Persism type 'class name' - no conversion performed.
+**Conversion: Unknown Persism type 'class name' - no conversion performed.**
 
-This can occur in cases where Persism doesn't know about a type defined in ```java.sql.Types```. 
-See [unsupported types](#unsupported-sql-types)
+> Occurs in cases where Persism doesn't know about a type defined in ```java.sql.Types```. 
+> See [unsupported types](#unsupported-sql-types)
+
+
+**Property X for column Y should be an Object type to properly detect NULL for defaults (change it from the primitive type to its Boxed version).**
+
+> This occurs if you have a default on a column in your database but you use a primitive (int, float, double, etc) for 
+> the property on your POJO class. You should use the boxed version (Integer, Float, Double, etc) in order to detect NULL.
+> Otherwise the default would never be set. 
 
 
 ### Errors
 
 Below is the list of specific Exceptions Persism may throw.
 
-> Could not determine a table for type: 'POJO class name' Guesses were: 'list of guesses' 
+**Could not determine a table for type: 'POJO class name' Guesses were: 'list of guesses'** 
 
-This occurs when Persism cannot determine the table name in the database from the POJO class name. 
+> This occurs when Persism cannot determine the table name in the database from the POJO class name. 
 You can resolve this by adding an annotation to specify the table name.  
 
 
-> Cannot perform UPDATE/FETCH/DELETE - 'table name' has no primary keys.
+**Cannot perform UPDATE/FETCH/DELETE - 'table name' has no primary keys.**
 
-This occurs when Persism is attempting an operation on the database that requires a primary be defined.
+> This occurs when Persism is attempting an operation on the database that requires a primary be defined for the table.
 
-> Non-auto inc generated primary keys are not supported. Please assign your primary key value before performing an insert.
+**Non-auto inc generated primary keys are not supported. Please assign your primary key value before performing an insert.**
 
-This occurs if you INSERT and have a String type (CHAR or UUID etc) as a primary and you are attempting to assign it 
+> This occurs if you INSERT and have a String type (CHAR or UUID etc) as a primary and you are attempting to assign it 
 from a default in the database. Currently, retrieving this value back from the database in not supported by JDBC. 
 It is possible to do this in database specific ways but not possible with some databases. To resolve this make sure to 
-assign your primary keys values from Java in these cases.  
+assign your primary keys values from Java in these cases. **Note:** This only works with PostgreSQL. 
 
 
-> Object 'POJO class name' was not properly initialized. Some properties not initialized in the queried columns ('list of missing columns')
+**Object 'POJO class name' was not properly initialized. Some properties not initialized in the queried columns ('list of missing columns')**
  
-Persism throws this exception because your POJO would not be properly initialized if you miss some columns in your query.
+> Persism throws this exception because your POJO would not be properly initialized if you miss some columns in your query.
 This could cause NullPointerExceptions in your code. Either include all columns (or use ```SELECT *```) or annotate 
-the propertiy in you class with *@NotColumn*.
+the property in you class with *@NotColumn*.
 
-> Parse Exception 
+**Parse Exceptions** 
 
-This can occur in specific cases where the JDBC returns a Date type as a String. The format used to convert it to 
+> This can occur in specific cases where the JDBC returns a Date type as a String. The format used to convert it to 
 a date type is ```yyyy-MM-dd hh:mm:ss``` for DateTime types and ```yyyy-MM-dd``` for Date types.
 
 
