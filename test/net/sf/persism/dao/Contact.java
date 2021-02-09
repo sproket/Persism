@@ -2,11 +2,11 @@ package net.sf.persism.dao;
 
 import net.sf.persism.PersismException;
 import net.sf.persism.Persistable;
-import net.sf.persism.annotations.Column;
 
 import java.sql.Date;
 import java.sql.Time;
 import java.sql.Timestamp;
+import java.time.Instant;
 import java.util.UUID;
 
 /**
@@ -36,6 +36,8 @@ public final class Contact implements Persistable<Contact> {
     private float amountOwed;
     private String notes;
     private Time whatTimeIsIt;
+    private Instant testInstant;
+    private Instant testInstant2;
 
     // for persistable
     private Contact originalValue;
@@ -192,6 +194,30 @@ public final class Contact implements Persistable<Contact> {
         this.whatTimeIsIt = whatTimeIsIt;
     }
 
+    public String getNotes() {
+        return notes;
+    }
+
+    public void setNotes(String notes) {
+        this.notes = notes;
+    }
+
+    public Instant getTestInstant() {
+        return testInstant;
+    }
+
+    public void setTestInstant(Instant testInstant) {
+        this.testInstant = testInstant;
+    }
+
+    public Instant getTestInstant2() {
+        return testInstant2;
+    }
+
+    public void setTestInstant2(Instant testInstant2) {
+        this.testInstant2 = testInstant2;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) {
@@ -316,18 +342,10 @@ public final class Contact implements Persistable<Contact> {
         return originalValue;
     }
 
-    public String getNotes() {
-        return notes;
-    }
-
-    public void setNotes(String notes) {
-        this.notes = notes;
-    }
-
     @Override
-    public final Contact clone()  {
+    public Contact clone() {
         try {
-            return (Contact)super.clone();
+            return (Contact) super.clone();
         } catch (CloneNotSupportedException e) {
             throw new PersismException(e.getMessage(), e);
         }

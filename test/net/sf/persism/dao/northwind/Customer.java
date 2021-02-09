@@ -27,8 +27,11 @@ public final class Customer {
     private String fax;
     private java.util.Date dateOfLastResort;
     private Date dateOfDoom;
+    // TODO Does not work with JTDS and can't be parsed right now - Do with other zone related issues
+    @NotColumn
     private LocalDateTime dateOfOffset; // this is a DateTimeOffset in the DB - KEEP to test for normal DateTime or double check because we use this with DB retuning the type as VARCHAR
-    @NotColumn //todo Instant not yet supported
+    private LocalDateTime testLocalDateTime;
+
     private Instant nowMF;
 
     private String wtfDate;
@@ -159,6 +162,14 @@ public final class Customer {
 
     public void setWtfDate(String wtfDate) {
         this.wtfDate = wtfDate;
+    }
+
+    public LocalDateTime getTestLocalDateTime() {
+        return testLocalDateTime;
+    }
+
+    public void setTestLocalDateTime(LocalDateTime testLocalDateTime) {
+        this.testLocalDateTime = testLocalDateTime;
     }
 
     @Override

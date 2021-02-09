@@ -1,18 +1,12 @@
 package net.sf.persism;
 
-import net.sf.persism.dao.Contact;
-
 import java.sql.DriverManager;
 import java.sql.SQLException;
-import java.sql.Time;
-import java.sql.Timestamp;
-import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
-import java.util.UUID;
 
-public class TestHSQLDB extends BaseTest {
+public final class TestHSQLDB extends BaseTest {
 
     private static final Log log = Log.getLogger(TestHSQLDB.class);
 
@@ -32,14 +26,10 @@ public class TestHSQLDB extends BaseTest {
 
         con = new net.sf.log4jdbc.ConnectionSpy(con);
 
-        createTables();
+        createTables(ConnectionTypes.HSQLDB);
 
         session = new Session(con);
 
-    }
-
-    public void testAnything() {
-        log.info("HELLO HSQLDB!");
     }
 
     @Override
@@ -48,7 +38,13 @@ public class TestHSQLDB extends BaseTest {
     }
 
     @Override
-    protected void createTables() throws SQLException {
+    public void testContactTable() throws SQLException {
+        super.testContactTable();
+        assertTrue(true);
+    }
+
+    @Override
+    protected void createTables(ConnectionTypes connectionType) throws SQLException {
         List<String> commands = new ArrayList<>(12);
         String sql;
 
@@ -178,49 +174,15 @@ public class TestHSQLDB extends BaseTest {
                 "   LastModified DateTime NULL, " +
                 "   Notes Clob NULL, " +
                 "   AmountOwed REAL NULL, " +
+                "   TestInstant DateTime NULL, " +
+                "   TestInstant2 DateTime NULL, " +
                 "   WhatTimeIsIt TIME NULL) ";
 
         executeCommand(sql, con);
-
-
     }
 
-    @Override
-    public void testContactTable() throws SQLException {
-        // todo move to base it's all the same
-        UUID identity = UUID.randomUUID();
-        UUID partnerId = UUID.randomUUID();
-
-        Contact contact = new Contact();
-        contact.setIdentity(identity);
-        contact.setPartnerId(partnerId);
-        contact.setFirstname("Fred");
-        contact.setLastname("Flintstone");
-        contact.setDivision("DIVISION X");
-        contact.setLastModified(new Timestamp(System.currentTimeMillis() - 100000000l));
-        contact.setContactName("Fred Flintstone");
-        contact.setAddress1("123 Sesame Street");
-        contact.setAddress2("Appt #0 (garbage can)");
-        contact.setCompany("Grouch Inc");
-        contact.setCountry("US");
-        contact.setCity("Philly?");
-        contact.setType("X");
-        contact.setDateAdded(new java.sql.Date(System.currentTimeMillis()));
-        contact.setAmountOwed(100.23f);
-        contact.setNotes("B:AH B:AH VBLAH\r\n BLAH BLAY!");
-        contact.setWhatTimeIsIt(Time.valueOf(LocalTime.now()));
-        session.insert(contact);
-
-        Contact contact2 = new Contact();
-        contact2.setIdentity(identity);
-        assertTrue(session.fetch(contact2));
-        assertNotNull(contact2.getPartnerId());
-        assertEquals(contact2.getIdentity(), identity);
-        assertEquals(contact2.getPartnerId(), partnerId);
-
-        contact.setDivision("Y");
-        session.update(contact);
-
-        assertEquals("1?", 1, session.delete(contact));
+    public void testAnything() {
+        log.info("HELLO HSQLDB!");
     }
+
 }

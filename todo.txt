@@ -38,8 +38,6 @@ http://eikke.com/importing-a-git-tree-into-a-subversion-repository/
 ADD Firebird? Done.
 Add Sybase DB2 Ingres Informix hsqldb? .....
 
-TODO Note for next release. Renamed Command executeSQL to execute - made package private
-
 TODO Handle X words Tax - Taxes, Fax - Faxes - plural rules
 
 todo     @Column(name = "IsCompound") - yeah we do a simple "is" check but I need to think about this. See determinePropertyInfo

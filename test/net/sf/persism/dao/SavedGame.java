@@ -19,6 +19,7 @@ public final class SavedGame extends PersistableObject<SavedGame> {
     private String data;
     private float gold;
     private int silver;
+    private long copper;
     private byte[] somethingBig;
     private Time whatTimeIsIt;
 
@@ -88,5 +89,13 @@ public final class SavedGame extends PersistableObject<SavedGame> {
 
     public void setWhatTimeIsIt(Time whatTimeIsIt) {
         this.whatTimeIsIt = whatTimeIsIt;
+    }
+
+    public long getCopper() {
+        return copper;
+    }
+
+    public void setCopper(long copper) {
+        this.copper = copper;
     }
 }

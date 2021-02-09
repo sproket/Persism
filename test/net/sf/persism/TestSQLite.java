@@ -13,12 +13,11 @@ import java.sql.*;
 import java.sql.Date;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.time.LocalTime;
 import java.util.*;
 
 import static net.sf.persism.UtilsForTests.*;
 
-public class TestSQLite extends BaseTest {
+public final class TestSQLite extends BaseTest {
 
     // data types
     // http://sqlite.org/datatype3.html
@@ -28,6 +27,7 @@ public class TestSQLite extends BaseTest {
 
     String home;
 
+    @Override
     protected void setUp() throws Exception {
         super.setUp();
 
@@ -35,6 +35,7 @@ public class TestSQLite extends BaseTest {
         props.load(getClass().getResourceAsStream("/sqlite.properties"));
         Class.forName(props.getProperty("database.driver"));
 
+        log.error("SQLite DLL HERE: " + System.getProperty("java.io.tmpdir"));
         home = createHomeFolder("pinfsqlite");
         String url = replace(props.getProperty("database.url"), "{$home}", home);
         log.info(url);
@@ -44,14 +45,116 @@ public class TestSQLite extends BaseTest {
         con = new net.sf.log4jdbc.ConnectionSpy(con);
 
 
-        createTables();
+        createTables(ConnectionTypes.SQLite);
 
         session = new Session(con);
     }
 
 
+    @Override
     protected void tearDown() throws Exception {
         super.tearDown();
+    }
+
+    @Override
+    public void testContactTable() throws SQLException {
+        super.testContactTable();
+        assertTrue(true);
+    }
+
+    @Override
+    protected void createTables(ConnectionTypes connectionType) throws SQLException {
+
+        Statement st = null;
+        List<String> commands = new ArrayList<String>(3);
+        if (isTableInDatabase("Orders", con)) {
+
+            //st.execute("TRUNCATE TABLE Orders");  next to lines are the equivalent
+            //commands.add("DELETE FROM Orders");
+            //commands.add("DELETE FROM SQLITE_SEQUENCE WHERE NAME = 'Orders'");
+            commands.add("DROP TABLE Orders");
+
+        }
+        commands.add("CREATE TABLE Orders ( " +
+                " ID INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT UNIQUE, " +
+                " NAME VARCHAR(30) NULL, " +
+                " ROW_ID VARCHAR(30) NULL, " +
+                " Customer_ID VARCHAR(10) NULL, " +
+                " PAID BIT NULL, " +
+                " CREATED datetime DEFAULT CURRENT_TIMESTAMP, " +
+                " DATE_PAID datetime NULL, " +
+                " DATE_SOMETHING datetime NULL" +
+                ") ");
+
+
+        if (isTableInDatabase("Customers", con)) {
+            commands.add("DROP TABLE Customers");
+        }
+
+        commands.add("CREATE TABLE Customers ( " +
+                " Customer_ID varchar(10) PRIMARY KEY UNIQUE NOT NULL, " +
+                " Company_Name VARCHAR(30) NULL, " +
+                " Contact_Name VARCHAR(30) NULL, " +
+                " Contact_Title VARCHAR(10) NULL, " +
+                " Address VARCHAR(40) NULL, " +
+                " City VARCHAR(30) NULL, " +
+                " Region VARCHAR(10) NULL, " +
+                " Postal_Code VARCHAR(10) NULL, " +
+                " Country VARCHAR(2) NULL, " +
+                " Phone VARCHAR(30) NULL, " +
+                " STATUS CHAR(1) NULL, " +
+                " Fax VARCHAR(30) NULL, " +
+                " Date_Registered datetime default  (datetime('now','localtime')), " +
+                " Date_Of_Last_Order datetime " +
+                ") ");
+
+        if (isTableInDatabase("TABLENOPRIMARY", con)) {
+            commands.add("DROP TABLE TABLENOPRIMARY");
+        }
+
+        // WHY TF does this not throw an exception????? ANY TYPE?
+        // Need to review best practices for SQLite http://www.sqlite.org/datatype3.html
+        commands.add("CREATE TABLE TABLENOPRIMARY ( " +
+                " ID INT, " +
+                " Name VARCHAR(30), " +
+                " Field4 VARCHAR(30), " +
+                " Field5 DATETIME, " +
+                " Field6 SHITE, " +
+                " Field7 FACK, " +
+                " Field8 COWABUNGA " +
+                ") ");
+
+        executeCommands(commands, con);
+
+        if (isTableInDatabase("CONTACTS", con)) {
+            executeCommand("DROP TABLE CONTACTS", con);
+        }
+
+        String sql = "CREATE TABLE CONTACTS ( " +
+                " identity VARCHAR(36) PRIMARY KEY UNIQUE NOT NULL, " +
+                " PartnerID BLOB NOT NULL, " +
+                " Type char(2) NOT NULL, " +
+                " Firstname varchar(50) NULL, " +
+                " Lastname varchar(50) NULL, " +
+                " ContactName varchar(50) NULL, " +
+                " Company varchar(50) NULL, " +
+                " Division varchar(50) NULL, " +
+                " Email varchar(50) NULL, " +
+                " Address1 varchar(50) NULL, " +
+                " Address2 varchar(50) NULL, " +
+                " City varchar(50) NULL, " +
+                " StateProvince varchar(50) NULL, " +
+                " ZipPostalCode varchar(10) NULL, " +
+                " Country varchar(50) NULL, " +
+                " DateAdded TIMESTAMP NULL, " + // was DATETIME
+                " LastModified DATETIME NULL, " +
+                " Notes text NULL, " +
+                " AmountOwed float NULL, " +
+                " TestInstant TIMESTAMP NULL, " +    // DATETIME reads LONG for this FFS. TODO TEST AFTER WTF IS TIMESTAMP IN SQLITE?
+                " TestInstant2 DATETIME NULL, " +  // TIMESTAMP reads STRING for this FFS. TODO TEST AFTER WTF IS TIMESTAMP IN SQLITE?
+                " WhatTimeIsIt time NULL " +
+                ") ";
+        executeCommand(sql, con);
     }
 
     public void testOrders() throws Exception {
@@ -421,139 +524,5 @@ public class TestSQLite extends BaseTest {
     }
 
 
-    @Override
-    protected final void createTables() throws SQLException {
 
-        Statement st = null;
-        List<String> commands = new ArrayList<String>(3);
-        if (isTableInDatabase("Orders", con)) {
-
-            //st.execute("TRUNCATE TABLE Orders");  next to lines are the equivalent
-            //commands.add("DELETE FROM Orders");
-            //commands.add("DELETE FROM SQLITE_SEQUENCE WHERE NAME = 'Orders'");
-            commands.add("DROP TABLE Orders");
-
-        }
-        commands.add("CREATE TABLE Orders ( " +
-                " ID INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT UNIQUE, " +
-                " NAME VARCHAR(30) NULL, " +
-                " ROW_ID VARCHAR(30) NULL, " +
-                " Customer_ID VARCHAR(10) NULL, " +
-                " PAID BIT NULL, " +
-                " CREATED datetime DEFAULT CURRENT_TIMESTAMP, " +
-                " DATE_PAID datetime NULL, " +
-                " DATE_SOMETHING datetime NULL" +
-                ") ");
-
-
-        if (isTableInDatabase("Customers", con)) {
-            commands.add("DROP TABLE Customers");
-        }
-
-        commands.add("CREATE TABLE Customers ( " +
-                " Customer_ID varchar(10) PRIMARY KEY UNIQUE NOT NULL, " +
-                " Company_Name VARCHAR(30) NULL, " +
-                " Contact_Name VARCHAR(30) NULL, " +
-                " Contact_Title VARCHAR(10) NULL, " +
-                " Address VARCHAR(40) NULL, " +
-                " City VARCHAR(30) NULL, " +
-                " Region VARCHAR(10) NULL, " +
-                " Postal_Code VARCHAR(10) NULL, " +
-                " Country VARCHAR(2) NULL, " +
-                " Phone VARCHAR(30) NULL, " +
-                " STATUS CHAR(1) NULL, " +
-                " Fax VARCHAR(30) NULL, " +
-                " Date_Registered datetime default  (datetime('now','localtime')), " +
-                " Date_Of_Last_Order datetime " +
-                ") ");
-
-        if (isTableInDatabase("TABLENOPRIMARY", con)) {
-            commands.add("DROP TABLE TABLENOPRIMARY");
-        }
-
-        // WHY TF does this not throw an exception????? ANY TYPE?
-        // Need to review best practices for SQLite http://www.sqlite.org/datatype3.html
-        commands.add("CREATE TABLE TABLENOPRIMARY ( " +
-                " ID INT, " +
-                " Name VARCHAR(30), " +
-                " Field4 VARCHAR(30), " +
-                " Field5 DATETIME, " +
-                " Field6 SHITE, " +
-                " Field7 FACK, " +
-                " Field8 COWABUNGA " +
-                ") ");
-
-        executeCommands(commands, con);
-
-        if (isTableInDatabase("CONTACTS", con)) {
-            executeCommand("DROP TABLE CONTACTS", con);
-        }
-
-        String sql = "CREATE TABLE CONTACTS ( " +
-                " identity VARCHAR(36) PRIMARY KEY UNIQUE NOT NULL, " +
-                " PartnerID BLOB NOT NULL, " +
-                " Type char(2) NOT NULL, " +
-                " Firstname varchar(50) NULL, " +
-                " Lastname varchar(50) NULL, " +
-                " ContactName varchar(50) NULL, " +
-                " Company varchar(50) NULL, " +
-                " Division varchar(50) NULL, " +
-                " Email varchar(50) NULL, " +
-                " Address1 varchar(50) NULL, " +
-                " Address2 varchar(50) NULL, " +
-                " City varchar(50) NULL, " +
-                " StateProvince varchar(50) NULL, " +
-                " ZipPostalCode varchar(10) NULL, " +
-                " Country varchar(50) NULL, " +
-                " DateAdded timestamp NULL, " +
-                " LastModified datetime NULL, " +
-                " Notes text NULL, " +
-                " AmountOwed float NULL, " +
-                " WhatTimeIsIt time NULL " +
-                ") ";
-        executeCommand(sql, con);
-    }
-
-    @Override
-    public void testContactTable() throws SQLException {
-
-        UUID identity = UUID.randomUUID();
-        UUID partnerId = UUID.randomUUID();
-
-        // Insert specify GUID
-        Contact contact = new Contact();
-        contact.setIdentity(identity);
-        contact.setPartnerId(partnerId);
-        contact.setFirstname("Fred");
-        contact.setLastname("Flintstone");
-        contact.setDivision("DIVISION X");
-        contact.setLastModified(new Timestamp(System.currentTimeMillis() - 100000000l));
-        contact.setContactName("Fred Flintstone");
-        contact.setAddress1("123 Sesame Street");
-        contact.setAddress2("Appt #0 (garbage can)");
-        contact.setCompany("Grouch Inc");
-        contact.setCountry("US");
-        contact.setCity("Philly?");
-        contact.setType("X");
-        contact.setDateAdded(new Date(System.currentTimeMillis()));
-        contact.setAmountOwed(100.23f);
-        contact.setNotes("B:AH B:AH VBLAH\r\n BLAH BLAY!");
-        contact.setWhatTimeIsIt(Time.valueOf(LocalTime.now()));
-        session.insert(contact);
-
-        log.info("contact after insert: " + contact);
-        assertNotNull("should not be null identity", contact.getIdentity());
-
-        assertTrue("should fetch", session.fetch(contact));
-
-        assertEquals("identity s/b =", identity, contact.getIdentity());
-        assertEquals("partnerId s/b =", partnerId, contact.getPartnerId());
-
-
-        contact.setDivision("DIVISION Y");
-        session.update(contact);
-
-        session.delete(contact);
-
-    }
 }

@@ -10,6 +10,7 @@ import java.sql.*;
 import java.text.DecimalFormat;
 import java.time.Instant;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.List;
 import java.util.Properties;
 
@@ -351,7 +352,7 @@ public class TestNorthwind extends TestCase {
 
     }
 
-    public void testQueryWithSpecificColumnsWhereCaseDoesNotMatch() throws SQLException {
+    public void testQueryWithSpecificColumnsWhereCaseDoesNotMatch() throws SQLException, InterruptedException {
 
         log.info("testQueryWithSpecificColumnsWhereCaseDoesNotMatch with : " + con.getMetaData().getURL());
 
@@ -372,12 +373,18 @@ public class TestNorthwind extends TestCase {
         customer.setDateOfDoom(new Date(System.currentTimeMillis()));
         customer.setDateOfOffset(LocalDateTime.now());
         customer.setDateOfLastResort(new Date(System.currentTimeMillis()));
-        customer.setNowMF(Instant.now()); // todo Instant support
+        customer.setTestLocalDateTime(LocalDateTime.now(ZoneId.systemDefault()));
+        customer.setNowMF(Instant.now());
         customer.setWtfDate("1998-02-17 10:43:22");
         session.delete(customer); // in case it already exists.
         session.insert(customer);
-
+        Thread.sleep(100l);
         customer.setRegion("North");
+        customer.setDateOfDoom(new Date(System.currentTimeMillis()));
+        customer.setDateOfOffset(LocalDateTime.now());
+        customer.setDateOfLastResort(new Date(System.currentTimeMillis()));
+        customer.setNowMF(Instant.now());
+        customer.setWtfDate("1999-02-17 10:43:22");
         session.update(customer);
 
         customer.setRegion(null);
@@ -398,7 +405,7 @@ public class TestNorthwind extends TestCase {
         assertTrue("Should not be able to read fields if there are missing properties", failOnMissingProperties);
 
         // Make sure all columns are NOT the CASE of the ones in the DB.
-        List<Customer> list = session.query(Customer.class, "SELECT companyNAME, contacttitle, pHone, rEGion, postalCODE, FAX, ADDress, CUStomerid, conTacTname, coUntry, cIty, DAteOfLastResort,DATEOFDOOM, daTeoFOFFSET, wtfDATE  from CuStOMeRS WHERE CustomerID='MOo'");
+        List<Customer> list = session.query(Customer.class, "SELECT companyNAME, contacttitle, pHone, rEGion, postalCODE, FAX, ADDress, CUStomerid, conTacTname, coUntry, cIty, DAteOfLastResort,DATEOFDOOM, wtfDATE, nowMF, TESTLocalDateTime  from CuStOMeRS WHERE CustomerID='MOo'");
 
         log.info(list);
         assertEquals("list should be 1", 1, list.size());
@@ -414,8 +421,8 @@ public class TestNorthwind extends TestCase {
         } catch (PersismException e) {
             log.info(e.getMessage());
             shouldFail = true;
-            assertEquals("s/b 'Unparseable date: \"WHY WOULD YOU DO THIS?\". Column: wtfDate Target Conversion: class java.sql.Timestamp - Type read: class java.lang.String VALUE: WHY WOULD YOU DO THIS?'",
-                    "Unparseable date: \"WHY WOULD YOU DO THIS?\". Column: wtfDate Target Conversion: class java.sql.Timestamp - Type read: class java.lang.String VALUE: WHY WOULD YOU DO THIS?",
+            assertEquals("s/b 'Timestamp format must be yyyy-mm-dd hh:mm:ss[.fffffffff]. Column: wtfDate Target Conversion: class java.sql.Timestamp - Type read: class java.lang.String VALUE: WHY WOULD YOU DO THIS?'",
+                    "Timestamp format must be yyyy-mm-dd hh:mm:ss[.fffffffff]. Column: wtfDate Target Conversion: class java.sql.Timestamp - Type read: class java.lang.String VALUE: WHY WOULD YOU DO THIS?",
                     e.getMessage());
         }
         assertTrue(shouldFail);

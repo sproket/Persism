@@ -27,7 +27,7 @@ public final class TestMetaData extends BaseTest {
 
         con = DriverManager.getConnection(url);
 
-        createTables();
+        createTables(ConnectionTypes.Other);
 
         session = new Session(con);
 
@@ -38,7 +38,7 @@ public final class TestMetaData extends BaseTest {
     }
 
     @Override
-    protected void createTables() throws SQLException {
+    protected void createTables(ConnectionTypes connectionType) throws SQLException {
         List<String> commands = new ArrayList<String>(12);
         String sql;
         if (UtilsForTests.isTableInDatabase("TestDerby", con)) {

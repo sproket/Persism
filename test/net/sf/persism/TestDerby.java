@@ -7,6 +7,7 @@ import net.sf.persism.dao.Order;
 
 import java.sql.*;
 import java.sql.Date;
+import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.*;
@@ -17,7 +18,7 @@ import java.util.*;
  * @author danhoward
  * @since 12-05-22 8:26 AM
  */
-public class TestDerby extends BaseTest {
+public final class TestDerby extends BaseTest {
 
     private static final Log log = Log.getLogger(TestDerby.class);
 
@@ -39,7 +40,7 @@ public class TestDerby extends BaseTest {
         con = new net.sf.log4jdbc.ConnectionSpy(con);
 
 
-        createTables();
+        createTables(ConnectionTypes.Derby);
 
         session = new Session(con);
 
@@ -50,84 +51,14 @@ public class TestDerby extends BaseTest {
         super.tearDown();
     }
 
-    public void testTypes() {
-        Statement st = null;
-        ResultSet rs = null;
-        try {
-
-            st = con.createStatement();
-
-            DatabaseMetaData dbmd = con.getMetaData();
-            log.info(dbmd.getDatabaseProductName() + " " + dbmd.getDatabaseProductVersion());
-
-            rs = st.executeQuery("SELECT * FROM Orders WHERE 1=0");
-            log.info("FIRST? " + rs.next());
-            // Grab all columns and make first pass to detect primary auto-inc
-            ResultSetMetaData rsMetaData = rs.getMetaData();
-            for (int i = 1; i <= rsMetaData.getColumnCount(); i++) {
-                log.info(rsMetaData.getColumnName(i) + " " + rsMetaData.isAutoIncrement(i) + " " + rsMetaData.getColumnType(i));
-            }
-            rs.close();
-
-            Customer customer = new Customer();
-            customer.setCustomerId("123");
-            customer.setContactName("FRED");
-            session.insert(customer);
-
-
-            session.fetch(customer);
-
-            Map<String, ColumnInfo> columns = session.getMetaData().getColumns(Customer.class, con);
-            for (ColumnInfo columnInfo : columns.values()) {
-                log.info(columnInfo);
-                assertNotNull("type should not be null", columnInfo.columnType);
-            }
-
-            Order order = DAOFactory.newOrder(con);;
-            order.setCustomerId("123");
-            order.setName("name");
-            order.setCreated(LocalDate.now());
-            order.setPaid(true);
-
-            session.insert(order);
-            session.fetch(order);
-
-            log.info("ORDER:" + order);
-            Order order2 = DAOFactory.newOrder(con);
-            order2.setCustomerId("123");
-            order2.setName("name");
-            order2.setPaid(true);
-            session.insert(order2);
-            session.fetch(order2);
-
-            assertNotNull("date should be defaulted?", order2.getCreated());
-
-
-            columns = session.getMetaData().getColumns(Order.class, con);
-            for (ColumnInfo columnInfo : columns.values()) {
-                log.info(columnInfo);
-                assertNotNull("type should not be null", columnInfo.columnType);
-            }
-
-            // look at meta data columsn
-            columns = session.getMetaData().getColumns(Order.class, con);
-            for (ColumnInfo columnInfo : columns.values()) {
-                log.info(columnInfo);
-                assertNotNull("type should not be null", columnInfo.columnType);
-            }
-
-
-        } catch (SQLException e) {
-            log.error(e.getMessage(), e);
-            fail(e.getMessage());
-
-        } finally {
-            Util.cleanup(st, rs);
-        }
+    @Override
+    public void testContactTable() throws SQLException {
+        super.testContactTable();
+        assertTrue(true);
     }
 
     @Override
-    protected void createTables() throws SQLException {
+    protected void createTables(ConnectionTypes connectionType) throws SQLException {
         List<String> commands = new ArrayList<String>(12);
         String sql;
         if (UtilsForTests.isTableInDatabase("Orders", con)) {
@@ -222,49 +153,88 @@ public class TestDerby extends BaseTest {
                 "   LastModified Timestamp,  " +
                 "   Notes Clob,  " +
                 "   AmountOwed REAL,  " +
+                "   TestINstant Timestamp, " +
+                "   TestINstant2 Timestamp, " +
                 "   WhatTimeIsIt TIME) ";
 
         executeCommand(sql, con);
 
     }
 
-    @Override
-    public void testContactTable() throws SQLException {
-//        // todo move to base it's all the same
-        UUID identity = UUID.randomUUID();
-        UUID partnerId = UUID.randomUUID();
+    public void testTypes() {
+        Statement st = null;
+        ResultSet rs = null;
+        try {
 
-        Contact contact = new Contact();
-        contact.setIdentity(identity);
-        contact.setPartnerId(partnerId);
-        contact.setFirstname("Fred");
-        contact.setLastname("Flintstone");
-        contact.setDivision("DIVISION X");
-        contact.setLastModified(new Timestamp(System.currentTimeMillis() - 100000000l));
-        contact.setContactName("Fred Flintstone");
-        contact.setAddress1("123 Sesame Street");
-        contact.setAddress2("Appt #0 (garbage can)");
-        contact.setCompany("Grouch Inc");
-        contact.setCountry("US");
-        contact.setCity("Philly?");
-        contact.setType("X");
-        contact.setDateAdded(new java.sql.Date(System.currentTimeMillis()));
-        contact.setAmountOwed(100.23f);
-        contact.setNotes("B:AH B:AH VBLAH\r\n BLAH BLAY!");
-        contact.setWhatTimeIsIt(Time.valueOf(LocalTime.now()));
-        session.insert(contact);
+            st = con.createStatement();
 
-        Contact contact2 = new Contact();
-        contact2.setIdentity(identity);
-        assertTrue(session.fetch(contact2));
-        assertNotNull(contact2.getPartnerId());
-        assertEquals(contact2.getIdentity(), identity);
-        assertEquals(contact2.getPartnerId(), partnerId);
+            DatabaseMetaData dbmd = con.getMetaData();
+            log.info(dbmd.getDatabaseProductName() + " " + dbmd.getDatabaseProductVersion());
 
-        contact.setDivision("Y");
-        session.update(contact);
+            rs = st.executeQuery("SELECT * FROM Orders WHERE 1=0");
+            log.info("FIRST? " + rs.next());
+            // Grab all columns and make first pass to detect primary auto-inc
+            ResultSetMetaData rsMetaData = rs.getMetaData();
+            for (int i = 1; i <= rsMetaData.getColumnCount(); i++) {
+                log.info(rsMetaData.getColumnName(i) + " " + rsMetaData.isAutoIncrement(i) + " " + rsMetaData.getColumnType(i));
+            }
+            rs.close();
 
-        assertEquals("1?", 1, session.delete(contact));
+            Customer customer = new Customer();
+            customer.setCustomerId("123");
+            customer.setContactName("FRED");
+            session.insert(customer);
 
+
+            session.fetch(customer);
+
+            Map<String, ColumnInfo> columns = session.getMetaData().getColumns(Customer.class, con);
+            for (ColumnInfo columnInfo : columns.values()) {
+                log.info(columnInfo);
+                assertNotNull("type should not be null", columnInfo.columnType);
+            }
+
+            Order order = DAOFactory.newOrder(con);;
+            order.setCustomerId("123");
+            order.setName("name");
+            order.setCreated(LocalDate.now());
+            order.setPaid(true);
+
+            session.insert(order);
+            session.fetch(order);
+
+            log.info("ORDER:" + order);
+            Order order2 = DAOFactory.newOrder(con);
+            order2.setCustomerId("123");
+            order2.setName("name");
+            order2.setPaid(true);
+            session.insert(order2);
+            session.fetch(order2);
+
+            assertNotNull("date should be defaulted?", order2.getCreated());
+
+
+            columns = session.getMetaData().getColumns(Order.class, con);
+            for (ColumnInfo columnInfo : columns.values()) {
+                log.info(columnInfo);
+                assertNotNull("type should not be null", columnInfo.columnType);
+            }
+
+            // look at meta data columsn
+            columns = session.getMetaData().getColumns(Order.class, con);
+            for (ColumnInfo columnInfo : columns.values()) {
+                log.info(columnInfo);
+                assertNotNull("type should not be null", columnInfo.columnType);
+            }
+
+
+        } catch (SQLException e) {
+            log.error(e.getMessage(), e);
+            fail(e.getMessage());
+
+        } finally {
+            Util.cleanup(st, rs);
+        }
     }
+
 }

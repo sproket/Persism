@@ -25,6 +25,20 @@ public class TestMiscellaneous extends TestCase {
     }
 
     public static void testSomething() {
+        //Timestamp
+        String v1 = "1994-02-17 10:23:43.9970000";
+        String v2 = "1994-02-17 10:23:43.997";
+        String v3 = "1994-02-17 10:23:43";
+        String v4 = "1994-02-17";
 
+
+        log.warn(Timestamp.valueOf(v1));
+        log.warn(Timestamp.valueOf(v2));
+        log.warn(Timestamp.valueOf(v3));
+        try {
+            log.warn(Timestamp.valueOf(v4));
+        } catch (IllegalArgumentException e) {
+            log.info(e);
+        }
     }
 }

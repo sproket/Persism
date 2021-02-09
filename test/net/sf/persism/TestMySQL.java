@@ -1,28 +1,25 @@
-/**
- * Comments for TestMySQL go here.
- *
- * @author Dan Howard
- * @since 6/4/12 9:52 PM
- */
 package net.sf.persism;
 
-import net.sf.persism.dao.Contact;
 import net.sf.persism.dao.Customer;
 import net.sf.persism.dao.Regions;
 
 import java.sql.*;
-import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
-import java.util.UUID;
 
-public class TestMySQL extends BaseTest {
+/**
+ *
+ * @author Dan Howard
+ * @since 6/4/12 9:52 PM
+ */
+public final class TestMySQL extends BaseTest {
 
     private static final Log log = Log.getLogger(TestMySQL.class);
 
-    // TODO UUID https://mysqlserverteam.com/storing-uuid-values-in-mysql-tables/
-    // TODO same as MSSQL - add a flag to use mariadb driver - see downloads folder - Can't. Doesn't install on my win7 vm.
+    // TODO MariaDB? same as MSSQL - add a flag to use mariadb driver - see downloads folder - Can't. Doesn't install on my win7 vm.
+
+    @Override
     protected void setUp() throws Exception {
 
         super.setUp();
@@ -41,18 +38,27 @@ public class TestMySQL extends BaseTest {
 
         con = new net.sf.log4jdbc.ConnectionSpy(con);
 
-        createTables();
+        createTables(ConnectionTypes.MySQL);
 
         session = new Session(con);
 
     }
 
+    @Override
     protected void tearDown() throws Exception {
         super.tearDown();
     }
 
     @Override
-    protected void createTables() throws SQLException {
+    public void testContactTable() throws SQLException {
+        super.testContactTable();
+        assertTrue(true);
+    }
+
+    @Override
+    protected void createTables(ConnectionTypes connectionType) throws SQLException {
+
+        this.connectionType = connectionType;
 
         List<String> commands = new ArrayList<String>(12);
 
@@ -114,54 +120,14 @@ public class TestMySQL extends BaseTest {
                 "   ZipPostalCode varchar(10) NULL, " +
                 "   Country nvarchar(50) NULL, " +
                 "   DateAdded Date NULL, " +
-                "   LastModified DateTime NULL, " +
+                "   LastModified DATETIME NULL, " +
                 "   Notes text NULL, " +
                 "   AmountOwed FLOAT NULL, " +
+                "   tesTInstanT DateTime NULL, " +
+                "   tesTInstanT2 TIMESTAMP NULL, " +
                 "   WhatTimeIsIt TIME NULL) ";
 
         executeCommand(sql, con);
-    }
-
-    @Override
-    public void testContactTable() throws SQLException {
-
-        UUID identity = UUID.randomUUID();
-        UUID partnerId = UUID.randomUUID();
-
-        Contact contact = new Contact();
-        contact.setIdentity(identity);
-        contact.setPartnerId(partnerId);
-        contact.setFirstname("Fred");
-        contact.setLastname("Flintstone");
-        contact.setDivision("DIVISION X");
-        contact.setLastModified(new Timestamp(System.currentTimeMillis() - 100000000l));
-        contact.setContactName("Fred Flintstone");
-        contact.setAddress1("123 Sesame Street");
-        contact.setAddress2("Appt #0 (garbage can)");
-        contact.setCompany("Grouch Inc");
-        contact.setCountry("US");
-        contact.setCity("Philly?");
-        contact.setType("X");
-        contact.setDateAdded(new Date(System.currentTimeMillis()));
-        contact.setAmountOwed(100.23f);
-        contact.setNotes("B:AH B:AH VBLAH\r\n BLAH BLAY!");
-        contact.setWhatTimeIsIt(Time.valueOf(LocalTime.now()));
-        session.insert(contact);
-
-        Contact contact2 = new Contact();
-        contact2.setIdentity(identity);
-        assertTrue(session.fetch(contact2));
-        assertNotNull(contact2.getPartnerId());
-        assertEquals(contact2.getIdentity(), identity);
-        assertEquals(contact2.getPartnerId(), partnerId);
-
-        contact2.setDivision("Y");
-        session.update(contact2);
-
-        contact2.setDivision("Y"); // test no update catch
-        session.update(contact2);
-
-        assertEquals("1?", 1, session.delete(contact));
     }
 
     public void testSomething() {

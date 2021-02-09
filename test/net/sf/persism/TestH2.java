@@ -8,8 +8,12 @@ import java.math.BigDecimal;
 import java.nio.file.Files;
 import java.sql.*;
 import java.text.NumberFormat;
+import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalTime;
+import java.time.temporal.ChronoUnit;
+import java.time.temporal.TemporalAmount;
+import java.time.temporal.TemporalUnit;
 import java.util.*;
 import java.util.Date;
 
@@ -19,13 +23,14 @@ import java.util.Date;
  * @author Dan Howard
  * @since 9/25/11 8:04 AM
  */
-public class TestH2 extends BaseTest {
+public final class TestH2 extends BaseTest {
 
     // data types
     // http://www.h2database.com/html/datatypes.html
 
     private static final Log log = Log.getLogger(TestH2.class);
 
+    @Override
     protected void setUp() throws Exception {
         super.setUp();
 
@@ -41,19 +46,34 @@ public class TestH2 extends BaseTest {
 
         con = new net.sf.log4jdbc.ConnectionSpy(con);
 
-        createTables();
+        createTables(ConnectionTypes.H2);
 
         session = new Session(con);
+
+        Instant x = new Date().toInstant();
+
+//        new java.sql.Date(x.toEpochMilli()).toInstant();
+        // Method threw 'java.lang.UnsupportedOperationException' exception.
+
     }
 
-
+    @Override
     protected void tearDown() throws Exception {
         super.tearDown();
     }
 
+    @Override
+    public void testContactTable() throws SQLException {
+        super.testContactTable();
+        assertTrue(true);
+    }
 
     @Override
-    protected void createTables() throws SQLException {
+    protected void createTables(ConnectionTypes connectionType) throws SQLException {
+        if (connectionType == null) {
+            throw new Error("FFS!");
+        }
+
         List<String> commands = new ArrayList<String>(12);
         String sql;
         if (UtilsForTests.isTableInDatabase("Orders", con)) {
@@ -135,6 +155,7 @@ public class TestH2 extends BaseTest {
                 " Timestamp TIMESTAMP NULL, " +
                 " Gold REAL NULL, " +
                 " Silver REAL NULL, " +
+                " Copper REAL NULL, " +
                 " Data TEXT NULL, " +
                 " WhatTimeIsIt Time NULL, " +
                 " SomethingBig BLOB NULL) ");
@@ -165,48 +186,12 @@ public class TestH2 extends BaseTest {
                 "   LastModified DateTime NULL, " +
                 "   Notes text NULL, " +
                 "   AmountOwed REAL NULL, " +
+                "   TestInstant Datetime NULL, " +
+                "   TestInstant2 Datetime NULL, " + // DATE NOT SUPPORTED MAPPED TO INSTANCE UnsupportedOperationException
                 "   WhatTimeIsIt TIME NULL) ";
 
         executeCommand(sql, con);
 
-    }
-
-    @Override
-    public void testContactTable() throws SQLException {
-        UUID identity = UUID.randomUUID();
-        UUID partnerId = UUID.randomUUID();
-
-        Contact contact = new Contact();
-        contact.setIdentity(identity);
-        contact.setPartnerId(partnerId);
-        contact.setFirstname("Fred");
-        contact.setLastname("Flintstone");
-        contact.setDivision("DIVISION X");
-        contact.setLastModified(new Timestamp(System.currentTimeMillis() - 100000000l));
-        contact.setContactName("Fred Flintstone");
-        contact.setAddress1("123 Sesame Street");
-        contact.setAddress2("Appt #0 (garbage can)");
-        contact.setCompany("Grouch Inc");
-        contact.setCountry("US");
-        contact.setCity("Philly?");
-        contact.setType("X");
-        contact.setDateAdded(new java.sql.Date(System.currentTimeMillis()));
-        contact.setAmountOwed(100.23f);
-        contact.setNotes("B:AH B:AH VBLAH\r\n BLAH BLAY!");
-        contact.setWhatTimeIsIt(Time.valueOf(LocalTime.now()));
-        session.insert(contact);
-
-        Contact contact2 = new Contact();
-        contact2.setIdentity(identity);
-        assertTrue(session.fetch(contact2));
-        assertNotNull(contact2.getPartnerId());
-        assertEquals(contact2.getIdentity(), identity);
-        assertEquals(contact2.getPartnerId(), partnerId);
-
-        contact.setDivision("Y");
-        session.update(contact);
-
-        assertEquals("1?", 1, session.delete(contact));
     }
 
     public void testH2InsertAndReadBack() throws SQLException {
@@ -507,6 +492,7 @@ public class TestH2 extends BaseTest {
         saveGame.setData("HJ LHLH H H                     ';lk ;lk ';l k                                K HLHLHH LH LH LH LHLHLHH LH H H H LH HHLGHLJHGHGFHGFGJFDGHFDHFDGJFDKGHDGJFDD KHGD KHG DKHDTG HKG DFGHK  GLJHG LJHG LJH GLJ");
         saveGame.setGold(100.23f);
         saveGame.setSilver(200);
+        saveGame.setCopper(100l);
         saveGame.setWhatTimeIsIt(new Time(System.currentTimeMillis()));
 
         File file = new File("c:/windows/explorer.exe");

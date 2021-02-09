@@ -159,7 +159,9 @@ public final class Session {
 
             List<String> generatedKeys = new ArrayList<>(1);
             for (ColumnInfo column : columns.values()) {
-                if (column.autoIncrement || (column.primary && column.hasDefault)) {
+                if (column.autoIncrement) {
+                    generatedKeys.add(column.columnName);
+                } else if (metaData.connectionType == ConnectionTypes.PostgreSQL && column.primary && column.hasDefault) {
                     generatedKeys.add(column.columnName);
                 }
             }
@@ -319,8 +321,8 @@ public final class Session {
         }
     }
 
-    // For unit tests only for now. todo If we ever use this need to add tests for String (length) and Timestamp like we do in insert and update
-    void execute(String sql, Object... parameters) {
+    // For unit tests only for now.
+    boolean execute(String sql, Object... parameters) {
 
         if (log.isDebugEnabled()) {
             log.debug("execute: " + sql + " params: " + Arrays.asList(parameters));
@@ -330,12 +332,12 @@ public final class Session {
 
             if (parameters.length == 0) {
                 st = connection.createStatement();
-                st.execute(sql);
+                return st.execute(sql);
             } else {
                 st = connection.prepareStatement(sql);
                 PreparedStatement pst = (PreparedStatement) st;
                 setParameters(pst, parameters);
-                pst.execute();
+                return pst.execute();
             }
 
         } catch (Exception e) {
@@ -583,7 +585,7 @@ public final class Session {
         }
         ResultSetMetaData rsmd = rs.getMetaData();
         int columnCount = rsmd.getColumnCount();
-        List<String> foundColumns = new ArrayList<String>(columnCount);
+        List<String> foundColumns = new ArrayList<>(columnCount);
 
         for (int j = 1; j <= columnCount; j++) {
 
@@ -613,7 +615,7 @@ public final class Session {
         // This tests for when a user writes their own SQL and forgets a column.
         if (foundColumns.size() < properties.keySet().size()) {
 
-            Set<String> missing = new HashSet<String>(columnCount);
+            Set<String> missing = new HashSet<>(columnCount);
             missing.addAll(properties.keySet());
             missing.removeAll(foundColumns);
 
@@ -647,17 +649,19 @@ public final class Session {
             switch (columnType) {
 
                 case TimestampType:
-                    if (returnType.equals(String.class)) {
+                    if (returnType.equals(String.class)) { // JTDS
                         value = rs.getString(column);
                     } else {
                         // work around to Oracle reading a oracle.sql.TIMESTAMP class with getObject
                         value = rs.getTimestamp(column);
                     }
                     break;
+
                 case ByteArrayType:
                 case byteArrayType:
                     value = rs.getBytes(column);
                     break;
+
                 case ClobType:
                     Clob clob = rs.getClob(column);
                     try (InputStream in = clob.getAsciiStream()) {
@@ -671,6 +675,7 @@ public final class Session {
                         value = writer.toString();
                     }
                     break;
+
                 case BlobType:
                     byte[] buffer = new byte[1024];
                     Blob blob = rs.getBlob(column);
@@ -766,8 +771,6 @@ public final class Session {
                 long lval = Long.valueOf("" + value);
                 // long to date
                 if (targetType.equals(java.util.Date.class) || targetType.equals(java.sql.Date.class)) {
-
-
                     if (targetType.equals(java.sql.Date.class)) {
                         returnValue = new java.sql.Date(lval);
                     } else {
@@ -787,6 +790,9 @@ public final class Session {
 
                 } else if (targetType.equals(LocalDateTime.class)) {
                     returnValue = new Timestamp(lval).toLocalDateTime();
+
+                } else if (targetType.equals(Instant.class)) {
+                    returnValue = Instant.ofEpochMilli(lval);
                 }
 
                 break;
@@ -798,22 +804,22 @@ public final class Session {
 
             case doubleType:
             case DoubleType:
+                Double dbl = (Double) value;
                 // float or doubles to BigDecimal
                 if (targetType.equals(BigDecimal.class)) {
                     returnValue = new BigDecimal("" + value);
 
                 } else if (targetType.equals(Float.class) || targetType.equals(float.class)) {
                     warnNoDuplicates("Possible overflow column " + columnName + " - Property is FLOAT and column is DOUBLE");
-                    returnValue = Float.parseFloat("" + value);
+                    returnValue = dbl.floatValue();
 
                 } else if (targetType.equals(Integer.class) || targetType.equals(int.class)) {
-                    // todo Long?
                     warnNoDuplicates("Possible overflow column " + columnName + " - Property is INT and column is DOUBLE");
-                    String val = "" + value;
-                    if (val.contains(".")) {
-                        val = val.substring(0, val.indexOf("."));
-                    }
-                    returnValue = Integer.parseInt(val);
+                    returnValue = dbl.intValue();
+
+                } else if (targetType.equals(Long.class) || targetType.equals(long.class)) {
+                    warnNoDuplicates("Possible overflow column " + columnName + " - Property is Long and column is DOUBLE");
+                    returnValue = dbl.longValue();
                 }
                 break;
 
@@ -845,7 +851,7 @@ public final class Session {
                 break;
 
             case StringType:
-                java.util.Date dval = null;
+                java.util.Date dval;
                 // Read a string but we want a date
                 if (targetType.equals(java.util.Date.class) || targetType.equals(java.sql.Date.class)) {
                     // This condition occurs in SQLite when you have a datetime with default annotated
@@ -860,7 +866,7 @@ public final class Session {
                         format = "yyyy-MM-dd";
                     }
                     DateFormat df = new SimpleDateFormat(format);
-                    dval = tryParseDate(df, columnName, targetType, value);
+                    dval = tryParseDate(value, targetType, columnName, df);
 
                     if (targetType.equals(java.sql.Date.class)) {
                         returnValue = new java.sql.Date(dval.getTime());
@@ -869,23 +875,19 @@ public final class Session {
                     }
 
                 } else if (targetType.equals(Timestamp.class)) {
-                    DateFormat df = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss");
-                    dval = tryParseDate(df, columnName, targetType, value);
-                    returnValue = new Timestamp(dval.getTime());
+                    returnValue = tryParseTimestamp(value, targetType, columnName);
 
                 } else if (targetType.equals(LocalDate.class)) {
                     DateFormat df = new SimpleDateFormat("yyyy-MM-dd");
-                    dval = tryParseDate(df, columnName, targetType, value);
-                    returnValue = Instant.ofEpochMilli(dval.getTime())
-                            .atZone(ZoneId.systemDefault())
-                            .toLocalDate();
+                    dval = tryParseDate(value, targetType, columnName, df);
+                    returnValue = dval.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
 
                 } else if (targetType.equals(LocalDateTime.class)) {
-                    DateFormat df = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss"); // todo maybe we should go to the millisecond level
-                    dval = tryParseDate(df, columnName, targetType, value);
-                    returnValue = Instant.ofEpochMilli(dval.getTime())
-                            .atZone(ZoneId.systemDefault())
-                            .toLocalDateTime();
+                    returnValue = tryParseTimestamp(value, targetType, columnName).toLocalDateTime();
+
+                } else if (targetType.equals(Instant.class)) {
+                    log.warn("VALUE? " + value + " column: " + columnName);
+                    returnValue = tryParseTimestamp(value, targetType, columnName).toInstant();
 
                 } else if (targetType.isEnum()) {
                     // If this is an enum do a case insensitive comparison
@@ -908,7 +910,7 @@ public final class Session {
                 } else if (targetType.equals(Time.class)) {
                     // MSSQL works, JTDS returns Varchar in format below
                     DateFormat df = new SimpleDateFormat("hh:mm:ss.SSSSS");
-                    dval = tryParseDate(df, columnName, targetType, value);
+                    dval = tryParseDate(value, targetType, columnName, df);
                     returnValue = new Time(dval.getTime());
 
                 } else if (targetType.equals(Character.class) || targetType.equals(char.class)) {
@@ -934,30 +936,38 @@ public final class Session {
                 // We get a string and handle it in the String case above.
                 log.debug("CharacterType");
                 break;
-// Not yet working
-//            case InstantType:
-//                if (targetType.equals(String.class)) {
-//                    returnValue = ""+value;
-//                }
-//                break;
+
+            case LocalDateType:
+                break;
+            case LocalDateTimeType:
+                break;
+            case InstantType:
+                returnValue = Timestamp.from((Instant) value); // convert to Timestamp which is safe
+                break;
 
             case UtilDateType:
             case SQLDateType:
             case TimestampType:
-                // todo maybe add check for property type = long. Same with TimestampType
-                if (targetType.equals(java.util.Date.class) || targetType.equals(java.sql.Date.class)) {
-                    if (targetType.equals(java.sql.Date.class)) {
-                        returnValue = new java.sql.Date(((Date) value).getTime());
-                    } else {
-                        returnValue = new java.util.Date(((Date) value).getTime());
-                    }
-                }
+                if (targetType.equals(java.util.Date.class)) {
+                    returnValue = new java.util.Date(((Date) value).getTime());
 
-                if (targetType.equals(LocalDate.class) || targetType.equals(LocalDateTime.class)) {
+                } else if (targetType.equals(java.sql.Date.class)) {
+                    returnValue = new java.sql.Date(((Date) value).getTime());
+
+                } else if (targetType.equals(LocalDate.class)) {
                     Date dt = (Date) value;
-                    returnValue = Instant.ofEpochMilli(dt.getTime())
-                            .atZone(ZoneId.systemDefault())
-                            .toLocalDate();
+                    returnValue = dt.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
+
+                } else if (targetType.equals(LocalDateTime.class)) {
+                    Date dt = (Date) value;
+                    returnValue = dt.toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime();
+
+                } else if (targetType.equals(Instant.class)) {
+                    returnValue = ((Date) value).toInstant();
+
+                } else if (targetType.equals(Time.class)) {
+                    // Oracle doesn't seem to have Time so we use Timestamp
+                    returnValue = new Time(((Date) value).getTime());
                 }
                 break;
 
@@ -965,6 +975,10 @@ public final class Session {
                 log.debug("TimeType");
                 break;
 
+            case OffsetDateTimeType:
+                break;
+            case ZonedDateTimeType:
+                break;
             case byteArrayType:
             case ByteArrayType:
                 log.debug("ByteArrayType");
@@ -974,12 +988,20 @@ public final class Session {
                 // todo future byte array to String property? String string = new String(bytes);
                 break;
 
+            case ClobType:
+                break;
+            case BlobType:
+                break;
+            case EnumType:
+                break;
             case UUIDType:
                 log.debug("UUIDType");
                 if (targetType.equals(Blob.class) || targetType.equals(byte[].class) || targetType.equals(Byte[].class)) {
                     returnValue = Util.asBytes((UUID) value);
                 }
 
+            case ObjectType:
+                break;
         }
         return returnValue;
     }
@@ -987,10 +1009,19 @@ public final class Session {
     /*
      * Used by convert for convenience - common possible parsing
      */
-    private Date tryParseDate(DateFormat df, String columnName, Class targetType, Object value) throws PersismException {
+    private Date tryParseDate(Object value, Class targetType, String columnName, DateFormat df) throws PersismException {
         try {
             return df.parse("" + value);
         } catch (ParseException e) {
+            String msg = e.getMessage() + ". Column: " + columnName + " Target Conversion: " + targetType + " - Type read: " + value.getClass() + " VALUE: " + value;
+            throw new PersismException(msg, e);
+        }
+    }
+
+    private Timestamp tryParseTimestamp(Object value, Class targetType, String columnName) throws PersismException {
+        try {
+            return Timestamp.valueOf("" + value);
+        } catch (IllegalArgumentException e) {
             String msg = e.getMessage() + ". Column: " + columnName + " Target Conversion: " + targetType + " - Type read: " + value.getClass() + " VALUE: " + value;
             throw new PersismException(msg, e);
         }
@@ -1120,8 +1151,10 @@ public final class Session {
                         break;
 
                     case InstantType:
-                        // todo Instant
+                        log.debug("InstantType");
+                        ///works as Timestamp?
                         break;
+
                     case OffsetDateTimeType:
                         // todo OffsetDateTime
                         break;

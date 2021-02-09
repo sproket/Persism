@@ -22,10 +22,11 @@ import java.util.Date;
 import java.util.List;
 import java.util.Properties;
 
-public class TestOracle extends BaseTest {
+public final class TestOracle extends BaseTest {
 
     private static final Log log = Log.getLogger(TestOracle.class);
 
+    @Override
     protected void setUp() throws Exception {
 
         // Turn off SQLMode for next MSSQL Test so it uses JTDS
@@ -48,7 +49,7 @@ public class TestOracle extends BaseTest {
 //        con = new net.sf.log4jdbc.ConnectionSpy(con);
         con = OracleDataSource.getInstance().getConnection();
 
-        createTables();
+        createTables(ConnectionTypes.Oracle);
 
         session = new Session(con);
 
@@ -57,86 +58,16 @@ public class TestOracle extends BaseTest {
 
     }
 
-
+    @Override
     protected void tearDown() throws Exception {
         super.tearDown();
     }
 
     @Override
     public void testContactTable() throws SQLException {
-        // todo
+        super.testContactTable();
+        assertTrue(true);
     }
-
-    public void testInsert() throws Exception {
-
-        OracleOrder order = (OracleOrder) DAOFactory.newOrder(con);
-        order.setName("MOO");
-        order.setPaid(true);
-        order.setBit2("ANYTHING?");
-        order.setBit1(new BigDecimal(0));
-        try {
-            session.insert(order);
-        } catch (PersismException e) {
-            log.error("ANYTHING?", e);
-            // net.sf.persism.PersismException: ORA-01722: invalid number
-            // Anything is not a number. Really?
-            // Changed this to handle inside Persism. So we now get NumberFormatException rather than passing it to the DB to error out.
-            assertNotNull("message should not be null?", e.getMessage());
-            //assertTrue("should contain invalid number", e.getMessage().contains("invalid number"));
-            assertTrue("should contain NumberFormatException", e.getMessage().contains("NumberFormatException"));
-        }
-
-        order.setBit2("1");
-        session.insert(order);
-        log.info("inserted? " + order);
-        assertTrue("order # > 0", order.getId() > 0);
-
-        order = (OracleOrder) DAOFactory.newOrder(con);
-        order.setName("MOO2");
-        order.setPaid(false);
-        session.insert(order);
-
-        order = (OracleOrder) DAOFactory.newOrder(con);
-        order.setName("MOO3");
-        session.insert(order);
-
-        List<Order> list = session.query(Order.class, "select * from ORDERS");
-        log.info("MOO:" + list);
-
-    }
-
-    public void testTimeStamp() {
-        Statement st = null;
-        java.sql.ResultSet rs = null;
-
-        // TESTTIMESTAMP
-        try {
-            st = con.createStatement();
-            st.executeUpdate("INSERT INTO TESTTIMESTAMP (NAME) VALUES ('TEST')");
-
-            rs = st.executeQuery("SELECT * FROM TESTTIMESTAMP");
-            ResultSetMetaData rsmd = rs.getMetaData();
-
-            while (rs.next()) {
-                log.info("testTimeStamp: TYPE: " + rsmd.getColumnType(2) + " " + Types.convert(rsmd.getColumnType(2))); // second column
-                Date dt = rs.getDate("TS"); // loses time component
-                Object obj = rs.getObject("TS"); // returns fucken oracle.sql.TIMESTAMP class
-                Timestamp ts = rs.getTimestamp("TS");
-
-                SimpleDateFormat format = new SimpleDateFormat("yyyyMMdd HH:mm:ss");
-                log.info("testTimeStamp: " + format.format(dt));
-                log.info("testTimeStamp: " + format.format(ts));
-                log.info("testTimeStamp: " + obj + " " + obj.getClass().getName());
-            }
-
-        } catch (SQLException e) {
-            log.error(e.getMessage(), e);
-            fail(e.getMessage());
-        } finally {
-            UtilsForTests.cleanup(st, rs);
-        }
-    }
-
 
 /*
 YOU NEED THE TRIGGER PART
@@ -163,7 +94,7 @@ end;
 
 
     @Override
-    protected void createTables() throws SQLException {
+    protected void createTables(ConnectionTypes connectionType) throws SQLException {
 
         List<String> commands = new ArrayList<String>(4);
 
@@ -246,7 +177,108 @@ end;
 
         commands.add("CREATE TABLE TESTTIMESTAMP ( NAME VARCHAR(10), TS TIMESTAMP DEFAULT CURRENT_TIMESTAMP ) ");
         executeCommands(commands, con);
+
+        if (UtilsForTests.isTableInDatabase("CONTACTS", con)) {
+            executeCommand("DROP TABLE CONTACTS", con);
+        }
+
+        String sql = "CREATE TABLE Contacts( " +
+                "   identity RAW(16) NOT NULL PRIMARY KEY, " +  // test binary(16)
+                "   PartnerID VARCHAR(36) NOT NULL, " + // test varchar(36)
+                "   Type CHAR(2) NOT NULL, " +
+                "   Firstname VARCHAR(50) NOT NULL, " +
+                "   Lastname VARCHAR(50) NOT NULL, " +
+                "   ContactName VARCHAR(50) NOT NULL, " +
+                "   Company VARCHAR(50) NOT NULL, " +
+                "   Division VARCHAR(50) NULL, " +
+                "   Email VARCHAR(50) NULL, " +
+                "   Address1 VARCHAR(50) NULL, " +
+                "   Address2 VARCHAR(50) NULL, " +
+                "   City VARCHAR(50) NULL, " +
+                "   StateProvince VARCHAR(50) NULL, " +
+                "   ZipPostalCode VARCHAR(10) NULL, " +
+                "   Country VARCHAR(50) NULL, " +
+                "   DateAdded DATE NULL,  " +
+                "   LastModified TIMESTAMP NULL, " +
+                "   Notes CLOB NULL, " +
+                "   AmountOwed  NUMBER(10,2) NULL, " +
+                "   TestInstant TIMESTAMP NULL, " +
+                "   TestInstant2 DATE NULL, " +
+                "   WhatTimeIsIt TIMESTAMP NULL ) ";
+        executeCommand(sql, con);
     }
+
+
+    public void testInsert() throws Exception {
+
+        OracleOrder order = (OracleOrder) DAOFactory.newOrder(con);
+        order.setName("MOO");
+        order.setPaid(true);
+        order.setBit2("ANYTHING?");
+        order.setBit1(new BigDecimal(0));
+        try {
+            session.insert(order);
+        } catch (PersismException e) {
+            log.error("ANYTHING?", e);
+            // net.sf.persism.PersismException: ORA-01722: invalid number
+            // Anything is not a number. Really?
+            // Changed this to handle inside Persism. So we now get NumberFormatException rather than passing it to the DB to error out.
+            assertNotNull("message should not be null?", e.getMessage());
+            //assertTrue("should contain invalid number", e.getMessage().contains("invalid number"));
+            assertTrue("should contain NumberFormatException", e.getMessage().contains("NumberFormatException"));
+        }
+
+        order.setBit2("1");
+        session.insert(order);
+        log.info("inserted? " + order);
+        assertTrue("order # > 0", order.getId() > 0);
+
+        order = (OracleOrder) DAOFactory.newOrder(con);
+        order.setName("MOO2");
+        order.setPaid(false);
+        session.insert(order);
+
+        order = (OracleOrder) DAOFactory.newOrder(con);
+        order.setName("MOO3");
+        session.insert(order);
+
+        List<Order> list = session.query(Order.class, "select * from ORDERS");
+        log.info("MOO:" + list);
+
+    }
+
+    public void testTimeStamp() {
+        Statement st = null;
+        java.sql.ResultSet rs = null;
+
+        // TESTTIMESTAMP
+        try {
+            st = con.createStatement();
+            st.executeUpdate("INSERT INTO TESTTIMESTAMP (NAME) VALUES ('TEST')");
+
+            rs = st.executeQuery("SELECT * FROM TESTTIMESTAMP");
+            ResultSetMetaData rsmd = rs.getMetaData();
+
+            while (rs.next()) {
+                log.info("testTimeStamp: TYPE: " + rsmd.getColumnType(2) + " " + Types.convert(rsmd.getColumnType(2))); // second column
+                Date dt = rs.getDate("TS"); // loses time component
+                Object obj = rs.getObject("TS"); // returns fucken oracle.sql.TIMESTAMP class
+                Timestamp ts = rs.getTimestamp("TS");
+
+                SimpleDateFormat format = new SimpleDateFormat("yyyyMMdd HH:mm:ss");
+                log.info("testTimeStamp: " + format.format(dt));
+                log.info("testTimeStamp: " + format.format(ts));
+                log.info("testTimeStamp: " + obj + " " + obj.getClass().getName());
+            }
+
+        } catch (SQLException e) {
+            log.error(e.getMessage(), e);
+            fail(e.getMessage());
+        } finally {
+            UtilsForTests.cleanup(st, rs);
+        }
+    }
+
 
     public void testBits() {
         OracleBit bt1 = new OracleBit();

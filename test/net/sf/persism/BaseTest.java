@@ -8,7 +8,11 @@ import java.sql.Date;
 import java.sql.ResultSet;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
-import java.time.LocalDate;
+import java.time.*;
+import java.time.format.DateTimeFormatter;
+import java.time.temporal.ChronoUnit;
+import java.time.temporal.TemporalField;
+import java.time.temporal.TemporalUnit;
 import java.util.*;
 
 /**
@@ -25,10 +29,14 @@ public abstract class BaseTest extends TestCase {
 
     Session session;
 
+    ConnectionTypes connectionType;
+
     static boolean mssqlmode = true;
 
-    protected abstract void createTables() throws SQLException;
-    protected abstract void testContactTable() throws SQLException;
+    static String UUID1 = "d316ad81-946d-416b-98e3-3f3b03aa73db";
+    static String UUID2 = "a0d00c5a-3de6-4ae8-ba11-e3e02c2b3a83";
+
+    protected abstract void createTables(ConnectionTypes connectionType) throws SQLException;
 
     @Override
     protected void setUp() throws Exception {
@@ -43,7 +51,6 @@ public abstract class BaseTest extends TestCase {
         }
         super.tearDown();
     }
-
 
     public void testDates() {
         Customer customer = new Customer();
@@ -338,11 +345,125 @@ public abstract class BaseTest extends TestCase {
 
     }
 
-    public void XtestGetDbMetaData() throws SQLException {
+    DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSS");
+    LocalDateTime ldt1 = LocalDateTime.parse("1998-02-17 10:23:43.567", formatter);
+    LocalDateTime ldt2 = LocalDateTime.parse("1997-02-17 10:23:43.123", formatter);
+    LocalDateTime ldt3 = LocalDateTime.parse("1996-02-17 10:23:52.678", formatter);
+    LocalDateTime ldt4 = LocalDateTime.parse("1994-02-17 10:23:43.997", formatter);
+
+
+    protected void testContactTable(ConnectionTypes connectionType) {
+
+    }
+
+    public void testContactTable() throws SQLException {
+        UUID identity = UUID.fromString(UUID1);
+        UUID partnerId = UUID.fromString(UUID2);
+
+        Contact contact = new Contact();
+        contact.setIdentity(identity);
+        contact.setPartnerId(partnerId);
+        contact.setFirstname("Fred");
+        contact.setLastname("Flintstone");
+        contact.setDivision("DIVISION X");
+        contact.setContactName("Fred Flintstone");
+        contact.setAddress1("123 Sesame Street");
+        contact.setAddress2("Appt #0 (garbage can)");
+        contact.setCompany("Grouch Inc");
+        contact.setCountry("US");
+        contact.setCity("Philly?");
+        contact.setType("X");
+        contact.setAmountOwed(100.23f);
+        contact.setNotes("B:AH B:AH VBLAH\r\n BLAH BLAY!");
+
+        contact.setDateAdded(Date.valueOf(ldt1.toLocalDate()));
+        contact.setLastModified(Timestamp.valueOf(ldt2));
+        contact.setWhatTimeIsIt(Time.valueOf(ldt3.toLocalTime()));
+        contact.setTestInstant(ldt4.toInstant(ZoneOffset.UTC));
+        contact.setTestInstant2(ldt4.toInstant(ZoneOffset.UTC));
+
+        log.error("Local Date: " +  ldt4 + " INSTANT: " + contact.getTestInstant());
+        log.error("Local Date: " +  LocalDateTime.now() + " INSTANT: " + Instant.now());
+
+        session.insert(contact);
+
+        Contact contact2 = new Contact();
+        contact2.setIdentity(identity);
+        assertTrue(session.fetch(contact2));
+        assertNotNull(contact2.getPartnerId());
+        assertEquals(contact2.getIdentity(), identity);
+        assertEquals(contact2.getPartnerId(), partnerId);
+
+        contact.setDivision("Y");
+        assertEquals("1 update?", 1, session.update(contact));
+
+        contact.setDivision("Y");
+        assertEquals("0 update?", 0, session.update(contact));
+
+        List<Contact> contacts = session.query(Contact.class, "SELECT * FROM CONTACTS");
+        assertEquals("should have 1? ", 1, contacts.size());
+
+        Contact contact1 = contacts.get(0);
+        log.info("CONTACT: " + contact1);
+
+        assertEquals("1?", 1, session.delete(contact));
+
+        assertEquals("UDDI should be the same ", UUID1, contact1.getIdentity().toString());
+        assertEquals("UDDI should be the same ", UUID2, contact1.getPartnerId().toString());
+
+        assertEquals("Date Added sql.Date s/b '1998-02-17'","1998-02-17","" + contact1.getDateAdded());
+
+        // MySQL fails with minor accuracy
+        // Expected :1997-02-17 10:23:43.123
+        // Actual   :1997-02-17 10:23:43.0
+        // https://dev.mysql.com/doc/refman/5.7/en/date-and-time-types.html
+        // Has the accuracy in v8 so once we update the DB and driver we should retest
+        if (connectionType == ConnectionTypes.MySQL) {
+            assertEquals("last modified util.Date s/b '1997-02-17 10:23:43.0'","1997-02-17 10:23:43.0","" + contact1.getLastModified());
+        } else {
+            assertEquals("last modified util.Date s/b '1997-02-17 10:23:43.123'","1997-02-17 10:23:43.123","" + contact1.getLastModified());
+        }
+
+        assertEquals("what time is it? sql.Time s/b '10:23:52'","10:23:52","" + contact1.getWhatTimeIsIt());
+
+//        LocalDateTime d1 = LocalDateTime.ofInstant(Instant.parse("1994-02-17T13:09:53Z"), ZoneId.systemDefault());
+//        LocalDateTime d2 = LocalDateTime.ofInstant(Instant.parse("1994-02-17T10:23:43.998Z"), ZoneId.systemDefault());
+//
+//        long minutes = ChronoUnit.MINUTES.between(d1, d2);
+//        long hours = ChronoUnit.HOURS.between(d1, d2);
+//
+//        log.info("diff hours: " + hours + " minutes:" + minutes);
+
+        // JTDS
+        // 1994-02-17 10:23:43.9970000 - Stored in DB
+
+        // MSSQL
+        // 1994-02-17 10:23:43.9980000 - Stored in DB
+
+        // Minor accuracy diff with MySql
+        // Expected :1994-02-17T10:23:43.998Z
+        // Actual   :1994-02-17T10:23:43Z
+
+        // Minor accuracy diff with JTDS
+        // Expected :1994-02-17T10:23:43.998Z (changed it to 997)
+        // Actual   :1994-02-17T10:23:43.997Z
+
+
+        log.error(new Throwable("FFS " + connectionType ));
+
+
+        if (connectionType == ConnectionTypes.MySQL) {
+            assertEquals("test instant time.Instant s/b '1994-02-17T10:23:43Z'", "1994-02-17T10:23:43Z", "" + contact1.getTestInstant());
+        } else {
+            assertEquals("test instant time.Instant s/b '1994-02-17T10:23:43.997Z'","1994-02-17T10:23:43.997Z","" + contact1.getTestInstant());
+        }
+
+    }
+
+    public void testGetDbMetaData() throws SQLException {
         DatabaseMetaData dmd = con.getMetaData();
         log.info("GetDbMetaData for " + dmd.getDatabaseProductName());
 
-        // todo maybe auto map NotTable classes to the stored proc name?
         ResultSet result = dmd.getProcedures(null, "%", "%");
         for (int i = 1; i<= result.getMetaData().getColumnCount(); i++) {
             System.out.println(i + " - " + result.getMetaData().getColumnLabel(i));
@@ -409,4 +530,5 @@ public abstract class BaseTest extends TestCase {
             st.execute(command);
         }
     }
+
 }

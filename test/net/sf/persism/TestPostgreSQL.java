@@ -14,10 +14,11 @@ import java.util.*;
  * @author Dan Howard
  * @since 6/21/12 6:05 AM
  */
-public class TestPostgreSQL extends BaseTest {
+public final class TestPostgreSQL extends BaseTest {
 
     private static final Log log = Log.getLogger(TestPostgreSQL.class);
 
+    @Override
     protected void setUp() throws Exception {
         super.setUp();
 
@@ -34,17 +35,54 @@ public class TestPostgreSQL extends BaseTest {
 
         con = new net.sf.log4jdbc.ConnectionSpy(con);
 
-        createTables();
+        createTables(ConnectionTypes.PostgreSQL);
 
         session = new Session(con);
     }
 
+    @Override
     protected void tearDown() throws Exception {
         super.tearDown();
     }
 
     @Override
-    protected void createTables() throws SQLException {
+    public void testContactTable() throws SQLException {
+
+        super.testContactTable();
+
+        // Insert specify GUID
+        Contact contact = new Contact();
+        //contact.setIdentity(UUID.randomUUID());
+        contact.setFirstname("Fred");
+        contact.setLastname("Flintstone");
+        contact.setDivision("DIVISION X");
+        contact.setLastModified(new Timestamp(System.currentTimeMillis() - 100000000l));
+        contact.setContactName("Fred Flintstone");
+        contact.setAddress1("123 Sesame Street");
+        contact.setAddress2("Appt #0 (garbage can)");
+        contact.setCompany("Grouch Inc");
+        contact.setCountry("US");
+        contact.setCity("Philly?");
+        contact.setType("X");
+        contact.setDateAdded(new Date(System.currentTimeMillis()));
+        contact.setAmountOwed(100.23f);
+        contact.setNotes("B:AH B:AH VBLAH\r\n BLAH BLAY!");
+        contact.setWhatTimeIsIt(Time.valueOf(LocalTime.now()));
+        session.insert(contact);
+
+        log.info("contact after insert: " + contact);
+        assertNotNull("should not be null identity", contact.getIdentity());
+
+        session.fetch(contact);
+
+        contact.setDivision("DIVISION Y");
+        session.update(contact);
+
+        session.delete(contact);
+    }
+
+    @Override
+    protected void createTables(ConnectionTypes connectionType) throws SQLException {
 
         List<String> commands = new ArrayList<String>(12);
         String sql;
@@ -72,7 +110,7 @@ public class TestPostgreSQL extends BaseTest {
         }
 
         commands.add("CREATE TABLE Customers ( " +
-                " Customer_ID varchar(10) PRIMARY KEY NOT NULL, " +
+                " Customer_ID VARCHAR(36) PRIMARY KEY DEFAULT uuid_generate_v1(), " +
                 " Company_Name VARCHAR(30) NULL, " +
                 " Contact_Name VARCHAR(30) NULL, " +
                 " Contact_Title VARCHAR(10) NULL, " +
@@ -140,50 +178,21 @@ public class TestPostgreSQL extends BaseTest {
                 " LastModified Timestamp NULL, " +
                 " Notes text NULL, " +
                 " AmountOwed float NULL, " +
+                " TestINstant Timestamp NULL, " +
+                " TestINstant2 Timestamp NULL, " +
                 " WhatTimeIsIt time NULL " +
-                ")";
+                ") ";
         commands.add(sql);
 
         executeCommands(commands, con);
     }
 
 
-    @Override
-    public void testContactTable() throws SQLException {
-        // Insert specify GUID
-        Contact contact = new Contact();
-        //contact.setIdentity(UUID.randomUUID());
-        contact.setFirstname("Fred");
-        contact.setLastname("Flintstone");
-        contact.setDivision("DIVISION X");
-        contact.setLastModified(new Timestamp(System.currentTimeMillis() - 100000000l));
-        contact.setContactName("Fred Flintstone");
-        contact.setAddress1("123 Sesame Street");
-        contact.setAddress2("Appt #0 (garbage can)");
-        contact.setCompany("Grouch Inc");
-        contact.setCountry("US");
-        contact.setCity("Philly?");
-        contact.setType("X");
-        contact.setDateAdded(new Date(System.currentTimeMillis()));
-        contact.setAmountOwed(100.23f);
-        contact.setNotes("B:AH B:AH VBLAH\r\n BLAH BLAY!");
-        contact.setWhatTimeIsIt(Time.valueOf(LocalTime.now()));
-        session.insert(contact);
-
-        log.info("contact after insert: " + contact);
-        assertNotNull("should not be null identity", contact.getIdentity());
-
-        session.fetch(contact);
-
-        contact.setDivision("DIVISION Y");
-        session.update(contact);
-
-        session.delete(contact);
-    }
 
     public void testDefaultDate() throws SQLException {
         Customer customer = new Customer();
-        customer.setCustomerId("MOO");
+        // customer.setCustomerId("MOO");
+        customer.setCompanyName("Rock Quarry Ltd");
         customer.setContactName("FRED");
         customer.setStatus('1');
         session.insert(customer);
@@ -195,7 +204,7 @@ public class TestPostgreSQL extends BaseTest {
     }
 
     private void tryInsertReturnall() throws SQLException {
-        // this was a test to see if I could prepare a statement and return all colums. Nope.....
+        // this was a test to see if I could prepare a statement and return all columns. Nope.....
 
         // ensure metadata is there
         log.info(session.query(Contact.class, "select * from Contacts"));
