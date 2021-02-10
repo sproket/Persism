@@ -1,11 +1,6 @@
-/**
- * Comments for TestMetaData go here.
- *
- * @author Dan Howard
- * @since 7/31/13 6:31 AM
- */
 package net.sf.persism;
 
+import java.lang.reflect.InvocationTargetException;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.sql.Statement;
@@ -15,6 +10,7 @@ public final class TestMetaData extends BaseTest {
     private static final Log log = Log.getLogger(TestMetaData.class);
 
     protected void setUp() throws Exception {
+        connectionType = ConnectionTypes.Other;
         super.setUp();
 
         Properties props = new Properties();
@@ -27,7 +23,7 @@ public final class TestMetaData extends BaseTest {
 
         con = DriverManager.getConnection(url);
 
-        createTables(ConnectionTypes.Other);
+        createTables();
 
         session = new Session(con);
 
@@ -38,7 +34,7 @@ public final class TestMetaData extends BaseTest {
     }
 
     @Override
-    protected void createTables(ConnectionTypes connectionType) throws SQLException {
+    protected void createTables() throws SQLException {
         List<String> commands = new ArrayList<String>(12);
         String sql;
         if (UtilsForTests.isTableInDatabase("TestDerby", con)) {
@@ -78,6 +74,11 @@ public final class TestMetaData extends BaseTest {
     @Override
     public void testContactTable() throws SQLException {
         // probably don't need anything here.
+    }
+
+    @Override
+    public void XtestExecuteOutsideConvert() throws NoChangesDetectedForUpdateException, SQLException, InvocationTargetException, IllegalAccessException {
+        // not needed here
     }
 
     public void testGuessing() throws SQLException {

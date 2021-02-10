@@ -12,6 +12,7 @@ public final class TestHSQLDB extends BaseTest {
 
     @Override
     public void setUp() throws Exception {
+        connectionType = ConnectionTypes.HSQLDB;
         super.setUp();
 
         Properties props = new Properties();
@@ -26,7 +27,7 @@ public final class TestHSQLDB extends BaseTest {
 
         con = new net.sf.log4jdbc.ConnectionSpy(con);
 
-        createTables(ConnectionTypes.HSQLDB);
+        createTables();
 
         session = new Session(con);
 
@@ -44,7 +45,7 @@ public final class TestHSQLDB extends BaseTest {
     }
 
     @Override
-    protected void createTables(ConnectionTypes connectionType) throws SQLException {
+    protected void createTables() throws SQLException {
         List<String> commands = new ArrayList<>(12);
         String sql;
 
@@ -87,7 +88,10 @@ public final class TestHSQLDB extends BaseTest {
                 " Fax VARCHAR(30) NULL, " +
                 " Status CHAR(1) NULL, " +
                 " Date_Registered Timestamp DEFAULT NOW(), " +
-                " Date_Of_Last_Order Timestamp " +
+                " Date_Of_Last_Order Timestamp, " +
+                " TestLocalDate date, " +
+                " TestLocalDateTime Timestamp " +
+
                 ") ";
         commands.add(sql);
         executeCommand(sql, con);
@@ -175,6 +179,7 @@ public final class TestHSQLDB extends BaseTest {
                 "   Notes Clob NULL, " +
                 "   AmountOwed REAL NULL, " +
                 "   TestInstant DateTime NULL, " +
+                "   SomeDate DateTime NULL, " +
                 "   TestInstant2 DateTime NULL, " +
                 "   WhatTimeIsIt TIME NULL) ";
 

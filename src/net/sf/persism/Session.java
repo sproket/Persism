@@ -90,8 +90,10 @@ public final class Session {
             List<Object> params = new ArrayList<>(primaryKeys.size());
             List<ColumnInfo> columnInfos = new ArrayList<>(primaryKeys.size());
 
+            Map<String, ColumnInfo> columns = metaData.getColumns(object.getClass(), connection);
+
             for (String column : changedProperties.keySet()) {
-                ColumnInfo columnInfo = metaData.getColumns(object.getClass(), connection).get(column);
+                ColumnInfo columnInfo = columns.get(column);
 
                 if (!primaryKeys.contains(column)) {
                     Object value = allProperties.get(column).getter.invoke(object);
@@ -932,17 +934,21 @@ public final class Session {
 
             case characterType:
             case CharacterType:
-                // Does not occur because there's no direct single CHAR type.
-                // We get a string and handle it in the String case above.
                 log.debug("CharacterType");
                 break;
 
             case LocalDateType:
+                log.debug("LocalDateType");
+                returnValue = java.sql.Date.valueOf((LocalDate) value);
                 break;
+
             case LocalDateTimeType:
+                log.debug("LocalDateTimeType");
+                returnValue = Timestamp.valueOf((LocalDateTime) value);
                 break;
+
             case InstantType:
-                returnValue = Timestamp.from((Instant) value); // convert to Timestamp which is safe
+                returnValue = Timestamp.from((Instant) value);
                 break;
 
             case UtilDateType:
@@ -955,7 +961,7 @@ public final class Session {
                     returnValue = new java.sql.Date(((Date) value).getTime());
 
                 } else if (targetType.equals(LocalDate.class)) {
-                    Date dt = (Date) value;
+                    Date dt = new Date(((Date) value).getTime());
                     returnValue = dt.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
 
                 } else if (targetType.equals(LocalDateTime.class)) {
@@ -976,31 +982,42 @@ public final class Session {
                 break;
 
             case OffsetDateTimeType:
+                log.debug("OffsetDateTimeType");
                 break;
+
             case ZonedDateTimeType:
+                log.debug("ZonedDateTimeType");
                 break;
+
             case byteArrayType:
             case ByteArrayType:
                 log.debug("ByteArrayType");
                 if (targetType.equals(UUID.class)) {
                     returnValue = Util.asUuid((byte[]) value);
                 }
-                // todo future byte array to String property? String string = new String(bytes);
                 break;
 
             case ClobType:
+                log.debug("ClobType");
                 break;
+
             case BlobType:
+                log.debug("BlobType");
                 break;
+
             case EnumType:
+                log.debug("EnumType");
                 break;
+
             case UUIDType:
                 log.debug("UUIDType");
                 if (targetType.equals(Blob.class) || targetType.equals(byte[].class) || targetType.equals(Byte[].class)) {
                     returnValue = Util.asBytes((UUID) value);
                 }
+                break;
 
             case ObjectType:
+                log.debug("ObjectType");
                 break;
         }
         return returnValue;
@@ -1056,7 +1073,7 @@ public final class Session {
     }
 
     // Place code conversions here to prevent type exceptions on setObject
-    private void setParameters(PreparedStatement st, Object[] parameters) throws SQLException {
+    void setParameters(PreparedStatement st, Object[] parameters) throws SQLException {
         if (log.isDebugEnabled()) {
             log.debug("PARAMS: " + Arrays.asList(parameters));
         }
@@ -1136,24 +1153,21 @@ public final class Session {
                         break;
 
                     case TimestampType:
-                        // For Time we convert to Timestamp anyway
                         st.setTimestamp(n, (Timestamp) param);
                         break;
 
-                    case LocalDateType:
-                        LocalDate localDate = (LocalDate) param;
-                        st.setTimestamp(n, Timestamp.valueOf(localDate.atStartOfDay()));
-                        break;
-
-                    case LocalDateTimeType:
-                        LocalDateTime ldt = (LocalDateTime) param;
-                        st.setTimestamp(n, Timestamp.valueOf(ldt));
-                        break;
-
-                    case InstantType:
-                        log.debug("InstantType");
-                        ///works as Timestamp?
-                        break;
+// THESE are converted to Timestamp by convert method.
+//                    case LocalDateType:
+//                        log.debug("LocalDateType");
+//                        break;
+//
+//                    case LocalDateTimeType:
+//                        log.debug("LocalDateTimeType");
+//                        break;
+//
+//                    case InstantType:
+//                        log.debug("InstantType");
+//                        break;
 
                     case OffsetDateTimeType:
                         // todo OffsetDateTime
@@ -1184,7 +1198,7 @@ public final class Session {
 
                     case UUIDType:
                         if (metaData.connectionType == ConnectionTypes.PostgreSQL) {
-                            // postgress does work with setObject but not setString unless you set the connection property stringtype=unspecified
+                            // PostgreSQL does work with setObject but not setString unless you set the connection property stringtype=unspecified
                             st.setObject(n, param);
                         } else {
                             st.setString(n, param.toString());

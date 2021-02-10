@@ -7,7 +7,7 @@ import net.sf.persism.annotations.Table;
 public class FirebirdOrder extends Order {
     // firebird can't seem to detect auto incs. CLOWNS
     @Override
-    @Column(autoIncrement = true)
+    //@Column(autoIncrement = true)
     public long getId() {
         return super.getId();
     }

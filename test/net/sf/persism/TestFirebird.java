@@ -2,11 +2,15 @@ package net.sf.persism;
 
 import net.sf.persism.dao.Contact;
 import net.sf.persism.dao.Customer;
+import net.sf.persism.dao.DAOFactory;
+import net.sf.persism.dao.Order;
 
 import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.sql.Time;
 import java.sql.Timestamp;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.*;
 
@@ -16,6 +20,7 @@ public final class TestFirebird extends BaseTest {
 
     @Override
     public void setUp() throws Exception {
+        connectionType = ConnectionTypes.Firebird;
         super.setUp();
 
         Properties props = new Properties();
@@ -31,7 +36,7 @@ public final class TestFirebird extends BaseTest {
 
         con = new net.sf.log4jdbc.ConnectionSpy(con);
 
-        createTables(ConnectionTypes.Firebird);
+        createTables();
 
         session = new Session(con);
 
@@ -49,7 +54,7 @@ public final class TestFirebird extends BaseTest {
     }
 
     @Override
-    protected void createTables(ConnectionTypes connectionType) throws SQLException {
+    protected void createTables() throws SQLException {
         List<String> commands = new ArrayList<>(12);
         String sql;
 
@@ -96,6 +101,8 @@ public final class TestFirebird extends BaseTest {
                 "  STATUS CHAR(1), " +
                 "  DATE_REGISTERED TIMESTAMP, " +
                 "  DATE_OF_LAST_ORDER TIMESTAMP, " +
+                " TestLocalDate DATE, " +
+                " TestLocalDateTime TIMESTAMP, " +
                 "  CONSTRAINT PK_CUSTOMER PRIMARY KEY (CUSTOMER_ID) " +
                 "); ";
         commands.add(sql);
@@ -104,7 +111,7 @@ public final class TestFirebird extends BaseTest {
         if (UtilsForTests.isTableInDatabase("Contacts", con)) {
             executeCommand("DROP TABLE Contacts", con);
         }
-        // FIREBIRD and Derby don't like NOT NULL
+        // FIREBIRD and Derby don't like NULL
         sql = "CREATE TABLE Contacts( " +
                 "   identity binary(16) NOT NULL PRIMARY KEY, \n" +  // test binary(16)
                 "   PartnerID varchar(36) NOT NULL, \n" + // test varchar(36)
@@ -125,6 +132,7 @@ public final class TestFirebird extends BaseTest {
                 "   LastModified TIMESTAMP, \n" +
                 "   Notes BLOB SUB_TYPE TEXT, \n" +
                 "   AmountOwed REAL, \n" +
+                "   SomeDate TIMESTAMP, \n" +
                 "   TestInstant TIMESTAMP, \n" +
                 "   TestInstant2 TIMESTAMP, \n" +
                 "   WhatTimeIsIt TIME ) ";
@@ -139,6 +147,17 @@ public final class TestFirebird extends BaseTest {
         for (PropertyInfo pi : x) {
             log.warn(pi); // exercise toString for no good reason! Well, for code coverage...
         }
+    }
+
+    public void testOrders() throws SQLException {
+        Order order = DAOFactory.newOrder(con);
+
+        order.setPaid(true);
+        order.setDatePaid(LocalDateTime.now());
+        order.setCreated(LocalDate.now());
+        order.setCustomerId("SOMEONE");
+
+        session.insert(order);
 
     }
 }

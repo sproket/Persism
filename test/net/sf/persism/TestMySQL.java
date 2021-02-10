@@ -1,15 +1,16 @@
 package net.sf.persism;
 
 import net.sf.persism.dao.Customer;
+import net.sf.persism.dao.Order;
 import net.sf.persism.dao.Regions;
 
 import java.sql.*;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 
 /**
- *
  * @author Dan Howard
  * @since 6/4/12 9:52 PM
  */
@@ -21,7 +22,7 @@ public final class TestMySQL extends BaseTest {
 
     @Override
     protected void setUp() throws Exception {
-
+        connectionType = ConnectionTypes.MySQL;
         super.setUp();
 
         Properties props = new Properties();
@@ -38,7 +39,7 @@ public final class TestMySQL extends BaseTest {
 
         con = new net.sf.log4jdbc.ConnectionSpy(con);
 
-        createTables(ConnectionTypes.MySQL);
+        createTables();
 
         session = new Session(con);
 
@@ -56,7 +57,7 @@ public final class TestMySQL extends BaseTest {
     }
 
     @Override
-    protected void createTables(ConnectionTypes connectionType) throws SQLException {
+    protected void createTables() throws SQLException {
 
         this.connectionType = connectionType;
 
@@ -79,11 +80,13 @@ public final class TestMySQL extends BaseTest {
                 " Region VARCHAR(10) NULL, " + // todo MySQL Enum type ? https://dev.mysql.com/doc/refman/8.0/en/enum.html
                 " Postal_Code VARCHAR(10) NULL, " +
                 " Country VARCHAR(2) NOT NULL DEFAULT 'US', " +
-                " STATUS CHAR(1) NULL, " +
+                " STATUS CHAR(1) NOT NULL DEFAULT ' ', " +
                 " Phone VARCHAR(30) NULL, " +
                 " Fax VARCHAR(30) NULL, " +
                 " Date_Registered TIMESTAMP, " +
-                " Date_Of_Last_Order DATETIME NULL " +
+                " Date_Of_Last_Order DATETIME NULL, " +
+                " TestLocalDate DATETIME NULL, " +
+                " TestLocalDateTime TIMESTAMP NULL " +
                 ") ");
 
         commands.add("CREATE TABLE Orders ( " +
@@ -123,6 +126,7 @@ public final class TestMySQL extends BaseTest {
                 "   LastModified DATETIME NULL, " +
                 "   Notes text NULL, " +
                 "   AmountOwed FLOAT NULL, " +
+                "   SOME_DATE TIMESTAMP NULL, " +
                 "   tesTInstanT DateTime NULL, " +
                 "   tesTInstanT2 TIMESTAMP NULL, " +
                 "   WhatTimeIsIt TIME NULL) ";
@@ -150,5 +154,6 @@ public final class TestMySQL extends BaseTest {
         int count = session.fetch(int.class, "select count(*) from Customers where Region = ?", Regions.East);
         assertEquals("should be 1", 1, count);
         log.info("count " + count);
+
     }
 }

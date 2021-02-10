@@ -5,7 +5,10 @@ import net.sf.persism.dao.Customer;
 
 import java.sql.*;
 import java.sql.Date;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.time.ZoneId;
 import java.util.*;
 
 /**
@@ -20,6 +23,7 @@ public final class TestPostgreSQL extends BaseTest {
 
     @Override
     protected void setUp() throws Exception {
+        connectionType = ConnectionTypes.PostgreSQL;
         super.setUp();
 
         // https://jdbc.postgresql.org/documentation/head/connect.html
@@ -35,7 +39,7 @@ public final class TestPostgreSQL extends BaseTest {
 
         con = new net.sf.log4jdbc.ConnectionSpy(con);
 
-        createTables(ConnectionTypes.PostgreSQL);
+        createTables();
 
         session = new Session(con);
     }
@@ -82,7 +86,7 @@ public final class TestPostgreSQL extends BaseTest {
     }
 
     @Override
-    protected void createTables(ConnectionTypes connectionType) throws SQLException {
+    protected void createTables() throws SQLException {
 
         List<String> commands = new ArrayList<String>(12);
         String sql;
@@ -123,7 +127,9 @@ public final class TestPostgreSQL extends BaseTest {
                 " Fax VARCHAR(30) NULL, " +
                 " STATUS CHAR(1), " +
                 " Date_Registered TIMESTAMP with time zone DEFAULT CURRENT_TIMESTAMP NOT NULL, " +
-                " Date_Of_Last_Order  TIMESTAMP with time zone " +
+                " Date_Of_Last_Order TIMESTAMP with time zone, " +
+                " TestLocalDate DATE, " +
+                " TestLocalDateTime TIMESTAMP  " +
                 ") ");
 
         if (UtilsForTests.isTableInDatabase("Invoices", con)) {
@@ -178,6 +184,7 @@ public final class TestPostgreSQL extends BaseTest {
                 " LastModified Timestamp NULL, " +
                 " Notes text NULL, " +
                 " AmountOwed float NULL, " +
+                " SomeDate Timestamp NULL, " +
                 " TestINstant Timestamp NULL, " +
                 " TestINstant2 Timestamp NULL, " +
                 " WhatTimeIsIt time NULL " +
@@ -188,16 +195,23 @@ public final class TestPostgreSQL extends BaseTest {
     }
 
 
-
     public void testDefaultDate() throws SQLException {
+
         Customer customer = new Customer();
-        // customer.setCustomerId("MOO");
+        customer.setCustomerId("MOO");
+        session.delete(customer);
+
         customer.setCompanyName("Rock Quarry Ltd");
         customer.setContactName("FRED");
         customer.setStatus('1');
+        customer.setTestLocalDate(LocalDate.now());
+        customer.setTestLocalDateTime(LocalDateTime.now(ZoneId.systemDefault()));
         session.insert(customer);
         log.info(customer);
 
+        session.fetch(customer);
+        log.info("date " + customer.getTestLocalDate());
+        log.info("datetime " + customer.getTestLocalDateTime());
         assertNotNull(customer.getDateRegistered());
 
         tryInsertReturnall();
@@ -233,7 +247,7 @@ public final class TestPostgreSQL extends BaseTest {
 
         ResultSetMetaData rsmd = rs.getMetaData();
         while (rs.next()) {
-            for (int j = 1; j<= rsmd.getColumnCount(); j++) {
+            for (int j = 1; j <= rsmd.getColumnCount(); j++) {
                 log.info(j + " " + rsmd.getColumnLabel(j) + " " + rsmd.getColumnTypeName(j) + " " + rs.getObject(j));
             }
         }

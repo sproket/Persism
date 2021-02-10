@@ -25,6 +25,7 @@ public final class TestDerby extends BaseTest {
 
     @Override
     public void setUp() throws Exception {
+        connectionType = ConnectionTypes.Derby;
         super.setUp();
 
         Properties props = new Properties();
@@ -40,7 +41,7 @@ public final class TestDerby extends BaseTest {
         con = new net.sf.log4jdbc.ConnectionSpy(con);
 
 
-        createTables(ConnectionTypes.Derby);
+        createTables();
 
         session = new Session(con);
 
@@ -58,7 +59,7 @@ public final class TestDerby extends BaseTest {
     }
 
     @Override
-    protected void createTables(ConnectionTypes connectionType) throws SQLException {
+    protected void createTables() throws SQLException {
         List<String> commands = new ArrayList<String>(12);
         String sql;
         if (UtilsForTests.isTableInDatabase("Orders", con)) {
@@ -96,7 +97,9 @@ public final class TestDerby extends BaseTest {
                 " Fax VARCHAR(30), " +
                 " STATUS CHAR(1), " +
                 " Date_Registered TIMESTAMP DEFAULT CURRENT_TIMESTAMP, " +
-                " Date_Of_Last_Order TIMESTAMP " +
+                " Date_Of_Last_Order TIMESTAMP, " +
+                " TestLocalDate TIMESTAMP, " +
+                " TestLocalDateTime TIMESTAMP " +
                 ") ");
 
         if (UtilsForTests.isTableInDatabase("Invoices", con)) {
@@ -153,6 +156,7 @@ public final class TestDerby extends BaseTest {
                 "   LastModified Timestamp,  " +
                 "   Notes Clob,  " +
                 "   AmountOwed REAL,  " +
+                "   SomeDate Timestamp, " +
                 "   TestINstant Timestamp, " +
                 "   TestINstant2 Timestamp, " +
                 "   WhatTimeIsIt TIME) ";

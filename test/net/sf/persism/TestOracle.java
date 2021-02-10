@@ -28,11 +28,10 @@ public final class TestOracle extends BaseTest {
 
     @Override
     protected void setUp() throws Exception {
-
         // Turn off SQLMode for next MSSQL Test so it uses JTDS
         BaseTest.mssqlmode = false;
+        connectionType = ConnectionTypes.Oracle;
         MSSQLDataSource.removeInstance();
-
         super.setUp();
 
         Properties props = new Properties();
@@ -49,7 +48,7 @@ public final class TestOracle extends BaseTest {
 //        con = new net.sf.log4jdbc.ConnectionSpy(con);
         con = OracleDataSource.getInstance().getConnection();
 
-        createTables(ConnectionTypes.Oracle);
+        createTables();
 
         session = new Session(con);
 
@@ -94,7 +93,7 @@ end;
 
 
     @Override
-    protected void createTables(ConnectionTypes connectionType) throws SQLException {
+    protected void createTables() throws SQLException {
 
         List<String> commands = new ArrayList<String>(4);
 
@@ -167,7 +166,9 @@ end;
                 " SomeDouble NUMBER(38,2) NULL," +
                 " SomeInt NUMBER(38,2) NULL," +
                 " STATUS CHAR(1) NULL, " +
-                " Date_Of_Last_Order DATE " +
+                " Date_Of_Last_Order DATE, " +
+                " TestLocalDate DATE, " +
+                " TestLocalDateTime TIMESTAMP " +
                 ") ");
 
 
@@ -202,6 +203,7 @@ end;
                 "   LastModified TIMESTAMP NULL, " +
                 "   Notes CLOB NULL, " +
                 "   AmountOwed  NUMBER(10,2) NULL, " +
+                "   SomE_DaTE TIMESTAMP NULL, " +
                 "   TestInstant TIMESTAMP NULL, " +
                 "   TestInstant2 DATE NULL, " +
                 "   WhatTimeIsIt TIMESTAMP NULL ) ";

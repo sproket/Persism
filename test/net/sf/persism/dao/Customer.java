@@ -3,6 +3,8 @@ package net.sf.persism.dao;
 import net.sf.persism.annotations.Column;
 
 import java.sql.Timestamp;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 /**
  * General customer class for database types.
@@ -28,6 +30,9 @@ public class Customer {
     private Timestamp dateRegistered;
 
     private java.sql.Date dateOfLastOrder;
+
+    private LocalDate testLocalDate;
+    private LocalDateTime testLocalDateTime;
 
     public String getCustomerId() {
         return customerId;
@@ -139,6 +144,22 @@ public class Customer {
 
     public void setStatus(char status) {
         this.status = status;
+    }
+
+    public LocalDate getTestLocalDate() {
+        return testLocalDate;
+    }
+
+    public void setTestLocalDate(LocalDate testLocalDate) {
+        this.testLocalDate = testLocalDate;
+    }
+
+    public LocalDateTime getTestLocalDateTime() {
+        return testLocalDateTime;
+    }
+
+    public void setTestLocalDateTime(LocalDateTime testLocalDateTime) {
+        this.testLocalDateTime = testLocalDateTime;
     }
 
     @Override

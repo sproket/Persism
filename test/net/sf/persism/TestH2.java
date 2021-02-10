@@ -10,6 +10,7 @@ import java.sql.*;
 import java.text.NumberFormat;
 import java.time.Instant;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.temporal.ChronoUnit;
 import java.time.temporal.TemporalAmount;
@@ -32,6 +33,7 @@ public final class TestH2 extends BaseTest {
 
     @Override
     protected void setUp() throws Exception {
+        connectionType = ConnectionTypes.H2;
         super.setUp();
 
         Properties props = new Properties();
@@ -46,7 +48,7 @@ public final class TestH2 extends BaseTest {
 
         con = new net.sf.log4jdbc.ConnectionSpy(con);
 
-        createTables(ConnectionTypes.H2);
+        createTables();
 
         session = new Session(con);
 
@@ -69,11 +71,7 @@ public final class TestH2 extends BaseTest {
     }
 
     @Override
-    protected void createTables(ConnectionTypes connectionType) throws SQLException {
-        if (connectionType == null) {
-            throw new Error("FFS!");
-        }
-
+    protected void createTables() throws SQLException {
         List<String> commands = new ArrayList<String>(12);
         String sql;
         if (UtilsForTests.isTableInDatabase("Orders", con)) {
@@ -111,7 +109,9 @@ public final class TestH2 extends BaseTest {
                 " Fax VARCHAR(30) NULL, " +
                 " Status CHAR(1) NULL, " +
                 " Date_Registered datetime default current_timestamp, " +
-                " Date_Of_Last_Order datetime " +
+                " Date_Of_Last_Order datetime NULL, " +
+                " TestLocalDate date NULL, " +
+                " TestLocalDateTime datetime NULL" +
                 ") ");
 
         if (UtilsForTests.isTableInDatabase("Invoices", con)) {
@@ -186,6 +186,7 @@ public final class TestH2 extends BaseTest {
                 "   LastModified DateTime NULL, " +
                 "   Notes text NULL, " +
                 "   AmountOwed REAL NULL, " +
+                "   Some_DATE Datetime NULL, " +
                 "   TestInstant Datetime NULL, " +
                 "   TestInstant2 Datetime NULL, " + // DATE NOT SUPPORTED MAPPED TO INSTANCE UnsupportedOperationException
                 "   WhatTimeIsIt TIME NULL) ";
@@ -353,10 +354,17 @@ public final class TestH2 extends BaseTest {
             order.setCustomerId("123");
             order.setName("name");
             order.setCreated(LocalDate.now());
+            order.setDatePaid(LocalDateTime.now());
             order.setPaid(true);
+
+            log.info("created " + order.getCreated());
+            log.info("paid "  + order.getDatePaid());
 
             session.insert(order);
             session.fetch(order);
+
+            log.info("AFTER created " + order.getCreated());
+            log.info("AFTER paid "  + order.getDatePaid());
 
             Order order2 = DAOFactory.newOrder(con);
             order2.setCustomerId("456");

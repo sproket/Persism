@@ -29,6 +29,7 @@ public final class TestSQLite extends BaseTest {
 
     @Override
     protected void setUp() throws Exception {
+        connectionType = ConnectionTypes.SQLite;
         super.setUp();
 
         Properties props = new Properties();
@@ -44,8 +45,7 @@ public final class TestSQLite extends BaseTest {
 
         con = new net.sf.log4jdbc.ConnectionSpy(con);
 
-
-        createTables(ConnectionTypes.SQLite);
+        createTables();
 
         session = new Session(con);
     }
@@ -63,7 +63,7 @@ public final class TestSQLite extends BaseTest {
     }
 
     @Override
-    protected void createTables(ConnectionTypes connectionType) throws SQLException {
+    protected void createTables() throws SQLException {
 
         Statement st = null;
         List<String> commands = new ArrayList<String>(3);
@@ -105,7 +105,9 @@ public final class TestSQLite extends BaseTest {
                 " STATUS CHAR(1) NULL, " +
                 " Fax VARCHAR(30) NULL, " +
                 " Date_Registered datetime default  (datetime('now','localtime')), " +
-                " Date_Of_Last_Order datetime " +
+                " Date_Of_Last_Order datetime, " +
+                " TestLocalDate datetime, " +
+                " TestLocalDateTIme datetime " +
                 ") ");
 
         if (isTableInDatabase("TABLENOPRIMARY", con)) {
@@ -150,6 +152,7 @@ public final class TestSQLite extends BaseTest {
                 " LastModified DATETIME NULL, " +
                 " Notes text NULL, " +
                 " AmountOwed float NULL, " +
+                " Some_DATE DATETIME NULL, " +    // DATETIME reads LONG for this FFS. TODO TEST AFTER WTF IS TIMESTAMP IN SQLITE?
                 " TestInstant TIMESTAMP NULL, " +    // DATETIME reads LONG for this FFS. TODO TEST AFTER WTF IS TIMESTAMP IN SQLITE?
                 " TestInstant2 DATETIME NULL, " +  // TIMESTAMP reads STRING for this FFS. TODO TEST AFTER WTF IS TIMESTAMP IN SQLITE?
                 " WhatTimeIsIt time NULL " +
@@ -165,6 +168,7 @@ public final class TestSQLite extends BaseTest {
         order.setDatePaid(LocalDateTime.now());
         session.insert(order);
         assertTrue("order id > 0", order.getId() > 0);
+        log.info("DATE PAID: " + order.getDatePaid());
 
         assertTrue("paid", order.isPaid());
 
@@ -183,13 +187,16 @@ public final class TestSQLite extends BaseTest {
 
         List<Order> list = session.query(Order.class, "SELECT * FROM Orders ORDER BY ID");
         assertEquals("list size s/b 4", 4, list.size());
+        log.error("ORDERS\n" + list);
 
         order = list.get(0);
+        assertNotNull(order);
         assertEquals("name s/b COW", "COW", order.getName());
         assertTrue("paid s/b true", order.isPaid());
 
 
         order = list.get(1);
+        assertNotNull(order);
         assertEquals("name s/b MOOO", "MOOO", order.getName());
         assertFalse("paid s/b false", order.isPaid());
 

@@ -3,6 +3,7 @@ package net.sf.persism;
 import junit.framework.TestCase;
 import net.sf.persism.dao.*;
 
+import java.lang.reflect.InvocationTargetException;
 import java.sql.*;
 import java.sql.Date;
 import java.sql.ResultSet;
@@ -10,9 +11,6 @@ import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.time.*;
 import java.time.format.DateTimeFormatter;
-import java.time.temporal.ChronoUnit;
-import java.time.temporal.TemporalField;
-import java.time.temporal.TemporalUnit;
 import java.util.*;
 
 /**
@@ -36,7 +34,7 @@ public abstract class BaseTest extends TestCase {
     static String UUID1 = "d316ad81-946d-416b-98e3-3f3b03aa73db";
     static String UUID2 = "a0d00c5a-3de6-4ae8-ba11-e3e02c2b3a83";
 
-    protected abstract void createTables(ConnectionTypes connectionType) throws SQLException;
+    protected abstract void createTables() throws SQLException;
 
     @Override
     protected void setUp() throws Exception {
@@ -188,7 +186,7 @@ public abstract class BaseTest extends TestCase {
         assertTrue("Should not be able to read fields if there are missing properties", failOnMissingProperties);
 
         // Make sure all columns are NOT the CASE of the ones in the DB.
-        List<Customer> list = session.query(Customer.class, "SELECT company_NAME, Date_Of_Last_ORDER, contact_title, pHone, rEGion, postal_CODE, FAX, DATE_Registered, ADDress, CUStomer_id, Contact_name, country, city, STATUS from CUSTOMERS");
+        List<Customer> list = session.query(Customer.class, "SELECT company_NAME, Date_Of_Last_ORDER, contact_title, pHone, rEGion, postal_CODE, FAX, DATE_Registered, ADDress, CUStomer_id, Contact_name, country, city, STATUS, TestLocalDate, TestLocalDateTime from CUSTOMERS");
 
         log.info(list);
         assertEquals("list should be 1", 1, list.size());
@@ -345,20 +343,16 @@ public abstract class BaseTest extends TestCase {
 
     }
 
+    UUID identity = UUID.fromString(UUID1);
+    UUID partnerId = UUID.fromString(UUID2);
     DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSS");
     LocalDateTime ldt1 = LocalDateTime.parse("1998-02-17 10:23:43.567", formatter);
     LocalDateTime ldt2 = LocalDateTime.parse("1997-02-17 10:23:43.123", formatter);
     LocalDateTime ldt3 = LocalDateTime.parse("1996-02-17 10:23:52.678", formatter);
     LocalDateTime ldt4 = LocalDateTime.parse("1994-02-17 10:23:43.997", formatter);
+    java.util.Date date = Timestamp.valueOf("1992-02-17 10:23:41.107");
 
-
-    protected void testContactTable(ConnectionTypes connectionType) {
-
-    }
-
-    public void testContactTable() throws SQLException {
-        UUID identity = UUID.fromString(UUID1);
-        UUID partnerId = UUID.fromString(UUID2);
+    private Contact getContactForTest() {
 
         Contact contact = new Contact();
         contact.setIdentity(identity);
@@ -381,9 +375,16 @@ public abstract class BaseTest extends TestCase {
         contact.setWhatTimeIsIt(Time.valueOf(ldt3.toLocalTime()));
         contact.setTestInstant(ldt4.toInstant(ZoneOffset.UTC));
         contact.setTestInstant2(ldt4.toInstant(ZoneOffset.UTC));
+        contact.setSomeDate(date);
+        return contact;
+    }
 
-        log.error("Local Date: " +  ldt4 + " INSTANT: " + contact.getTestInstant());
-        log.error("Local Date: " +  LocalDateTime.now() + " INSTANT: " + Instant.now());
+    public void testContactTable() throws SQLException {
+
+        Contact contact = getContactForTest();
+
+        log.error("Local Date: " + ldt4 + " INSTANT: " + contact.getTestInstant());
+        log.error("Local Date: " + LocalDateTime.now() + " INSTANT: " + Instant.now());
 
         session.insert(contact);
 
@@ -411,7 +412,7 @@ public abstract class BaseTest extends TestCase {
         assertEquals("UDDI should be the same ", UUID1, contact1.getIdentity().toString());
         assertEquals("UDDI should be the same ", UUID2, contact1.getPartnerId().toString());
 
-        assertEquals("Date Added sql.Date s/b '1998-02-17'","1998-02-17","" + contact1.getDateAdded());
+        assertEquals("Date Added sql.Date s/b '1998-02-17'", "1998-02-17", "" + contact1.getDateAdded());
 
         // MySQL fails with minor accuracy
         // Expected :1997-02-17 10:23:43.123
@@ -419,12 +420,12 @@ public abstract class BaseTest extends TestCase {
         // https://dev.mysql.com/doc/refman/5.7/en/date-and-time-types.html
         // Has the accuracy in v8 so once we update the DB and driver we should retest
         if (connectionType == ConnectionTypes.MySQL) {
-            assertEquals("last modified util.Date s/b '1997-02-17 10:23:43.0'","1997-02-17 10:23:43.0","" + contact1.getLastModified());
+            assertEquals("last modified util.Date s/b '1997-02-17 10:23:43.0'", "1997-02-17 10:23:43.0", "" + contact1.getLastModified());
         } else {
-            assertEquals("last modified util.Date s/b '1997-02-17 10:23:43.123'","1997-02-17 10:23:43.123","" + contact1.getLastModified());
+            assertEquals("last modified util.Date s/b '1997-02-17 10:23:43.123'", "1997-02-17 10:23:43.123", "" + contact1.getLastModified());
         }
 
-        assertEquals("what time is it? sql.Time s/b '10:23:52'","10:23:52","" + contact1.getWhatTimeIsIt());
+        assertEquals("what time is it? sql.Time s/b '10:23:52'", "10:23:52", "" + contact1.getWhatTimeIsIt());
 
 //        LocalDateTime d1 = LocalDateTime.ofInstant(Instant.parse("1994-02-17T13:09:53Z"), ZoneId.systemDefault());
 //        LocalDateTime d2 = LocalDateTime.ofInstant(Instant.parse("1994-02-17T10:23:43.998Z"), ZoneId.systemDefault());
@@ -448,24 +449,78 @@ public abstract class BaseTest extends TestCase {
         // Expected :1994-02-17T10:23:43.998Z (changed it to 997)
         // Actual   :1994-02-17T10:23:43.997Z
 
-
-        log.error(new Throwable("FFS " + connectionType ));
-
-
         if (connectionType == ConnectionTypes.MySQL) {
             assertEquals("test instant time.Instant s/b '1994-02-17T10:23:43Z'", "1994-02-17T10:23:43Z", "" + contact1.getTestInstant());
         } else {
-            assertEquals("test instant time.Instant s/b '1994-02-17T10:23:43.997Z'","1994-02-17T10:23:43.997Z","" + contact1.getTestInstant());
+            assertEquals("test instant time.Instant s/b '1994-02-17T10:23:43.997Z'", "1994-02-17T10:23:43.997Z", "" + contact1.getTestInstant());
+        }
+
+        assertEquals("some date s/b '1992-02-17 10:23:41.107'", "1992-02-17 10:23:41.107", "" + contact.getSomeDate());
+    }
+
+    // internal insert/update/delete/select statements pass parameters through a converter
+    // try some types that might fail if not converted.
+    // We might need something if we ever expose the general execute method
+    public void XtestExecuteOutsideConvert() throws NoChangesDetectedForUpdateException, SQLException, InvocationTargetException, IllegalAccessException {
+        Contact icontact = getContactForTest();
+        session.insert(icontact);
+
+        MetaData metaData = session.getMetaData();
+
+        Contact contact = getContactForTest();
+        String updateSQL = metaData.getUpdateStatement(contact, con);
+        log.warn("UPDATE SQL: " + updateSQL);
+
+        List<String> primaryKeys = metaData.getPrimaryKeys(contact.getClass(), con);
+
+        List<Object> params = new ArrayList<>(primaryKeys.size());
+        Map<String, PropertyInfo> changedProperties = metaData.getChangedProperties(contact, con);
+        Map<String, PropertyInfo> allProperties = metaData.getTableColumnsPropertyInfo(contact.getClass(), con);
+
+        for (String column : changedProperties.keySet()) {
+
+            if (!primaryKeys.contains(column)) {
+                Object value = allProperties.get(column).getter.invoke(contact);
+
+                params.add(value);
+            }
+        }
+
+        for (String column : primaryKeys) {
+            params.add(allProperties.get(column).getter.invoke(contact));
+        }
+
+        log.info(updateSQL);
+        log.info(params);
+        log.info("param size? " + params.size());
+        log.info("param count? " + countOccurrences("?", updateSQL));
+        log.info("param 18? " + params.get(17));
+        try (PreparedStatement st = con.prepareStatement(updateSQL)) {
+
+            // METHOD ONE: Raw.
+            // Fails every DB
+//            for (int j = 0; j < params.size(); j++) {
+//                st.setObject(j+1, params.get(j));
+//            }
+
+            // METHOD TWO: call setParameters which does some checking
+            // Fails the local DBs H2, HSQLDB, Derby and also Firebird
+            session.setParameters(st, params.toArray());
+
+            // METHOD THREE: What I do normally which is to pass through convert and then use setParameters
+            // I guess if we ever support a general execute method we could either leave this up to the user
+            // or have some kind of in-between call for the method.
+            st.executeUpdate();
         }
 
     }
 
-    public void testGetDbMetaData() throws SQLException {
+    public void XtestGetDbMetaData() throws SQLException {
         DatabaseMetaData dmd = con.getMetaData();
         log.info("GetDbMetaData for " + dmd.getDatabaseProductName());
 
         ResultSet result = dmd.getProcedures(null, "%", "%");
-        for (int i = 1; i<= result.getMetaData().getColumnCount(); i++) {
+        for (int i = 1; i <= result.getMetaData().getColumnCount(); i++) {
             System.out.println(i + " - " + result.getMetaData().getColumnLabel(i));
         }
 
@@ -529,6 +584,22 @@ public abstract class BaseTest extends TestCase {
             log.info(command);
             st.execute(command);
         }
+    }
+
+    private static int countOccurrences(String findStr, String instring) {
+        int lastIndex = 0;
+        int count = 0;
+
+        while(lastIndex != -1){
+
+            lastIndex = instring.indexOf(findStr,lastIndex);
+
+            if(lastIndex != -1){
+                count ++;
+                lastIndex += findStr.length();
+            }
+        }
+        return count;
     }
 
 }

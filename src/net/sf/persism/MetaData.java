@@ -224,7 +224,7 @@ final class MetaData {
                             columnInfo.autoIncrement = true;
                             if (!columnInfo.columnType.isCountable()) {
                                 columnInfo.autoIncrement = false;
-                                log.warn("Column " + columnInfo.columnName + " is annotated as autoIncrement but is a non-numeric type (" + columnInfo.columnType + ") - Ignoring.");
+                                log.warn("Column " + columnInfo.columnName + " is annotated as auto-increment but is a non-numeric type (" + columnInfo.columnType + ") - Ignoring.");
                             }
                         }
 
@@ -253,7 +253,7 @@ final class MetaData {
                     }
 
                     // Do we not have autoinc info here? Yes.
-                    // IS_AUTOINCREMENT = NO or YES - Firebird has NO ANYWAY but we should maybe check other DBs
+                    // IS_AUTOINCREMENT = NO or YES
                     if (!columnInfo.autoIncrement) {
                         columnInfo.autoIncrement = containsColumn(rs, "IS_AUTOINCREMENT") && "YES".equalsIgnoreCase(rs.getString("IS_AUTOINCREMENT"));
                     }
@@ -417,7 +417,6 @@ final class MetaData {
     }
 
     /**
-     *
      * @param object
      * @param connection
      * @return sql update string

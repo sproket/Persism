@@ -38,6 +38,7 @@ public final class Contact implements Persistable<Contact> {
     private Time whatTimeIsIt;
     private Instant testInstant;
     private Instant testInstant2;
+    private java.util.Date someDate;
 
     // for persistable
     private Contact originalValue;
@@ -216,6 +217,14 @@ public final class Contact implements Persistable<Contact> {
 
     public void setTestInstant2(Instant testInstant2) {
         this.testInstant2 = testInstant2;
+    }
+
+    public java.util.Date getSomeDate() {
+        return someDate;
+    }
+
+    public void setSomeDate(java.util.Date someDate) {
+        this.someDate = someDate;
     }
 
     @Override

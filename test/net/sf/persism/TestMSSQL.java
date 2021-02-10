@@ -27,12 +27,17 @@ public final class TestMSSQL extends BaseTest {
     protected void setUp() throws Exception {
          //BaseTest.mssqlmode = false; // to run in JTDS MODE
 
+        if (BaseTest.mssqlmode) {
+            connectionType = ConnectionTypes.MSSQL;
+        } else {
+            connectionType = ConnectionTypes.JTDS;
+        }
         super.setUp();
         log.error("SQLMODE? " + BaseTest.mssqlmode);
         con = MSSQLDataSource.getInstance().getConnection();
         log.info("PRODUCT? " + con.getMetaData().getDriverName() + " - " + con.getMetaData().getDriverVersion());
 
-        createTables(BaseTest.mssqlmode ? ConnectionTypes.MSSQL : ConnectionTypes.JTDS);
+        createTables();
 
         session = new Session(con);
     }
@@ -66,7 +71,7 @@ public final class TestMSSQL extends BaseTest {
     }
 
     @Override
-    protected void createTables(ConnectionTypes connectionType) throws SQLException {
+    protected void createTables() throws SQLException {
         log.info("createTables");
         List<String> commands = new ArrayList<String>(3);
 
@@ -106,7 +111,9 @@ public final class TestMSSQL extends BaseTest {
                 " Fax VARCHAR(30) NULL, " +
                 " STATUS CHAR(1) NULL, " +
                 " Date_Registered datetime  default current_timestamp, " +
-                " Date_Of_Last_Order datetime " +
+                " Date_Of_Last_Order datetime, " +
+                " TestLocalDate datetime, " +
+                " TestLocalDateTime datetime " +
                 ") ");
 
         if (isTableInDatabase("TABLENOPRIMARY", con)) {
@@ -151,6 +158,7 @@ public final class TestMSSQL extends BaseTest {
                 "   [LastModified] [datetime] NULL, " +
                 "   [Notes] [text] NULL, " +
                 "   [AmountOwed] [float] NULL, " +
+                "   [SomeDate] [datetime2] NULL, " +
                 "   [TestInstant] [datetime2] NULL, " +
                 "   [TestInstant2] [datetime] NULL, " +
                 "   [WhatTimeIsIt] [time](7) NULL, " +
@@ -723,6 +731,8 @@ public final class TestMSSQL extends BaseTest {
         order.setCreated(LocalDate.now());
         order.setPaid(false);
         session.insert(order);
+
+        session.fetch(order);
 
         List<CustomerOrder> list = session.query(CustomerOrder.class, "[spCustomerOrders](?)", "123");
         log.info(list);
