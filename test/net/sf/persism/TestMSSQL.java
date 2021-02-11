@@ -161,6 +161,7 @@ public final class TestMSSQL extends BaseTest {
                 "   [SomeDate] [datetime2] NULL, " +
                 "   [TestInstant] [datetime2] NULL, " +
                 "   [TestInstant2] [datetime] NULL, " +
+                "   [WhatMiteIsIt] [time](7) NULL, " +
                 "   [WhatTimeIsIt] [time](7) NULL, " +
                 " CONSTRAINT [PK_Contacts] PRIMARY KEY CLUSTERED  " +
                 "( " +

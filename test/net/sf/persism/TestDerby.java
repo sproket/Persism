@@ -159,6 +159,7 @@ public final class TestDerby extends BaseTest {
                 "   SomeDate Timestamp, " +
                 "   TestINstant Timestamp, " +
                 "   TestINstant2 Timestamp, " +
+                "   WhatMiteIsIt TIME, " +
                 "   WhatTimeIsIt TIME) ";
 
         executeCommand(sql, con);

@@ -148,13 +148,14 @@ public final class TestSQLite extends BaseTest {
                 " StateProvince varchar(50) NULL, " +
                 " ZipPostalCode varchar(10) NULL, " +
                 " Country varchar(50) NULL, " +
-                " DateAdded TIMESTAMP NULL, " + // was DATETIME
+                " DateAdded TIMESTAMP NULL, " + // was DATETIME. What is TIMESTAMP in SQLite? RANDOM I guess.
                 " LastModified DATETIME NULL, " +
                 " Notes text NULL, " +
                 " AmountOwed float NULL, " +
-                " Some_DATE DATETIME NULL, " +    // DATETIME reads LONG for this FFS. TODO TEST AFTER WTF IS TIMESTAMP IN SQLITE?
-                " TestInstant TIMESTAMP NULL, " +    // DATETIME reads LONG for this FFS. TODO TEST AFTER WTF IS TIMESTAMP IN SQLITE?
-                " TestInstant2 DATETIME NULL, " +  // TIMESTAMP reads STRING for this FFS. TODO TEST AFTER WTF IS TIMESTAMP IN SQLITE?
+                " Some_DATE DATETIME NULL, " +
+                " TestInstant TIMESTAMP NULL, " +
+                " TestInstant2 DATETIME NULL, " +
+                " WhatMiteIsIt time NULL, " +
                 " WhatTimeIsIt time NULL " +
                 ") ";
         executeCommand(sql, con);

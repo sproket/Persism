@@ -206,6 +206,7 @@ end;
                 "   SomE_DaTE TIMESTAMP NULL, " +
                 "   TestInstant TIMESTAMP NULL, " +
                 "   TestInstant2 DATE NULL, " +
+                "   WhatMiteIsIt TIMESTAMP NULL, " +
                 "   WhatTimeIsIt TIMESTAMP NULL ) ";
         executeCommand(sql, con);
     }

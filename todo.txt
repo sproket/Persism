@@ -76,3 +76,6 @@ todo check each DB type for char or uddi type GeneratedKeys I think only Postgre
 
 
 https://www.cis.upenn.edu/~bcpierce/courses/629/jdkdocs/guide/jdbc/getstart/mapping.doc.html
+
+
+https://www.testcontainers.org/ ?

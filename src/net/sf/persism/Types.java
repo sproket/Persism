@@ -5,6 +5,7 @@ import java.sql.Blob;
 import java.sql.Clob;
 import java.sql.Time;
 import java.sql.Timestamp;
+import java.time.LocalTime;
 import java.util.UUID;
 
 /**
@@ -29,13 +30,14 @@ enum Types {
     FloatType(Float.class),
     doubleType(double.class),
     DoubleType(Double.class),
-    DecimalType(BigDecimal.class),
+    DecimalType(BigDecimal.class), // todo BigInteger? MAKE IT HAPPEN!
     StringType(String.class),
     characterType(char.class),
     CharacterType(Character.class),
     UtilDateType(java.util.Date.class),
     SQLDateType(java.sql.Date.class),
     TimeType(Time.class),
+    LocalTimeType(LocalTime.class),
     TimestampType(Timestamp.class),
     LocalDateType(java.time.LocalDate.class),
     LocalDateTimeType(java.time.LocalDateTime.class),
@@ -63,6 +65,10 @@ enum Types {
     }
 
     public static <T> Types getType(Class<T> type) {
+        if (type.isEnum()) {
+            return EnumType;
+        }
+
         for (Types t : values()) {
             if (t.type.equals(type)) {
                 return t;

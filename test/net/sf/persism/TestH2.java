@@ -189,6 +189,7 @@ public final class TestH2 extends BaseTest {
                 "   Some_DATE Datetime NULL, " +
                 "   TestInstant Datetime NULL, " +
                 "   TestInstant2 Datetime NULL, " + // DATE NOT SUPPORTED MAPPED TO INSTANCE UnsupportedOperationException
+                "   WhatMiteIsIt TIME NULL, " +
                 "   WhatTimeIsIt TIME NULL) ";
 
         executeCommand(sql, con);

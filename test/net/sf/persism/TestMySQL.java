@@ -129,6 +129,7 @@ public final class TestMySQL extends BaseTest {
                 "   SOME_DATE TIMESTAMP NULL, " +
                 "   tesTInstanT DateTime NULL, " +
                 "   tesTInstanT2 TIMESTAMP NULL, " +
+                "   WhatMiteIsIt TIME NULL, " +
                 "   WhatTimeIsIt TIME NULL) ";
 
         executeCommand(sql, con);

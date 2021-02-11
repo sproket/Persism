@@ -15,8 +15,8 @@ final class ColumnInfo {
     // H2 - BIT - comes back NULL
     Types columnType;
 
+    // Currently just kept for possible future use
     int sqlColumnType;
-
     String sqlColumnTypeName;
 
     // indicates this column is generated. Only for Auto-Inc for now

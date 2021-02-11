@@ -181,6 +181,7 @@ public final class TestHSQLDB extends BaseTest {
                 "   TestInstant DateTime NULL, " +
                 "   SomeDate DateTime NULL, " +
                 "   TestInstant2 DateTime NULL, " +
+                "   WhatMiteIsIt TIME NULL, " +
                 "   WhatTimeIsIt TIME NULL) ";
 
         executeCommand(sql, con);

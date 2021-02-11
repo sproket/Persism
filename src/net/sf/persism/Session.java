@@ -10,10 +10,7 @@ import java.sql.*;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.time.Instant;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.ZoneId;
+import java.time.*;
 import java.util.*;
 import java.util.Date;
 
@@ -367,9 +364,9 @@ public final class Session {
         Result result = new Result();
 
         // If we know this type it means it's a primitive type. Not a DAO so we use a different rule to read those
-        boolean readPrimitive = Types.getType(objectClass) != null;
+        boolean isPOJO = Types.getType(objectClass) == null;
 
-        if (!readPrimitive && objectClass.getAnnotation(NotTable.class) == null) {
+        if (isPOJO && objectClass.getAnnotation(NotTable.class) == null) {
             // Make sure columns are initialized if this is a table.
             metaData.getTableColumnsPropertyInfo(objectClass, connection);
         }
@@ -379,14 +376,12 @@ public final class Session {
             exec(result, sql, parameters);
 
             while (result.rs.next()) {
-
-                if (readPrimitive) {
-                    list.add((T) readPrimitive(result.rs, 1, objectClass));
-                } else {
+                if (isPOJO) {
                     // should be getDeclaredConstructor().newInstance() now.
                     T t = objectClass.newInstance();
-                    t = (T) readObject(t, result.rs);
-                    list.add(t);
+                    list.add(readObject(t, result.rs));
+                } else {
+                    list.add((T) readColumn(result.rs, 1, objectClass));
                 }
             }
 
@@ -496,7 +491,7 @@ public final class Session {
      */
     public <T> T fetch(Class<T> objectClass, String sql, Object... parameters) throws PersismException {
         // If we know this type it means it's a primitive type. Not a DAO so we use a different rule to read those
-        boolean readPrimitive = Types.getType(objectClass) != null;
+        boolean isPOJO = Types.getType(objectClass) == null;
 
         Result result = new Result();
         try {
@@ -505,13 +500,12 @@ public final class Session {
 
             if (result.rs.next()) {
 
-                if (readPrimitive) {
-                    return (T) readPrimitive(result.rs, 1, objectClass);
-
-                } else {
+                if (isPOJO) {
                     T t = objectClass.newInstance();
                     readObject(t, result.rs);
                     return t;
+                } else {
+                    return (T) readColumn(result.rs, 1, objectClass);
                 }
             }
 
@@ -555,7 +549,7 @@ public final class Session {
 
     private <T> T readObject(Object object, ResultSet rs) throws IllegalAccessException, SQLException, InvocationTargetException, IOException {
 
-        Class objectClass = object.getClass();
+        Class<?> objectClass = object.getClass();
         // We should never call this method with a primitive type.
         assert Types.getType(objectClass) == null;
 
@@ -572,7 +566,7 @@ public final class Session {
         // If not throw a PersismException
         Collection<PropertyInfo> allProperties = MetaData.getPropertyInfo(objectClass);
         if (properties.values().size() < allProperties.size()) {
-            Set<PropertyInfo> missing = new HashSet<PropertyInfo>(allProperties.size());
+            Set<PropertyInfo> missing = new HashSet<>(allProperties.size());
             missing.addAll(allProperties);
             missing.removeAll(properties.values());
 
@@ -585,6 +579,7 @@ public final class Session {
 
             throw new PersismException("Object " + objectClass + " was not properly initialized. Some properties not initialized in the queried columns (" + sb + ").");
         }
+
         ResultSetMetaData rsmd = rs.getMetaData();
         int columnCount = rsmd.getColumnCount();
         List<String> foundColumns = new ArrayList<>(columnCount);
@@ -595,9 +590,9 @@ public final class Session {
             PropertyInfo columnProperty = properties.get(columnName);
 
             if (columnProperty != null) {
-                Class getterType = columnProperty.getter.getReturnType();
+                Class<?> returnType = columnProperty.getter.getReturnType();
 
-                Object value = readPrimitive(rs, j, getterType);
+                Object value = readColumn(rs, j, returnType);
 
                 foundColumns.add(columnName);
 
@@ -605,10 +600,9 @@ public final class Session {
                     try {
                         columnProperty.setter.invoke(object, value);
                     } catch (IllegalArgumentException e) {
-                        String msg = "Object " + objectClass + ". Column: " + columnName + " Type of property: " + getterType + " - Type read: " + value.getClass() + " VALUE: " + value;
+                        String msg = "Object " + objectClass + ". Column: " + columnName + " Type of property: " + returnType + " - Type read: " + value.getClass() + " VALUE: " + value;
                         throw new PersismException(msg, e);
                     }
-
                 }
             }
         }
@@ -631,20 +625,15 @@ public final class Session {
         }
 
         return (T) object;
-
     }
 
-    private Object readPrimitive(ResultSet rs, int column, Class returnType) throws SQLException, IOException {
+    private Object readColumn(ResultSet rs, int column, Class<?> returnType) throws SQLException, IOException {
         ResultSetMetaData rsmd = rs.getMetaData();
         int sqlColumnType = rsmd.getColumnType(column);
         String columnName = rsmd.getColumnLabel(column);
-        Object value = read(rs, column, columnName, sqlColumnType, returnType);
-        return value;
-    }
 
-    // Make an educated guess read an object from the ResultSet to get the best Class type of the object
-    private Object read(ResultSet rs, int column, String columnName, int sqlColumnType, Class returnType) throws SQLException, IOException {
         Object value;
+
         Types columnType = Types.convert(sqlColumnType); // note this could be null if we can't match a type
         if (columnType != null) {
 
@@ -765,6 +754,10 @@ public final class Session {
                 } else if (targetType.equals(Time.class)) {
                     // SQLITE!
                     returnValue = new Time(((Integer) value).longValue());
+
+                } else if(targetType.equals(LocalTime.class)) {
+                    // SQLITE!!
+                    returnValue = new Time((Integer) value).toLocalTime();
                 }
                 break;
 
@@ -796,7 +789,6 @@ public final class Session {
                 } else if (targetType.equals(Instant.class)) {
                     returnValue = Instant.ofEpochMilli(lval);
                 }
-
                 break;
 
             case floatType:
@@ -915,6 +907,10 @@ public final class Session {
                     dval = tryParseDate(value, targetType, columnName, df);
                     returnValue = new Time(dval.getTime());
 
+                } else if (targetType.equals(LocalTime.class)) {
+                    // JTDS Fails again...
+                    returnValue = LocalTime.parse(""+value);
+
                 } else if (targetType.equals(Character.class) || targetType.equals(char.class)) {
                     String s = "" + value;
                     if (s.length() > 0) {
@@ -947,6 +943,11 @@ public final class Session {
                 returnValue = Timestamp.valueOf((LocalDateTime) value);
                 break;
 
+            case LocalTimeType:
+                log.debug("LocalTimeType");
+                returnValue = Time.valueOf((LocalTime) value);
+                break;
+
             case InstantType:
                 returnValue = Timestamp.from((Instant) value);
                 break;
@@ -974,11 +975,19 @@ public final class Session {
                 } else if (targetType.equals(Time.class)) {
                     // Oracle doesn't seem to have Time so we use Timestamp
                     returnValue = new Time(((Date) value).getTime());
+
+                } else if (targetType.equals(LocalTime.class)) {
+                    // Oracle.... Sigh
+                    Date dt = (Date) value;
+                    returnValue = dt.toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime().toLocalTime();
                 }
                 break;
 
             case TimeType:
                 log.debug("TimeType");
+                if (targetType.equals(LocalTime.class)) {
+                    returnValue = LocalTime.parse(""+value);
+                }
                 break;
 
             case OffsetDateTimeType:
@@ -998,14 +1007,15 @@ public final class Session {
                 break;
 
             case ClobType:
-                log.debug("ClobType");
-                break;
-
             case BlobType:
-                log.debug("BlobType");
+                log.warn("why? Clob is read as String, Blob as byte array - see readColumn method", new Throwable());
                 break;
 
             case EnumType:
+                // No need to convert it here.
+                // If it's being used for the property setter then it's OK
+                // If it's being used by setParameters it's converted to String
+                // The String case above converts from the String to the Enum
                 log.debug("EnumType");
                 break;
 
@@ -1083,13 +1093,7 @@ public final class Session {
 
             if (param != null) {
 
-                Types type;
-                if (param.getClass().isEnum()) {
-                    type = Types.EnumType;
-                } else {
-                    type = Types.getType(param.getClass());
-                }
-
+                Types type = Types.getType(param.getClass());
                 assert type != null;
 
                 switch (type) {
@@ -1148,6 +1152,7 @@ public final class Session {
                         st.setDate(n, new java.sql.Date(date.getTime()));
                         break;
 
+
                     case TimeType:
                         st.setTime(n, (Time) param);
                         break;
@@ -1156,18 +1161,13 @@ public final class Session {
                         st.setTimestamp(n, (Timestamp) param);
                         break;
 
-// THESE are converted to Timestamp by convert method.
-//                    case LocalDateType:
-//                        log.debug("LocalDateType");
-//                        break;
-//
-//                    case LocalDateTimeType:
-//                        log.debug("LocalDateTimeType");
-//                        break;
-//
-//                    case InstantType:
-//                        log.debug("InstantType");
-//                        break;
+                    // THESE are converted to Timestamp (or Time) by convert method.
+                    case LocalTimeType:
+                    case LocalDateType:
+                    case LocalDateTimeType:
+                    case InstantType:
+                        log.warn(type + " why would this occur in setParameters?", new Throwable());
+                        break;
 
                     case OffsetDateTimeType:
                         // todo OffsetDateTime
@@ -1183,13 +1183,10 @@ public final class Session {
                         break;
 
                     case ClobType:
-                        log.debug("ClobType"); // doesn't occur since Clobs are mapped into Strings
-                        st.setClob(n, (Clob) param);
-                        break;
-
                     case BlobType:
-                        log.debug("BlobType"); // doesn't occur since Blobs are mapped into byte arrays
-                        st.setBlob(n, (Blob) param);
+                        // Clob is converted to String Blob is converted to byte array
+                        // So this should not occur.
+                        log.warn(type + " why would this occur in setParameters?", new Throwable());
                         break;
 
                     case EnumType:
@@ -1217,7 +1214,6 @@ public final class Session {
             n++;
         }
     }
-
 
     // Prevent duplicate "Possible overflow column" and other possibly repeating messages
     private static void warnNoDuplicates(String message) {

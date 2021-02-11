@@ -1,17 +1,13 @@
 package net.sf.persism;
 
-import net.sf.persism.dao.Contact;
 import net.sf.persism.dao.Customer;
 import net.sf.persism.dao.DAOFactory;
 import net.sf.persism.dao.Order;
 
 import java.sql.DriverManager;
 import java.sql.SQLException;
-import java.sql.Time;
-import java.sql.Timestamp;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.time.LocalTime;
 import java.util.*;
 
 public final class TestFirebird extends BaseTest {
@@ -135,6 +131,7 @@ public final class TestFirebird extends BaseTest {
                 "   SomeDate TIMESTAMP, \n" +
                 "   TestInstant TIMESTAMP, \n" +
                 "   TestInstant2 TIMESTAMP, \n" +
+                "   WhatMiteIsIt TIME, \n  " +
                 "   WhatTimeIsIt TIME ) ";
 
         executeCommand(sql, con);

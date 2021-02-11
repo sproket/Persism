@@ -187,6 +187,7 @@ public final class TestPostgreSQL extends BaseTest {
                 " SomeDate Timestamp NULL, " +
                 " TestINstant Timestamp NULL, " +
                 " TestINstant2 Timestamp NULL, " +
+                " WhatMiteIsIt time NULL, " +
                 " WhatTimeIsIt time NULL " +
                 ") ";
         commands.add(sql);

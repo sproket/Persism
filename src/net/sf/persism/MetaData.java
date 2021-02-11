@@ -317,7 +317,7 @@ final class MetaData {
             return propertyMap.get(objectClass);
         }
 
-        Map<String, PropertyInfo> propertyNames = new HashMap<String, PropertyInfo>(32);
+        Map<String, PropertyInfo> propertyNames = new HashMap<>(32);
 
         Method[] methods = objectClass.getMethods();
         for (Method method : methods) {
@@ -822,12 +822,12 @@ final class MetaData {
         guesses.add(replaceAll(guess, ' ', '_')); // plural name with spaces changed to _
     }
 
-    List<String> getPrimaryKeys(Class objectClass, Connection connection) throws PersismException {
+    List<String> getPrimaryKeys(Class<?> objectClass, Connection connection) throws PersismException {
 
         // ensures meta data will be available
         String tableName = getTableName(objectClass, connection);
 
-        List<String> primaryKeys = new ArrayList<String>(4);
+        List<String> primaryKeys = new ArrayList<>(4);
         Map<String, ColumnInfo> map = getColumns(objectClass, connection);
         for (ColumnInfo col : map.values()) {
             if (col.primary) {

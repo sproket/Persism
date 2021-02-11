@@ -7,6 +7,7 @@ import java.sql.Date;
 import java.sql.Time;
 import java.sql.Timestamp;
 import java.time.Instant;
+import java.time.LocalTime;
 import java.util.UUID;
 
 /**
@@ -35,7 +36,10 @@ public final class Contact implements Persistable<Contact> {
     private Timestamp lastModified;
     private float amountOwed;
     private String notes;
+
     private Time whatTimeIsIt;
+    private LocalTime whatMiteIsIt;
+
     private Instant testInstant;
     private Instant testInstant2;
     private java.util.Date someDate;
@@ -225,6 +229,14 @@ public final class Contact implements Persistable<Contact> {
 
     public void setSomeDate(java.util.Date someDate) {
         this.someDate = someDate;
+    }
+
+    public LocalTime getWhatMiteIsIt() {
+        return whatMiteIsIt;
+    }
+
+    public void setWhatMiteIsIt(LocalTime whatMiteIsIt) {
+        this.whatMiteIsIt = whatMiteIsIt;
     }
 
     @Override

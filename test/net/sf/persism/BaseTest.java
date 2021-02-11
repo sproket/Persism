@@ -373,6 +373,7 @@ public abstract class BaseTest extends TestCase {
         contact.setDateAdded(Date.valueOf(ldt1.toLocalDate()));
         contact.setLastModified(Timestamp.valueOf(ldt2));
         contact.setWhatTimeIsIt(Time.valueOf(ldt3.toLocalTime()));
+        contact.setWhatMiteIsIt(ldt4.toLocalTime());
         contact.setTestInstant(ldt4.toInstant(ZoneOffset.UTC));
         contact.setTestInstant2(ldt4.toInstant(ZoneOffset.UTC));
         contact.setSomeDate(date);
@@ -426,6 +427,7 @@ public abstract class BaseTest extends TestCase {
         }
 
         assertEquals("what time is it? sql.Time s/b '10:23:52'", "10:23:52", "" + contact1.getWhatTimeIsIt());
+        assertEquals("what MITE? is it? LocalTime s/b '10:23:43.997'", "10:23:43", "" + contact1.getWhatMiteIsIt());
 
 //        LocalDateTime d1 = LocalDateTime.ofInstant(Instant.parse("1994-02-17T13:09:53Z"), ZoneId.systemDefault());
 //        LocalDateTime d2 = LocalDateTime.ofInstant(Instant.parse("1994-02-17T10:23:43.998Z"), ZoneId.systemDefault());
