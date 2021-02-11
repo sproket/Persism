@@ -156,6 +156,7 @@ public final class TestDerby extends BaseTest {
                 "   LastModified Timestamp,  " +
                 "   Notes Clob,  " +
                 "   AmountOwed REAL,  " +
+                "   \"BigInt\" DECIMAL(20)  ,  " +
                 "   SomeDate Timestamp, " +
                 "   TestINstant Timestamp, " +
                 "   TestINstant2 Timestamp, " +

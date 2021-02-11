@@ -186,6 +186,7 @@ public final class TestH2 extends BaseTest {
                 "   LastModified DateTime NULL, " +
                 "   Notes text NULL, " +
                 "   AmountOwed REAL NULL, " +
+                "   BigInt DECIMAL(20) NULL, " +
                 "   Some_DATE Datetime NULL, " +
                 "   TestInstant Datetime NULL, " +
                 "   TestInstant2 Datetime NULL, " + // DATE NOT SUPPORTED MAPPED TO INSTANCE UnsupportedOperationException

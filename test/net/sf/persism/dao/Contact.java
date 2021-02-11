@@ -3,6 +3,7 @@ package net.sf.persism.dao;
 import net.sf.persism.PersismException;
 import net.sf.persism.Persistable;
 
+import java.math.BigInteger;
 import java.sql.Date;
 import java.sql.Time;
 import java.sql.Timestamp;
@@ -43,6 +44,8 @@ public final class Contact implements Persistable<Contact> {
     private Instant testInstant;
     private Instant testInstant2;
     private java.util.Date someDate;
+
+    private BigInteger bigInt;
 
     // for persistable
     private Contact originalValue;
@@ -237,6 +240,14 @@ public final class Contact implements Persistable<Contact> {
 
     public void setWhatMiteIsIt(LocalTime whatMiteIsIt) {
         this.whatMiteIsIt = whatMiteIsIt;
+    }
+
+    public BigInteger getBigInt() {
+        return bigInt;
+    }
+
+    public void setBigInt(BigInteger bigInt) {
+        this.bigInt = bigInt;
     }
 
     @Override

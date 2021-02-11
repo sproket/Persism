@@ -128,6 +128,7 @@ public final class TestFirebird extends BaseTest {
                 "   LastModified TIMESTAMP, \n" +
                 "   Notes BLOB SUB_TYPE TEXT, \n" +
                 "   AmountOwed REAL, \n" +
+                "   \"BigInt\" DECIMAL(20), \n" +
                 "   SomeDate TIMESTAMP, \n" +
                 "   TestInstant TIMESTAMP, \n" +
                 "   TestInstant2 TIMESTAMP, \n" +

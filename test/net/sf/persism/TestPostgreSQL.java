@@ -184,6 +184,7 @@ public final class TestPostgreSQL extends BaseTest {
                 " LastModified Timestamp NULL, " +
                 " Notes text NULL, " +
                 " AmountOwed float NULL, " +
+                " BigInt DECIMAL(20) NULL, " +
                 " SomeDate Timestamp NULL, " +
                 " TestINstant Timestamp NULL, " +
                 " TestINstant2 Timestamp NULL, " +

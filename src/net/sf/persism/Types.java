@@ -1,6 +1,7 @@
 package net.sf.persism;
 
 import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.sql.Blob;
 import java.sql.Clob;
 import java.sql.Time;
@@ -30,7 +31,8 @@ enum Types {
     FloatType(Float.class),
     doubleType(double.class),
     DoubleType(Double.class),
-    DecimalType(BigDecimal.class), // todo BigInteger? MAKE IT HAPPEN!
+    BigDecimalType(BigDecimal.class),
+    BigIntegerType(BigInteger.class),
     StringType(String.class),
     characterType(char.class),
     CharacterType(Character.class),
@@ -92,7 +94,7 @@ enum Types {
 
             case java.sql.Types.NUMERIC:
             case java.sql.Types.DECIMAL:
-                result = DecimalType;
+                result = BigDecimalType;
                 break;
 
             case java.sql.Types.BIT:
@@ -176,7 +178,7 @@ enum Types {
 
     public boolean isCountable() {
         return this == IntegerType || this == integerType || this == LongType || this == longType || this == byteType || this == ByteType
-                || this == ShortType || this == shortType || this == DoubleType || this == doubleType || this == DecimalType;
+                || this == ShortType || this == shortType || this == DoubleType || this == doubleType || this == BigDecimalType;
     }
 }
 

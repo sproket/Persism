@@ -72,8 +72,6 @@ Caused by: java.lang.IllegalArgumentException: argument type mismatch
 	at net.sf.persism.Session.readObject(Session.java:569)
 	... 3 more
 
-todo check each DB type for char or uddi type GeneratedKeys I think only PostgreSQL supports it.
-
 
 https://www.cis.upenn.edu/~bcpierce/courses/629/jdkdocs/guide/jdbc/getstart/mapping.doc.html
 

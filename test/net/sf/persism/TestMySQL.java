@@ -126,6 +126,7 @@ public final class TestMySQL extends BaseTest {
                 "   LastModified DATETIME NULL, " +
                 "   Notes text NULL, " +
                 "   AmountOwed FLOAT NULL, " +
+                "   `BigInt` DECIMAL(20) NULL, " +
                 "   SOME_DATE TIMESTAMP NULL, " +
                 "   tesTInstanT DateTime NULL, " +
                 "   tesTInstanT2 TIMESTAMP NULL, " +

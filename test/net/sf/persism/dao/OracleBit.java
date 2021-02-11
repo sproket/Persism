@@ -2,6 +2,7 @@ package net.sf.persism.dao;
 
 import net.sf.persism.annotations.Column;
 
+import java.math.BigInteger;
 import java.util.Date;
 
 public final class OracleBit {
@@ -14,7 +15,7 @@ public final class OracleBit {
     private String customerId;
     private Boolean paid;
     private Boolean garbage;
-
+    private BigInteger biggie;
 
     public long getId() {
         return id;
@@ -62,6 +63,14 @@ public final class OracleBit {
 
     public void setGarbage(Boolean garbage) {
         this.garbage = garbage;
+    }
+
+    public BigInteger getBiggie() {
+        return biggie;
+    }
+
+    public void setBiggie(BigInteger biggie) {
+        this.biggie = biggie;
     }
 
     @Override

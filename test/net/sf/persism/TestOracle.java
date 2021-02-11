@@ -15,6 +15,7 @@ import net.sf.persism.ddl.FieldDef;
 import net.sf.persism.ddl.TableDef;
 
 import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.sql.*;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -115,6 +116,7 @@ end;
                 "\"PAID\" NUMBER(3), " + // BIT TEST
                 "\"CREATED\" DATE, " +
                 "\"GARBAGE\" CHAR(1), " + // BIT TEST
+                "\"BIGGIE\" NUMBER(38), " + // BIT TEST
                 " CONSTRAINT \"ORACLEBIT_PK\" PRIMARY KEY (\"ID\") ENABLE" +
                 "   ) ");
 
@@ -203,6 +205,7 @@ end;
                 "   LastModified TIMESTAMP NULL, " +
                 "   Notes CLOB NULL, " +
                 "   AmountOwed  NUMBER(10,2) NULL, " +
+                "   BigInt  NUMBER(20) NULL, " +
                 "   SomE_DaTE TIMESTAMP NULL, " +
                 "   TestInstant TIMESTAMP NULL, " +
                 "   TestInstant2 DATE NULL, " +
@@ -291,7 +294,7 @@ end;
         bt1.setCreated(new Date(System.currentTimeMillis()));
         bt1.setPaid(true);
         bt1.setGarbage(true);
-
+        bt1.setBiggie(new BigInteger("8972987349823740948742094874092478", 10));
         session.insert(bt1);
 
         OracleBit test = new OracleBit();
@@ -301,6 +304,7 @@ end;
         log.info(test);
         assertTrue(test.isPaid());
         assertTrue(test.isGarbage());
+        assertEquals("s/b '8972987349823740948742094874092478'", "8972987349823740948742094874092478", test.getBiggie().toString());
 
         test = new OracleBit();
         test.setId(2);
@@ -329,6 +333,8 @@ end;
         log.info(test);
         assertNull(test.isPaid());
         assertNull(test.isGarbage());
+
+        session.query(OracleBit.class, "select * from OracleBit");
 
         // count 3 after from query
     }

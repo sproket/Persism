@@ -158,6 +158,7 @@ public final class TestMSSQL extends BaseTest {
                 "   [LastModified] [datetime] NULL, " +
                 "   [Notes] [text] NULL, " +
                 "   [AmountOwed] [float] NULL, " +
+                "   [BigInt] [DECIMAL](20) NULL, " +
                 "   [SomeDate] [datetime2] NULL, " +
                 "   [TestInstant] [datetime2] NULL, " +
                 "   [TestInstant2] [datetime] NULL, " +

@@ -190,7 +190,7 @@ public class UtilsForTests {
                     sqlType = "NUMBER(" + field.getLength() + "," + field.getScale() + ")";
                     break;
 
-                case DecimalType:
+                case BigDecimalType:
                     sqlType = "NUMBER(" + field.getLength() + "," + field.getScale() + ")";
                     break;
 

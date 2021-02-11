@@ -6,6 +6,7 @@ import java.io.*;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.sql.*;
 import java.text.DateFormat;
 import java.text.ParseException;
@@ -682,18 +683,32 @@ public final class Session {
                 case IntegerType:
                     value = rs.getObject(column) == null ? null : rs.getInt(column);
                     break;
+
                 case LongType:
                     value = rs.getObject(column) == null ? null : rs.getLong(column);
                     break;
+
                 case FloatType:
                     value = rs.getObject(column) == null ? null : rs.getFloat(column);
                     break;
+
                 case DoubleType:
                     value = rs.getObject(column) == null ? null : rs.getDouble(column);
                     break;
-                case DecimalType:
-                    value = rs.getBigDecimal(column);
+
+                case BigIntegerType:
+                case BigDecimalType:
+                    value = null;
+                    if (returnType.equals(BigInteger.class)) {
+                        BigDecimal bd = rs.getBigDecimal(column);
+                        if (bd != null) {
+                            value = bd.toBigInteger();
+                        }
+                    } else {
+                        value = rs.getBigDecimal(column);
+                    }
                     break;
+
                 case TimeType:
                     value = rs.getTime(column);
                     break;
@@ -817,7 +832,7 @@ public final class Session {
                 }
                 break;
 
-            case DecimalType:
+            case BigDecimalType:
                 if (targetType.equals(Float.class) || targetType.equals(float.class)) {
                     returnValue = ((Number) value).floatValue();
                     warnNoDuplicates("Possible overflow column " + columnName + " - Property is Float and column is BigDecimal");
@@ -1133,8 +1148,12 @@ public final class Session {
                         st.setDouble(n, (Double) param);
                         break;
 
-                    case DecimalType:
+                    case BigDecimalType:
                         st.setBigDecimal(n, (BigDecimal) param);
+                        break;
+
+                    case BigIntegerType:
+                        st.setString(n, ""+param);
                         break;
 
                     case StringType:

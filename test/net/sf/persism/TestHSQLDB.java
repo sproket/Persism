@@ -178,6 +178,7 @@ public final class TestHSQLDB extends BaseTest {
                 "   LastModified DateTime NULL, " +
                 "   Notes Clob NULL, " +
                 "   AmountOwed REAL NULL, " +
+                "   BigInt DECIMAL(20) NULL, " +
                 "   TestInstant DateTime NULL, " +
                 "   SomeDate DateTime NULL, " +
                 "   TestInstant2 DateTime NULL, " +
