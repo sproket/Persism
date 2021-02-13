@@ -18,8 +18,6 @@ public final class TestMySQL extends BaseTest {
 
     private static final Log log = Log.getLogger(TestMySQL.class);
 
-    // TODO MariaDB? same as MSSQL - add a flag to use mariadb driver - see downloads folder - Can't. Doesn't install on my win7 vm.
-
     @Override
     protected void setUp() throws Exception {
         connectionType = ConnectionTypes.MySQL;
@@ -84,7 +82,7 @@ public final class TestMySQL extends BaseTest {
                 " Phone VARCHAR(30) NULL, " +
                 " Fax VARCHAR(30) NULL, " +
                 " Date_Registered TIMESTAMP, " +
-                " Date_Of_Last_Order DATETIME NULL, " +
+                " Date_Of_Last_Order DATE NULL, " +
                 " TestLocalDate DATETIME NULL, " +
                 " TestLocalDateTime TIMESTAMP NULL " +
                 ") ");

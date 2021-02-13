@@ -11,10 +11,6 @@ import java.text.NumberFormat;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.time.LocalTime;
-import java.time.temporal.ChronoUnit;
-import java.time.temporal.TemporalAmount;
-import java.time.temporal.TemporalUnit;
 import java.util.*;
 import java.util.Date;
 
@@ -109,7 +105,7 @@ public final class TestH2 extends BaseTest {
                 " Fax VARCHAR(30) NULL, " +
                 " Status CHAR(1) NULL, " +
                 " Date_Registered datetime default current_timestamp, " +
-                " Date_Of_Last_Order datetime NULL, " +
+                " Date_Of_Last_Order DATE NULL, " +
                 " TestLocalDate date NULL, " +
                 " TestLocalDateTime datetime NULL" +
                 ") ");
@@ -152,7 +148,7 @@ public final class TestH2 extends BaseTest {
         commands.add("CREATE TABLE SavedGames ( " +
                 " ID INT IDENTITY PRIMARY KEY, " +
                 " Name VARCHAR(100), " +
-                " Timestamp TIMESTAMP NULL, " +
+                " Some_Date_And_Time TIMESTAMP NULL, " +
                 " Gold REAL NULL, " +
                 " Silver REAL NULL, " +
                 " Copper REAL NULL, " +
@@ -189,7 +185,7 @@ public final class TestH2 extends BaseTest {
                 "   BigInt DECIMAL(20) NULL, " +
                 "   Some_DATE Datetime NULL, " +
                 "   TestInstant Datetime NULL, " +
-                "   TestInstant2 Datetime NULL, " + // DATE NOT SUPPORTED MAPPED TO INSTANCE UnsupportedOperationException
+                "   TestInstant2 DATE NULL, " + // DATE NOT SUPPORTED MAPPED TO INSTANCE UnsupportedOperationException
                 "   WhatMiteIsIt TIME NULL, " +
                 "   WhatTimeIsIt TIME NULL) ";
 
@@ -498,7 +494,7 @@ public final class TestH2 extends BaseTest {
         // note Data is read as a CLOB
         SavedGame saveGame = new SavedGame();
         saveGame.setName("BLAH");
-        saveGame.setTimeStamp(new Date());
+        saveGame.setSomeDateAndTime(new Date());
         saveGame.setData("HJ LHLH H H                     ';lk ;lk ';l k                                K HLHLHH LH LH LH LHLHLHH LH H H H LH HHLGHLJHGHGFHGFGJFDGHFDHFDGJFDKGHDGJFDD KHGD KHG DKHDTG HKG DFGHK  GLJHG LJHG LJH GLJ");
         saveGame.setGold(100.23f);
         saveGame.setSilver(200);
@@ -510,6 +506,16 @@ public final class TestH2 extends BaseTest {
         int size = saveGame.getSomethingBig().length;
         log.info("SIZE?" + saveGame.getSomethingBig().length);
         session.insert(saveGame);
+
+        SavedGame returnedSavedGame = new SavedGame();
+        returnedSavedGame.setId(saveGame.getId());
+        assertTrue(session.fetch(returnedSavedGame));
+        // test that a util date returned has a time still in it.
+        Calendar cal = Calendar.getInstance();
+        cal.setTime(returnedSavedGame.getSomeDateAndTime());
+        log.info("WHAT DO THESE LOOK LIKE? " + returnedSavedGame.getSomeDateAndTime());
+        log.info(" ETC>>> " + returnedSavedGame.getWhatTimeIsIt());
+        assertTrue("TIME s/b > 0 - we should have time:", cal.get(Calendar.HOUR_OF_DAY) + cal.get(Calendar.MINUTE) + cal.get(Calendar.SECOND) > 0);
 
         saveGame = session.fetch(SavedGame.class, "select * from SavedGames");
         assertNotNull(saveGame);

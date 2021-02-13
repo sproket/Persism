@@ -111,7 +111,7 @@ public final class TestMSSQL extends BaseTest {
                 " Fax VARCHAR(30) NULL, " +
                 " STATUS CHAR(1) NULL, " +
                 " Date_Registered datetime  default current_timestamp, " +
-                " Date_Of_Last_Order datetime, " +
+                " Date_Of_Last_Order DATE, " +
                 " TestLocalDate datetime, " +
                 " TestLocalDateTime datetime " +
                 ") ");

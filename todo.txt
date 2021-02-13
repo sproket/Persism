@@ -55,7 +55,7 @@ TODO https://www.baeldung.com/java-daylight-savings
 
 NOTE: Checks for setting for a default depend on an Object Type - will not work with primitive types.
 
-TODO conversions between LocalDate and LocalDateTime (with downcast warning)
+DONE conversions between LocalDate and LocalDateTime (with downcast warning) (no warning though)
 Exception in thread "main" net.sf.persism.PersismException: argument type mismatch Object class javaapplication1.models.Customer. Column: date_of_last_order Type of property: class java.time.LocalDateTime - Type read: class java.time.LocalDate VALUE: 1997-03-03
 	at net.sf.persism.Session.fetch(Session.java:422)
 	at javaapplication1.JavaApplication1.test(JavaApplication1.java:57)
@@ -77,3 +77,5 @@ https://www.cis.upenn.edu/~bcpierce/courses/629/jdkdocs/guide/jdbc/getstart/mapp
 
 
 https://www.testcontainers.org/ ?
+
+Documentation: Remove "Persism" from Logo itself. Use separate Text instead.s

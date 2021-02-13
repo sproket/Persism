@@ -29,7 +29,8 @@ public class Customer {
     @Column (hasDefault = true)
     private Timestamp dateRegistered;
 
-    private java.sql.Date dateOfLastOrder;
+    //private java.sql.Date dateOfLastOrder;
+    private LocalDateTime dateOfLastOrder;
 
     private LocalDate testLocalDate;
     private LocalDateTime testLocalDateTime;
@@ -130,13 +131,21 @@ public class Customer {
         this.dateRegistered = dateRegistered;
     }
 
-    public java.sql.Date getDateOfLastOrder() {
+    public LocalDateTime getDateOfLastOrder() {
         return dateOfLastOrder;
     }
 
-    public void setDateOfLastOrder(java.sql.Date dateOfLastOrder) {
+    public void setDateOfLastOrder(LocalDateTime dateOfLastOrder) {
         this.dateOfLastOrder = dateOfLastOrder;
     }
+
+    //    public java.sql.Date getDateOfLastOrder() {
+//        return dateOfLastOrder;
+//    }
+//
+//    public void setDateOfLastOrder(java.sql.Date dateOfLastOrder) {
+//        this.dateOfLastOrder = dateOfLastOrder;
+//    }
 
     public char getStatus() {
         return status;

@@ -51,6 +51,9 @@ public abstract class BaseTest extends TestCase {
     }
 
     public void testDates() {
+        List<Customer> list = session.query(Customer.class, "select * from Customers");
+        log.warn(list);
+
         Customer customer = new Customer();
         customer.setCustomerId("123");
         customer.setAddress("123 Sesame Street");
@@ -65,20 +68,18 @@ public abstract class BaseTest extends TestCase {
         customer.setPostalCode("12345");
         customer.setRegion(Regions.East);
         customer.setStatus('2');
-        /*
-
-         */
 
         String dateOfLastOrder = "20120528000000"; //sql.date - no time in it.
         String dateRegistered = "20110612185225";
         DateFormat df = new SimpleDateFormat("yyyyMMddHHmmss");
+        DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyyMMddHHmmss");
 
-        customer.setDateOfLastOrder(new java.sql.Date(UtilsForTests.getCalendarFromAnsiDateString(dateOfLastOrder).getTime().getTime()));
+        customer.setDateOfLastOrder(LocalDateTime.parse("20120528010101", dtf)); // add time to see it removed
         log.info(customer.getDateOfLastOrder());
-        customer.setDateRegistered(new java.sql.Timestamp(UtilsForTests.getCalendarFromAnsiDateString(dateRegistered).getTimeInMillis()));
+        customer.setDateRegistered(new Timestamp(UtilsForTests.getCalendarFromAnsiDateString(dateRegistered).getTimeInMillis()));
         log.info(customer.getDateRegistered());
 
-        assertEquals("date of last order s/b", dateOfLastOrder, df.format(customer.getDateOfLastOrder()));
+        assertEquals("date of last order s/b", "20120528010101", dtf.format(customer.getDateOfLastOrder()));
         assertEquals("date registration s/b", dateRegistered, df.format(customer.getDateRegistered()));
 
         session.insert(customer);
@@ -88,7 +89,14 @@ public abstract class BaseTest extends TestCase {
 
         session.fetch(customer2);
 
-        assertEquals("date of last order s/b", dateOfLastOrder, df.format(customer2.getDateOfLastOrder()));
+        if (connectionType == ConnectionTypes.SQLite || connectionType == ConnectionTypes.Oracle) {
+            // SQLite does not support DATE on it's own
+            // Oracle DATE also includes time so JDBC driver reports it as timestamp
+        } else {
+            // Checking to see if time part is removed when using 'DATE' column to LocalDateTime
+            assertEquals("date of last order s/b", dateOfLastOrder, dtf.format(customer2.getDateOfLastOrder()));
+        }
+
         assertEquals("date registration s/b", dateRegistered, df.format(customer2.getDateRegistered()));
     }
 
@@ -384,8 +392,8 @@ public abstract class BaseTest extends TestCase {
 
         Contact contact = getContactForTest();
 
-        log.error("Local Date: " + ldt4 + " INSTANT: " + contact.getTestInstant());
-        log.error("Local Date: " + LocalDateTime.now() + " INSTANT: " + Instant.now());
+        log.info("Local Date: " + ldt4 + " INSTANT: " + contact.getTestInstant());
+        log.info("Local Date: " + LocalDateTime.now() + " INSTANT: " + Instant.now());
 
         session.insert(contact);
 
@@ -592,12 +600,12 @@ public abstract class BaseTest extends TestCase {
         int lastIndex = 0;
         int count = 0;
 
-        while(lastIndex != -1){
+        while (lastIndex != -1) {
 
-            lastIndex = instring.indexOf(findStr,lastIndex);
+            lastIndex = instring.indexOf(findStr, lastIndex);
 
-            if(lastIndex != -1){
-                count ++;
+            if (lastIndex != -1) {
+                count++;
                 lastIndex += findStr.length();
             }
         }

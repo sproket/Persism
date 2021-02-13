@@ -406,7 +406,7 @@ public final class Session {
      * @throws PersismException if something goes wrong.
      */
     public boolean fetch(Object object) throws PersismException {
-        Class objectClass = object.getClass();
+        Class<?> objectClass = object.getClass();
 
         // If we know this type it means it's a primitive type. This method cannot be used for primitives
         boolean readPrimitive = Types.getType(objectClass) != null;
@@ -712,12 +712,14 @@ public final class Session {
                 case TimeType:
                     value = rs.getTime(column);
                     break;
+
 // We can't assume rs.getDate will work. SQLITE actually has a long value in here.
 // We can live with rs.getObject and the convert method will handle it.
 //                case SQLDateType:
 //                case UtilDateType:
 //                    value = rs.getDate(column);
 //                    break;
+
                 default:
                     value = rs.getObject(column);
             }
@@ -736,7 +738,7 @@ public final class Session {
     }
 
     // Make a sensible conversion of the Value type from the DB and the property type defined on the Data class.
-    private Object convert(Object value, Class targetType, String columnName) {
+    private Object convert(Object value, Class<?> targetType, String columnName) {
         assert value != null;
 
         Types valueType = Types.getType(value.getClass());
@@ -861,6 +863,14 @@ public final class Session {
 
             case StringType:
                 java.util.Date dval;
+                String format;
+                if (("" + value).length() > "yyyy-MM-dd".length()) {
+                    format = "yyyy-MM-dd hh:mm:ss";
+                } else {
+                    format = "yyyy-MM-dd";
+                }
+                DateFormat df = new SimpleDateFormat(format);
+
                 // Read a string but we want a date
                 if (targetType.equals(java.util.Date.class) || targetType.equals(java.sql.Date.class)) {
                     // This condition occurs in SQLite when you have a datetime with default annotated
@@ -868,13 +878,6 @@ public final class Session {
                     // Used for SQLite returning dates as Strings under some conditions
                     // SQL or others may return STRING yyyy-MM-dd for older legacy 'date' type.
                     // https://docs.microsoft.com/en-us/sql/t-sql/data-types/date-transact-sql?view=sql-server-ver15
-                    String format;
-                    if (("" + value).length() > "yyyy-MM-dd".length()) {
-                        format = "yyyy-MM-dd hh:mm:ss";
-                    } else {
-                        format = "yyyy-MM-dd";
-                    }
-                    DateFormat df = new SimpleDateFormat(format);
                     dval = tryParseDate(value, targetType, columnName, df);
 
                     if (targetType.equals(java.sql.Date.class)) {
@@ -887,15 +890,16 @@ public final class Session {
                     returnValue = tryParseTimestamp(value, targetType, columnName);
 
                 } else if (targetType.equals(LocalDate.class)) {
-                    DateFormat df = new SimpleDateFormat("yyyy-MM-dd");
+                    // JTDS
                     dval = tryParseDate(value, targetType, columnName, df);
                     returnValue = dval.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
 
                 } else if (targetType.equals(LocalDateTime.class)) {
-                    returnValue = tryParseTimestamp(value, targetType, columnName).toLocalDateTime();
+                    // JTDS
+                    dval = tryParseDate(value, targetType, columnName, df);
+                    returnValue = dval.toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime();
 
                 } else if (targetType.equals(Instant.class)) {
-                    log.warn("VALUE? " + value + " column: " + columnName);
                     returnValue = tryParseTimestamp(value, targetType, columnName).toInstant();
 
                 } else if (targetType.isEnum()) {
@@ -914,12 +918,12 @@ public final class Session {
                 } else if (targetType.equals(Boolean.class) || targetType.equals(boolean.class)) {
                     // String to Boolean - true or 1 - otherwise false (or null)
                     String bval = "" + value;
-                    returnValue = (bval.equalsIgnoreCase("true") || bval.equals("1"));
+                    returnValue = bval.equalsIgnoreCase("true") || bval.equals("1");
 
                 } else if (targetType.equals(Time.class)) {
                     // MSSQL works, JTDS returns Varchar in format below
-                    DateFormat df = new SimpleDateFormat("hh:mm:ss.SSSSS");
-                    dval = tryParseDate(value, targetType, columnName, df);
+                    DateFormat tf = new SimpleDateFormat("hh:mm:ss.SSSSS");
+                    dval = tryParseDate(value, targetType, columnName, tf);
                     returnValue = new Time(dval.getTime());
 
                 } else if (targetType.equals(LocalTime.class)) {
@@ -937,7 +941,6 @@ public final class Session {
                         returnValue = new BigDecimal("" + value);
                     } catch (NumberFormatException e) {
                         String msg = "NumberFormatException: Column: " + columnName + " Type of property: " + targetType + " - Type read: " + value.getClass() + " VALUE: " + value;
-
                         throw new PersismException(msg, e);
                     }
                 }
@@ -976,16 +979,21 @@ public final class Session {
                 } else if (targetType.equals(java.sql.Date.class)) {
                     returnValue = new java.sql.Date(((Date) value).getTime());
 
+                } else if (targetType.equals(Timestamp.class)) {
+                    returnValue = new Timestamp(((Date) value).getTime());
+
                 } else if (targetType.equals(LocalDate.class)) {
                     Date dt = new Date(((Date) value).getTime());
                     returnValue = dt.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
 
                 } else if (targetType.equals(LocalDateTime.class)) {
-                    Date dt = (Date) value;
+                    Date dt = new Date(((Date) value).getTime());
                     returnValue = dt.toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime();
 
                 } else if (targetType.equals(Instant.class)) {
-                    returnValue = ((Date) value).toInstant();
+                    Date dt = new Date(((Date) value).getTime());
+                    // Date dt = (Date)value; // throws UnsupportedOperationException if type is DATE in db
+                    returnValue = dt.toInstant();
 
                 } else if (targetType.equals(Time.class)) {
                     // Oracle doesn't seem to have Time so we use Timestamp
@@ -1097,7 +1105,6 @@ public final class Session {
         return (T) value;
     }
 
-    // Place code conversions here to prevent type exceptions on setObject
     void setParameters(PreparedStatement st, Object[] parameters) throws SQLException {
         if (log.isDebugEnabled()) {
             log.debug("PARAMS: " + Arrays.asList(parameters));
@@ -1165,12 +1172,9 @@ public final class Session {
                         st.setObject(n, "" + param);
                         break;
 
-                    case UtilDateType:
                     case SQLDateType:
-                        java.util.Date date = (Date) param;
-                        st.setDate(n, new java.sql.Date(date.getTime()));
+                        st.setDate(n, (java.sql.Date) param);
                         break;
-
 
                     case TimeType:
                         st.setTime(n, (Time) param);

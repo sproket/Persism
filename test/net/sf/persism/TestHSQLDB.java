@@ -88,7 +88,7 @@ public final class TestHSQLDB extends BaseTest {
                 " Fax VARCHAR(30) NULL, " +
                 " Status CHAR(1) NULL, " +
                 " Date_Registered Timestamp DEFAULT NOW(), " +
-                " Date_Of_Last_Order Timestamp, " +
+                " Date_Of_Last_Order DATE, " +
                 " TestLocalDate date, " +
                 " TestLocalDateTime Timestamp " +
 

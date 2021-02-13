@@ -127,7 +127,7 @@ public final class TestPostgreSQL extends BaseTest {
                 " Fax VARCHAR(30) NULL, " +
                 " STATUS CHAR(1), " +
                 " Date_Registered TIMESTAMP with time zone DEFAULT CURRENT_TIMESTAMP NOT NULL, " +
-                " Date_Of_Last_Order TIMESTAMP with time zone, " +
+                " Date_Of_Last_Order DATE, " +
                 " TestLocalDate DATE, " +
                 " TestLocalDateTime TIMESTAMP  " +
                 ") ");

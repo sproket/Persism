@@ -15,7 +15,7 @@ public final class SavedGame extends PersistableObject<SavedGame> {
 
     private int id;
     private String name;
-    private Date timeStamp;
+    private Date someDateAndTime;
     private String data;
     private float gold;
     private int silver;
@@ -43,12 +43,12 @@ public final class SavedGame extends PersistableObject<SavedGame> {
         this.name = name;
     }
 
-    public Date getTimeStamp() {
-        return timeStamp;
+    public Date getSomeDateAndTime() {
+        return someDateAndTime;
     }
 
-    public void setTimeStamp(Date timeStamp) {
-        this.timeStamp = timeStamp;
+    public void setSomeDateAndTime(Date someDateAndTime) {
+        this.someDateAndTime = someDateAndTime;
     }
 
     public String getData() {

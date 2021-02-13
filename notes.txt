@@ -26,5 +26,23 @@ PostgreSQL https://www.postgresql.org/docs/9.5/sql-insert.html
 
 DATA TYPES
 https://docs.oracle.com/cd/B28359_01/server.111/b28318/datatype.htm#CNCPT012
+https://db.apache.org/derby/docs/10.7/ref/crefsqlj31068.html
+http://www.h2database.com/html/datatypes.html
+
 
 Blob support only up to int max size (2,147,483,647)
+
+Date types
+util.Date (dt)
+sql.Date (d)
+sql.Time (t)
+sql.Timestamp (dt)
+LocalDate (d)
+LocalTime (t)
+LocalDateTime(dt)
+Instant (dt)
+
+SQL Date Types
+Date
+DateTime
+Time

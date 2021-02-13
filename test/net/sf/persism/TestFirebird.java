@@ -96,7 +96,7 @@ public final class TestFirebird extends BaseTest {
                 "  FAX VARCHAR(30), " +
                 "  STATUS CHAR(1), " +
                 "  DATE_REGISTERED TIMESTAMP, " +
-                "  DATE_OF_LAST_ORDER TIMESTAMP, " +
+                "  DATE_OF_LAST_ORDER DATE, " +
                 " TestLocalDate DATE, " +
                 " TestLocalDateTime TIMESTAMP, " +
                 "  CONSTRAINT PK_CUSTOMER PRIMARY KEY (CUSTOMER_ID) " +

@@ -9,6 +9,7 @@ import java.sql.*;
 import java.sql.Date;
 import java.time.Instant;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.*;
 
@@ -97,7 +98,7 @@ public final class TestDerby extends BaseTest {
                 " Fax VARCHAR(30), " +
                 " STATUS CHAR(1), " +
                 " Date_Registered TIMESTAMP DEFAULT CURRENT_TIMESTAMP, " +
-                " Date_Of_Last_Order TIMESTAMP, " +
+                " Date_Of_Last_Order DATE, " +
                 " TestLocalDate TIMESTAMP, " +
                 " TestLocalDateTime TIMESTAMP " +
                 ") ");
@@ -204,10 +205,13 @@ public final class TestDerby extends BaseTest {
             order.setCustomerId("123");
             order.setName("name");
             order.setCreated(LocalDate.now());
+            order.setDatePaid(LocalDateTime.now());
             order.setPaid(true);
 
             session.insert(order);
+            log.info("BEFORE " + order.getDatePaid());
             session.fetch(order);
+            log.info("AFTER " + order.getDatePaid());
 
             log.info("ORDER:" + order);
             Order order2 = DAOFactory.newOrder(con);

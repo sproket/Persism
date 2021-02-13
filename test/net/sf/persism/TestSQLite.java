@@ -13,6 +13,7 @@ import java.sql.*;
 import java.sql.Date;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.ZoneOffset;
 import java.util.*;
 
 import static net.sf.persism.UtilsForTests.*;
@@ -105,7 +106,7 @@ public final class TestSQLite extends BaseTest {
                 " STATUS CHAR(1) NULL, " +
                 " Fax VARCHAR(30) NULL, " +
                 " Date_Registered datetime default  (datetime('now','localtime')), " +
-                " Date_Of_Last_Order datetime, " +
+                " Date_Of_Last_Order DATE, " +
                 " TestLocalDate datetime, " +
                 " TestLocalDateTIme datetime " +
                 ") ");
@@ -231,7 +232,8 @@ public final class TestSQLite extends BaseTest {
         assertTrue("null key should have failed", nullKeyFail);
 
         customer.setCustomerId("MOO");
-        customer.setDateOfLastOrder(new Date(System.currentTimeMillis()));
+        //customer.setDateOfLastOrder(new Date(System.currentTimeMillis()));
+        customer.setDateOfLastOrder(LocalDateTime.now());
         customer.setDateRegistered(new Timestamp(System.currentTimeMillis() - 10000000l));
         session.insert(customer); // this should be ok now.
 
@@ -390,7 +392,8 @@ public final class TestSQLite extends BaseTest {
             Customer customer = new Customer();
             customer.setCustomerId("123");
             customer.setContactName("FRED");
-            customer.setDateOfLastOrder(new Date(System.currentTimeMillis() - 1000000l));
+            //customer.setDateOfLastOrder(new Date(System.currentTimeMillis() - 1000000l));
+            customer.setDateOfLastOrder(LocalDateTime.ofEpochSecond(System.currentTimeMillis() - 1000000l,0, ZoneOffset.UTC));
             session.insert(customer);
 
 
