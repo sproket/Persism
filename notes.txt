@@ -1,13 +1,3 @@
-INSERT Statements
-Question on how to insert and retrieve defaults or other generated values back (this works) UNLESS the default
-happens to be the primary key which is not an autoinc (like a GUID).
-FORGET IT. It requires custom insert statements different for different DBs AND DIFFERENT FOR THE SAME CLASS
-and is not supported by statement.getGeneratedKeys()
-
-IF you have a GUID primary key or other String based Primary key, you need to set it in JAVA.
-
-ALSO: Removing the concept of multiple columns as a primary key - stupid and gay.
-
 https://github.com/r2dbc/r2dbc-mssql/issues/36
 https://stackoverflow.com/questions/1074843/is-there-an-oracle-equivalent-to-sql-servers-output-inserted
 https://stackoverflow.com/questions/5469416/mysql-insert-with-output-like-mssql
@@ -32,17 +22,3 @@ http://www.h2database.com/html/datatypes.html
 
 Blob support only up to int max size (2,147,483,647)
 
-Date types
-util.Date (dt)
-sql.Date (d)
-sql.Time (t)
-sql.Timestamp (dt)
-LocalDate (d)
-LocalTime (t)
-LocalDateTime(dt)
-Instant (dt)
-
-SQL Date Types
-Date
-DateTime
-Time

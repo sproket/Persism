@@ -88,3 +88,5 @@ Document about using CustomerOrder class for 2 different queries (1 stored proc)
 you have 1 with a missing field that is 1st defined in MetaData (any query after - even if they are correct)
 will complain about missing fields. You'd need to fix any query that would use that class (for now) - maybe
 add the query string as a key to the Column/Property Info objects? Duplicating but......
+
+TODO SQL enum to Java enum? PostgreSQL, MySQL and H2.
