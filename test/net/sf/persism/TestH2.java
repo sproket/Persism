@@ -8,9 +8,8 @@ import java.math.BigDecimal;
 import java.nio.file.Files;
 import java.sql.*;
 import java.text.NumberFormat;
-import java.time.Instant;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
+import java.time.*;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.Date;
 
@@ -191,6 +190,59 @@ public final class TestH2 extends BaseTest {
 
         executeCommand(sql, con);
 
+        if (UtilsForTests.isTableInDatabase("DateTest", con)) {
+            executeCommand("DROP TABLE DateTest", con);
+        }
+
+        sql = "CREATE TABLE DateTest ( " +
+                " ID INT, " +
+                " Description VARCHAR(100), " +
+                " SqlDate1 DATETIME, " +
+                " SqlDate2 DATE, " +
+                " LocalDate1 DATETIME, " +
+                " LocalDate2 DATE, " +
+                " UtilDate1 DATETIME, " +
+                " UtilDate2 DATE, " +
+                " Instant1 DATETIME, " +
+                " Instant2 DATE, " +
+                " Timestamp1 DATETIME, " +
+                " Timestamp2 DATE, " +
+                " LocalDateTime1 DATETIME, " +
+                " LocalDateTime2 DATE, " +
+                " Time1 TIME," +
+                " Time2 TIME," +
+                " LocalTime1 TIME," +
+                " LocalTime2 TIME) ";
+
+        executeCommand(sql, con);
+
+        if (UtilsForTests.isTableInDatabase("DateTestLocalTypes", con)) {
+            executeCommand("DROP TABLE DateTestLocalTypes", con);
+        }
+
+        sql = "CREATE TABLE DateTestLocalTypes ( " +
+                " ID INT, " +
+                " Description VARCHAR(100), " +
+                " DateOnly DATE, " +
+                " TimeOnly TIME," +
+                " DateAndTime DATETIME) ";
+
+        executeCommand(sql, con);
+
+        if (UtilsForTests.isTableInDatabase("DateTestSQLTypes", con)) {
+            executeCommand("DROP TABLE DateTestSQLTypes", con);
+        }
+
+        sql = "CREATE TABLE DateTestSQLTypes ( " +
+                " ID INT, " +
+                " Description VARCHAR(100), " +
+                " DateOnly DATE, " +
+                " TimeOnly TIME," +
+                " UtilDateAndTime DATETIME," +
+                " DateAndTime DATETIME) ";
+
+        executeCommand(sql, con);
+
     }
 
     public void testH2InsertAndReadBack() throws SQLException {
@@ -356,13 +408,13 @@ public final class TestH2 extends BaseTest {
             order.setPaid(true);
 
             log.info("created " + order.getCreated());
-            log.info("paid "  + order.getDatePaid());
+            log.info("paid " + order.getDatePaid());
 
             session.insert(order);
             session.fetch(order);
 
             log.info("AFTER created " + order.getCreated());
-            log.info("AFTER paid "  + order.getDatePaid());
+            log.info("AFTER paid " + order.getDatePaid());
 
             Order order2 = DAOFactory.newOrder(con);
             order2.setCustomerId("456");
@@ -526,4 +578,9 @@ public final class TestH2 extends BaseTest {
     }
 
 
+
+    @Override
+    public void testAllDates() {
+        super.testAllDates();
+    }
 }

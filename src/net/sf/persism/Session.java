@@ -681,7 +681,19 @@ public final class Session {
                     break;
 
                 case IntegerType:
-                    value = rs.getObject(column) == null ? null : rs.getInt(column);
+                    // stupid SQLite reports LONGS as Integers for date types which WRAPS past Integer.MAX - Clowns.
+                    if (metaData.connectionType == ConnectionTypes.SQLite) {
+                        value = rs.getObject(column);
+                        if (value != null) {
+                            if (value instanceof Long) {
+                                value = rs.getLong(column);
+                            } else {
+                                value = rs.getInt(column);
+                            }
+                        }
+                    } else {
+                        value = rs.getObject(column) == null ? null : rs.getInt(column);
+                    }
                     break;
 
                 case LongType:
@@ -737,7 +749,8 @@ public final class Session {
         return value;
     }
 
-    // Make a sensible conversion of the Value type from the DB and the property type defined on the Data class.
+    // Make a sensible conversion of the value type from the DB and the property type defined
+    // on the Data class - or the value type from the property to the statement parameter.
     private Object convert(Object value, Class<?> targetType, String columnName) {
         assert value != null;
 
@@ -762,6 +775,10 @@ public final class Session {
             case ByteType:
             case shortType:
             case ShortType:
+                log.debug(valueType);
+                break;
+                // TODO test out short and byte - JDBC tends to read single byte as short
+                // Might need byte to bool also upcasting can cause errors
             case integerType:
             case IntegerType:
                 // int to bool
@@ -769,11 +786,11 @@ public final class Session {
                     returnValue = Integer.valueOf("" + value) == 0 ? false : true;
 
                 } else if (targetType.equals(Time.class)) {
-                    // SQLITE!
+                    // SQLite when a Time is defined VIA a convert from LocalTime via Time.valueOf (see getContactForTest)
                     returnValue = new Time(((Integer) value).longValue());
 
-                } else if(targetType.equals(LocalTime.class)) {
-                    // SQLITE!!
+                } else if (targetType.equals(LocalTime.class)) {
+                    // SQLite for Time SQLite sees Long, for LocalTime it sees Integer
                     returnValue = new Time((Integer) value).toLocalTime();
                 }
                 break;
@@ -781,13 +798,11 @@ public final class Session {
             case longType:
             case LongType:
                 long lval = Long.valueOf("" + value);
-                // long to date
-                if (targetType.equals(java.util.Date.class) || targetType.equals(java.sql.Date.class)) {
-                    if (targetType.equals(java.sql.Date.class)) {
-                        returnValue = new java.sql.Date(lval);
-                    } else {
-                        returnValue = new java.util.Date(lval);
-                    }
+                if (targetType.equals(java.sql.Date.class)) {
+                    returnValue = new java.sql.Date(lval);
+
+                } else if (targetType.equals(java.util.Date.class)) {
+                    returnValue = new java.util.Date(lval);
 
                 } else if (targetType.equals(Timestamp.class)) {
                     returnValue = new Timestamp(lval);
@@ -803,8 +818,9 @@ public final class Session {
                 } else if (targetType.equals(LocalDateTime.class)) {
                     returnValue = new Timestamp(lval).toLocalDateTime();
 
-                } else if (targetType.equals(Instant.class)) {
-                    returnValue = Instant.ofEpochMilli(lval);
+                } else if (targetType.equals(Time.class)) {
+                    // SQLite.... Again.....
+                    returnValue = new Time((Long) value);
                 }
                 break;
 
@@ -899,9 +915,6 @@ public final class Session {
                     dval = tryParseDate(value, targetType, columnName, df);
                     returnValue = dval.toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime();
 
-                } else if (targetType.equals(Instant.class)) {
-                    returnValue = tryParseTimestamp(value, targetType, columnName).toInstant();
-
                 } else if (targetType.isEnum()) {
                     // If this is an enum do a case insensitive comparison
                     Object[] enumConstants = targetType.getEnumConstants();
@@ -921,14 +934,19 @@ public final class Session {
                     returnValue = bval.equalsIgnoreCase("true") || bval.equals("1");
 
                 } else if (targetType.equals(Time.class)) {
-                    // MSSQL works, JTDS returns Varchar in format below
-                    DateFormat tf = new SimpleDateFormat("hh:mm:ss.SSSSS");
-                    dval = tryParseDate(value, targetType, columnName, tf);
+                    // MSSQL works, JTDS returns Varchar in format below with varying decimal numbers
+                    // which won't format unless I use Exact so I chop of the milliseconds.
+                    DateFormat timeFormat = new SimpleDateFormat("hh:mm:ss");
+                    String sval = ""+value;
+                    if (sval.indexOf('.') > -1) {
+                        sval = sval.substring(0, sval.indexOf('.'));
+                    }
+                    dval = tryParseDate(sval, targetType, columnName, timeFormat);
                     returnValue = new Time(dval.getTime());
 
                 } else if (targetType.equals(LocalTime.class)) {
                     // JTDS Fails again...
-                    returnValue = LocalTime.parse(""+value);
+                    returnValue = LocalTime.parse("" + value);
 
                 } else if (targetType.equals(Character.class) || targetType.equals(char.class)) {
                     String s = "" + value;
@@ -966,10 +984,6 @@ public final class Session {
                 returnValue = Time.valueOf((LocalTime) value);
                 break;
 
-            case InstantType:
-                returnValue = Timestamp.from((Instant) value);
-                break;
-
             case UtilDateType:
             case SQLDateType:
             case TimestampType:
@@ -990,11 +1004,6 @@ public final class Session {
                     Date dt = new Date(((Date) value).getTime());
                     returnValue = dt.toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime();
 
-                } else if (targetType.equals(Instant.class)) {
-                    Date dt = new Date(((Date) value).getTime());
-                    // Date dt = (Date)value; // throws UnsupportedOperationException if type is DATE in db
-                    returnValue = dt.toInstant();
-
                 } else if (targetType.equals(Time.class)) {
                     // Oracle doesn't seem to have Time so we use Timestamp
                     returnValue = new Time(((Date) value).getTime());
@@ -1009,16 +1018,14 @@ public final class Session {
             case TimeType:
                 log.debug("TimeType");
                 if (targetType.equals(LocalTime.class)) {
-                    returnValue = LocalTime.parse(""+value);
+                    returnValue = LocalTime.parse("" + value);
                 }
                 break;
 
+            case InstantType:
             case OffsetDateTimeType:
-                log.debug("OffsetDateTimeType");
-                break;
-
             case ZonedDateTimeType:
-                log.debug("ZonedDateTimeType");
+                log.warn(valueType + " not yet supported", new Throwable());
                 break;
 
             case byteArrayType:
@@ -1160,7 +1167,7 @@ public final class Session {
                         break;
 
                     case BigIntegerType:
-                        st.setString(n, ""+param);
+                        st.setString(n, "" + param);
                         break;
 
                     case StringType:
@@ -1188,15 +1195,13 @@ public final class Session {
                     case LocalTimeType:
                     case LocalDateType:
                     case LocalDateTimeType:
-                    case InstantType:
                         log.warn(type + " why would this occur in setParameters?", new Throwable());
                         break;
 
                     case OffsetDateTimeType:
-                        // todo OffsetDateTime
-                        break;
                     case ZonedDateTimeType:
-                        // todo ZonedDateTime
+                    case InstantType:
+                        // todo ZonedDateTime, OffsetDateTimeType and MAYBE Instant
                         break;
 
                     case byteArrayType:
@@ -1226,6 +1231,7 @@ public final class Session {
                         break;
 
                     default:
+                        log.warn("setParameters default: " + n + " " + param.getClass());
                         st.setObject(n, param);
                 }
 

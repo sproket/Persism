@@ -374,7 +374,7 @@ public class TestNorthwind extends TestCase {
         customer.setDateOfOffset(LocalDateTime.now());
         customer.setDateOfLastResort(new Date(System.currentTimeMillis()));
         customer.setTestLocalDateTime(LocalDateTime.now(ZoneId.systemDefault()));
-        customer.setNowMF(Instant.now());
+        customer.setNowMF(LocalDateTime.now());
         customer.setWtfDate("1998-02-17 10:43:22");
         session.delete(customer); // in case it already exists.
         session.insert(customer);
@@ -383,7 +383,7 @@ public class TestNorthwind extends TestCase {
         customer.setDateOfDoom(new Date(System.currentTimeMillis()));
         customer.setDateOfOffset(LocalDateTime.now());
         customer.setDateOfLastResort(new Date(System.currentTimeMillis()));
-        customer.setNowMF(Instant.now());
+        customer.setNowMF(LocalDateTime.now());
         customer.setWtfDate("1999-02-17 10:43:22");
         session.update(customer);
 

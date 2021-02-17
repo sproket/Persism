@@ -6,7 +6,7 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.*;
 
-public final class TestMetaData extends BaseTest {
+public final class TestMetaData extends BaseTest { // todo remove BaseTest for this one...
     private static final Log log = Log.getLogger(TestMetaData.class);
 
     protected void setUp() throws Exception {
@@ -235,6 +235,11 @@ public final class TestMetaData extends BaseTest {
 
     @Override
     public void testReadPrimitive() {
+        // comes from BaseTest - we don't need it here
+    }
+
+    @Override
+    public void testAllDates() {
         // comes from BaseTest - we don't need it here
     }
 }

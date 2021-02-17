@@ -3,7 +3,6 @@ package net.sf.persism.dao.northwind;
 import net.sf.persism.annotations.NotColumn;
 
 import java.sql.Date;
-import java.time.Instant;
 import java.time.LocalDateTime;
 
 /**
@@ -27,12 +26,12 @@ public final class Customer {
     private String fax;
     private java.util.Date dateOfLastResort;
     private Date dateOfDoom;
-    // TODO Does not work with JTDS and can't be parsed right now - Do with other zone related issues
     @NotColumn
     private LocalDateTime dateOfOffset; // this is a DateTimeOffset in the DB - KEEP to test for normal DateTime or double check because we use this with DB retuning the type as VARCHAR
+
     private LocalDateTime testLocalDateTime;
 
-    private Instant nowMF;
+    private LocalDateTime nowMF;
 
     private String wtfDate;
 
@@ -148,11 +147,11 @@ public final class Customer {
         this.dateOfOffset = dateOfOffset;
     }
 
-    public Instant getNowMF() {
+    public LocalDateTime getNowMF() {
         return nowMF;
     }
 
-    public void setNowMF(Instant nowMF) {
+    public void setNowMF(LocalDateTime nowMF) {
         this.nowMF = nowMF;
     }
 

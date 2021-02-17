@@ -1,4 +1,4 @@
-![](logo1.png)
+![](logo1.png) 
 
 # Welcome
 
@@ -27,4 +27,5 @@ Persism is under 50k. Yeah, fit it on a floppy if you want. Persism has Zero dep
 
 [Have a look here for the getting started guide, code coverage and Javadoc](https://sproket.github.io/Persism/)
 
+[Release notes](release-notes.md)
 Thanks!

@@ -11,13 +11,14 @@ import java.util.Date;
  * Time: 6:39 AM
  */
 @NotTable
-public class CustomerOrder {
+public final class CustomerOrder {
 
     private String customerId;
     private String companyName;
     private String description;
     private long orderId;
     private Date dateCreated;
+    private Date datePaid;
     private boolean paid;
 
     public String getCustomerId() {
@@ -68,14 +69,23 @@ public class CustomerOrder {
         this.paid = paid;
     }
 
+    public Date getDatePaid() {
+        return datePaid;
+    }
+
+    public void setDatePaid(Date datePaid) {
+        this.datePaid = datePaid;
+    }
+
     @Override
     public String toString() {
-        return "\nCustomerOrder{" +
+        return "CustomerOrder{" +
                 "customerId='" + customerId + '\'' +
                 ", companyName='" + companyName + '\'' +
                 ", description='" + description + '\'' +
                 ", orderId=" + orderId +
                 ", dateCreated=" + dateCreated +
+                ", datePaid=" + datePaid +
                 ", paid=" + paid +
                 '}';
     }

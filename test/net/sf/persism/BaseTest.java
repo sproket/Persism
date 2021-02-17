@@ -205,10 +205,6 @@ public abstract class BaseTest extends TestCase {
 
     public void testQueryResult() throws Exception {
 
-        StringBuilder sb = new StringBuilder();
-        sb.append("SELECT c.Customer_ID, c.Company_Name, o.ID Order_ID, o.Name AS Description, o.Created AS DateCreated, o.PAID ");
-        sb.append(" FROM ORDERS o");
-        sb.append(" JOIN Customers c ON o.Customer_ID = c.Customer_ID");
 
         Customer c1 = new Customer();
         c1.setCustomerId("123");
@@ -227,6 +223,8 @@ public abstract class BaseTest extends TestCase {
         order.setCustomerId("123");
         order.setName("ORDER 1");
         order.setCreated(LocalDate.now());
+        order.setDatePaid(LocalDateTime.now());
+
         order.setPaid(true);
         session.insert(order);
 
@@ -262,6 +260,12 @@ public abstract class BaseTest extends TestCase {
         order.setCreated(LocalDate.now());
         session.insert(order);
 
+        // REMOVE DATE_PAID ALIAS
+        StringBuilder sb = new StringBuilder();
+        sb.append("SELECT c.Customer_ID, c.Company_Name, o.ID Order_ID, o.Name AS Description, o.Date_Paid, o.Created AS DateCreated, o.PAID ");
+        sb.append(" FROM ORDERS o");
+        sb.append(" JOIN Customers c ON o.Customer_ID = c.Customer_ID");
+
         String sql = sb.toString();
         log.info(sql);
 
@@ -271,6 +275,8 @@ public abstract class BaseTest extends TestCase {
 
         // ORDER 1 s/b paid = true others paid = false
         for (CustomerOrder customerOrder : results) {
+            log.warn("date created? " + customerOrder.getDateCreated());
+            log.warn("date paid? " + customerOrder.getDatePaid());
             if ("ORDER 1".equals(customerOrder.getDescription())) {
                 assertTrue("order 1 s/b paid", customerOrder.isPaid());
             } else {
@@ -353,7 +359,8 @@ public abstract class BaseTest extends TestCase {
 
     UUID identity = UUID.fromString(UUID1);
     UUID partnerId = UUID.fromString(UUID2);
-    DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSS");
+    static DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSS");
+    static SimpleDateFormat formatter2 = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS");
     LocalDateTime ldt1 = LocalDateTime.parse("1998-02-17 10:23:43.567", formatter);
     LocalDateTime ldt2 = LocalDateTime.parse("1997-02-17 10:23:43.123", formatter);
     LocalDateTime ldt3 = LocalDateTime.parse("1996-02-17 10:23:52.678", formatter);
@@ -381,7 +388,7 @@ public abstract class BaseTest extends TestCase {
         contact.setDateAdded(Date.valueOf(ldt1.toLocalDate()));
         contact.setLastModified(Timestamp.valueOf(ldt2));
         contact.setWhatTimeIsIt(Time.valueOf(ldt3.toLocalTime()));
-        contact.setWhatMiteIsIt(ldt4.toLocalTime());
+        contact.setWhatMiteIsIt(contact.getWhatTimeIsIt().toLocalTime());
         contact.setTestInstant(ldt4.toInstant(ZoneOffset.UTC));
         contact.setTestInstant2(ldt4.toInstant(ZoneOffset.UTC));
         contact.setSomeDate(date);
@@ -435,37 +442,144 @@ public abstract class BaseTest extends TestCase {
         }
 
         assertEquals("what time is it? sql.Time s/b '10:23:52'", "10:23:52", "" + contact1.getWhatTimeIsIt());
-        assertEquals("what MITE? is it? LocalTime s/b '10:23:43.997'", "10:23:43", "" + contact1.getWhatMiteIsIt());
-
-//        LocalDateTime d1 = LocalDateTime.ofInstant(Instant.parse("1994-02-17T13:09:53Z"), ZoneId.systemDefault());
-//        LocalDateTime d2 = LocalDateTime.ofInstant(Instant.parse("1994-02-17T10:23:43.998Z"), ZoneId.systemDefault());
-//
-//        long minutes = ChronoUnit.MINUTES.between(d1, d2);
-//        long hours = ChronoUnit.HOURS.between(d1, d2);
-//
-//        log.info("diff hours: " + hours + " minutes:" + minutes);
-
-        // JTDS
-        // 1994-02-17 10:23:43.9970000 - Stored in DB
-
-        // MSSQL
-        // 1994-02-17 10:23:43.9980000 - Stored in DB
-
-        // Minor accuracy diff with MySql
-        // Expected :1994-02-17T10:23:43.998Z
-        // Actual   :1994-02-17T10:23:43Z
-
-        // Minor accuracy diff with JTDS
-        // Expected :1994-02-17T10:23:43.998Z (changed it to 997)
-        // Actual   :1994-02-17T10:23:43.997Z
-
-        if (connectionType == ConnectionTypes.MySQL) {
-            assertEquals("test instant time.Instant s/b '1994-02-17T10:23:43Z'", "1994-02-17T10:23:43Z", "" + contact1.getTestInstant());
-        } else {
-            assertEquals("test instant time.Instant s/b '1994-02-17T10:23:43.997Z'", "1994-02-17T10:23:43.997Z", "" + contact1.getTestInstant());
-        }
+        assertEquals("what MITE? is it? LocalTime s/b '10:23:52'", "10:23:52", "" + contact1.getWhatMiteIsIt());
 
         assertEquals("some date s/b '1992-02-17 10:23:41.107'", "1992-02-17 10:23:41.107", "" + contact.getSomeDate());
+    }
+
+    static LocalDateTime ldt = LocalDateTime.parse("1998-02-17 10:23:43.567", formatter);
+    static LocalDate ld = LocalDate.parse("1997-02-17", DateTimeFormatter.ISO_DATE);
+    static LocalTime lt = LocalTime.parse("10:23:43.567", DateTimeFormatter.ISO_TIME);  // earlier in the day SQLite sees INT
+    static LocalTime lt2 = LocalTime.parse("22:23:41.107", DateTimeFormatter.ISO_TIME); // later on the day SQLite sees LONG FFS
+    static java.util.Date udate = Timestamp.valueOf("1992-02-17 22:23:41.107");
+    static java.sql.Date sdate = new java.sql.Date(udate.getTime());
+    static java.sql.Timestamp ts = new Timestamp(udate.getTime());
+    static java.sql.Time time = new Time(udate.getTime());
+
+    public void testAllDates() {
+        SQLDateTypesTests();
+        LocalDateTypesTest();
+    }
+
+    private void SQLDateTypesTests() {
+
+        log.warn("udate: " + udate + " " + udate.getTime());
+        log.warn("sdate: " + sdate + " " + sdate.getTime());
+        log.warn("ts: " + ts);
+        log.warn("time: " + time);
+
+        DateTestSQLTypes testSQLTypes1 = new DateTestSQLTypes();
+        testSQLTypes1.setId(1);
+        testSQLTypes1.setDescription("test 1");
+
+        testSQLTypes1.setDateOnly(sdate);
+        testSQLTypes1.setTimeOnly(time);
+        testSQLTypes1.setDateAndTime(ts);
+        testSQLTypes1.setUtilDateAndTime(udate);
+        log.info("BEFORE: " + testSQLTypes1);
+
+        session.insert(testSQLTypes1);
+
+        DateTestSQLTypes testSQLTypes2 = new DateTestSQLTypes();
+        testSQLTypes2.setId(testSQLTypes1.getId());
+        assertTrue(session.fetch(testSQLTypes2));
+
+        log.info("AFTER:  " + testSQLTypes2);
+
+        SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm.ss.SSS");
+
+        assertEquals("date s/b '1992-02-17'", sdate.toString(), testSQLTypes2.getDateOnly().toString());
+        assertEquals("time s/b '22:23:41'", time.toString(), testSQLTypes2.getTimeOnly().toString());
+        if (connectionType == ConnectionTypes.MySQL) {
+            // MySQL rounds off milliseconds - comes out like 1992-02-17 10:23:41.0
+            String s1 = ts.toString();
+            String s2 = testSQLTypes2.getDateAndTime().toString();
+
+            assertEquals("datetime s/b '1992-02-17 22:23:41'", s1.substring(0, s1.indexOf('.')), s2.substring(0, s2.indexOf('.')));
+
+            assertEquals("util date s/b '1992-02-17 22:23.41.000'", "1992-02-17 22:23.41.000", df.format(testSQLTypes2.getUtilDateAndTime()));
+
+        } else {
+            assertEquals("datetime s/b '1992-02-17 22:23:41.107'", ts.toString(), testSQLTypes2.getDateAndTime().toString());
+            assertEquals("util date s/b '1992-02-17 22:23.41.107'", "1992-02-17 22:23.41.107", df.format(testSQLTypes2.getUtilDateAndTime()));
+        }
+
+
+        session.update(testSQLTypes2);
+
+        List<DateTestSQLTypes> list = session.query(DateTestSQLTypes.class, "select * FROM DateTestSQLTypes");
+        log.info(list);
+
+        assertTrue(session.delete(testSQLTypes1) > 0);
+
+    }
+
+    private void LocalDateTypesTest() {
+        DateTestLocalTypes testLocalTypes1 = new DateTestLocalTypes();
+        testLocalTypes1.setId(1);
+        testLocalTypes1.setDescription("test 1");
+
+        log.warn("ldt: " + ldt);
+        log.warn("ld : " + ld);
+        log.warn("lt : " + lt);
+
+        testLocalTypes1.setDateOnly(ld);
+        testLocalTypes1.setTimeOnly(lt);
+        testLocalTypes1.setDateAndTime(ldt);
+
+
+        log.info("BEFORE: " + testLocalTypes1);
+
+        session.insert(testLocalTypes1);
+
+        DateTestLocalTypes testLocalTypes2 = new DateTestLocalTypes();
+        testLocalTypes2.setId(testLocalTypes1.getId());
+        assertTrue(session.fetch(testLocalTypes2));
+
+        log.info("AFTER:  " + testLocalTypes2);
+        String localTime = lt.format(DateTimeFormatter.ISO_TIME);
+        // Remove millis since most of the DBs don't store it anyway
+        if (localTime.indexOf('.') > 0) {
+            localTime = localTime.substring(0, localTime.indexOf('.'));
+        }
+        assertEquals("date s/b '1997-02-17'", ld.format(DateTimeFormatter.ISO_DATE), testLocalTypes2.getDateOnly().format(DateTimeFormatter.ISO_DATE));
+        assertEquals("time s/b '10:23:43'", localTime, testLocalTypes2.getTimeOnly().format(DateTimeFormatter.ISO_TIME));
+
+        if (connectionType == ConnectionTypes.MySQL) {
+            // MySQL rounds off milliseconds - 1998-02-17T10:23:43.567 comes out like 1998-02-17T10:23:43.0
+            String s = ldt.format(DateTimeFormatter.ISO_DATE_TIME);
+            assertEquals("datetime s/b '1998-02-17 10:23:43'", s.substring(0, s.indexOf('.')), testLocalTypes2.getDateAndTime().format(DateTimeFormatter.ISO_DATE_TIME));
+        } else {
+            assertEquals("datetime s/b '1998-02-17 10:23:43.567'", ldt.format(DateTimeFormatter.ISO_DATE_TIME), testLocalTypes2.getDateAndTime().format(DateTimeFormatter.ISO_DATE_TIME));
+        }
+
+        session.update(testLocalTypes2);
+
+        DateTestLocalTypes testLocalTypes3 = new DateTestLocalTypes();
+        testLocalTypes3.setId(2);
+        testLocalTypes3.setDescription("time later in the day to test awfulness of SQLite");
+        testLocalTypes3.setTimeOnly(lt2);
+
+        log.error("INSERT? " + session.insert(testLocalTypes3));
+
+        List<DateTestLocalTypes> list = session.query(DateTestLocalTypes.class, "select * FROM DateTestLocalTypes");
+        log.info(list);
+
+
+        DateTestLocalTypes testLocalTypes4 = new DateTestLocalTypes();
+        testLocalTypes4.setId(2);
+        assertTrue(session.fetch(testLocalTypes4));
+
+        localTime = lt2.format(DateTimeFormatter.ISO_TIME);
+        // Remove millis since most of the DBs don't store it anyway
+        if (localTime.indexOf('.') > 0) {
+            localTime = localTime.substring(0, localTime.indexOf('.'));
+        }
+        assertEquals("time s/b " + localTime + " (FROM lt2)", localTime, testLocalTypes4.getTimeOnly().toString());
+
+
+        assertTrue(session.delete(testLocalTypes1) > 0);
+        assertTrue(session.delete(testLocalTypes3) > 0);
     }
 
     // internal insert/update/delete/select statements pass parameters through a converter

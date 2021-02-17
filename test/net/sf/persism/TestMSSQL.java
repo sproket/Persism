@@ -25,7 +25,8 @@ public final class TestMSSQL extends BaseTest {
 
     @Override
     protected void setUp() throws Exception {
-         //BaseTest.mssqlmode = false; // to run in JTDS MODE
+
+//        BaseTest.mssqlmode = false; // to run in JTDS MODE
 
         if (BaseTest.mssqlmode) {
             connectionType = ConnectionTypes.MSSQL;
@@ -87,7 +88,7 @@ public final class TestMSSQL extends BaseTest {
                 " PAID BIT NULL, " +
                 " STATUS CHAR(1) NULL, " +
                 " CREATED datetime, " +
-                " DATEPAID datetime, " +
+                " DATE_PAID datetime, " +
                 " DATESOMETHING datetime " +
                 ") ");
 
@@ -157,6 +158,7 @@ public final class TestMSSQL extends BaseTest {
                 "   [DateAdded] [smalldatetime] NULL, " +
                 "   [LastModified] [datetime] NULL, " +
                 "   [Notes] [text] NULL, " +
+                "   [Status] [tinyint] NULL, " +
                 "   [AmountOwed] [float] NULL, " +
                 "   [BigInt] [DECIMAL](20) NULL, " +
                 "   [SomeDate] [datetime2] NULL, " +
@@ -458,6 +460,8 @@ public final class TestMSSQL extends BaseTest {
                 "   [License_No2] [varchar](20) NULL, " +
                 "   [Title] [varchar](10) NULL, " +
                 "   [Suffix] [varchar](50) NULL, " +
+                "   [AmountOwed] [money] NULL, " +
+                "   [AmountOwedAfterHeadRemoval] [smallmoney] NULL, " +
                 "   [SpecialityNo] [int] NULL, " +
                 "   [AlertWhenRadSendsNoteToPhys] [text] NULL, " +
                 "   [OldUserNo] [int] NULL, " +
@@ -479,6 +483,37 @@ public final class TestMSSQL extends BaseTest {
         commands.add(sql);
 
         executeCommands(commands, con);
+
+
+        // TODO MSSQL has datetime2 datetime etc.. add some extras for that
+        if (UtilsForTests.isTableInDatabase("DateTestLocalTypes", con)) {
+            executeCommand("DROP TABLE DateTestLocalTypes", con);
+        }
+
+        sql = "CREATE TABLE DateTestLocalTypes ( " +
+                " ID INT, " +
+                " Description VARCHAR(100), " +
+                " DateOnly DATE, " +
+                " TimeOnly TIME," +
+                " DateAndTime DATETIME) ";
+
+        executeCommand(sql, con);
+
+        if (UtilsForTests.isTableInDatabase("DateTestSQLTypes", con)) {
+            executeCommand("DROP TABLE DateTestSQLTypes", con);
+        }
+
+        sql = "CREATE TABLE DateTestSQLTypes ( " +
+                " ID INT, " +
+                " Description VARCHAR(100), " +
+                " DateOnly DATE, " +
+                " TimeOnly TIME," +
+                " UtilDateAndTime DATETIME," +
+                " DateAndTime DATETIME) ";
+
+        executeCommand(sql, con);
+
+
     }
 
     @Override
@@ -500,6 +535,7 @@ public final class TestMSSQL extends BaseTest {
         barney.setCountry("US");
         barney.setCity("Philly?");
         barney.setType("X");
+        barney.setStatus((byte) 1);
         barney.setDateAdded(new Date(System.currentTimeMillis()));
         barney.setAmountOwed(100.23f);
         barney.setNotes("B:AH B:AH VBLAH\r  BLAH BLAY!");
@@ -524,7 +560,6 @@ public final class TestMSSQL extends BaseTest {
         log.info(session.query(Contact.class, "select * from Contacts"));
 
     }
-
 
 
     public void testProcedure() throws SQLException {
@@ -680,7 +715,7 @@ public final class TestMSSQL extends BaseTest {
         if (isProcedureInDatabase("spCustomerOrders", con)) {
             executeCommand("DROP PROCEDURE spCustomerOrders", con);
         }
-        // DO NOT remove line feeds 
+        // DO NOT remove line feeds
         String sql = "CREATE PROCEDURE [dbo].[spCustomerOrders]\n" +
                 "   @custId varchar(10)\n" +
                 "AS\n" +
@@ -691,7 +726,7 @@ public final class TestMSSQL extends BaseTest {
                 "\n" +
                 "    -- Insert statements for procedure here\n" +
                 "   SELECT c.Customer_ID, c.Company_Name, o.ID Order_ID, \n" +
-                "      o.Name AS Description, o.Created AS DateCreated, o.PAID \n" +
+                "      o.Name AS Description, o.Date_Paid, o.Created AS DateCreated, o.PAID \n" +
                 "        FROM ORDERS o\n" +
                 "        JOIN Customers c ON o.Customer_ID = c.Customer_ID\n" +
                 "   WHERE c.Customer_ID = @custId        \n" +
@@ -938,7 +973,6 @@ public final class TestMSSQL extends BaseTest {
     }
 
 
-
     public void testDetectAutoInc() {
 
         DumbTableStringAutoInc dumb = new DumbTableStringAutoInc();
@@ -960,9 +994,9 @@ public final class TestMSSQL extends BaseTest {
 
     }
 
-    public void testDateTimeOffset() throws Exception {
+    public void testUserDAO() throws Exception {
         /*
-        Notes:
+        Notes: for DateTimeOffset
             JTDS 1.2.5, 1.3.1 reads value as TimeStamp SQL TYPE 93
             MSSQL Driver reads reads value as -155 Not defined in java.sql.Types !
             See our Types class - we'll just check for that and set it as a TimeStamp to be consistent with JTDS
@@ -976,6 +1010,8 @@ public final class TestMSSQL extends BaseTest {
         user.setTypeOfUser("X");
         user.setStatus("Z");
         user.setUserName("ABC");
+        user.setAmountOwed(123.567d);
+        user.setAmountOwedAfterHeadRemoval(4.73f);
 
         session.insert(user);
 
@@ -1065,5 +1101,8 @@ public final class TestMSSQL extends BaseTest {
 
     }
 
-
+    @Override
+    public void testAllDates() {
+        super.testAllDates();
+    }
 }

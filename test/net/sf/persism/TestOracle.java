@@ -212,6 +212,36 @@ end;
                 "   WhatMiteIsIt TIMESTAMP NULL, " +
                 "   WhatTimeIsIt TIMESTAMP NULL ) ";
         executeCommand(sql, con);
+
+        // ORACLE DOESNT have TIME so we use TIMESTAMP FOR IT
+        if (UtilsForTests.isTableInDatabase("DateTestLocalTypes", con)) {
+            executeCommand("DROP TABLE DateTestLocalTypes", con);
+        }
+
+        sql = "CREATE TABLE DateTestLocalTypes ( " +
+                " ID INT, " +
+                " Description VARCHAR(100), " +
+                " DateOnly DATE, " +
+                " TimeOnly TIMESTAMP," +
+                " DateAndTime TIMESTAMP) ";
+
+        executeCommand(sql, con);
+
+        if (UtilsForTests.isTableInDatabase("DateTestSQLTypes", con)) {
+            executeCommand("DROP TABLE DateTestSQLTypes", con);
+        }
+
+        sql = "CREATE TABLE DateTestSQLTypes ( " +
+                " ID INT, " +
+                " Description VARCHAR(100), " +
+                " DateOnly DATE, " +
+                " TimeOnly TIMESTAMP," +
+                " UtilDateAndTime TIMESTAMP," +
+                " DateAndTime TIMESTAMP) ";
+
+        executeCommand(sql, con);
+
+
     }
 
 
@@ -376,5 +406,8 @@ end;
         }
     }
 
-
+    @Override
+    public void testAllDates() {
+        super.testAllDates();
+    }
 }

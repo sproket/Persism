@@ -186,10 +186,69 @@ public final class TestHSQLDB extends BaseTest {
                 "   WhatTimeIsIt TIME NULL) ";
 
         executeCommand(sql, con);
+
+        if (UtilsForTests.isTableInDatabase("DateTest", con)) {
+            executeCommand("DROP TABLE DateTest", con);
+        }
+
+        sql = "CREATE TABLE DateTest ( " +
+                " ID INT, " +
+                " Description VARCHAR(100), " +
+                " SqlDate1 DATETIME, " +
+                " SqlDate2 DATE, " +
+                " LocalDate1 DATETIME, " +
+                " LocalDate2 DATE, " +
+                " UtilDate1 DATETIME, " +
+                " UtilDate2 DATE, " +
+                " Instant1 DATETIME, " +
+                " Instant2 DATE, " +
+                " Timestamp1 DATETIME, " +
+                " Timestamp2 DATE, " +
+                " LocalDateTime1 DATETIME, " +
+                " LocalDateTime2 DATE, " +
+                " Time1 TIME," +
+                " Time2 TIME," +
+                " LocalTime1 TIME," +
+                " LocalTime2 TIME) ";
+
+        executeCommand(sql, con);
+
+        if (UtilsForTests.isTableInDatabase("DateTestLocalTypes", con)) {
+            executeCommand("DROP TABLE DateTestLocalTypes", con);
+        }
+
+        sql = "CREATE TABLE DateTestLocalTypes ( " +
+                " ID INT, " +
+                " Description VARCHAR(100), " +
+                " DateOnly DATE, " +
+                " TimeOnly TIME," +
+                " DateAndTime DATETIME) ";
+
+        executeCommand(sql, con);
+
+        if (UtilsForTests.isTableInDatabase("DateTestSQLTypes", con)) {
+            executeCommand("DROP TABLE DateTestSQLTypes", con);
+        }
+
+        sql = "CREATE TABLE DateTestSQLTypes ( " +
+                " ID INT, " +
+                " Description VARCHAR(100), " +
+                " DateOnly DATE, " +
+                " TimeOnly TIME," +
+                " UtilDateAndTime DATETIME," +
+                " DateAndTime DATETIME) ";
+
+        executeCommand(sql, con);
+
+
     }
 
     public void testAnything() {
         log.info("HELLO HSQLDB!");
     }
 
+    @Override
+    public void testAllDates() {
+        super.testAllDates();
+    }
 }

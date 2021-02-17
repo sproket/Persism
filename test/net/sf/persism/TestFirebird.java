@@ -137,6 +137,35 @@ public final class TestFirebird extends BaseTest {
 
         executeCommand(sql, con);
 
+
+        // TIMESTAMP for DATETIME in Firebird
+
+        if (UtilsForTests.isTableInDatabase("DateTestLocalTypes", con)) {
+            executeCommand("DROP TABLE DateTestLocalTypes", con);
+        }
+
+        sql = "CREATE TABLE DateTestLocalTypes ( " +
+                " ID INT, " +
+                " Description VARCHAR(100), " +
+                " DateOnly DATE, " +
+                " TimeOnly TIME," +
+                " DateAndTime TIMESTAMP) ";
+
+        executeCommand(sql, con);
+
+        if (UtilsForTests.isTableInDatabase("DateTestSQLTypes", con)) {
+            executeCommand("DROP TABLE DateTestSQLTypes", con);
+        }
+
+        sql = "CREATE TABLE DateTestSQLTypes ( " +
+                " ID INT, " +
+                " Description VARCHAR(100), " +
+                " DateOnly DATE, " +
+                " TimeOnly TIME," +
+                " UtilDateAndTime TIMESTAMP," +
+                " DateAndTime TIMESTAMP) ";
+
+        executeCommand(sql, con);
     }
 
     public void testSomething() {
@@ -157,5 +186,10 @@ public final class TestFirebird extends BaseTest {
 
         session.insert(order);
 
+    }
+
+    @Override
+    public void testAllDates() {
+        super.testAllDates();
     }
 }

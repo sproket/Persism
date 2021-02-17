@@ -48,8 +48,8 @@ TODO DOCUMENTATION Example how to implement Persistable
 
 TODO MAYBE https://github.com/JSQLParser/JSqlParser/releases/tag/jsqlparser-4.0
 
-TODO Support new DateTime APIs https://stackoverflow.com/questions/32548331/missed-opportunity-to-fix-jdbc-date-handling-in-java-8
-TODO https://jdbc.postgresql.org/documentation/head/8-date-time.html
+DONE Support new DateTime APIs https://stackoverflow.com/questions/32548331/missed-opportunity-to-fix-jdbc-date-handling-in-java-8
+DONE https://jdbc.postgresql.org/documentation/head/8-date-time.html
 TODO https://stackoverflow.com/questions/44091688/using-zoneddatetime-with-datetimeoffset-in-sqlserver
 TODO https://www.baeldung.com/java-daylight-savings
 
@@ -79,3 +79,12 @@ https://www.cis.upenn.edu/~bcpierce/courses/629/jdkdocs/guide/jdbc/getstart/mapp
 https://www.testcontainers.org/ ?
 
 Documentation: Remove "Persism" from Logo itself. Use separate Text instead.s
+
+https://andresalmiray.com/publishing-to-maven-central-using-apache-maven/
+
+DONE Document date and time mapping and storing only up to the second for time.
+
+Document about using CustomerOrder class for 2 different queries (1 stored proc). Problems arise if
+you have 1 with a missing field that is 1st defined in MetaData (any query after - even if they are correct)
+will complain about missing fields. You'd need to fix any query that would use that class (for now) - maybe
+add the query string as a key to the Column/Property Info objects? Duplicating but......

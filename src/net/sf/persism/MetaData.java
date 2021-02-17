@@ -637,6 +637,7 @@ final class MetaData {
     }
 
     private String buildUpdateString(Object object, Iterator<String> it, Connection connection) throws PersismException {
+        // todo STUPID UPDATE STATEMENT IS IN ALPHABETICAL ORDER FFS
 
         String tableName = getTableName(object.getClass(), connection);
         String sd = connectionType.getKeywordStartDelimiter();

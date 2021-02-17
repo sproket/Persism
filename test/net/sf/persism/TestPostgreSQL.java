@@ -194,6 +194,34 @@ public final class TestPostgreSQL extends BaseTest {
         commands.add(sql);
 
         executeCommands(commands, con);
+
+        if (UtilsForTests.isTableInDatabase("DateTestLocalTypes", con)) {
+            executeCommand("DROP TABLE DateTestLocalTypes", con);
+        }
+
+        sql = "CREATE TABLE DateTestLocalTypes ( " +
+                " ID INT, " +
+                " Description VARCHAR(100), " +
+                " DateOnly DATE, " +
+                " TimeOnly TIME," +
+                " DateAndTime TIMESTAMP) ";
+
+        executeCommand(sql, con);
+
+        if (UtilsForTests.isTableInDatabase("DateTestSQLTypes", con)) {
+            executeCommand("DROP TABLE DateTestSQLTypes", con);
+        }
+
+        sql = "CREATE TABLE DateTestSQLTypes ( " +
+                " ID INT, " +
+                " Description VARCHAR(100), " +
+                " DateOnly DATE, " +
+                " TimeOnly TIME," +
+                " UtilDateAndTime TIMESTAMP," +
+                " DateAndTime TIMESTAMP) ";
+
+        executeCommand(sql, con);
+
     }
 
 
@@ -264,4 +292,8 @@ public final class TestPostgreSQL extends BaseTest {
 
     }
 
+    @Override
+    public void testAllDates() {
+        super.testAllDates();
+    }
 }

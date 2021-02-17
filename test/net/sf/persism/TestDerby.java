@@ -74,7 +74,7 @@ public final class TestDerby extends BaseTest {
                 " PAID BOOLEAN, " +
                 " Customer_ID VARCHAR(10), " +
                 " Created TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL, " +
-                " DatePaid TIMESTAMP, " +
+                " Date_Paid TIMESTAMP, " +
                 " DateSomething TIMESTAMP" +
                 ") ";
 
@@ -166,6 +166,33 @@ public final class TestDerby extends BaseTest {
 
         executeCommand(sql, con);
 
+        if (UtilsForTests.isTableInDatabase("DateTestLocalTypes", con)) {
+            executeCommand("DROP TABLE DateTestLocalTypes", con);
+        }
+
+        // TIMESTAMP for DATETIME in DERBY
+        sql = "CREATE TABLE DateTestLocalTypes ( " +
+                " ID INT, " +
+                " Description VARCHAR(100), " +
+                " DateOnly DATE, " +
+                " TimeOnly TIME," +
+                " DateAndTime TIMESTAMP) ";
+
+        executeCommand(sql, con);
+
+        if (UtilsForTests.isTableInDatabase("DateTestSQLTypes", con)) {
+            executeCommand("DROP TABLE DateTestSQLTypes", con);
+        }
+
+        sql = "CREATE TABLE DateTestSQLTypes ( " +
+                " ID INT, " +
+                " Description VARCHAR(100), " +
+                " DateOnly DATE, " +
+                " TimeOnly TIME," +
+                " UtilDateAndTime TIMESTAMP," +
+                " DateAndTime TIMESTAMP) ";
+
+        executeCommand(sql, con);
     }
 
     public void testTypes() {
@@ -201,7 +228,8 @@ public final class TestDerby extends BaseTest {
                 assertNotNull("type should not be null", columnInfo.columnType);
             }
 
-            Order order = DAOFactory.newOrder(con);;
+            Order order = DAOFactory.newOrder(con);
+            ;
             order.setCustomerId("123");
             order.setName("name");
             order.setCreated(LocalDate.now());
@@ -247,4 +275,8 @@ public final class TestDerby extends BaseTest {
         }
     }
 
+    @Override
+    public void testAllDates() {
+        super.testAllDates();
+    }
 }

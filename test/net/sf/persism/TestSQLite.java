@@ -11,9 +11,7 @@ import net.sf.persism.dao.*;
 
 import java.sql.*;
 import java.sql.Date;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.ZoneOffset;
+import java.time.*;
 import java.util.*;
 
 import static net.sf.persism.UtilsForTests.*;
@@ -59,6 +57,22 @@ public final class TestSQLite extends BaseTest {
 
     @Override
     public void testContactTable() throws SQLException {
+
+        log.warn(Integer.MAX_VALUE);
+        log.warn(55423000l);
+        log.warn(698383421107l);
+
+        LocalTime lt = Instant.ofEpochMilli(55423000l)
+                .atZone(ZoneId.systemDefault()).toLocalTime();
+
+        log.warn("ASS:" + lt);
+
+
+        LocalTime lt2 = Instant.ofEpochMilli(698383421107l)
+                .atZone(ZoneId.systemDefault()).toLocalTime();
+
+        log.warn("ASS:" + lt2);
+
         super.testContactTable();
         assertTrue(true);
     }
@@ -161,6 +175,36 @@ public final class TestSQLite extends BaseTest {
                 " WhatTimeIsIt time NULL " +
                 ") ";
         executeCommand(sql, con);
+
+        if (UtilsForTests.isTableInDatabase("DateTestLocalTypes", con)) {
+            executeCommand("DROP TABLE DateTestLocalTypes", con);
+        }
+
+        sql = "CREATE TABLE DateTestLocalTypes ( " +
+                " ID INT, " +
+                " Description VARCHAR(100), " +
+                " DateOnly DATE, " +
+                " TimeOnly TIME," +
+                " DateAndTime DATETIME) ";
+
+        executeCommand(sql, con);
+
+        if (UtilsForTests.isTableInDatabase("DateTestSQLTypes", con)) {
+            executeCommand("DROP TABLE DateTestSQLTypes", con);
+        }
+
+        sql = "CREATE TABLE DateTestSQLTypes ( " +
+                " ID INT, " +
+                " Description VARCHAR(100), " +
+                " DateOnly DATE, " +
+                " TimeOnly TIME," +
+                " UtilDateAndTime DATETIME, " +
+                " DateAndTime DATETIME) ";
+
+        executeCommand(sql, con);
+
+
+
     }
 
     public void testOrders() throws Exception {
@@ -535,6 +579,8 @@ public final class TestSQLite extends BaseTest {
 
     }
 
-
-
+    @Override
+    public void testAllDates() {
+        super.testAllDates();
+    }
 }

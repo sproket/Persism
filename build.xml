@@ -314,10 +314,6 @@
 
     <target name="javadoc" description="Generate Javadoc">
         <mkdir dir="${project.basedir}/javadoc"/>
-
-        <!--        stylesheetfile="${project.basedir}/persism.css"-->
-
-        <!-- TODO FIX group footer header and description -->
         <javadoc
                 sourcepathref="persism.module.sourcepath"
                 destdir="${project.basedir}/javadoc"
@@ -325,11 +321,8 @@
                 overview="overview.html"
                 doctitle="Persism API"
                 author="Daniel Howard"
-                description="DESCRRIOTIUONB?"
-                footer="FOOTER?"
-                group="GHROUPO?"
-                header="HEADER?"
-                windowtitle="Persism"
+                description="A no ceremony ORM for Java"
+                windowtitle="Persism - A no ceremony ORM for Java"
         >
         </javadoc>
     </target>

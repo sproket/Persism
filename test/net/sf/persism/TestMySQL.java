@@ -132,6 +132,35 @@ public final class TestMySQL extends BaseTest {
                 "   WhatTimeIsIt TIME NULL) ";
 
         executeCommand(sql, con);
+
+        if (UtilsForTests.isTableInDatabase("DateTestLocalTypes", con)) {
+            executeCommand("DROP TABLE DateTestLocalTypes", con);
+        }
+
+        sql = "CREATE TABLE DateTestLocalTypes ( " +
+                " ID INT, " +
+                " Description VARCHAR(100), " +
+                " DateOnly DATE, " +
+                " TimeOnly TIME," +
+                " DateAndTime DATETIME) ";
+
+        executeCommand(sql, con);
+
+        if (UtilsForTests.isTableInDatabase("DateTestSQLTypes", con)) {
+            executeCommand("DROP TABLE DateTestSQLTypes", con);
+        }
+
+        sql = "CREATE TABLE DateTestSQLTypes ( " +
+                " ID INT, " +
+                " Description VARCHAR(100), " +
+                " DateOnly DATE, " +
+                " TimeOnly TIME," +
+                " UtilDateAndTime DATETIME," +
+                " DateAndTime DATETIME) ";
+
+        executeCommand(sql, con);
+
+
     }
 
     public void testSomething() {
@@ -155,5 +184,10 @@ public final class TestMySQL extends BaseTest {
         assertEquals("should be 1", 1, count);
         log.info("count " + count);
 
+    }
+
+    @Override
+    public void testAllDates() {
+        super.testAllDates();
     }
 }

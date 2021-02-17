@@ -2,6 +2,7 @@ package net.sf.persism.dao;
 
 import net.sf.persism.PersismException;
 import net.sf.persism.Persistable;
+import net.sf.persism.annotations.NotColumn;
 
 import java.math.BigInteger;
 import java.sql.Date;
@@ -37,12 +38,17 @@ public final class Contact implements Persistable<Contact> {
     private Timestamp lastModified;
     private float amountOwed;
     private String notes;
+    @NotColumn // later + maybe also add short...
+    private byte status;
 
     private Time whatTimeIsIt;
     private LocalTime whatMiteIsIt;
 
+    @NotColumn
     private Instant testInstant;
+    @NotColumn
     private Instant testInstant2;
+
     private java.util.Date someDate;
 
     private BigInteger bigInt;
@@ -248,6 +254,14 @@ public final class Contact implements Persistable<Contact> {
 
     public void setBigInt(BigInteger bigInt) {
         this.bigInt = bigInt;
+    }
+
+    public byte getStatus() {
+        return status;
+    }
+
+    public void setStatus(byte status) {
+        this.status = status;
     }
 
     @Override

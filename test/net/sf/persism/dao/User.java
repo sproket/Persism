@@ -23,8 +23,11 @@ public final class User {
 
     private Date lastLogin;
 
-
     private Timestamp someDate;
+
+    // Money tests
+    private double amountOwed;
+    private float amountOwedAfterHeadRemoval;
 
     public Timestamp getSomeDate() {
         return someDate;
@@ -90,6 +93,21 @@ public final class User {
         this.lastLogin = lastLogin;
     }
 
+    public double getAmountOwed() {
+        return amountOwed;
+    }
+
+    public void setAmountOwed(double amountOwed) {
+        this.amountOwed = amountOwed;
+    }
+
+    public float getAmountOwedAfterHeadRemoval() {
+        return amountOwedAfterHeadRemoval;
+    }
+
+    public void setAmountOwedAfterHeadRemoval(float amountOwedAfterHeadRemoval) {
+        this.amountOwedAfterHeadRemoval = amountOwedAfterHeadRemoval;
+    }
 
     @Override
     public String toString() {
@@ -102,6 +120,8 @@ public final class User {
                 ", department=" + department +
                 ", lastLogin=" + lastLogin +
                 ", someDate=" + someDate +
+                ", amountOwed=" + amountOwed +
+                ", amountOwedAfterHeadRemoval=" + amountOwedAfterHeadRemoval +
                 '}';
     }
 }
