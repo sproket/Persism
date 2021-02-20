@@ -10,3 +10,6 @@ cobertura.ser
 *.log
 .idea/workspace.xml
 
+/libs/hsqldb/pinf.script
+/libs/hsqldb/pinf.properties
+/libs/hsqldb/pinf.lck
