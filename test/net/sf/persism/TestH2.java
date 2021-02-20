@@ -97,7 +97,7 @@ public final class TestH2 extends BaseTest {
                 " Contact_Title VARCHAR(10) NULL, " +
                 " Address VARCHAR(40) NULL, " +
                 " City VARCHAR(30) NULL, " +
-                " Region VARCHAR(10) NULL, " +
+                " Region ENUM('North', 'South', 'East', 'West'), " +
                 " Postal_Code VARCHAR(10) NULL, " +
                 " Country VARCHAR(2) NOT NULL DEFAULT 'US', " +
                 " Phone VARCHAR(30) NULL, " +
@@ -505,8 +505,8 @@ public final class TestH2 extends BaseTest {
 
         } catch (Exception e) {
             log.error(e.getMessage());
-            assertTrue("message starts with 'Unique index or primary key violation: \"PRIMARY_KEY_E ON PUBLIC.TABLEMULTIPRIMARY(ORDERID, PRODUCTID)\"'",
-                    e.getMessage().startsWith("Unique index or primary key violation: \"PRIMARY_KEY_E ON PUBLIC.TABLEMULTIPRIMARY(ORDERID, PRODUCTID)\""));
+            assertTrue("message starts with 'Unique index or primary key violation'",
+                    e.getMessage().startsWith("Unique index or primary key violation"));
             nullInsertFail = true;
         }
 

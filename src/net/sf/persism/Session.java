@@ -633,6 +633,11 @@ public final class Session {
         int sqlColumnType = rsmd.getColumnType(column);
         String columnName = rsmd.getColumnLabel(column);
 
+        if (returnType.isEnum()) {
+            // Some DBs may read an enum type as other 1111 - we can tell it here to read it as a string.
+            sqlColumnType = java.sql.Types.CHAR;
+        }
+
         Object value;
 
         Types columnType = Types.convert(sqlColumnType); // note this could be null if we can't match a type
@@ -731,6 +736,10 @@ public final class Session {
 //                case UtilDateType:
 //                    value = rs.getDate(column);
 //                    break;
+
+                case StringType:
+                    value = rs.getString(column);
+                    break;
 
                 default:
                     value = rs.getObject(column);
@@ -1218,7 +1227,11 @@ public final class Session {
                         break;
 
                     case EnumType:
-                        st.setString(n, param.toString());
+                        if (metaData.connectionType == ConnectionTypes.PostgreSQL) {
+                            st.setObject(n, param.toString(), java.sql.Types.OTHER);
+                        } else {
+                            st.setString(n, param.toString());
+                        }
                         break;
 
                     case UUIDType:

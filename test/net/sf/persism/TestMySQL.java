@@ -75,7 +75,7 @@ public final class TestMySQL extends BaseTest {
                 " Contact_Title VARCHAR(10) NULL, " +
                 " Address VARCHAR(40) NULL, " +
                 " City VARCHAR(30) NULL, " +
-                " Region VARCHAR(10) NULL, " + // todo MySQL Enum type ? https://dev.mysql.com/doc/refman/8.0/en/enum.html
+                " Region ENUM('North', 'South', 'East', 'West'), " +
                 " Postal_Code VARCHAR(10) NULL, " +
                 " Country VARCHAR(2) NOT NULL DEFAULT 'US', " +
                 " STATUS CHAR(1) NOT NULL DEFAULT ' ', " +

@@ -106,7 +106,7 @@
 
 
     <path id="library.h2.classpath">
-        <pathelement location="${basedir}/libs/h2/bin/h2-1.3.167.jar"/>
+        <pathelement location="${basedir}/libs/h2/bin/h2-1.4.200.jar"/>
     </path>
 
     <path id="library.jtds.classpath">
@@ -114,7 +114,7 @@
     </path>
 
     <path id="library.mssql.classpath">
-        <pathelement location="${basedir}/libs/mssql/sqljdbc4.jar"/>
+        <pathelement location="${basedir}/libs/mssql/mssql-jdbc-8.4.1.jre8.jar"/>
     </path>
 
     <path id="library.oracle.classpath">

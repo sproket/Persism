@@ -113,6 +113,14 @@ public final class TestPostgreSQL extends BaseTest {
             commands.add("DROP TABLE Customers");
         }
 
+
+        try {
+            // Once you Create the type you need to drop any relations to it if you want to redefine it
+            executeCommand("CREATE TYPE Regions AS ENUM ('North', 'South', 'East', 'West');", con);
+        } catch (SQLException e) {
+            log.warn(e.getMessage(), e);
+        }
+
         commands.add("CREATE TABLE Customers ( " +
                 " Customer_ID VARCHAR(36) PRIMARY KEY DEFAULT uuid_generate_v1(), " +
                 " Company_Name VARCHAR(30) NULL, " +
@@ -120,7 +128,7 @@ public final class TestPostgreSQL extends BaseTest {
                 " Contact_Title VARCHAR(10) NULL, " +
                 " Address VARCHAR(40) NULL, " +
                 " City VARCHAR(30) NULL, " +
-                " Region VARCHAR(10) NULL, " +
+                " Region Regions NULL, " +
                 " Postal_Code VARCHAR(10) NULL, " +
                 " Country VARCHAR(2) NOT NULL DEFAULT 'US', " +
                 " Phone VARCHAR(30) NULL, " +
