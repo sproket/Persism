@@ -188,7 +188,7 @@ public final class Session {
                         // set on it's associated property.
 
                         if (propertyInfo.getter.getReturnType().isPrimitive()) {
-                            warnNoDuplicates("Property " + propertyInfo.propertyName + " for column " + columnInfo.columnName +
+                            warnNoDuplicates("Property " + propertyInfo.propertyName + " for column " + columnInfo.columnName + " for class " + object.getClass() +
                                     " should be an Object type to properly detect NULL for defaults (change it from the primitive type to its Boxed version).");
                         }
 
