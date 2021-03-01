@@ -35,9 +35,8 @@ public final class TestPostgreSQL extends BaseTest {
         String username = props.getProperty("database.username");
         String password = props.getProperty("database.password");
         Class.forName(driver);
-        con = DriverManager.getConnection(url, props);
 
-        con = new net.sf.log4jdbc.ConnectionSpy(con);
+        con = DriverManager.getConnection(url, props);
 
         createTables();
 

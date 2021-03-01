@@ -35,8 +35,6 @@ public final class TestMySQL extends BaseTest {
 
         con = DriverManager.getConnection(url, username, password);
 
-        con = new net.sf.log4jdbc.ConnectionSpy(con);
-
         createTables();
 
         session = new Session(con);

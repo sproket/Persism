@@ -21,7 +21,7 @@ import java.util.Date;
  * @author Dan Howard
  * @since 1/8/2021
  */
-public final class Session {
+public final class Session implements AutoCloseable {
 
     private static final Log log = Log.getLogger(Session.class);
 
@@ -38,6 +38,17 @@ public final class Session {
     public Session(Connection connection) throws PersismException {
         this.connection = connection;
         init(connection);
+    }
+
+    @Override
+    public void close() {
+        if (connection != null) {
+            try {
+                connection.close();
+            } catch (SQLException e) {
+                log.warn(e.getMessage(), e);
+            }
+        }
     }
 
     private void init(Connection connection) {
@@ -786,8 +797,8 @@ public final class Session {
             case ShortType:
                 log.debug(valueType);
                 break;
-                // TODO test out short and byte - JDBC tends to read single byte as short
-                // Might need byte to bool also upcasting can cause errors
+            // TODO test out short and byte - JDBC tends to read single byte as short
+            // Might need byte to bool also upcasting can cause errors
             case integerType:
             case IntegerType:
                 // int to bool
@@ -946,7 +957,7 @@ public final class Session {
                     // MSSQL works, JTDS returns Varchar in format below with varying decimal numbers
                     // which won't format unless I use Exact so I chop of the milliseconds.
                     DateFormat timeFormat = new SimpleDateFormat("hh:mm:ss");
-                    String sval = ""+value;
+                    String sval = "" + value;
                     if (sval.indexOf('.') > -1) {
                         sval = sval.substring(0, sval.indexOf('.'));
                     }
@@ -1244,7 +1255,8 @@ public final class Session {
                         break;
 
                     default:
-                        log.warn("setParameters default: " + n + " " + param.getClass());
+                        // Usually SQLite with util.date - setObject works
+                        log.info("setParameters default: " + n + " " + param.getClass());
                         st.setObject(n, param);
                 }
 

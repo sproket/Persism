@@ -18,9 +18,11 @@
         <sourceOutputDir name="target/generated-sources/annotations" />
         <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
         <outputRelativeToContentRoot value="true" />
+        <module name="Persism" />
       </profile>
     </annotationProcessing>
     <bytecodeTargetLevel>
+      <module name="Persism" target="1.8" />
       <module name="StressTest" target="15" />
     </bytecodeTargetLevel>
   </component>

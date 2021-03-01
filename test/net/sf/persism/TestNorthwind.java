@@ -43,8 +43,6 @@ public class TestNorthwind extends TestCase {
 
         con = DriverManager.getConnection(url, username, password);
 
-        con = new net.sf.log4jdbc.ConnectionSpy(con);
-
         session = new Session(con);
     }
 

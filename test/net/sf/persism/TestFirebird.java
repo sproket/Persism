@@ -30,8 +30,6 @@ public final class TestFirebird extends BaseTest {
 
         log.info(con.getMetaData().getDatabaseProductName());
 
-        con = new net.sf.log4jdbc.ConnectionSpy(con);
-
         createTables();
 
         session = new Session(con);

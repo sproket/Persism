@@ -1,16 +1,11 @@
 package net.sf.persism;
 
-import com.mysql.jdbc.Connection;
-import com.mysql.jdbc.ExceptionInterceptor;
-import com.mysql.jdbc.Extension;
-import com.mysql.jdbc.MySQLConnection;
 import junit.framework.TestCase;
+import net.sf.persism.dao.northwind.Category;
 
 import java.sql.*;
-import java.util.Map;
+import java.util.List;
 import java.util.Properties;
-import java.util.TimeZone;
-import java.util.concurrent.Executor;
 
 public class TestMiscellaneous extends TestCase {
 
@@ -22,6 +17,24 @@ public class TestMiscellaneous extends TestCase {
 
     protected void tearDown() throws Exception {
         super.tearDown();
+    }
+
+    public void testAutoClosable() throws Exception {
+        Properties props = new Properties();
+        props.load(getClass().getResourceAsStream("/northwind.properties"));
+        String driver = props.getProperty("database.driver");
+        String url = props.getProperty("database.url");
+        String username = props.getProperty("database.username");
+        String password = props.getProperty("database.password");
+        Class.forName(driver);
+
+        Connection con = DriverManager.getConnection(url, username, password);
+
+        try (Session session = new Session(con)) {
+            List<Category> list = session.query(Category.class, "select * from categories");
+            list.stream().forEach(c -> log.info(c));
+        }
+        assertTrue(con.isClosed());
     }
 
     public static void testSomething() {

@@ -39,9 +39,6 @@ public final class TestDerby extends BaseTest {
 
         con = DriverManager.getConnection(url);
 
-        con = new net.sf.log4jdbc.ConnectionSpy(con);
-
-
         createTables();
 
         session = new Session(con);

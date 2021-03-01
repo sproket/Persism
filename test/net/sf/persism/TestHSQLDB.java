@@ -25,8 +25,6 @@ public final class TestHSQLDB extends BaseTest {
 
         con = DriverManager.getConnection(url, "sa", "");
 
-        con = new net.sf.log4jdbc.ConnectionSpy(con);
-
         createTables();
 
         session = new Session(con);

@@ -13,6 +13,7 @@ Initial release
 * Added support for MSSQL/JTDS money and smallmoney types (mapping to Float or Double)
 * Added support for ENUM type in the db - mapping to Java enum (PostgreSQL, MySQL, H2)  
 * Added warning when using a primitive type mapped to a column with a default in the database
+* Added AutoClosable implementation to Session  
 * Updated test mssql jdbc driver to 8.4.1
 * Updated test H2 jdbc driver to 1.4.200
 * Removed null waring about sql type 1111 (Other) will just be considered Object

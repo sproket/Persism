@@ -176,6 +176,7 @@ public abstract class BaseTest extends TestCase {
         customer.setPostalCode("54321");
         customer.setRegion(Regions.East);
         customer.setStatus('1');
+
         session.delete(customer); // i case it already exists.
         session.insert(customer);
 
@@ -303,6 +304,7 @@ public abstract class BaseTest extends TestCase {
         customer.setPostalCode("54321");
         customer.setRegion(Regions.East);
         customer.setStatus('2');
+
 
         session.delete(customer); // in case it already exists.
         session.insert(customer);
@@ -451,7 +453,7 @@ public abstract class BaseTest extends TestCase {
     static LocalDate ld = LocalDate.parse("1997-02-17", DateTimeFormatter.ISO_DATE);
     static LocalTime lt = LocalTime.parse("10:23:43.567", DateTimeFormatter.ISO_TIME);  // earlier in the day SQLite sees INT
     static LocalTime lt2 = LocalTime.parse("22:23:41.107", DateTimeFormatter.ISO_TIME); // later on the day SQLite sees LONG FFS
-    static java.util.Date udate = Timestamp.valueOf("1992-02-17 22:23:41.107");
+    static java.util.Date udate = new java.util.Date(Timestamp.valueOf("1992-02-17 22:23:41.107").getTime());
     static java.sql.Date sdate = new java.sql.Date(udate.getTime());
     static java.sql.Timestamp ts = new Timestamp(udate.getTime());
     static java.sql.Time time = new Time(udate.getTime());

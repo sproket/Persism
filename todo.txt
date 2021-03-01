@@ -41,7 +41,7 @@ Add Sybase DB2 Ingres Informix hsqldb? .....
 TODO Handle X words Tax - Taxes, Fax - Faxes - plural rules
 
 todo     @Column(name = "IsCompound") - yeah we do a simple "is" check but I need to think about this. See determinePropertyInfo
-         private boolean compound; Find "Is" Columns so we don't need the annotation? OR just name the field isCompound - gets and sets seem to generate fine... BUT IT FAILS LOOKING FOR "compound" as the property name!s
+         private boolean compound; Find "Is" Columns so we don't need the annotation? OR just name the field isCompound - gets and sets seem to generate fine... BUT IT FAILS LOOKING FOR "compound" as the property name!
 
 
 TODO DOCUMENTATION Example how to implement Persistable
@@ -78,7 +78,7 @@ https://www.cis.upenn.edu/~bcpierce/courses/629/jdkdocs/guide/jdbc/getstart/mapp
 
 https://www.testcontainers.org/ ?
 
-Documentation: Remove "Persism" from Logo itself. Use separate Text instead.s
+Documentation: Remove "Persism" from Logo itself. Use separate Text instead.
 
 https://andresalmiray.com/publishing-to-maven-central-using-apache-maven/
 
@@ -89,4 +89,12 @@ you have 1 with a missing field that is 1st defined in MetaData (any query after
 will complain about missing fields. You'd need to fix any query that would use that class (for now) - maybe
 add the query string as a key to the Column/Property Info objects? Duplicating but......
 
-TODO SQL enum to Java enum? PostgreSQL, MySQL and H2.
+DONE SQL enum to Java enum? PostgreSQL, MySQL and H2.
+
+TODO @NotTable classes should allow getters only and we can set values through fields instead.
+TODO Add support for Records
+
+MAVEN:
+https://www.youtube.com/watch?v=bxP9IuJbcDQ
+http://tutorials.jenkov.com/maven/publish-to-central-maven-repository.html
+
