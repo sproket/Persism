@@ -22,3 +22,6 @@ http://www.h2database.com/html/datatypes.html
 
 Blob support only up to int max size (2,147,483,647)
 
+
+Oracle not on maven...
+https://stackoverflow.com/questions/9898499/oracle-jdbc-ojdbc6-jar-as-a-maven-dependency

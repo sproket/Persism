@@ -40,6 +40,9 @@ public final class Session implements AutoCloseable {
         init(connection);
     }
 
+    /**
+     * Close the connection
+     */
     @Override
     public void close() {
         if (connection != null) {
