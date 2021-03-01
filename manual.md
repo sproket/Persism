@@ -2,6 +2,15 @@
 
 Download Persism [here](https://github.com/sproket/Persism/releases) and add it your project.
 
+If you are using Maven:
+```
+<dependency>
+    <groupId>io.github.sproket</groupId>
+    <artifactId>persism</artifactId>
+    <version>1.0.1</version>
+</dependency>
+```
+
 Persism uses a standard Connection object so all you need to do is create the Session object 
 passing in the Connection.
 
