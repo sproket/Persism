@@ -120,6 +120,19 @@ session.delete(customer); // Delete Customer
 Persism will use the primary keys for the update and delete methods and will set the primary key 
 for you if it's an autoincrement when you do an insert. 
 
+### AutoCloseable
+
+Session implements AutoCloseable so if you're using connection pooling you 
+can use this form:
+
+```
+try (Session session = new Session(dataSource.getConnection())) {
+  customer.setCustomerName("Barney");
+  sesion.update(customer); 
+  ... etc ...   
+}
+```
+
 ## Defaults and Primary Keys
 
 Persism will usually discover primary keys, so you usually do not have to specify them 
@@ -217,7 +230,7 @@ Let's look at the PUBS database for this:
 Hmm, some funny names here. Here's a class for that:
 
 ```
-@Table("author") // not really required in this case
+@Table("authors") // not really required in this case
 public class Author {
 
     @Column(name = "aU_iD") // Usually case won't matter for the annotation
@@ -343,22 +356,28 @@ customer.setOrders(orders);
 |  boolean          | BIT, INT, SHORT, BYTE, NUMBER, CHAR(1)| Oracle doesn't have a bit so it reads number types as BigDecimal or Char(1) - 1 or '1' for true |
 |  short, int, long     | INT, BIGINT, LONG, AUTOINCREMENT  | Any whole number maps fine but you may see downcast warnings |
 |  float, double, BigDecimal    | NUMBER, REAL, FLOAT, DOUBLE  | Any floating point type maps fine  but you may see downcast warnings |
-|  byte[]    | BLOB  | Binary large objects will be read as a byte array |
-|  String  | CHAR, VARCHAR, NVARCHAR, TEXT, CLOB  | Large or small char types map to String |
-|  enum  | VARCHAR and similar  | Enum types are stored and read back as a String type and then converted |
+|  byte[]    | BLOB  | Binary large objects will be read as a byte array. **Do not** use Blob as a Java type in your POJO. Max size is 2147483647|
+|  String  | CHAR, VARCHAR, NVARCHAR, TEXT, CLOB  | Large or small char types map to String.  **Do not** use Clob a Java type in your POJO. Max size is 2147483647|
+|  enum  | VARCHAR and/or ENUM db type (PostgreSQL, MySQL and H2)  | Database Enum types can map to String or Enum in Java. Enum in Java can be stored as Enum (if supported) or Varchar  |
 |  UUID  | VARCHAR, BINARY(16) or Native (PostgreSQL or MSSQL only)  | UUID types are read as String types and then converted |
-|  Time, Timestamp, util.Date, sql.Date, LocalDate, LocalDateTime  | various DATE, DATETIME (specific to vendor) | Date types are generally read as sql.Timestamp and converted as appropriate |
+|  sql.Timestamp, util.Date, LocalDateTime  | DATETIME / TIMESTAMP | DateTime types are generally read as sql.Timestamp and converted as appropriate |
+|  sql.Date, LocalDate  | DATE | Usually used for DATE only types |
+|  sql.Time, LocalTime  | TIME | Usually used for TIME only types (For Oracle you can use TIMESTAMP) |
+
+**Note:** For Date related types it's recommended to use the new java.time types (LocalDate, LocalTime, LocalDateTime)
+since they are immutable. 
 
 **Note:** Although Java primitive types like int, float, double, boolean are fully supported you should use 
 the Object types if you need to support *NULL*. It's especially important if you have defaults in
-your database since primitive types can never detect not being set. 
+your database since primitive types can never detect not being set.
+
 
 ## Unsupported SQL Types
 
 The following is a list of SQL types defined in ```java.sql.Types``` which are currently not supported.
 
 ```
-OTHER       = 1111
+OTHER       = 1111 (supported but no type checking is done)
 JAVA_OBJECT = 2000
 DISTINCT    = 2001
 STRUCT      = 2002
@@ -445,7 +464,7 @@ the property in you class with *@NotColumn*.
 
 **Parse Exceptions** 
 
-> This can occur in specific cases where the JDBC returns a Date type as a String. The format used to convert it to 
+> This can occur in specific cases where the JDBC returns a Date type as a String. The format used to convert to 
 a date type is ```yyyy-MM-dd hh:mm:ss``` for DateTime types and ```yyyy-MM-dd``` for Date types.
 
 
@@ -518,3 +537,4 @@ Here's an example logback configuration for logging with Persism:
 Thanks to the various JDBC and database developers for helping to make this possible.
 
 ------------------------------------------
+
