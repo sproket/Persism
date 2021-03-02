@@ -29,7 +29,7 @@ annotate only when something is outside the conventions.
 Persism is under 50k and has *Zero* dependencies however it will utilize logging based on whatever is available 
 at runtime - SLF4J, LOG4J or JUL.
 
-[Manual](/manual.md)
+[Getting Started](/manual.md)
 
 [Javadoc](/javadoc/index.html)
 

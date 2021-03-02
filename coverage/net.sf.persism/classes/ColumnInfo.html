@@ -89,37 +89,40 @@
 <i>15</i>&nbsp;    // H2 - BIT - comes back NULL
 <i>16</i>&nbsp;    Types columnType;
 <i>17</i>&nbsp;
-<i>18</i>&nbsp;    int sqlColumnType;
-<i>19</i>&nbsp;
-<i>20</i>&nbsp;    // indicates this column is generated. Only for Auto-Inc for now
-<i>21</i>&nbsp;    boolean autoIncrement;
-<i>22</i>&nbsp;
-<i>23</i>&nbsp;    // Indicates this is primary key column
-<i>24</i>&nbsp;    boolean primary;
-<i>25</i>&nbsp;
-<i>26</i>&nbsp;    boolean hasDefault;
+<i>18</i>&nbsp;    // Currently just kept for possible future use
+<i>19</i>&nbsp;    int sqlColumnType;
+<i>20</i>&nbsp;    String sqlColumnTypeName;
+<i>21</i>&nbsp;
+<i>22</i>&nbsp;    // indicates this column is generated. Only for Auto-Inc for now
+<i>23</i>&nbsp;    boolean autoIncrement;
+<i>24</i>&nbsp;
+<i>25</i>&nbsp;    // Indicates this is primary key column
+<i>26</i>&nbsp;    boolean primary;
 <i>27</i>&nbsp;
-<i>28</i>&nbsp;    int length; // for string to varchar length checking
+<i>28</i>&nbsp;    boolean hasDefault;
 <i>29</i>&nbsp;
-<i>30</i>&nbsp;    @Override
-<i>31</i>&nbsp;    public String toString() {
-<b class="fc"><i>32</i>&nbsp;        return &quot;ColumnInfo{&quot; +</b>
-<i>33</i>&nbsp;                &quot;columnName=&#39;&quot; + columnName + &#39;\&#39;&#39; +
-<i>34</i>&nbsp;                &quot;, columnType=&quot; + columnType +
-<i>35</i>&nbsp;                &quot;, sqlColumnType=&quot; + sqlColumnType +
-<i>36</i>&nbsp;                &quot;, autoIncrement=&quot; + autoIncrement +
-<i>37</i>&nbsp;                &quot;, primary=&quot; + primary +
-<i>38</i>&nbsp;                &quot;, hasDefault=&quot; + hasDefault +
-<i>39</i>&nbsp;                &quot;, length=&quot; + length +
-<i>40</i>&nbsp;                &#39;}&#39;;
-<i>41</i>&nbsp;    }
-<i>42</i>&nbsp;}
+<i>30</i>&nbsp;    int length; // for string to varchar length checking
+<i>31</i>&nbsp;
+<i>32</i>&nbsp;    @Override
+<i>33</i>&nbsp;    public String toString() {
+<b class="fc"><i>34</i>&nbsp;        return &quot;ColumnInfo{&quot; +</b>
+<i>35</i>&nbsp;                &quot;columnName=&#39;&quot; + columnName + &#39;\&#39;&#39; +
+<i>36</i>&nbsp;                &quot;, columnType=&quot; + columnType +
+<i>37</i>&nbsp;                &quot;, sqlColumnType=&quot; + sqlColumnType +
+<i>38</i>&nbsp;                &quot;, sqlColumnTypeName=&quot; + sqlColumnTypeName +
+<i>39</i>&nbsp;                &quot;, autoIncrement=&quot; + autoIncrement +
+<i>40</i>&nbsp;                &quot;, primary=&quot; + primary +
+<i>41</i>&nbsp;                &quot;, hasDefault=&quot; + hasDefault +
+<i>42</i>&nbsp;                &quot;, length=&quot; + length +
+<i>43</i>&nbsp;                &#39;}&#39;;
+<i>44</i>&nbsp;    }
+<i>45</i>&nbsp;}
 </div>
 </div>
 
 <div class="footer">
     
-    <div style="float:right;">generated on 2021-01-30 13:49</div>
+    <div style="float:right;">generated on 2021-03-02 04:00</div>
 </div>
 </body>
 </html>
