@@ -133,6 +133,13 @@
         <pathelement location="${basedir}/libs/postgresql/postgresql-9.1-902.jdbc4.jar"/>
     </path>
 
+    <path id="library.firebird.classpath">
+        <pathelement location="${basedir}/libs/jaybird-4.0.2.java8/jaybird-4.0.2.java8.jar"/>
+        <pathelement location="${basedir}/libs/jaybird-4.0.2.java8/lib/antlr-runtime-4.7.2.jar"/>
+        <pathelement location="${basedir}/libs/jaybird-4.0.2.java8/lib/connector-api-1.5.jar"/>
+        <pathelement location="${basedir}/libs/jaybird-4.0.2.java8/lib/jna-5.5.0.jar"/>
+    </path>
+
     <path id="library.pool.classpath">
         <pathelement location="${basedir}/libs/commons-pool-1.5.4/commons-pool-1.5.4.jar"/>
         <pathelement location="${basedir}/libs/commons-dbcp-1.4/commons-dbcp-1.4.jar"/>
@@ -179,6 +186,7 @@
         <path refid="library.sqlite.classpath"/>
         <path refid="library.mysql.classpath"/>
         <path refid="library.postgresql.classpath"/>
+        <path refid="library.firebird.classpath"/>
         <path refid="library.logging.classpath"/>
         <path refid="library.pool.classpath"/>
     </path>
@@ -192,6 +200,7 @@
         <path refid="library.sqlite.classpath"/>
         <path refid="library.mysql.classpath"/>
         <path refid="library.postgresql.classpath"/>
+        <path refid="library.firebird.classpath"/>
         <path refid="library.logging.classpath"/>
         <path refid="library.pool.classpath"/>
     </path>
@@ -211,6 +220,7 @@
         <path refid="library.derby.classpath"/>
         <path refid="library.mssql.classpath"/>
         <path refid="library.postgresql.classpath"/>
+        <path refid="library.firebird.classpath"/>
     </path>
 
     <path id="persism.runtime.module.classpath">
@@ -227,6 +237,7 @@
         <path refid="library.derby.classpath"/>
         <path refid="library.mysql.classpath"/>
         <path refid="library.postgresql.classpath"/>
+        <path refid="library.firebird.classpath"/>
     </path>
 
 

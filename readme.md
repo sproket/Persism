@@ -4,6 +4,13 @@
 
 Persism is a wood simple, auto discovery, auto configuration, and convention over configuration ORM (Object Relational Mapping) library for Java.
 
+```
+<dependency>
+    <groupId>io.github.sproket</groupId>
+    <artifactId>persism</artifactId>
+    <version>1.0.1</version>
+</dependency>
+```
 ## Simple
 
 The API for Persism is small. Mostly you just need a Connection and a persism Session object and you're good to go.
