@@ -10,7 +10,7 @@ Initial release
 * Added support for UUID for other supported DBs (mapping to String or byte array)
 * Added support for sql.Time, LocalTime, LocalDate, LocalDateTime
 * Added support for BigInteger
-* Added support for MSSQL/JTDS money and smallmoney types (mapping to Float or Double)
+* Added support for MSSQL/JTDS money and smallmoney types (mapping to Float, Double or BigDecimal)
 * Added support for ENUM type in the db - mapping to Java enum (PostgreSQL, MySQL, H2)  
 * Added warning when using a primitive type mapped to a column with a default in the database
 * Updated test mssql jdbc driver to 8.4.1
