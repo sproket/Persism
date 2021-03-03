@@ -1,9 +1,14 @@
 package net.sf.persism;
 
 
+import net.sf.persism.logging.AbstractLogger;
+import net.sf.persism.logging.LogMode;
+import net.sf.persism.logging.implementation.JulLogger;
+import net.sf.persism.logging.implementation.Log4jLogger;
+import net.sf.persism.logging.implementation.Slf4jLogger;
+
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.logging.Level;
 
 /**
  * Logging wrapper to avoid runtime dependencies.
@@ -23,41 +28,26 @@ import java.util.logging.Level;
  */
 final class Log {
 
-    private Log() {
-    }
-
-
-    enum LogMode {
-        SLF4J, LOG4J, JUL;
-    }
-
-    private static LogMode logMode;
-
-    static {
-        try {
-            Class.forName("org.slf4j.Logger");
-            logMode = LogMode.SLF4J;
-        } catch (ClassNotFoundException e) {
-        }
-
-        if (logMode == null) {
-            try {
-                Class.forName("org.apache.log4j.Logger");
-                logMode = LogMode.LOG4J;
-            } catch (ClassNotFoundException e) {
-                logMode = LogMode.JUL;
-            }
-        }
-
-        assert logMode != null;
-    }
+    private AbstractLogger logger;
 
     private static final Map<String, Log> loggers = new ConcurrentHashMap<String, Log>(12);
 
-    private String logName;
+    private Log() {
+    }
 
     public Log(String logName) {
-        this.logName = logName;
+        try {
+            Class.forName("org.slf4j.Logger");
+            logger = new Slf4jLogger(logName);
+        } catch (ClassNotFoundException e) {
+            try {
+                Class.forName("org.apache.log4j.Logger");
+                logger = new Log4jLogger(logName);
+            } catch (ClassNotFoundException e1) {
+                logger = new JulLogger(logName);
+            }
+        }
+        assert logger != null;
     }
 
     public static Log getLogger(Class logName) {
@@ -75,101 +65,39 @@ final class Log {
 
 
     public boolean isDebugEnabled() {
-        switch (logMode) {
-            case SLF4J:
-                return org.slf4j.LoggerFactory.getLogger(logName).isDebugEnabled();
-            case LOG4J:
-                return org.apache.log4j.Logger.getLogger(logName).isDebugEnabled();
-            default:
-                return java.util.logging.Logger.getLogger(logName).isLoggable(Level.FINE);
-        }
+        return logger.isDebugEnabled();
     }
 
     public void debug(Object message, Object... params) {
-        switch (logMode) {
-            case SLF4J:
-                org.slf4j.LoggerFactory.getLogger(logName).debug("" + message, params);
-                break;
-            case LOG4J:
-                org.apache.log4j.Logger.getLogger(logName).debug(message);
-                break;
-            case JUL:
-                java.util.logging.Logger.getLogger(logName).fine("" + message);
-        }
+        logger.debug(message, params);
     }
 
     public void info(Object message) {
-        switch (logMode) {
-            case SLF4J:
-                org.slf4j.LoggerFactory.getLogger(logName).info("" + message);
-                break;
-            case LOG4J:
-                org.apache.log4j.Logger.getLogger(logName).info(message);
-                break;
-            case JUL:
-                java.util.logging.Logger.getLogger(logName).info("" + message);
-        }
+        logger.info(message);
     }
 
     public void warn(Object message) {
-        switch (logMode) {
-            case SLF4J:
-                org.slf4j.LoggerFactory.getLogger(logName).warn("" + message);
-                break;
-            case LOG4J:
-                org.apache.log4j.Logger.getLogger(logName).warn(message);
-                break;
-            case JUL:
-                java.util.logging.Logger.getLogger(logName).warning("" + message);
-        }
+        logger.warn(message);
     }
 
     public void warn(Object message, Throwable t) {
-        switch (logMode) {
-            case SLF4J:
-                org.slf4j.LoggerFactory.getLogger(logName).warn("" + message, t);
-                break;
-            case LOG4J:
-                org.apache.log4j.Logger.getLogger(logName).warn(message, t);
-                break;
-            case JUL:
-                java.util.logging.Logger.getLogger(logName).log(Level.WARNING, "" + message, t);
-        }
+        logger.warn(message, t);
     }
 
 
     public void error(Object message) {
-        switch (logMode) {
-            case SLF4J:
-                org.slf4j.LoggerFactory.getLogger(logName).error("" + message);
-                break;
-            case LOG4J:
-                org.apache.log4j.Logger.getLogger(logName).error(message);
-                break;
-            case JUL:
-                java.util.logging.Logger.getLogger(logName).severe("" + message);
-                break;
-        }
+        logger.error(message);
     }
 
     public void error(Object message, Throwable t) {
-        switch (logMode) {
-            case SLF4J:
-                org.slf4j.LoggerFactory.getLogger(logName).error("" + message, t);
-                break;
-            case LOG4J:
-                org.apache.log4j.Logger.getLogger(logName).error(message, t);
-                break;
-            case JUL:
-                java.util.logging.Logger.getLogger(logName).log(Level.SEVERE, "" + message, t);
-        }
+        logger.error(message, t);
     }
 
     public LogMode getLogMode() {
-        return logMode;
+        return logger.getLogMode();
     }
 
     public String getLogName() {
-        return logName;
+        return logger.getLogName();
     }
 }
