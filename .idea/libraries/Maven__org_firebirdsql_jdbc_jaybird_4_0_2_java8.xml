@@ -1,0 +1,13 @@
+<component name="libraryTable">
+  <library name="Maven: org.firebirdsql.jdbc:jaybird:4.0.2.java8">
+    <CLASSES>
+      <root url="jar://$PROJECT_DIR$/../../../../maven-repo/org/firebirdsql/jdbc/jaybird/4.0.2.java8/jaybird-4.0.2.java8.jar!/" />
+    </CLASSES>
+    <JAVADOC>
+      <root url="jar://$PROJECT_DIR$/../../../../maven-repo/org/firebirdsql/jdbc/jaybird/4.0.2.java8/jaybird-4.0.2.java8-javadoc.jar!/" />
+    </JAVADOC>
+    <SOURCES>
+      <root url="jar://$PROJECT_DIR$/../../../../maven-repo/org/firebirdsql/jdbc/jaybird/4.0.2.java8/jaybird-4.0.2.java8-sources.jar!/" />
+    </SOURCES>
+  </library>
+</component>
