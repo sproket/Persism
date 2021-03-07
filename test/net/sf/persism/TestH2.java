@@ -172,6 +172,7 @@ public final class TestH2 extends BaseTest {
                 "   Address1 varchar(50) NULL, " +
                 "   Address2 varchar(50) NULL, " +
                 "   City varchar(50) NULL, " +
+                "   Status SMALLINT NULL, " +
                 "   StateProvince varchar(50) NULL, " +
                 "   ZipPostalCode varchar(10) NULL, " +
                 "   Country varchar(50) NULL, " +
@@ -502,7 +503,7 @@ public final class TestH2 extends BaseTest {
             session.insert(tmp);
 
         } catch (Exception e) {
-            log.error(e.getMessage());
+            log.info(e.getMessage());
             assertTrue("message starts with 'Unique index or primary key violation'",
                     e.getMessage().startsWith("Unique index or primary key violation"));
             nullInsertFail = true;

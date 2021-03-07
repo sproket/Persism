@@ -35,7 +35,7 @@ public final class TestSQLite extends BaseTest {
         props.load(getClass().getResourceAsStream("/sqlite.properties"));
         Class.forName(props.getProperty("database.driver"));
 
-        log.error("SQLite DLL HERE: " + System.getProperty("java.io.tmpdir"));
+        log.info("SQLite DLL HERE: " + System.getProperty("java.io.tmpdir"));
         home = createHomeFolder("pinfsqlite");
         String url = replace(props.getProperty("database.url"), "{$home}", home);
         log.info(url);
@@ -56,20 +56,16 @@ public final class TestSQLite extends BaseTest {
     @Override
     public void testContactTable() throws SQLException {
 
-        log.warn(Integer.MAX_VALUE);
-        log.warn(55423000l);
-        log.warn(698383421107l);
-
         LocalTime lt = Instant.ofEpochMilli(55423000l)
                 .atZone(ZoneId.systemDefault()).toLocalTime();
 
-        log.warn("ASS:" + lt);
+        log.info("lt:" + lt);
 
 
         LocalTime lt2 = Instant.ofEpochMilli(698383421107l)
                 .atZone(ZoneId.systemDefault()).toLocalTime();
 
-        log.warn("ASS:" + lt2);
+        log.info("lt2:" + lt2);
 
         super.testContactTable();
         assertTrue(true);
@@ -160,6 +156,7 @@ public final class TestSQLite extends BaseTest {
                 " City varchar(50) NULL, " +
                 " StateProvince varchar(50) NULL, " +
                 " ZipPostalCode varchar(10) NULL, " +
+                " Status SMALLINT NOT NULL, " +
                 " Country varchar(50) NULL, " +
                 " DateAdded TIMESTAMP NULL, " + // was DATETIME. What is TIMESTAMP in SQLite? RANDOM I guess.
                 " LastModified DATETIME NULL, " +
@@ -232,7 +229,7 @@ public final class TestSQLite extends BaseTest {
 
         List<Order> list = session.query(Order.class, "SELECT * FROM Orders ORDER BY ID");
         assertEquals("list size s/b 4", 4, list.size());
-        log.error("ORDERS\n" + list);
+        log.info("ORDERS\n" + list);
 
         order = list.get(0);
         assertNotNull(order);
@@ -279,7 +276,7 @@ public final class TestSQLite extends BaseTest {
         customer.setDateRegistered(new Timestamp(System.currentTimeMillis() - 10000000l));
         session.insert(customer); // this should be ok now.
 
-        log.warn("Customer 1 ?" + customer);
+        log.info("Customer 1 ?" + customer);
 
         // insert a duplicate
         boolean dupFail = false;
@@ -306,7 +303,7 @@ public final class TestSQLite extends BaseTest {
         try {
             list = session.query(Customer.class, "select Customer_ID from Customers");
         } catch (PersismException e) {
-            log.warn(e.getMessage());
+            log.info(e.getMessage());
             assertTrue("exception should be Customer was not properly initialized", e.getMessage().startsWith("Object class net.sf.persism.dao.Customer was not properly initialized."));
             notInitialized = true;
         }
@@ -511,7 +508,7 @@ public final class TestSQLite extends BaseTest {
         // This should work OK
         session.insert(junk);
 
-        log.warn(session.query(TableNoPrimary.class, "SELECT * FROM TableNoPrimary"));
+        log.info(session.query(TableNoPrimary.class, "SELECT * FROM TableNoPrimary"));
 
         boolean shouldFail = false;
 

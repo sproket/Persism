@@ -38,8 +38,7 @@ public final class Contact implements Persistable<Contact> {
     private Timestamp lastModified;
     private float amountOwed;
     private String notes;
-    @NotColumn // later + maybe also add short...
-    private byte status;
+    private long status; // todo byte fails
 
     private Time whatTimeIsIt;
     private LocalTime whatMiteIsIt;
@@ -256,11 +255,11 @@ public final class Contact implements Persistable<Contact> {
         this.bigInt = bigInt;
     }
 
-    public byte getStatus() {
+    public long getStatus() {
         return status;
     }
 
-    public void setStatus(byte status) {
+    public void setStatus(long status) {
         this.status = status;
     }
 

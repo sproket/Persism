@@ -52,7 +52,7 @@ public abstract class BaseTest extends TestCase {
 
     public void testDates() {
         List<Customer> list = session.query(Customer.class, "select * from Customers");
-        log.warn(list);
+        log.info(list);
 
         Customer customer = new Customer();
         customer.setCustomerId("123");
@@ -61,7 +61,7 @@ public abstract class BaseTest extends TestCase {
         customer.setCompanyName("ABC Inc");
         customer.setContactName("Fred");
         customer.setContactTitle("LORD");
-        customer.setCountry("USA");
+        customer.setCountry("US");
 
         customer.setFax("fax");
         customer.setPhone("phone");
@@ -276,8 +276,8 @@ public abstract class BaseTest extends TestCase {
 
         // ORDER 1 s/b paid = true others paid = false
         for (CustomerOrder customerOrder : results) {
-            log.warn("date created? " + customerOrder.getDateCreated());
-            log.warn("date paid? " + customerOrder.getDatePaid());
+            log.info("date created? " + customerOrder.getDateCreated());
+            log.info("date paid? " + customerOrder.getDatePaid());
             if ("ORDER 1".equals(customerOrder.getDescription())) {
                 assertTrue("order 1 s/b paid", customerOrder.isPaid());
             } else {
@@ -386,6 +386,7 @@ public abstract class BaseTest extends TestCase {
         contact.setType("X");
         contact.setAmountOwed(100.23f);
         contact.setNotes("B:AH B:AH VBLAH\r\n BLAH BLAY!");
+        contact.setStatus((byte) 10);
 
         contact.setDateAdded(Date.valueOf(ldt1.toLocalDate()));
         contact.setLastModified(Timestamp.valueOf(ldt2));
@@ -465,10 +466,10 @@ public abstract class BaseTest extends TestCase {
 
     private void SQLDateTypesTests() {
 
-        log.warn("udate: " + udate + " " + udate.getTime());
-        log.warn("sdate: " + sdate + " " + sdate.getTime());
-        log.warn("ts: " + ts);
-        log.warn("time: " + time);
+        log.info("udate: " + udate + " " + udate.getTime());
+        log.info("sdate: " + sdate + " " + sdate.getTime());
+        log.info("ts: " + ts);
+        log.info("time: " + time);
 
         DateTestSQLTypes testSQLTypes1 = new DateTestSQLTypes();
         testSQLTypes1.setId(1);
@@ -521,9 +522,9 @@ public abstract class BaseTest extends TestCase {
         testLocalTypes1.setId(1);
         testLocalTypes1.setDescription("test 1");
 
-        log.warn("ldt: " + ldt);
-        log.warn("ld : " + ld);
-        log.warn("lt : " + lt);
+        log.info("ldt: " + ldt);
+        log.info("ld : " + ld);
+        log.info("lt : " + lt);
 
         testLocalTypes1.setDateOnly(ld);
         testLocalTypes1.setTimeOnly(lt);
@@ -562,7 +563,7 @@ public abstract class BaseTest extends TestCase {
         testLocalTypes3.setDescription("time later in the day to test awfulness of SQLite");
         testLocalTypes3.setTimeOnly(lt2);
 
-        log.error("INSERT? " + session.insert(testLocalTypes3));
+       assertEquals("s/b 1?", 1, session.insert(testLocalTypes3));
 
         List<DateTestLocalTypes> list = session.query(DateTestLocalTypes.class, "select * FROM DateTestLocalTypes");
         log.info(list);
@@ -595,7 +596,7 @@ public abstract class BaseTest extends TestCase {
 
         Contact contact = getContactForTest();
         String updateSQL = metaData.getUpdateStatement(contact, con);
-        log.warn("UPDATE SQL: " + updateSQL);
+        log.info("UPDATE SQL: " + updateSQL);
 
         List<String> primaryKeys = metaData.getPrimaryKeys(contact.getClass(), con);
 

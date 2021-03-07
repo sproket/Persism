@@ -79,12 +79,13 @@ public class TestPubs extends TestCase {
             log.info(author);
 
             // postal code needs to be 5 digits
-            author.setPostalCode("BLAH BLAH BLAH");
+            author.setPostalCode("BLAH!");
             boolean constraintFailed = false;
             try {
                 session.update(author); // should fail
             } catch (PersismException e) {
                 constraintFailed = true;
+                log.error(e.getMessage());
                 assertTrue("should contain 'The UPDATE statement conflicted with the CHECK constraint'", e.getMessage().contains("The UPDATE statement conflicted with the CHECK constraint"));
             }
             assertTrue("phone constraint should fail", constraintFailed);

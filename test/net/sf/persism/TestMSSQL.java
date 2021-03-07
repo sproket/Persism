@@ -30,6 +30,7 @@ public final class TestMSSQL extends BaseTest {
 
         if (BaseTest.mssqlmode) {
             connectionType = ConnectionTypes.MSSQL;
+            connectionType = ConnectionTypes.MSSQL;
         } else {
             connectionType = ConnectionTypes.JTDS;
         }
@@ -158,7 +159,7 @@ public final class TestMSSQL extends BaseTest {
                 "   [DateAdded] [smalldatetime] NULL, " +
                 "   [LastModified] [datetime] NULL, " +
                 "   [Notes] [text] NULL, " +
-                "   [Status] [tinyint] NULL, " +
+                "   [Status] [tinyint] NOT NULL CHECK ([Status] >= 0 AND [Status] <= 10), " +
                 "   [AmountOwed] [float] NULL, " +
                 "   [BigInt] [DECIMAL](20) NULL, " +
                 "   [SomeDate] [datetime2] NULL, " +
@@ -838,7 +839,7 @@ public final class TestMSSQL extends BaseTest {
         contact.setFirstname("Wilma");
         contact.setLastname("Flintstone");
         contact.setContactName("Fred");
-        contact.setType("CLOWN");
+        contact.setType("CL");
         session.insert(contact);
 
         boolean shouldHaveFailed = false;
@@ -860,7 +861,7 @@ public final class TestMSSQL extends BaseTest {
         contact.setFirstname("Wilma");
         contact.setLastname("Flintstone");
         contact.setContactName("Fred");
-        contact.setType("CLOWN");
+        contact.setType("CL");
         session.insert(contact);
 
         boolean shouldHaveFailed = false;
@@ -913,7 +914,7 @@ public final class TestMSSQL extends BaseTest {
         try {
             Procedure proc1; // = query.readObject(Procedure.class, "select * from examcode where examcode_no=3");
             proc1 = new Procedure();
-            proc1.setDescription("new proc LDKJH DLKJH SLKJH DLSJKH DLSKJHD LSKDJH DSLKJH DSLKJH SLKJHD LKSJHD LKSHJD LSKJDH LSKDJH DSLKJHD SLKJDH SLDKJH SDLKJHD SLKDHS LKDJHSDLKJSDH LDKJH ");
+            proc1.setDescription("new proc LDKJH DLKJH SLKJH");
             session.insert(proc1);
 
             int examCodeNo = proc1.getExamCodeNo();
@@ -963,7 +964,7 @@ public final class TestMSSQL extends BaseTest {
     public void testInsert() {
         // query = new Query(con);
         Procedure procedure = new Procedure();
-        procedure.setDescription("TEST 99 LKJHDSLKJSDH LKSDJH LDSKJHD LSKDJH DSLKJHDLSKHD SLKDJHS KLDJHS DKLDH SLKDJH SDLKJHD SLKDJSHD LKSJH SLKDH SLDKJSH DLKJSH DLKSJDH LKSJH DLKSJH D");
+        procedure.setDescription("TEST 99 LKJHDSLKJSDH");
         procedure.setModalityId(2);
         procedure.setSomeDate(new java.util.Date());
 
@@ -1010,7 +1011,7 @@ public final class TestMSSQL extends BaseTest {
         user.setTypeOfUser("X");
         user.setStatus("Z");
         user.setUserName("ABC");
-        user.setAmountOwed(123.567d);
+        user.setAmountOwed(BigDecimal.valueOf(123.567d));
         user.setAmountOwedAfterHeadRemoval(4.73f);
 
         session.insert(user);
@@ -1043,7 +1044,7 @@ public final class TestMSSQL extends BaseTest {
         log.info(session.query(Contact.class, "select * from Contacts"));
 
 //        String insertStatement = "INSERT INTO Customers (Customer_ID, Company_Name, Contact_Name) VALUES ( ?, ?, ? ) ";
-        String insertStatement = "INSERT INTO Contacts (FirstName, LastName, Type) VALUES ( ?, ?, ? ) ";
+        String insertStatement = "INSERT INTO Contacts (FirstName, LastName, Type, Status) VALUES ( ?, ?, ?, ? ) ";
 
         PreparedStatement st = null;
         ResultSet rs = null;
@@ -1057,6 +1058,7 @@ public final class TestMSSQL extends BaseTest {
         st.setString(1, "Slate Quarry");
         st.setString(2, "Fred");
         st.setString(3, "X");
+        st.setShort(4, (short) 10);
 
 
         int ret = st.executeUpdate();

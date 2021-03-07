@@ -147,6 +147,7 @@ public final class TestDerby extends BaseTest {
                 "   Address1 varchar(50),  " +
                 "   Address2 varchar(50),  " +
                 "   City varchar(50),  " +
+                "   Status SMALLINT, " +
                 "   StateProvince varchar(50),  " +
                 "   ZipPostalCode varchar(10),  " +
                 "   Country varchar(50),  " +

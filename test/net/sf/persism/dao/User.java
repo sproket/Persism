@@ -3,6 +3,7 @@ package net.sf.persism.dao;
 import net.sf.persism.annotations.Column;
 
 //import java.sql.Timestamp;
+import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.util.Date;
 
@@ -26,7 +27,7 @@ public final class User {
     private Timestamp someDate;
 
     // Money tests
-    private double amountOwed;
+    private BigDecimal amountOwed;
     private float amountOwedAfterHeadRemoval;
 
     public Timestamp getSomeDate() {
@@ -93,11 +94,19 @@ public final class User {
         this.lastLogin = lastLogin;
     }
 
-    public double getAmountOwed() {
+//    public double getAmountOwed() {
+//        return amountOwed;
+//    }
+//
+//    public void setAmountOwed(double amountOwed) {
+//        this.amountOwed = amountOwed;
+//    }
+
+    public BigDecimal getAmountOwed() {
         return amountOwed;
     }
 
-    public void setAmountOwed(double amountOwed) {
+    public void setAmountOwed(BigDecimal amountOwed) {
         this.amountOwed = amountOwed;
     }
 

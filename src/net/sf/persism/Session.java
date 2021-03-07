@@ -110,15 +110,6 @@ public final class Session implements AutoCloseable {
                 if (!primaryKeys.contains(column)) {
                     Object value = allProperties.get(column).getter.invoke(object);
 
-                    if (value instanceof String) {
-                        // check width
-                        String str = (String) value;
-                        if (str.length() > columnInfo.length) {
-                            str = str.substring(0, columnInfo.length);
-                            log.warn("TRUNCATION with Column: " + column + " for table: " + metaData.getTableName(object.getClass()) + ". Old value: \"" + value + "\" New value: \"" + str + "\"");
-                            value = str;
-                        }
-                    }
                     params.add(value);
                     columnInfos.add(columnInfo);
                 }
@@ -222,15 +213,6 @@ public final class Session implements AutoCloseable {
 
                     Object value = propertyInfo.getter.invoke(object);
 
-                    if (value instanceof String) {
-                        // check width
-                        String str = (String) value;
-                        if (str.length() > columnInfo.length) {
-                            str = str.substring(0, columnInfo.length);
-                            log.warn("TRUNCATION with Column: " + columnInfo.columnName + " for table: " + metaData.getTableName(object.getClass()) + ". Old value: \"" + value + "\" New value: \"" + str + "\"");
-                            value = str;
-                        }
-                    }
                     params.add(value);
                     columnInfos.add(columnInfo);
                 }
@@ -815,6 +797,9 @@ public final class Session implements AutoCloseable {
                 } else if (targetType.equals(LocalTime.class)) {
                     // SQLite for Time SQLite sees Long, for LocalTime it sees Integer
                     returnValue = new Time((Integer) value).toLocalTime();
+
+                } else if (targetType.equals(Short.class) || targetType.equals(short.class)) {
+                    returnValue = Short.parseShort("" + value);
                 }
                 break;
 
@@ -831,7 +816,7 @@ public final class Session implements AutoCloseable {
                     returnValue = new Timestamp(lval);
 
                 } else if (targetType.equals(Integer.class) || targetType.equals(int.class)) {
-                    warnNoDuplicates("Possible overflow column " + columnName + " - Property is INT and column is LONG");
+                    warnNoDuplicates("Possible overflow column " + columnName + " - Target type is INT and Value type is LONG");
                     returnValue = Integer.parseInt("" + lval);
 
                 } else if (targetType.equals(LocalDate.class)) {
@@ -860,15 +845,15 @@ public final class Session implements AutoCloseable {
                     returnValue = new BigDecimal("" + value);
 
                 } else if (targetType.equals(Float.class) || targetType.equals(float.class)) {
-                    warnNoDuplicates("Possible overflow column " + columnName + " - Property is FLOAT and column is DOUBLE");
+                    warnNoDuplicates("Possible overflow column " + columnName + " - Target type is FLOAT and Value type is DOUBLE");
                     returnValue = dbl.floatValue();
 
                 } else if (targetType.equals(Integer.class) || targetType.equals(int.class)) {
-                    warnNoDuplicates("Possible overflow column " + columnName + " - Property is INT and column is DOUBLE");
+                    warnNoDuplicates("Possible overflow column " + columnName + " - Target type is INT and Value type is DOUBLE");
                     returnValue = dbl.intValue();
 
                 } else if (targetType.equals(Long.class) || targetType.equals(long.class)) {
-                    warnNoDuplicates("Possible overflow column " + columnName + " - Property is Long and column is DOUBLE");
+                    warnNoDuplicates("Possible overflow column " + columnName + " - Target type is Long and Value type is DOUBLE");
                     returnValue = dbl.longValue();
                 }
                 break;
@@ -876,24 +861,28 @@ public final class Session implements AutoCloseable {
             case BigDecimalType:
                 if (targetType.equals(Float.class) || targetType.equals(float.class)) {
                     returnValue = ((Number) value).floatValue();
-                    warnNoDuplicates("Possible overflow column " + columnName + " - Property is Float and column is BigDecimal");
+                    warnNoDuplicates("Possible overflow column " + columnName + " - Target type is Float and Value type is BigDecimal");
 
                 } else if (targetType.equals(Double.class) || targetType.equals(double.class)) {
                     returnValue = ((Number) value).doubleValue();
-                    warnNoDuplicates("Possible overflow column " + columnName + " - Property is Double and column is BigDecimal");
+                    warnNoDuplicates("Possible overflow column " + columnName + " - Target type is Double and Value type is BigDecimal");
 
                 } else if (targetType.equals(Long.class) || targetType.equals(long.class)) {
                     returnValue = ((Number) value).longValue();
-                    warnNoDuplicates("Possible overflow column " + columnName + " - Property is Long and column is BigDecimal");
+                    warnNoDuplicates("Possible overflow column " + columnName + " - Target type is Long and Value type is BigDecimal");
 
                 } else if (targetType.equals(Integer.class) || targetType.equals(int.class)) {
                     returnValue = ((Number) value).intValue();
-                    warnNoDuplicates("Possible overflow column " + columnName + " - Property is Integer and column is BigDecimal");
+                    warnNoDuplicates("Possible overflow column " + columnName + " - Target type is Integer and Value type is BigDecimal");
+
+                } else if (targetType.equals(Short.class) || targetType.equals(short.class)) {
+                    returnValue = ((Number) value).shortValue();
+                    warnNoDuplicates("Possible overflow column " + columnName + " - Target type is Short and Value type is BigDecimal");
 
                 } else if (targetType.equals(Boolean.class) || targetType.equals(boolean.class)) {
                     // BigDecimal to Boolean. Oracle (sigh) - Additional for a Char to Boolean as then (see TestOracle for links)
                     returnValue = ((Number) value).intValue() == 1;
-                    warnNoDuplicates("Possible overflow column " + columnName + " - Property is Boolean and column is BigDecimal - seems a bit overkill?");
+                    warnNoDuplicates("Possible overflow column " + columnName + " - Target type is Boolean and Value type is BigDecimal");
 
                 } else if (targetType.equals(String.class)) {
                     returnValue = (value).toString();
@@ -1274,9 +1263,12 @@ public final class Session implements AutoCloseable {
 
     // Prevent duplicate "Possible overflow column" and other possibly repeating messages
     private static void warnNoDuplicates(String message) {
-        if (!warnings.contains(message)) {
-            warnings.add(message);
-            log.warn(message);
+        //noinspection OptionalGetWithoutIsPresent
+        String additional = Arrays.stream(new Throwable().getStackTrace()).skip(2).findFirst().get().toString().trim();
+        String msg = message + " " + additional;
+        if (!warnings.contains(msg)) {
+            warnings.add(msg);
+            log.warn(msg);
         }
     }
 

@@ -211,16 +211,18 @@ final class MetaData {
 
                     PropertyInfo propertyInfo = properties.get(rsMetaData.getColumnLabel(i));
                     Annotation annotation = propertyInfo.getAnnotation(Column.class);
+
                     if (annotation != null) {
-                        if (((Column) annotation).hasDefault()) {
+                        Column col = (Column) annotation;
+                        if (col.hasDefault()) {
                             columnInfo.hasDefault = true;
                         }
 
-                        if (((Column) annotation).primary()) {
+                        if (col.primary()) {
                             columnInfo.primary = true;
                         }
 
-                        if (((Column) annotation).autoIncrement()) {
+                        if (col.autoIncrement()) {
                             columnInfo.autoIncrement = true;
                             if (!columnInfo.columnType.isCountable()) {
                                 columnInfo.autoIncrement = false;

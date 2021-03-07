@@ -187,6 +187,7 @@ public final class TestPostgreSQL extends BaseTest {
                 " StateProvince varchar(50) NULL, " +
                 " ZipPostalCode varchar(10) NULL, " +
                 " Country varchar(50) NULL, " +
+                " Status SMALLINT NOT NULL, " +
                 " DateAdded Timestamp NULL, " +
                 " LastModified Timestamp NULL, " +
                 " Notes text NULL, " +
@@ -260,8 +261,7 @@ public final class TestPostgreSQL extends BaseTest {
         // ensure metadata is there
         log.info(session.query(Contact.class, "select * from Contacts"));
 
-//        String insertStatement = "INSERT INTO Customers (Customer_ID, Company_Name, Contact_Name) VALUES ( ?, ?, ? ) ";
-        String insertStatement = "INSERT INTO Contacts (FirstName, LastName, Type) VALUES ( ?, ?, ? ) ";
+        String insertStatement = "INSERT INTO Contacts (FirstName, LastName, Type, Status) VALUES ( ?, ?, ?, ? ) ";
 
         PreparedStatement st = null;
         ResultSet rs = null;
@@ -275,7 +275,7 @@ public final class TestPostgreSQL extends BaseTest {
         st.setString(1, "Slate Quarry");
         st.setString(2, "Fred");
         st.setString(3, "X");
-
+        st.setShort(4, (short) 10);
 
         int ret = st.executeUpdate();
         log.info("rows insetred " + ret);

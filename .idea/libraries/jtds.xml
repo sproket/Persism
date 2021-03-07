@@ -1,9 +1,0 @@
-<component name="libraryTable">
-  <library name="jtds">
-    <CLASSES>
-      <root url="jar://$PROJECT_DIR$/libs/jtds-1.3.1/jtds-1.3.1.jar!/" />
-    </CLASSES>
-    <JAVADOC />
-    <SOURCES />
-  </library>
-</component>

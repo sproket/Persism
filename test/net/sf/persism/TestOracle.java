@@ -204,6 +204,7 @@ end;
                 "   DateAdded DATE NULL,  " +
                 "   LastModified TIMESTAMP NULL, " +
                 "   Notes CLOB NULL, " +
+                "   Status NUMBER(3), " +
                 "   AmountOwed  NUMBER(10,2) NULL, " +
                 "   BigInt  NUMBER(20) NULL, " +
                 "   SomE_DaTE TIMESTAMP NULL, " +

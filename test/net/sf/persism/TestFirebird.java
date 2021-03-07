@@ -89,7 +89,7 @@ public final class TestFirebird extends BaseTest {
                 "  CITY VARCHAR(30), " +
                 "  REGION VARCHAR(10), " +
                 "  POSTAL_CODE VARCHAR(20), " +
-                "  COUNTRY VARCHAR(20), " +
+                "  COUNTRY VARCHAR(2), " +
                 "  PHONE VARCHAR(30), " +
                 "  FAX VARCHAR(30), " +
                 "  STATUS CHAR(1), " +
@@ -122,6 +122,7 @@ public final class TestFirebird extends BaseTest {
                 "   StateProvince varchar(50), \n" +
                 "   ZipPostalCode varchar(10), \n" +
                 "   Country varchar(50), \n" +
+                "   Status SMALLINT, \n" +
                 "   DateAdded Date, \n" +
                 "   LastModified TIMESTAMP, \n" +
                 "   Notes BLOB SUB_TYPE TEXT, \n" +

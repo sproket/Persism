@@ -23,7 +23,7 @@ public final class TestHSQLDB extends BaseTest {
         String url = UtilsForTests.replace(props.getProperty("database.url"), "{$home}", home);
         log.info(url);
 
-        con = DriverManager.getConnection(url, "sa", "");
+        con = DriverManager.getConnection(url, props);
 
         createTables();
 
@@ -44,6 +44,8 @@ public final class TestHSQLDB extends BaseTest {
 
     @Override
     protected void createTables() throws SQLException {
+        // sql.enforce_strict_size=false
+        executeCommand(" SET PROPERTY \"sql.enforce_strict_size\" false", con);
         List<String> commands = new ArrayList<>(12);
         String sql;
 
@@ -169,6 +171,7 @@ public final class TestHSQLDB extends BaseTest {
                 "   Address1 varchar(50) NULL, " +
                 "   Address2 varchar(50) NULL, " +
                 "   City varchar(50) NULL, " +
+                "   Status SMALLINT NULL, " +
                 "   StateProvince varchar(50) NULL, " +
                 "   ZipPostalCode varchar(10) NULL, " +
                 "   Country varchar(50) NULL, " +
