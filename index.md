@@ -26,7 +26,7 @@ Don’t even bother annotating that stuff. Persism uses annotations as a fall ba
 annotate only when something is outside the conventions.
 
 ## Tiny
-Persism is under 50k and has *Zero* dependencies however it will utilize logging based on whatever is available 
+Persism is under 60k and has *Zero* dependencies however it will utilize logging based on whatever is available 
 at runtime - SLF4J, LOG4J or JUL.
 
 [Getting Started](/manual.md)

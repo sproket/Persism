@@ -403,7 +403,7 @@ SQLXML      = 2009
 
 ### Warnings
 
-**Column is annotated as autoIncrement but is a non-numeric type - Ignoring.**
+**Column is annotated as autoIncrement but it is not Long or Integer type - Ignoring.**
 
 > Occurs if you happen to annotate a String or other type as an autoincrement value.
 
