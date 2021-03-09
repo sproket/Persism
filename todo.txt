@@ -112,3 +112,5 @@ TODO Fix countable https://github.com/sproket/Persism/issues/5
 
 TODO https://stackoverflow.com/questions/1736630/sql-constraint-minvalue-maxvalue - might be nice....
     ALTER TABLE [dbo].[Contacts]  WITH CHECK ADD CHECK  (([Status]>=(0) AND [Status]<=(10))) MSSSQL
+
+TODO test overflowing all number types - should throw various runtime exceptions if they occur

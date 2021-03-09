@@ -4,7 +4,7 @@ import net.sf.persism.logging.AbstractLogger;
 import net.sf.persism.logging.LogMode;
 import org.slf4j.LoggerFactory;
 
-public class Slf4jLogger extends AbstractLogger {
+public final class Slf4jLogger extends AbstractLogger {
 
 	public Slf4jLogger(String logName) {
 		super(LogMode.SLF4J, logName);

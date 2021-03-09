@@ -6,7 +6,7 @@ import net.sf.persism.logging.LogMode;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-public class JulLogger extends AbstractLogger {
+public final class JulLogger extends AbstractLogger {
 
 	public JulLogger(String logName) {
 		super(LogMode.JUL, logName);

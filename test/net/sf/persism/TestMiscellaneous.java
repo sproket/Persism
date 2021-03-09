@@ -37,7 +37,7 @@ public class TestMiscellaneous extends TestCase {
         assertTrue(con.isClosed());
     }
 
-    public static void testSomething() {
+    public void testTimestampParse() {
         //Timestamp
         String v1 = "1994-02-17 10:23:43.9970000";
         String v2 = "1994-02-17 10:23:43.997";
@@ -48,10 +48,18 @@ public class TestMiscellaneous extends TestCase {
         log.warn(Timestamp.valueOf(v1));
         log.warn(Timestamp.valueOf(v2));
         log.warn(Timestamp.valueOf(v3));
+        boolean shouldFail = false;
         try {
             log.warn(Timestamp.valueOf(v4));
         } catch (IllegalArgumentException e) {
-            log.info(e);
+            shouldFail = true;
+            log.warn(e);
         }
+        assertTrue(shouldFail);
+    }
+
+    public void testStringFormatNull() {
+        String message = null;
+        log.error(String.format("%s", message));
     }
 }

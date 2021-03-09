@@ -5,7 +5,7 @@ public abstract class AbstractLogger {
 	protected final LogMode logMode;
 	protected final String logName;
 
-	public AbstractLogger(LogMode logMode, String logName) {
+	protected AbstractLogger(LogMode logMode, String logName) {
 		this.logMode = logMode;
 		this.logName = logName;
 	}
@@ -24,11 +24,11 @@ public abstract class AbstractLogger {
 
 	public abstract void error(Object message, Throwable t);
 
-	public LogMode getLogMode() {
+	public final LogMode getLogMode() {
 		return logMode;
 	}
 
-	public String getLogName() {
+	public final String getLogName() {
 		return logName;
 	}
 }
