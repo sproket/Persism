@@ -224,9 +224,9 @@ final class MetaData {
 
                         if (col.autoIncrement()) {
                             columnInfo.autoIncrement = true;
-                            if (!columnInfo.columnType.isCountable()) {
+                            if (!columnInfo.columnType.isLongOrInteger()) {
                                 columnInfo.autoIncrement = false;
-                                log.warn("Column " + columnInfo.columnName + " is annotated as auto-increment but is a non-numeric type (" + columnInfo.columnType + ") - Ignoring.");
+                                log.warn("Column " + columnInfo.columnName + " is annotated as auto-increment but it is not Long or Integer type (" + columnInfo.columnType + ") - Ignoring.");
                             }
                         }
 

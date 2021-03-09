@@ -172,13 +172,12 @@ enum Types {
         return result;
     }
 
-    public Class getJavaType() {
+    public Class<?> getJavaType() {
         return type;
     }
 
-    public boolean isCountable() {
-        return this == IntegerType || this == integerType || this == LongType || this == longType || this == byteType || this == ByteType
-                || this == ShortType || this == shortType || this == DoubleType || this == doubleType || this == BigDecimalType;
+    public boolean isLongOrInteger() {
+        return this == IntegerType || this == integerType || this == LongType || this == longType;
     }
 }
 
