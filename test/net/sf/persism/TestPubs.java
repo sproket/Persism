@@ -116,6 +116,7 @@ public class TestPubs extends TestCase {
 
         // lets fix the spelling error
         jobType.setDescription("Chief Financial Officer");
+
         session.update(jobType);
         assertTrue("should be found", session.fetch(jobType)); // dont need to do this. just testing reading again
 

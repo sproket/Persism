@@ -35,7 +35,7 @@ public final class TestMSSQL extends BaseTest {
             connectionType = ConnectionTypes.JTDS;
         }
         super.setUp();
-        log.error("SQLMODE? " + BaseTest.mssqlmode);
+        log.info("SQLMODE? " + BaseTest.mssqlmode);
         con = MSSQLDataSource.getInstance().getConnection();
         log.info("PRODUCT? " + con.getMetaData().getDriverName() + " - " + con.getMetaData().getDriverVersion());
 
@@ -134,7 +134,9 @@ public final class TestMSSQL extends BaseTest {
         }
 
         commands.add("CREATE TABLE DumbTableStringAutoInc ( " +
-                " ID VARCHAR(10) )");
+                " ID VARCHAR(10)," +
+                // "ID VARCHAR(10) IDENTITY(1,1) NOT NULL," +
+                " Description VARCHAR(60) )");
 
         if (isTableInDatabase("Contacts", con)) {
             commands.add("DROP TABLE Contacts");
@@ -159,7 +161,7 @@ public final class TestMSSQL extends BaseTest {
                 "   [DateAdded] [smalldatetime] NULL, " +
                 "   [LastModified] [datetime] NULL, " +
                 "   [Notes] [text] NULL, " +
-                "   [Status] [tinyint] NOT NULL CHECK ([Status] >= 0 AND [Status] <= 10), " +
+                "   [Status] [tinyint], " + // NOT NULL CHECK ([Status] >= 0 AND [Status] <= 10)
                 "   [AmountOwed] [float] NULL, " +
                 "   [BigInt] [DECIMAL](20) NULL, " +
                 "   [SomeDate] [datetime2] NULL, " +
@@ -977,7 +979,12 @@ public final class TestMSSQL extends BaseTest {
     public void testDetectAutoInc() {
 
         DumbTableStringAutoInc dumb = new DumbTableStringAutoInc();
+        dumb.setDescription("test");
         session.insert(dumb);
+        // should not actually do anything since there is no autoinc.
+        // the table is defined with VARCHAR
+        log.info(dumb);
+        assertNull(dumb.getId());
 
         // query = new Query(con);
         try {
@@ -1014,7 +1021,11 @@ public final class TestMSSQL extends BaseTest {
         user.setAmountOwed(BigDecimal.valueOf(123.567d));
         user.setAmountOwedAfterHeadRemoval(4.73f);
 
+        assertTrue("id s/b = 0", user.getId() == 0);
+
         session.insert(user);
+
+        assertTrue("id s/b > 0", user.getId() > 0);
 
         log.info(user);
 

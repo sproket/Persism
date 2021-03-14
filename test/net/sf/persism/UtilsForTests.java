@@ -161,12 +161,12 @@ public class UtilsForTests {
                 case BooleanType:
                     sqlType = "BIT";
                     break;
+
                 case byteType:
-                    break;
                 case ByteType:
                     break;
+
                 case shortType:
-                    break;
                 case ShortType:
                     break;
 
@@ -210,16 +210,18 @@ public class UtilsForTests {
 
                 case TimeType:
                     break;
+
                 case TimestampType:
                     sqlType = "TIMESTAMP";
                     break;
 
                 case byteArrayType:
-                    break;
                 case ByteArrayType:
                     break;
+
                 case ClobType:
                     break;
+
                 case BlobType:
                     break;
             }

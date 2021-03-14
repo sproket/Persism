@@ -211,6 +211,7 @@
             <artifactId>hsqldb</artifactId>
             <version>2.5.1</version>
             <scope>test</scope>
+            <classifier>debug</classifier>
         </dependency>
 
         <dependency>
@@ -241,10 +242,17 @@
             <scope>test</scope>
         </dependency>
 
+<!--        <dependency>-->
+<!--            <groupId>com.oracle</groupId>-->
+<!--            <artifactId>ojdbc6</artifactId>-->
+<!--            <version>11.2.0.4</version>-->
+<!--            <scope>test</scope>-->
+<!--        </dependency>-->
+
         <dependency>
-            <groupId>com.oracle</groupId>
-            <artifactId>ojdbc6</artifactId>
-            <version>11.2.0.4</version>
+            <groupId>com.oracle.database.jdbc</groupId>
+            <artifactId>ojdbc8</artifactId>
+            <version>18.3.0.0</version>
             <scope>test</scope>
         </dependency>
 

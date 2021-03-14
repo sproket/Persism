@@ -166,7 +166,7 @@ public final class Session implements AutoCloseable {
             for (ColumnInfo column : columns.values()) {
                 if (column.autoIncrement) {
                     generatedKeys.add(column.columnName);
-                } else if (metaData.connectionType == ConnectionTypes.PostgreSQL && column.primary && column.hasDefault) {
+                } else if (metaData.getConnectionType() == ConnectionTypes.PostgreSQL && column.primary && column.hasDefault) {
                     generatedKeys.add(column.columnName);
                 }
             }
@@ -201,7 +201,7 @@ public final class Session implements AutoCloseable {
 
                             if (columnInfo.primary) {
                                 // This is supported with PostgreSQL but otherwise throw this an exception
-                                if (!(metaData.connectionType == ConnectionTypes.PostgreSQL)) {
+                                if (!(metaData.getConnectionType() == ConnectionTypes.PostgreSQL)) {
                                     throw new PersismException("Non-auto inc generated primary keys are not supported. Please assign your primary key value before performing an insert.");
                                 }
                             }
@@ -683,7 +683,7 @@ public final class Session implements AutoCloseable {
 
                 case IntegerType:
                     // stupid SQLite reports LONGS as Integers for date types which WRAPS past Integer.MAX - Clowns.
-                    if (metaData.connectionType == ConnectionTypes.SQLite) {
+                    if (metaData.getConnectionType() == ConnectionTypes.SQLite) {
                         value = rs.getObject(column);
                         if (value != null) {
                             if (value instanceof Long) {
@@ -778,12 +778,14 @@ public final class Session implements AutoCloseable {
 
             case byteType:
             case ByteType:
+                log.warn("MSSQL Sees tinyint as 0-254 - H2 -127-+127 - no conversion here - recommend changing it to SMALLINT/Short.");
+                break;
+
             case shortType:
             case ShortType:
                 log.debug(valueType);
                 break;
-            // TODO test out short and byte - JDBC tends to read single byte as short
-            // Might need byte to bool also upcasting can cause errors
+
             case integerType:
             case IntegerType:
                 // int to bool
@@ -800,6 +802,9 @@ public final class Session implements AutoCloseable {
 
                 } else if (targetType.equals(Short.class) || targetType.equals(short.class)) {
                     returnValue = Short.parseShort("" + value);
+
+                } else if (targetType.equals(Byte.class) || targetType.equals(byte.class)) {
+                    returnValue = Byte.parseByte(""+value);
                 }
                 break;
 
@@ -1230,7 +1235,7 @@ public final class Session implements AutoCloseable {
                         break;
 
                     case EnumType:
-                        if (metaData.connectionType == ConnectionTypes.PostgreSQL) {
+                        if (metaData.getConnectionType() == ConnectionTypes.PostgreSQL) {
                             st.setObject(n, param.toString(), java.sql.Types.OTHER);
                         } else {
                             st.setString(n, param.toString());
@@ -1238,7 +1243,7 @@ public final class Session implements AutoCloseable {
                         break;
 
                     case UUIDType:
-                        if (metaData.connectionType == ConnectionTypes.PostgreSQL) {
+                        if (metaData.getConnectionType() == ConnectionTypes.PostgreSQL) {
                             // PostgreSQL does work with setObject but not setString unless you set the connection property stringtype=unspecified
                             st.setObject(n, param);
                         } else {

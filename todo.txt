@@ -108,9 +108,13 @@ TODO money types add map to int or long in cents (future javax.money)
 
 TODO Merges Logger changes and make the classes package private - check the size of the jar after
 
-TODO Fix countable https://github.com/sproket/Persism/issues/5
+DONE Fix countable https://github.com/sproket/Persism/issues/5
 
 TODO https://stackoverflow.com/questions/1736630/sql-constraint-minvalue-maxvalue - might be nice....
     ALTER TABLE [dbo].[Contacts]  WITH CHECK ADD CHECK  (([Status]>=(0) AND [Status]<=(10))) MSSSQL
 
 TODO test overflowing all number types - should throw various runtime exceptions if they occur
+
+TODO See about deprecating Column autoIncrement - I think all supported drivers detect this and even if you set it - why would it work? We won't get anything with getGeneratedKeys!
+
+TODO Sample Oracle DB https://docs.oracle.com/cd/E11882_01/doc.112/e26211/loe.htm

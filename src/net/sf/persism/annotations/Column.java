@@ -29,10 +29,11 @@ public @interface Column {
 
     /**
      * Indicates if the column is an auto increment field.
-     * This will tell Persism to exclude this column in
-     * insert/update statements and to update the object with this value after an insert.
+     * This will tell Persism to exclude this column in insert statements and to
+     * update the object with this column value after the insert.
      * <p>
      * It's only required if Persism cannot detect this column attribute on its own.
+     * The only case for this seems to be Oracle before version 12. To maybe be deprecated later on.
      * @return true if this column is autoIncrement.
      */
     boolean autoIncrement() default false;

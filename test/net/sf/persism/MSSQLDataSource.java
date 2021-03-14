@@ -23,7 +23,7 @@ public class MSSQLDataSource {
 
     private MSSQLDataSource(boolean mssqlmode) throws Exception {
 
-        log.error("SQL MODE? " + mssqlmode);
+        log.info("SQL MODE? " + mssqlmode);
 
         Properties props = new Properties();
         if (mssqlmode) {

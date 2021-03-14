@@ -9,7 +9,6 @@ import java.nio.file.Files;
 import java.sql.*;
 import java.text.NumberFormat;
 import java.time.*;
-import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.Date;
 
@@ -141,9 +140,9 @@ public final class TestH2 extends BaseTest {
 
         commands.add("ALTER TABLE TABLEMULTIPRIMARY ADD PRIMARY KEY (OrderID, ProductID)");
 
-
+//?
         commands.add("CREATE TABLE SavedGames ( " +
-                " ID INT IDENTITY PRIMARY KEY, " +
+                " ID VARCHAR(20) IDENTITY PRIMARY KEY, " +
                 " Name VARCHAR(100), " +
                 " Some_Date_And_Time TIMESTAMP NULL, " +
                 " Gold REAL NULL, " +
@@ -172,7 +171,7 @@ public final class TestH2 extends BaseTest {
                 "   Address1 varchar(50) NULL, " +
                 "   Address2 varchar(50) NULL, " +
                 "   City varchar(50) NULL, " +
-                "   Status SMALLINT NULL, " +
+                "   Status TINYINT NULL, " +
                 "   StateProvince varchar(50) NULL, " +
                 "   ZipPostalCode varchar(10) NULL, " +
                 "   Country varchar(50) NULL, " +
@@ -241,6 +240,33 @@ public final class TestH2 extends BaseTest {
                 " DateAndTime DATETIME) ";
 
         executeCommand(sql, con);
+
+        if (UtilsForTests.isTableInDatabase("ByteData", con)) {
+            executeCommand("DROP TABLE ByteData", con);
+        }
+        sql = "CREATE TABLE ByteData ( " +
+                "ID VARCHAR(60), " +
+                "BYTE1 INT, " +
+                "BYTE2 INT ) ";
+        executeCommand(sql, con);
+    }
+
+    public void testByteData() {
+        ByteData bd = new ByteData();
+        bd.setId("test 1");
+        bd.setByte1((byte) 42);
+        bd.setByte2((short) 299);
+
+        session.insert(bd);
+        log.info(bd);
+        session.fetch(bd);
+
+        bd.setByte1((byte) 876); // works?
+        session.update(bd);
+        log.info(bd);
+
+        session.query(ByteData.class, "select * from ByteData");
+
 
     }
 
@@ -479,9 +505,10 @@ public final class TestH2 extends BaseTest {
         tmp.setOrderId(1);
         tmp.setProductId(1);
         tmp.setUnitPrice(10.23);
-        tmp.setQuantity((short) 10);
+        tmp.setQuantity((short) 256);
         tmp.setDiscount(0);
         session.insert(tmp);
+        log.info(tmp);
 
         tmp.setDiscount(0.25f);
 
@@ -575,7 +602,6 @@ public final class TestH2 extends BaseTest {
         log.info("AFTER FETCH SIZE?" + saveGame.getSomethingBig().length);
         assertEquals("size should be the same ", size, saveGame.getSomethingBig().length);
     }
-
 
 
     @Override

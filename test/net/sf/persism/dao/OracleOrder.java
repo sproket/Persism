@@ -16,7 +16,7 @@ import java.math.BigDecimal;
 public final class OracleOrder extends Order {
 
     @Override
-    @Column(autoIncrement = true)
+    //@Column(autoIncrement = true)
     public long getId() {
         return super.getId();
     }

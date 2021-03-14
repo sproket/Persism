@@ -642,7 +642,10 @@ public abstract class BaseTest extends TestCase {
 
     }
 
-    public void XtestGetDbMetaData() throws SQLException {
+    public void testGetDbMetaData() throws SQLException {
+        if (true) {
+            return;
+        }
         DatabaseMetaData dmd = con.getMetaData();
         log.info("GetDbMetaData for " + dmd.getDatabaseProductName());
 
@@ -665,7 +668,7 @@ public abstract class BaseTest extends TestCase {
         // get attributes
         //rs = dmd.getAttributes("", "", "", "");
         List<String> tables = new ArrayList<>(32);
-        rs = dmd.getTables(null, session.getMetaData().connectionType.getSchemaPattern(), null, tableTypes);
+        rs = dmd.getTables(null, session.getMetaData().getConnectionType().getSchemaPattern(), null, tableTypes);
         rsmd = rs.getMetaData();
         while (rs.next()) {
             for (int i = 1; i <= rsmd.getColumnCount(); i++) {
@@ -677,7 +680,7 @@ public abstract class BaseTest extends TestCase {
 
         for (String table : tables) {
             log.info("Table " + table + " COLUMN INFO");
-            rs = dmd.getColumns(null, session.getMetaData().connectionType.getSchemaPattern(), table, null);
+            rs = dmd.getColumns(null, session.getMetaData().getConnectionType().getSchemaPattern(), table, null);
             rsmd = rs.getMetaData();
             while (rs.next()) {
                 for (int i = 1; i <= rsmd.getColumnCount(); i++) {

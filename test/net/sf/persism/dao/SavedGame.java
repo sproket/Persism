@@ -13,7 +13,8 @@ import java.util.Date;
  */
 public final class SavedGame extends PersistableObject<SavedGame> {
 
-    private int id;
+    // Changed to String to see if this fails as an autoinc. In H2 it still works. Other DBs it fails (as it should).
+    private String id;
     private String name;
     private Date someDateAndTime;
     private String data;
@@ -23,11 +24,11 @@ public final class SavedGame extends PersistableObject<SavedGame> {
     private byte[] somethingBig;
     private Time whatTimeIsIt;
 
-    public int getId() {
+    public String getId() {
         return id;
     }
 
-    public void setId(int id) {
+    public void setId(String id) {
         this.id = id;
     }
 

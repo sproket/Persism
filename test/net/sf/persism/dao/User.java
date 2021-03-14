@@ -2,13 +2,12 @@ package net.sf.persism.dao;
 
 import net.sf.persism.annotations.Column;
 
-//import java.sql.Timestamp;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.util.Date;
 
 public final class User {
-    @Column(name = "User_No", autoIncrement = true, primary = true)
+    @Column(name = "User_No")
     private long id;
 
     @Column(name = "UserCode")

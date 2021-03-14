@@ -27,7 +27,7 @@
         </rollingPolicy>
     </appender>
     <logger name="org" level="ERROR"/>
-    <logger name="net.sf.persism" level="WARN"/>
+    <logger name="net.sf.persism" level="INFO"/>
     <logger name="net" level="ERROR"/>
 
     <!-- ERROR, WARN, INFO, DEBUG, OFF -->

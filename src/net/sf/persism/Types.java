@@ -176,8 +176,11 @@ enum Types {
         return type;
     }
 
-    public boolean isLongOrInteger() {
-        return this == IntegerType || this == integerType || this == LongType || this == longType;
+    public boolean isEligibleForAutoinc() {
+        // Oracle returns BigDecimalType for INT
+        // PUBS has SmallInt -> short
+        return this == IntegerType || this == integerType || this == LongType || this == longType
+                || this == ShortType || this == shortType || this == BigDecimalType || this == BigIntegerType;
     }
 }
 
