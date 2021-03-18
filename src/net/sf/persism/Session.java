@@ -65,6 +65,29 @@ public final class Session implements AutoCloseable {
     }
 
     /**
+     * Function block of database operations to group together in one transaction.
+     * This method will set autocommit to false then execute the function, commit and set autocommit back to true.
+     * @throws PersismException in case of SQLException where the transaction is rolled back.
+     * to make public in 1.1.0
+     */
+    void withTransaction(Runnable function) {
+        try {
+            connection.setAutoCommit(false);
+            function.run();
+            connection.commit();
+        } catch (SQLException e) {
+            Util.rollback(connection);
+            throw new PersismException(e.getMessage(), e);
+        } finally {
+            try {
+                connection.setAutoCommit(true);
+            } catch (SQLException e) {
+                log.warn(e.getMessage());
+            }
+        }
+    }
+
+    /**
      * Updates the data object in the database.
      *
      * @param object data object to update.

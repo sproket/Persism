@@ -57,8 +57,10 @@ final class MetaData {
 
     private ConnectionTypes connectionType;
 
-    //the "extra" characters that can be used in unquoted identifier names (those beyond a-z, A-Z, 0-9 and _)
-    private String extraNameCharacters;
+    // the "extra" characters that can be used in unquoted identifier names (those beyond a-z, A-Z, 0-9 and _)
+    // Was using DatabaseMetaData getExtraNameCharacters() but some drivers don't provide these and still allow
+    // for non alpha-numeric characters in column names. We'll just use a static set.
+    private static final String EXTRA_NAME_CHARACTERS = "`~!@#$%^&*()-+=/|\\{}[]:;'\".,<>*";
 
     private MetaData(Connection con) throws SQLException {
 
@@ -68,9 +70,6 @@ final class MetaData {
         if (connectionType == ConnectionTypes.Other) {
             log.warn("Unknown connection type. Please contact Persism to add support for " + con.getMetaData().getDatabaseProductName());
         }
-
-        DatabaseMetaData dmd = con.getMetaData();
-        extraNameCharacters = dmd.getExtraNameCharacters();
         populateTableList(con);
     }
 
@@ -130,11 +129,9 @@ final class MetaData {
             for (int j = 1; j <= columnCount; j++) {
                 String realColumnName = rsmd.getColumnLabel(j);
                 String columnName = realColumnName.toLowerCase().replace("_", "").replace(" ", "");
-                if (extraNameCharacters != null && !extraNameCharacters.isEmpty()) {
-                    // also replace these characters
-                    for (int x = 0; x < extraNameCharacters.length(); x++) {
-                        columnName = columnName.replace("" + extraNameCharacters.charAt(x), "");
-                    }
+                // also replace these characters
+                for (int x = 0; x < EXTRA_NAME_CHARACTERS.length(); x++) {
+                    columnName = columnName.replace("" + EXTRA_NAME_CHARACTERS.charAt(x), "");
                 }
                 PropertyInfo foundProperty = null;
                 for (PropertyInfo propertyInfo : properties) {
@@ -294,7 +291,7 @@ final class MetaData {
             // If we have a primary that's NUMERIC and HAS a default AND autoinc is not set then set it.
             if (connectionType == ConnectionTypes.Oracle) {
                 Optional<ColumnInfo> autoInc = map.values().stream().filter(e -> e.autoIncrement).findFirst();
-                if (!autoInc.isPresent() ) {
+                if (!autoInc.isPresent()) {
                     // Do a second check if we have a primary that's numeric with a default.
                     Optional<ColumnInfo> primaryOpt = map.values().stream().filter(e -> e.primary).findFirst();
                     if (primaryOpt.isPresent()) {

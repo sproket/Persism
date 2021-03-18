@@ -369,7 +369,7 @@ public abstract class BaseTest extends TestCase {
     LocalDateTime ldt4 = LocalDateTime.parse("1994-02-17 10:23:43.997", formatter);
     java.util.Date date = Timestamp.valueOf("1992-02-17 10:23:41.107");
 
-    private Contact getContactForTest() {
+    Contact getContactForTest() {
 
         Contact contact = new Contact();
         contact.setIdentity(identity);
@@ -448,6 +448,35 @@ public abstract class BaseTest extends TestCase {
         assertEquals("what MITE? is it? LocalTime s/b '10:23:52'", "10:23:52", "" + contact1.getWhatMiteIsIt());
 
         assertEquals("some date s/b '1992-02-17 10:23:41.107'", "1992-02-17 10:23:41.107", "" + contact.getSomeDate());
+
+        // test transaction
+
+        contact = getContactForTest();
+        session.insert(contact);
+
+        final UUID randomUUID = UUID.randomUUID();
+        try {
+            session.withTransaction(() -> {
+                Contact contactForTest = getContactForTest();
+                contactForTest.setIdentity(randomUUID);
+                session.insert(contactForTest);
+                contactForTest.setContactName("HELLO?!");
+                session.update(contactForTest);
+                session.fetch(contactForTest);
+
+                log.info("contact after insert/update before commit/rollback: " + contactForTest);
+
+                // NOW FAIL the transaction to see that the new contact was not committed
+                session.query(Object.class, "select * FROM MISSING CONTACT");
+            });
+        } catch (Exception e) {
+            log.info("FAILS?: " + e);
+        }
+        Contact contactForTest = getContactForTest();
+        contactForTest.setIdentity(randomUUID);
+
+        assertFalse("Should not be found", session.fetch(contactForTest));
+
     }
 
     static LocalDateTime ldt = LocalDateTime.parse("1998-02-17 10:23:43.567", formatter);
