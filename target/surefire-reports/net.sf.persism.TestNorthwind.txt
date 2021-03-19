@@ -1,4 +1,0 @@
--------------------------------------------------------------------------------
-Test set: net.sf.persism.TestNorthwind
--------------------------------------------------------------------------------
-Tests run: 6, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 149.428 s - in net.sf.persism.TestNorthwind

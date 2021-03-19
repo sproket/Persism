@@ -1,4 +1,0 @@
--------------------------------------------------------------------------------
-Test set: net.sf.persism.TestMySQL
--------------------------------------------------------------------------------
-Tests run: 10, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 22.616 s - in net.sf.persism.TestMySQL

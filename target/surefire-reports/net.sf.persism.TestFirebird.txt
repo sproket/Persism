@@ -1,4 +1,0 @@
--------------------------------------------------------------------------------
-Test set: net.sf.persism.TestFirebird
--------------------------------------------------------------------------------
-Tests run: 11, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 21.542 s - in net.sf.persism.TestFirebird

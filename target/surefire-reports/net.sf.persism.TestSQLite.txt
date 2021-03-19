@@ -1,4 +1,0 @@
--------------------------------------------------------------------------------
-Test set: net.sf.persism.TestSQLite
--------------------------------------------------------------------------------
-Tests run: 18, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 3.594 s - in net.sf.persism.TestSQLite

@@ -1,4 +1,0 @@
--------------------------------------------------------------------------------
-Test set: net.sf.persism.TestDerby
--------------------------------------------------------------------------------
-Tests run: 10, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 7.539 s - in net.sf.persism.TestDerby
