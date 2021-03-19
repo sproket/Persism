@@ -252,7 +252,9 @@ public final class Session implements AutoCloseable {
             }
 
             setParameters(st, params.toArray());
-            int ret = st.executeUpdate();
+            st.execute();
+            int ret = st.getUpdateCount();
+
             if (log.isDebugEnabled()) {
                 log.debug("insert ret: " + ret);
             }
@@ -680,15 +682,19 @@ public final class Session implements AutoCloseable {
 
                 case ClobType:
                     Clob clob = rs.getClob(column);
-                    try (InputStream in = clob.getAsciiStream()) {
-                        StringWriter writer = new StringWriter();
+                    if(clob == null){
+                        value = null; //jtds has this problem
+                    }else {
+                        try (InputStream in = clob.getAsciiStream()) {
+                            StringWriter writer = new StringWriter();
 
-                        int c = -1;
-                        while ((c = in.read()) != -1) {
-                            writer.write(c);
+                            int c = -1;
+                            while ((c = in.read()) != -1) {
+                                writer.write(c);
+                            }
+                            writer.flush();
+                            value = writer.toString();
                         }
-                        writer.flush();
-                        value = writer.toString();
                     }
                     break;
 

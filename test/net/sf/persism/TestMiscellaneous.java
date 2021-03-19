@@ -1,18 +1,27 @@
 package net.sf.persism;
 
 import junit.framework.TestCase;
-import net.sf.persism.dao.northwind.Category;
+import net.sf.persism.categories.TestContainerDB;
+import net.sf.persism.dao.pubs.Author;
+import org.junit.ClassRule;
+import org.junit.experimental.categories.Category;
+import org.testcontainers.containers.MSSQLServerContainer;
 
 import java.sql.*;
+import java.util.Arrays;
 import java.util.List;
-import java.util.Properties;
 
+@Category(TestContainerDB.class)
 public class TestMiscellaneous extends TestCase {
 
     private static final Log log = Log.getLogger(TestMiscellaneous.class);
 
+    @ClassRule
+    private static final MSSQLServerContainer<?> DB_CONTAINER = new MSSQLServerContainer <>("mcr.microsoft.com/mssql/server:2017-latest")
+            .acceptLicense();
+
     protected void setUp() throws Exception {
-        super.setUp();
+
     }
 
     protected void tearDown() throws Exception {
@@ -20,24 +29,41 @@ public class TestMiscellaneous extends TestCase {
     }
 
     public void testAutoClosable() throws Exception {
-        Properties props = new Properties();
-        props.load(getClass().getResourceAsStream("/northwind.properties"));
-        String driver = props.getProperty("database.driver");
-        String url = props.getProperty("database.url");
-        String username = props.getProperty("database.username");
-        String password = props.getProperty("database.password");
-        Class.forName(driver);
+        boolean mustCreateTables = false;
+        if(!DB_CONTAINER.isRunning()) {
+            //there are lots of warnings while this container starts, but it works.
+            //it is an open issue: https://github.com/testcontainers/testcontainers-java/issues/3079
+            DB_CONTAINER.start();
+            mustCreateTables = true;
+        }
 
-        Connection con = DriverManager.getConnection(url, username, password);
+        Class.forName(DB_CONTAINER.getDriverClassName());
+
+        Connection con = DriverManager.getConnection(DB_CONTAINER.getJdbcUrl(), DB_CONTAINER.getUsername(), DB_CONTAINER.getPassword());
+
+        if(mustCreateTables) {
+            createTables(con);
+        } else{
+            BaseTest.executeCommand("USE PUBS", con);
+        }
 
         try (Session session = new Session(con)) {
-            List<Category> list = session.query(Category.class, "select * from categories");
+            List<Author> list = session.query(Author.class, "select * from authors");
             list.stream().forEach(c -> log.info(c));
         }
         assertTrue(con.isClosed());
     }
 
-    public void testTimestampParse() {
+    private void createTables(Connection con) throws SQLException {
+        //from https://github.com/Microsoft/sql-server-samples/tree/master/samples/databases/northwind-pubs
+        String sql = UtilsForTests.readFromResource("/sql/PUBS.sql");
+        List<String> commands = Arrays.asList(sql.split("(?i)GO\\r\\n", -1));
+        BaseTest.executeCommands(commands, con);
+
+        BaseTest.executeCommand("USE PUBS", con);
+    }
+
+    public static void testSomething() {
         //Timestamp
         String v1 = "1994-02-17 10:23:43.9970000";
         String v2 = "1994-02-17 10:23:43.997";

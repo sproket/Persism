@@ -7,12 +7,14 @@ package net.sf.persism;
  * Time: 2:31 PM
  */
 
+import net.sf.persism.categories.ExternalDB;
 import net.sf.persism.dao.DAOFactory;
 import net.sf.persism.dao.OracleBit;
 import net.sf.persism.dao.OracleOrder;
 import net.sf.persism.dao.Order;
 import net.sf.persism.ddl.FieldDef;
 import net.sf.persism.ddl.TableDef;
+import org.junit.experimental.categories.Category;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
@@ -22,7 +24,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Properties;
-
+@Category(ExternalDB.class)
 public final class TestOracle extends BaseTest {
 
     private static final Log log = Log.getLogger(TestOracle.class);

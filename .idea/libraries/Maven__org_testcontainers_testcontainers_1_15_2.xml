@@ -1,0 +1,13 @@
+<component name="libraryTable">
+  <library name="Maven: org.testcontainers:testcontainers:1.15.2">
+    <CLASSES>
+      <root url="jar://$MAVEN_REPOSITORY$/org/testcontainers/testcontainers/1.15.2/testcontainers-1.15.2.jar!/" />
+    </CLASSES>
+    <JAVADOC>
+      <root url="jar://$MAVEN_REPOSITORY$/org/testcontainers/testcontainers/1.15.2/testcontainers-1.15.2-javadoc.jar!/" />
+    </JAVADOC>
+    <SOURCES>
+      <root url="jar://$MAVEN_REPOSITORY$/org/testcontainers/testcontainers/1.15.2/testcontainers-1.15.2-sources.jar!/" />
+    </SOURCES>
+  </library>
+</component>
