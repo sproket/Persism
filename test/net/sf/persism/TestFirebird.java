@@ -1,8 +1,13 @@
 package net.sf.persism;
 
+import net.sf.persism.categories.TestContainerDB;
 import net.sf.persism.dao.Customer;
 import net.sf.persism.dao.DAOFactory;
 import net.sf.persism.dao.Order;
+import org.firebirdsql.testcontainers.FirebirdContainer;
+import org.junit.ClassRule;
+import org.junit.experimental.categories.Category;
+import org.testcontainers.utility.DockerImageName;
 
 import java.sql.DriverManager;
 import java.sql.SQLException;
@@ -10,27 +15,36 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.*;
 
+@Category(TestContainerDB.class)
 public final class TestFirebird extends BaseTest {
 
     private static final Log log = Log.getLogger(TestFirebird.class);
 
+    private static final DockerImageName IMAGE =
+            DockerImageName.parse(FirebirdContainer.IMAGE).withTag("3.0.7");
+
+    @ClassRule
+    public static final FirebirdContainer<?> DB_CONTAINER = new FirebirdContainer<>(IMAGE)
+            .withUsername("pinf")
+            .withPassword("pinf");
+
     @Override
     public void setUp() throws Exception {
         connectionType = ConnectionTypes.Firebird;
+
+        super.setUp();
+        if(!DB_CONTAINER.isRunning()) {
+            DB_CONTAINER.start();
+        }
         super.setUp();
 
-        Properties props = new Properties();
-        props.load(getClass().getResourceAsStream("/firebird.properties"));
-        String driver = props.getProperty("database.driver");
-        String url = props.getProperty("database.url");
-        String username = props.getProperty("database.username");
-        String password = props.getProperty("database.password");
-        Class.forName(driver);
-        con = DriverManager.getConnection(url, username, password);
+        Class.forName(DB_CONTAINER.getDriverClassName());
 
+        con = DriverManager.getConnection(DB_CONTAINER.getJdbcUrl(), DB_CONTAINER.getUsername(), DB_CONTAINER.getPassword());
         log.info(con.getMetaData().getDatabaseProductName());
 
         createTables();
+
 
         session = new Session(con);
 
@@ -107,7 +121,7 @@ public final class TestFirebird extends BaseTest {
         }
         // FIREBIRD and Derby don't like NULL
         sql = "CREATE TABLE Contacts( " +
-                "   identity binary(16) NOT NULL PRIMARY KEY, \n" +  // test binary(16)
+                "   identity varchar(40) NOT NULL PRIMARY KEY, \n" +  // test binary(16)
                 "   PartnerID varchar(36) NOT NULL, \n" + // test varchar(36)
                 "   Type char(2) NOT NULL, \n" +
                 "   Firstname varchar(50) NOT NULL, \n" +
@@ -127,7 +141,7 @@ public final class TestFirebird extends BaseTest {
                 "   LastModified TIMESTAMP, \n" +
                 "   Notes BLOB SUB_TYPE TEXT, \n" +
                 "   AmountOwed REAL, \n" +
-                "   \"BigInt\" DECIMAL(20), \n" +
+                "   \"BigInt\" DECIMAL(18), \n" +
                 "   SomeDate TIMESTAMP, \n" +
                 "   TestInstant TIMESTAMP, \n" +
                 "   TestInstant2 TIMESTAMP, \n" +

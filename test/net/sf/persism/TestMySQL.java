@@ -1,39 +1,44 @@
 package net.sf.persism;
 
+import net.sf.persism.categories.TestContainerDB;
 import net.sf.persism.dao.Customer;
-import net.sf.persism.dao.Order;
 import net.sf.persism.dao.Regions;
+import org.junit.ClassRule;
+import org.junit.Rule;
+import org.junit.experimental.categories.Category;
+import org.testcontainers.containers.MySQLContainer;
 
 import java.sql.*;
-import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Properties;
 
 /**
  * @author Dan Howard
  * @since 6/4/12 9:52 PM
  */
+@Category(TestContainerDB.class)
 public final class TestMySQL extends BaseTest {
 
     private static final Log log = Log.getLogger(TestMySQL.class);
 
+    @ClassRule
+    private static final MySQLContainer<?> DB_CONTAINER = new MySQLContainer<>("mysql:5.7.22")
+            .withUsername("pinf")
+            .withPassword("pinf")
+            .withDatabaseName("pinf");
+
     @Override
     protected void setUp() throws Exception {
+        if(!DB_CONTAINER.isRunning()) {
+            DB_CONTAINER.start();
+        }
         connectionType = ConnectionTypes.MySQL;
         super.setUp();
 
-        Properties props = new Properties();
-        props.load(getClass().getResourceAsStream("/mysql.properties"));
+        Class.forName(DB_CONTAINER.getDriverClassName());
 
-        String driver = props.getProperty("database.driver");
-        String url = props.getProperty("database.url");
-        String username = props.getProperty("database.username");
-        String password = props.getProperty("database.password");
+        con = DriverManager.getConnection(DB_CONTAINER.getJdbcUrl(), DB_CONTAINER.getUsername(), DB_CONTAINER.getPassword());
 
-        Class.forName(driver);
-
-        con = DriverManager.getConnection(url, username, password);
 
         createTables();
 
@@ -172,7 +177,7 @@ public final class TestMySQL extends BaseTest {
 
         session.insert(customer);
 
-        List<Customer> customers = session.query(Customer.class, "SELECT * FROM CUSTOMERS");
+        List<Customer> customers = session.query(Customer.class, "SELECT * FROM Customers");
         log.info(customers);
 
         String result = session.fetch(String.class, "select `Contact_Name` from Customers where Customer_ID = ?", 123);

@@ -4,9 +4,14 @@ import net.sf.persism.ddl.FieldDef;
 import net.sf.persism.ddl.TableDef;
 
 import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.UncheckedIOException;
+import java.nio.charset.StandardCharsets;
 import java.sql.*;
 import java.util.Calendar;
 import java.util.List;
+import java.util.Scanner;
 
 /**
  * Comments for Util go here.
@@ -95,7 +100,7 @@ public class UtilsForTests {
             while (rs.next()) {
                 String proc = rs.getString("PROCEDURE_NAME");
                 // looks like spCustomerOrders;1 == where ;1 indicate # params
-                if (proc != null && proc.toLowerCase().startsWith(proc.toLowerCase())) {
+                if (proc != null && proc.toLowerCase().startsWith(procName)) {
                     result = true;
                     break;
                 }
@@ -276,6 +281,14 @@ public class UtilsForTests {
         cal.set(year, month, day, hour, min, sec);
 
         return cal;
+    }
+
+    public static String readFromResource(String path ){
+        try(InputStream is = UtilsForTests.class.getResourceAsStream(path)){
+            return new Scanner(is, StandardCharsets.UTF_8.name()).useDelimiter("\\A").next();
+        } catch (IOException e) {
+            throw new UncheckedIOException(e);
+        }
     }
 
 }
