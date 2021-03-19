@@ -1,0 +1,4 @@
+-------------------------------------------------------------------------------
+Test set: net.sf.persism.TestPostgreSQL
+-------------------------------------------------------------------------------
+Tests run: 10, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 4.152 s - in net.sf.persism.TestPostgreSQL
