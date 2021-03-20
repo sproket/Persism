@@ -246,6 +246,7 @@
             <version>4.0.2.java8</version>
             <scope>test</scope>
         </dependency>
+
         <dependency>
             <groupId>org.firebirdsql</groupId>
             <artifactId>firebird-testcontainers-java</artifactId>
@@ -295,6 +296,7 @@
             <version>8.0.23</version>
             <scope>test</scope>
         </dependency>
+
         <dependency>
             <groupId>org.testcontainers</groupId>
             <artifactId>mysql</artifactId>
@@ -313,8 +315,8 @@
             <groupId>com.oracle.database.jdbc</groupId>
             <artifactId>ojdbc8</artifactId>
             <version>18.3.0.0</version>
+            <scope>test</scope>
         </dependency>
-
 
         <dependency>
             <groupId>org.postgresql</groupId>
