@@ -1,5 +1,12 @@
 package net.sf.persism;
 
+/*
+ * Created by IntelliJ IDEA.
+ * User: DHoward
+ * Date: 9/8/11
+ * Time: 6:10 AM
+ */
+
 import net.sf.persism.categories.TestContainerDB;
 import net.sf.persism.dao.*;
 import org.junit.ClassRule;
@@ -8,53 +15,75 @@ import org.testcontainers.containers.MSSQLServerContainer;
 
 import java.math.BigDecimal;
 import java.sql.*;
+import java.sql.Date;
 import java.time.LocalDate;
+import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 
 import static net.sf.persism.UtilsForTests.*;
-
 @Category(TestContainerDB.class)
-public final class TestMSSQLjtds extends BaseTest {
+public final class TestMSSQL extends BaseTest {
 
-    private static final Log log = Log.getLogger(TestMSSQLjtds.class);
+    private static final Log log = Log.getLogger(TestMSSQL.class);
 
     @ClassRule
-    private final static MSSQLServerContainer<?> DB_CONTAINER = new MSSQLServerContainer <>("mcr.microsoft.com/mssql/server:2017-latest")
+    private static final MSSQLServerContainer<?> DB_CONTAINER = new MSSQLServerContainer <>("mcr.microsoft.com/mssql/server:2017-latest")
             .acceptLicense();
 
     @Override
     protected void setUp() throws Exception {
+        boolean mustCreateTables = false;
         if(!DB_CONTAINER.isRunning()) {
             //there are lots of warnings while this container starts, but it works.
             //it is an open issue: https://github.com/testcontainers/testcontainers-java/issues/3079
             DB_CONTAINER.start();
+            mustCreateTables = true;
         }
-        BaseTest.mssqlmode = false;
 
-        connectionType = ConnectionTypes.JTDS;
+        connectionType = ConnectionTypes.MSSQL;
         Class.forName(DB_CONTAINER.getDriverClassName());
+
 
         super.setUp();
         log.info("SQLMODE? " + BaseTest.mssqlmode);
-        String url = "jdbc:jtds:sqlserver://localhost:" + DB_CONTAINER.getFirstMappedPort();
-        log.info("jdbcUrl: " + url);
-        con = DriverManager.getConnection(url, DB_CONTAINER.getUsername(), DB_CONTAINER.getPassword());
+        log.info("dbContainer.getJdbcUrl(): " + DB_CONTAINER.getJdbcUrl());
+        con = DriverManager.getConnection(DB_CONTAINER.getJdbcUrl(), DB_CONTAINER.getUsername(), DB_CONTAINER.getPassword());
         log.info("PRODUCT? " + con.getMetaData().getDriverName() + " - " + con.getMetaData().getDriverVersion());
 
-        createTables();
+        if(mustCreateTables) {
+            createTables();
+        }
 
         session = new Session(con);
     }
 
     @Override
     protected void tearDown() throws Exception {
-        if(con != null){
-            con.close();
+        Statement st = con.createStatement();
+        try {
+            st.execute("TRUNCATE TABLE Orders");
+        } catch (SQLException e) {
+            log.error(e.getMessage(), e);
         }
+        try {
+            st.execute("TRUNCATE TABLE Customers");
+        } catch (SQLException e) {
+            log.error(e.getMessage(), e);
+        }
+
+        try {
+            st.execute("TRUNCATE TABLE EXAMCODE");
+        } catch (SQLException e) {
+            log.error(e.getMessage(), e);
+        } finally {
+            cleanup(st, null);
+        }
+
+        // https://www.baeldung.com/java-size-of-object#:~:text=Objects%2C%20References%20and%20Wrapper%20Classes,a%20multiple%20of%204%20bytes.
+        // https://stackoverflow.com/questions/52353/in-java-what-is-the-best-way-to-determine-the-size-of-an-object
+        // log.warn("SESSION: " + InstrumentationAgent.getObjectSize(session));
+        super.tearDown();
     }
 
     @Override
@@ -146,7 +175,7 @@ public final class TestMSSQLjtds extends BaseTest {
                 "   [DateAdded] [smalldatetime] NULL, " +
                 "   [LastModified] [datetime] NULL, " +
                 "   [Notes] [text] NULL, " +
-                "   [Status] [tinyint] NULL, " +
+                "   [Status] [tinyint], " + // NOT NULL CHECK ([Status] >= 0 AND [Status] <= 10)
                 "   [AmountOwed] [float] NULL, " +
                 "   [BigInt] [DECIMAL](20) NULL, " +
                 "   [SomeDate] [datetime2] NULL, " +
@@ -966,11 +995,15 @@ public final class TestMSSQLjtds extends BaseTest {
         DumbTableStringAutoInc dumb = new DumbTableStringAutoInc();
         dumb.setDescription("test");
         session.insert(dumb);
+        // should not actually do anything since there is no autoinc.
+        // the table is defined with VARCHAR
+        log.info(dumb);
+        assertNull(dumb.getId());
 
         // query = new Query(con);
         try {
             Statement st = con.createStatement();
-            ResultSet rs = st.executeQuery("SELECT * FROM ORDERS WHERE 1=2");
+            java.sql.ResultSet rs = st.executeQuery("SELECT * FROM ORDERS WHERE 1=2");
             ResultSetMetaData rsMetaData = rs.getMetaData();
             for (int i = 1; i <= rsMetaData.getColumnCount(); i++) {
                 log.info(rsMetaData.getColumnName(i));
@@ -1002,7 +1035,11 @@ public final class TestMSSQLjtds extends BaseTest {
         user.setAmountOwed(BigDecimal.valueOf(123.567d));
         user.setAmountOwedAfterHeadRemoval(4.73f);
 
+        assertTrue("id s/b = 0", user.getId() == 0);
+
         session.insert(user);
+
+        assertTrue("id s/b > 0", user.getId() > 0);
 
         log.info(user);
 
@@ -1032,7 +1069,7 @@ public final class TestMSSQLjtds extends BaseTest {
         log.info(session.query(Contact.class, "select * from Contacts"));
 
 //        String insertStatement = "INSERT INTO Customers (Customer_ID, Company_Name, Contact_Name) VALUES ( ?, ?, ? ) ";
-        String insertStatement = "INSERT INTO Contacts (FirstName, LastName, Type) VALUES ( ?, ?, ? ) ";
+        String insertStatement = "INSERT INTO Contacts (FirstName, LastName, Type, Status) VALUES ( ?, ?, ?, ? ) ";
 
         PreparedStatement st = null;
         ResultSet rs = null;
@@ -1046,6 +1083,7 @@ public final class TestMSSQLjtds extends BaseTest {
         st.setString(1, "Slate Quarry");
         st.setString(2, "Fred");
         st.setString(3, "X");
+        st.setShort(4, (short) 10);
 
 
         int ret = st.executeUpdate();
