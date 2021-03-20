@@ -129,7 +129,7 @@ public class UtilsForTests {
 
         log.info("createHomeFolder: " + home);
         boolean success = new File(home).mkdirs();
-        log.info("createHomeFolder: " + success);
+        log.info("createHomeFolder success: " + success);
         return home;
     }
 

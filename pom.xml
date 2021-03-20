@@ -6,7 +6,7 @@
 
     <groupId>io.github.sproket</groupId>
     <artifactId>persism</artifactId>
-    <version>1.0.2</version>
+    <version>1.1.0-beta</version>
     <packaging>jar</packaging>
 
     <build>
@@ -262,11 +262,12 @@
         </dependency>
 
         <dependency>
+            <!-- using older version as 2.5.1 collides with ucanaccess -->
             <groupId>org.hsqldb</groupId>
             <artifactId>hsqldb</artifactId>
-            <version>2.5.1</version>
+            <version>2.3.1</version>
             <scope>test</scope>
-            <classifier>debug</classifier>
+<!--            <classifier>debug</classifier>-->
         </dependency>
 
         <dependency>
@@ -335,6 +336,13 @@
             <groupId>org.xerial</groupId>
             <artifactId>sqlite-jdbc</artifactId>
             <version>3.34.0</version>
+            <scope>test</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>net.sf.ucanaccess</groupId>
+            <artifactId>ucanaccess</artifactId>
+            <version>4.0.4</version>
             <scope>test</scope>
         </dependency>
     </dependencies>

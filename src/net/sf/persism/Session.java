@@ -130,9 +130,10 @@ public final class Session implements AutoCloseable {
             for (String column : changedProperties.keySet()) {
                 ColumnInfo columnInfo = columns.get(column);
 
-                if (!primaryKeys.contains(column)) {
+                if (primaryKeys.contains(column)) {
+                    log.info("Session update: skipping column " + column);
+                } else {
                     Object value = allProperties.get(column).getter.invoke(object);
-
                     params.add(value);
                     columnInfos.add(columnInfo);
                 }
@@ -791,7 +792,7 @@ public final class Session implements AutoCloseable {
         Types valueType = Types.getType(value.getClass());
 
         if (valueType == null) {
-            log.warn("Conversion: Unknown Persism type " + value.getClass() + " - no conversion performed.");
+            log.warn("Conversion: Unknown type: " + value.getClass() + " - no conversion performed.");
             return value;
         }
 
@@ -1169,7 +1170,10 @@ public final class Session implements AutoCloseable {
             if (param != null) {
 
                 Types type = Types.getType(param.getClass());
-                assert type != null;
+                if (type == null) {
+                    log.warn("setParameters: Unknown type: " + param.getClass());
+                    type = Types.ObjectType;
+                }
 
                 switch (type) {
 
@@ -1282,7 +1286,8 @@ public final class Session implements AutoCloseable {
 
                     default:
                         // Usually SQLite with util.date - setObject works
-                        log.info("setParameters default: " + n + " " + param.getClass());
+                        // Also if it's a custom non-standard type.
+                        log.info("setParameters using setObject on parameter: " + n + " for " + param.getClass());
                         st.setObject(n, param);
                 }
 

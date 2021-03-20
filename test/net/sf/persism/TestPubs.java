@@ -12,6 +12,7 @@ import net.sf.persism.categories.TestContainerDB;
 import net.sf.persism.dao.pubs.Author;
 import net.sf.persism.dao.pubs.JobType;
 import net.sf.persism.dao.pubs.PublisherInfo;
+import org.junit.AfterClass;
 import org.junit.ClassRule;
 import org.junit.experimental.categories.Category;
 import org.testcontainers.containers.MSSQLServerContainer;
@@ -135,5 +136,10 @@ public class TestPubs extends TestCase {
         assertEquals("min lvl s/b ", 175, jobType.getMinLevel());
         assertEquals("max lvl s/b ", 250, jobType.getMaxLevel());
 
+    }
+
+    @AfterClass
+    public void Xfinally() {
+        log.warn(session.getMetaData());
     }
 }

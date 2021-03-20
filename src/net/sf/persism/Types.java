@@ -56,7 +56,7 @@ enum Types {
 
     private static final Log log = Log.getLogger(Types.class);
 
-    private Class type;
+    private Class<?> type;
 
     <T> Types(Class<T> type) {
         init(type);

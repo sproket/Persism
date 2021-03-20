@@ -29,6 +29,7 @@ public class AllTests {
         theTestSuite.addTestSuite(TestHSQLDB.class);
         theTestSuite.addTestSuite(TestDerby.class);
         theTestSuite.addTestSuite(TestSQLite.class);
+        theTestSuite.addTestSuite(TestMSAccess.class);
 
         theTestSuite.addTestSuite(TestMSSQL.class);
         theTestSuite.addTestSuite(TestOracle.class);

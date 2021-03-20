@@ -22,6 +22,8 @@ enum ConnectionTypes {
 
     HSQLDB(null, "", ""),
 
+    UCanAccess(null, "[", "]"),
+
     Other(null, "", "")
     ;
 
@@ -79,6 +81,11 @@ enum ConnectionTypes {
         if (connectionUrl.startsWith("jdbc:hsqldb")) {
             return HSQLDB;
         }
+
+        if (connectionUrl.startsWith("jdbc:ucanaccess")) {
+            return UCanAccess;
+        }
+
         return Other;
     }
 

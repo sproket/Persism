@@ -671,7 +671,9 @@ final class MetaData {
         while (it.hasNext()) {
             String column = it.next();
             ColumnInfo columnInfo = columns.get(column);
-            if (!columnInfo.autoIncrement && !columnInfo.primary) {
+            if (columnInfo.autoIncrement || columnInfo.primary) {
+                log.info("buildUpdateString: skipping " + column);
+            } else {
                 sb.append(sep).append(sd).append(column).append(ed).append(" = ?");
                 sep = ", ";
             }
