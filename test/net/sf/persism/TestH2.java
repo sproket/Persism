@@ -1,6 +1,8 @@
 package net.sf.persism;
 
+import net.sf.persism.categories.LocalDB;
 import net.sf.persism.dao.*;
+import org.junit.experimental.categories.Category;
 
 import java.io.File;
 import java.io.IOException;
@@ -18,6 +20,7 @@ import java.util.Date;
  * @author Dan Howard
  * @since 9/25/11 8:04 AM
  */
+@Category(LocalDB.class)
 public final class TestH2 extends BaseTest {
 
     // data types

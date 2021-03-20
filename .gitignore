@@ -8,7 +8,9 @@ reports/
 coverage/
 cobertura.ser
 *.log
-.idea/workspace.xml
+.idea/*.*
+persism.iml
+target/
 
 /libs/hsqldb/pinf.script
 /libs/hsqldb/pinf.properties

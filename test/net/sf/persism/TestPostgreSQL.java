@@ -1,11 +1,9 @@
 package net.sf.persism;
 
-import net.sf.persism.categories.TestContainerDB;
+import net.sf.persism.categories.ExternalDB;
 import net.sf.persism.dao.Contact;
 import net.sf.persism.dao.Customer;
-import org.junit.ClassRule;
 import org.junit.experimental.categories.Category;
-import org.testcontainers.containers.PostgreSQLContainer;
 
 import java.sql.*;
 import java.sql.Date;
@@ -21,32 +19,33 @@ import java.util.*;
  * @author Dan Howard
  * @since 6/21/12 6:05 AM
  */
-@Category(TestContainerDB.class)
-public final class TestPostgreSQL extends BaseTest {
+@Category(ExternalDB.class)
+public class TestPostgreSQL extends BaseTest {
 
     private static final Log log = Log.getLogger(TestPostgreSQL.class);
 
-    @ClassRule
-    private static final PostgreSQLContainer<?> DB_CONTAINER = new PostgreSQLContainer<>("postgres:9.6.12")
-            .withUsername("pinf")
-            .withPassword("pinf")
-            .withDatabaseName("pinf");
-
     @Override
     protected void setUp() throws Exception {
-        if(!DB_CONTAINER.isRunning()) {
-            DB_CONTAINER.start();
-        }
         connectionType = ConnectionTypes.PostgreSQL;
         super.setUp();
 
-        Class.forName(DB_CONTAINER.getDriverClassName());
+        if (getClass().equals(TestPostgreSQL.class)) {
+            // https://jdbc.postgresql.org/documentation/head/connect.html
 
-        con = DriverManager.getConnection(DB_CONTAINER.getJdbcUrl(), DB_CONTAINER.getUsername(), DB_CONTAINER.getPassword());
+            Properties props = new Properties();
+            props.load(getClass().getResourceAsStream("/postgresql.properties"));
+            String driver = props.getProperty("database.driver");
+            String url = props.getProperty("database.url");
+            String username = props.getProperty("database.username");
+            String password = props.getProperty("database.password");
+            Class.forName(driver);
 
-        createTables();
+            con = DriverManager.getConnection(url, props);
 
-        session = new Session(con);
+            createTables();
+
+            session = new Session(con);
+        }
     }
 
     @Override
@@ -123,7 +122,7 @@ public final class TestPostgreSQL extends BaseTest {
             // Once you Create the type you need to drop any relations to it if you want to redefine it
             executeCommand("CREATE TYPE Regions AS ENUM ('North', 'South', 'East', 'West');", con);
         } catch (SQLException e) {
-            log.warn(e.getMessage(), e);
+            log.info(e.getMessage(), e);
         }
 
         commands.add("CREATE TABLE Customers ( " +

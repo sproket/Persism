@@ -1,16 +1,21 @@
 package net.sf.persism;
 
-import java.lang.reflect.InvocationTargetException;
+import junit.framework.TestCase;
+
+import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
-import java.sql.Statement;
 import java.util.*;
 
-public final class TestMetaData extends BaseTest { // todo remove BaseTest for this one...
+public final class TestMetaData extends TestCase {
+
     private static final Log log = Log.getLogger(TestMetaData.class);
 
-    protected void setUp() throws Exception {
-        connectionType = ConnectionTypes.Other;
+    Connection con;
+    Session session;
+
+    @Override
+    public void setUp() throws Exception {
         super.setUp();
 
         Properties props = new Properties();
@@ -23,65 +28,11 @@ public final class TestMetaData extends BaseTest { // todo remove BaseTest for t
 
         con = DriverManager.getConnection(url);
 
-        createTables();
-
         session = new Session(con);
-
     }
 
-    protected void tearDown() throws Exception {
-        super.tearDown();
-    }
 
-    @Override
-    protected void createTables() throws SQLException {
-        List<String> commands = new ArrayList<String>(12);
-        String sql;
-        if (UtilsForTests.isTableInDatabase("TestDerby", con)) {
-            sql = "DROP TABLE TestDerby";
-            commands.add(sql);
-        }
-        if (UtilsForTests.isTableInDatabase("Test_Derby", con)) {
-            sql = "DROP TABLE Test_Derby";
-            commands.add(sql);
-        }
-        if (UtilsForTests.isTableInDatabase("DB_TEST_DERBY", con)) {
-            sql = "DROP TABLE DB_TEST_DERBY";
-            commands.add(sql);
-        }
-
-        sql = "CREATE TABLE TestDerby ( " +
-                "ID INTEGER NOT NULL GENERATED ALWAYS AS IDENTITY (START WITH 1, INCREMENT BY 1) " +
-                ") ";
-
-        commands.add(sql);
-
-        sql = "CREATE TABLE Test_Derby ( " +
-                "ID INTEGER NOT NULL GENERATED ALWAYS AS IDENTITY (START WITH 1, INCREMENT BY 1) " +
-                ") ";
-
-        commands.add(sql);
-
-        sql = "CREATE TABLE DB_Test_Derby ( " +
-                "ID INTEGER NOT NULL GENERATED ALWAYS AS IDENTITY (START WITH 1, INCREMENT BY 1) " +
-                ") ";
-
-        commands.add(sql);
-
-        executeCommands(commands, con);
-    }
-
-    @Override
-    public void testContactTable() throws SQLException {
-        // probably don't need anything here.
-    }
-
-    @Override
-    public void XtestExecuteOutsideConvert() throws NoChangesDetectedForUpdateException, SQLException, InvocationTargetException, IllegalAccessException {
-        // not needed here
-    }
-
-    public void testGuessing() throws SQLException {
+    public void testGuessing() {
 
         // catch the 2 guess exceptions
         /*
@@ -206,40 +157,5 @@ public final class TestMetaData extends BaseTest { // todo remove BaseTest for t
         }
 
         return parsedQuery.toString();
-    }
-
-    @Override
-    public void testDates() {
-        // comes from BaseTest - we don't need it here
-    }
-
-    @Override
-    public void testStoredProcs() {
-        // comes from BaseTest - we don't need it here
-    }
-
-    @Override
-    public void testRefreshObject() {
-        // comes from BaseTest - we don't need it here
-    }
-
-    @Override
-    public void testQueryWithSpecificColumnsWhereCaseDoesNotMatch() throws SQLException {
-        // comes from BaseTest - we don't need it here
-    }
-
-    @Override
-    public void testQueryResult() {
-        // comes from BaseTest - we don't need it here
-    }
-
-    @Override
-    public void testReadPrimitive() {
-        // comes from BaseTest - we don't need it here
-    }
-
-    @Override
-    public void testAllDates() {
-        // comes from BaseTest - we don't need it here
     }
 }

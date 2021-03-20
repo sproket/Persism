@@ -7,6 +7,7 @@
 package net.sf.persism;
 
 import junit.framework.TestCase;
+import net.sf.persism.categories.ExternalDB;
 import net.sf.persism.categories.TestContainerDB;
 import net.sf.persism.dao.pubs.Author;
 import net.sf.persism.dao.pubs.JobType;
@@ -22,50 +23,34 @@ import java.sql.SQLException;
 import java.util.*;
 
 // Does not share common tests - this is just to do some specific tests on SQL with PUBS DB
-@Category(TestContainerDB.class)
+@Category(ExternalDB.class)
 public class TestPubs extends TestCase {
 
     private static final Log log = Log.getLogger(TestPubs.class);
 
-    @ClassRule
-    private static final MSSQLServerContainer<?> DB_CONTAINER = new MSSQLServerContainer <>("mcr.microsoft.com/mssql/server:2017-latest")
-            .acceptLicense();
-
     Connection con;
     Session session;
 
+    @Override
     protected void setUp() throws Exception {
-        boolean mustCreateTables = false;
-        if(!DB_CONTAINER.isRunning()) {
-            //there are lots of warnings while this container starts, but it works.
-            //it is an open issue: https://github.com/testcontainers/testcontainers-java/issues/3079
-            DB_CONTAINER.start();
-            mustCreateTables = true;
-        }
         super.setUp();
 
-        Class.forName(DB_CONTAINER.getDriverClassName());
+        if (getClass().equals(TestPubs.class)) {
+            Properties props = new Properties();
+            props.load(getClass().getResourceAsStream("/pubs.properties"));
+            String driver = props.getProperty("database.driver");
+            String url = props.getProperty("database.url");
+            String username = props.getProperty("database.username");
+            String password = props.getProperty("database.password");
+            Class.forName(driver);
 
-        con = DriverManager.getConnection(DB_CONTAINER.getJdbcUrl(), DB_CONTAINER.getUsername(), DB_CONTAINER.getPassword());
+            con = DriverManager.getConnection(url, username, password);
 
-        if(mustCreateTables) {
-            createTables();
-        } else{
-            BaseTest.executeCommand("USE PUBS", con);
+            session = new Session(con);
         }
-
-        session = new Session(con);
     }
 
-    private void createTables() throws SQLException {
-        //from https://github.com/Microsoft/sql-server-samples/tree/master/samples/databases/northwind-pubs
-        String sql = UtilsForTests.readFromResource("/sql/PUBS.sql");
-        List<String> commands = Arrays.asList(sql.split("(?i)GO\\r\\n", -1));
-        BaseTest.executeCommands(commands, con);
-
-        BaseTest.executeCommand("USE PUBS", con);
-    }
-
+    @Override
     protected void tearDown() throws Exception {
         con.close();
         super.tearDown();

@@ -1,9 +1,12 @@
 package net.sf.persism;
 
+import net.sf.persism.categories.ExternalDB;
+import net.sf.persism.categories.LocalDB;
 import net.sf.persism.dao.Contact;
 import net.sf.persism.dao.Customer;
 import net.sf.persism.dao.DAOFactory;
 import net.sf.persism.dao.Order;
+import org.junit.experimental.categories.Category;
 
 import java.sql.*;
 import java.sql.Date;
@@ -19,6 +22,7 @@ import java.util.*;
  * @author danhoward
  * @since 12-05-22 8:26 AM
  */
+@Category(LocalDB.class)
 public final class TestDerby extends BaseTest {
 
     private static final Log log = Log.getLogger(TestDerby.class);

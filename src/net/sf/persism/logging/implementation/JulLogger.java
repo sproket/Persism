@@ -28,6 +28,11 @@ public final class JulLogger extends AbstractLogger {
 	}
 
 	@Override
+	public void info(Object message, Throwable t) {
+		Logger.getLogger(logName).log(Level.INFO, String.format("%s", message), t);
+	}
+
+	@Override
 	public void warn(Object message) {
 		Logger.getLogger(logName).warning(String.format("%s", message));
 	}

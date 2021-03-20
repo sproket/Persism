@@ -76,6 +76,10 @@ final class Log {
         logger.info(message);
     }
 
+    public void info(Object message, Throwable t) {
+        logger.info(message, t);
+    }
+
     public void warn(Object message) {
         logger.warn(message);
     }

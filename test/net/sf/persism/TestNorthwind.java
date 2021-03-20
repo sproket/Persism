@@ -1,6 +1,8 @@
 package net.sf.persism;
 
 import junit.framework.TestCase;
+import net.sf.persism.categories.ExternalDB;
+import net.sf.persism.categories.LocalDB;
 import net.sf.persism.categories.TestContainerDB;
 import net.sf.persism.dao.northwind.*;
 import org.junit.ClassRule;
@@ -14,6 +16,7 @@ import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Properties;
 
 
 /**
@@ -22,14 +25,10 @@ import java.util.List;
  * @author Dan Howard
  * @since 5/3/12 8:46 PM
  */
-@org.junit.experimental.categories.Category(TestContainerDB.class)
+@org.junit.experimental.categories.Category(ExternalDB.class)
 public class TestNorthwind extends TestCase {
 
     private static final Log log = Log.getLogger(TestNorthwind.class);
-
-    @ClassRule
-    private static final MSSQLServerContainer<?> DB_CONTAINER = new MSSQLServerContainer <>("mcr.microsoft.com/mssql/server:2017-latest")
-            .acceptLicense();
 
     Connection con;
 
@@ -37,47 +36,23 @@ public class TestNorthwind extends TestCase {
 
     protected void setUp() throws Exception {
         super.setUp();
-        boolean mustCreateTables = false;
-        if(!DB_CONTAINER.isRunning()) {
-            //there are lots of warnings while this container starts, but it works.
-            //it is an open issue: https://github.com/testcontainers/testcontainers-java/issues/3079
-            DB_CONTAINER.start();
-            mustCreateTables = true;
-        }
-        super.setUp();
+        //log.error(log.getLogName() + " " + log.getLogMode());
 
-        Class.forName(DB_CONTAINER.getDriverClassName());
+        Properties props = new Properties();
+        props.load(getClass().getResourceAsStream("/northwind.properties"));
+        String driver = props.getProperty("database.driver");
+        String url = props.getProperty("database.url");
+        String username = props.getProperty("database.username");
+        String password = props.getProperty("database.password");
+        Class.forName(driver);
 
-        con = DriverManager.getConnection(DB_CONTAINER.getJdbcUrl(), DB_CONTAINER.getUsername(), DB_CONTAINER.getPassword());
-
-        if(mustCreateTables) {
-            createTables();
-        }else{
-            BaseTest.executeCommand("USE Northwind", con);
-        }
+        con = DriverManager.getConnection(url, username, password);
 
         session = new Session(con);
     }
 
-    private void createTables() throws SQLException {
-        //from https://github.com/Microsoft/sql-server-samples/tree/master/samples/databases/northwind-pubs
-        String sql = UtilsForTests.readFromResource("/sql/NORTHWIND.sql");
-        List<String> commands = Arrays.asList(sql.split("(?i)GO\\r\\n", -1));
-        BaseTest.executeCommands(commands, con);
 
-        BaseTest.executeCommand("USE Northwind", con);
-        BaseTest.executeCommand("ALTER TABLE Customers ADD DateOfLastResort datetime NULL", con);
-        BaseTest.executeCommand("ALTER TABLE Customers ADD DateOfDoom datetime NULL", con);
-        BaseTest.executeCommand("ALTER TABLE Customers ADD DateOfOffset datetime NULL", con);
-        BaseTest.executeCommand("ALTER TABLE Customers ADD TestLocalDateTime datetime NULL", con);
-        BaseTest.executeCommand("ALTER TABLE Customers ADD NowMF datetime NULL", con);
-        BaseTest.executeCommand("ALTER TABLE Customers ADD wtfDate datetime NULL", con);
-        BaseTest.executeCommand("ALTER TABLE Employees ADD status char (1) NULL", con);
-        BaseTest.executeCommand("ALTER TABLE Employees ADD WhatTimeIsIt time NULL", con);
-        BaseTest.executeCommand("ALTER TABLE Categories ADD data xml NULL", con);
-
-    }
-
+    @Override
     protected void tearDown() throws Exception {
         con.close();
         super.tearDown();

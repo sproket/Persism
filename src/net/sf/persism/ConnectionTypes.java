@@ -2,15 +2,26 @@ package net.sf.persism;
 
 enum ConnectionTypes {
     Oracle("%", "\"", "\""),
+
     MSSQL(null, "[", "]"),
+
+    @Deprecated
     JTDS(null, "[", "]"),
+
     Derby(null, "\"", "\""),
+
     H2(null, "\"", "\""),
+
     MySQL(null, "`", "`"),
+
     PostgreSQL(null, "\"", "\""),
+
     SQLite(null, "[", "]"),
+
     Firebird(null, "\"", "\""),
+
     HSQLDB(null, "", ""),
+
     Other(null, "", "")
     ;
 

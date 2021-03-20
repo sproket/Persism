@@ -188,7 +188,7 @@ public abstract class BaseTest extends TestCase {
         try {
             session.query(Customer.class, "SELECT Country, PHONE from Customers");
         } catch (Exception e) {
-            log.error(e.getMessage(), e);
+            log.info(e.getMessage());
             assertTrue("message should contain 'Customer was not properly initialized'", e.getMessage().contains("Customer was not properly initialized"));
             failOnMissingProperties = true;
         }
@@ -578,9 +578,10 @@ public abstract class BaseTest extends TestCase {
         assertEquals("time s/b '10:23:43'", localTime, testLocalTypes2.getTimeOnly().format(DateTimeFormatter.ISO_TIME));
 
         if (connectionType == ConnectionTypes.MySQL) {
-            // MySQL rounds off milliseconds - 1998-02-17T10:23:43.567 comes out like 1998-02-17T10:23:44.0
+            // MySQL rounds off milliseconds - 1998-02-17T10:23:43.567 comes out like 1998-02-17T10:23:43
             String s = ldt.format(DateTimeFormatter.ISO_DATE_TIME);
-            assertEquals("datetime s/b '1998-02-17 10:23:44'", s.substring(0, s.indexOf('.') - 1) + "4",
+            assertEquals("datetime s/b '1998-02-17 10:23:43'",
+                    s.substring(0, s.indexOf('.')),
                     testLocalTypes2.getDateAndTime().format(DateTimeFormatter.ISO_DATE_TIME));
         } else {
             assertEquals("datetime s/b '1998-02-17 10:23:43.567'", ldt.format(DateTimeFormatter.ISO_DATE_TIME), testLocalTypes2.getDateAndTime().format(DateTimeFormatter.ISO_DATE_TIME));
@@ -593,7 +594,7 @@ public abstract class BaseTest extends TestCase {
         testLocalTypes3.setDescription("time later in the day to test awfulness of SQLite");
         testLocalTypes3.setTimeOnly(lt2);
 
-       assertEquals("s/b 1?", 1, session.insert(testLocalTypes3));
+        assertEquals("s/b 1?", 1, session.insert(testLocalTypes3));
 
         List<DateTestLocalTypes> list = session.query(DateTestLocalTypes.class, "select * FROM DateTestLocalTypes");
         log.info(list);

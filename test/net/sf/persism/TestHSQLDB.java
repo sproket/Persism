@@ -1,11 +1,15 @@
 package net.sf.persism;
 
+import net.sf.persism.categories.LocalDB;
+import org.junit.experimental.categories.Category;
+
 import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 
+@Category(LocalDB.class)
 public final class TestHSQLDB extends BaseTest {
 
     private static final Log log = Log.getLogger(TestHSQLDB.class);

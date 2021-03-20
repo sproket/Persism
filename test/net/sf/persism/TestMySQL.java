@@ -1,5 +1,6 @@
 package net.sf.persism;
 
+import net.sf.persism.categories.ExternalDB;
 import net.sf.persism.categories.TestContainerDB;
 import net.sf.persism.dao.Customer;
 import net.sf.persism.dao.Regions;
@@ -11,39 +12,37 @@ import org.testcontainers.containers.MySQLContainer;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Properties;
 
 /**
  * @author Dan Howard
  * @since 6/4/12 9:52 PM
  */
-@Category(TestContainerDB.class)
-public final class TestMySQL extends BaseTest {
+@Category(ExternalDB.class)
+public class TestMySQL extends BaseTest {
 
     private static final Log log = Log.getLogger(TestMySQL.class);
 
-    @ClassRule
-    private static final MySQLContainer<?> DB_CONTAINER = new MySQLContainer<>("mysql:5.7.22")
-            .withUsername("pinf")
-            .withPassword("pinf")
-            .withDatabaseName("pinf");
-
     @Override
     protected void setUp() throws Exception {
-        if(!DB_CONTAINER.isRunning()) {
-            DB_CONTAINER.start();
-        }
         connectionType = ConnectionTypes.MySQL;
         super.setUp();
 
-        Class.forName(DB_CONTAINER.getDriverClassName());
+        Properties props = new Properties();
+        props.load(getClass().getResourceAsStream("/mysql.properties"));
 
-        con = DriverManager.getConnection(DB_CONTAINER.getJdbcUrl(), DB_CONTAINER.getUsername(), DB_CONTAINER.getPassword());
+        String driver = props.getProperty("database.driver");
+        String url = props.getProperty("database.url");
+        String username = props.getProperty("database.username");
+        String password = props.getProperty("database.password");
 
+        Class.forName(driver);
+
+        con = DriverManager.getConnection(url, username, password);
 
         createTables();
 
         session = new Session(con);
-
     }
 
     @Override
@@ -59,8 +58,6 @@ public final class TestMySQL extends BaseTest {
 
     @Override
     protected void createTables() throws SQLException {
-
-        this.connectionType = connectionType;
 
         List<String> commands = new ArrayList<String>(12);
 

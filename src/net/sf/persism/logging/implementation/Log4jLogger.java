@@ -4,6 +4,8 @@ import net.sf.persism.logging.AbstractLogger;
 import net.sf.persism.logging.LogMode;
 import org.apache.log4j.Logger;
 
+import java.util.logging.Level;
+
 public final class Log4jLogger extends AbstractLogger {
 
 	public Log4jLogger(String logName) {
@@ -23,6 +25,11 @@ public final class Log4jLogger extends AbstractLogger {
 	@Override
 	public void info(Object message) {
 		Logger.getLogger(logName).info(message);
+	}
+
+	@Override
+	public void info(Object message, Throwable t) {
+		Logger.getLogger(logName).info(message, t);
 	}
 
 	@Override

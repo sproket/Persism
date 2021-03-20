@@ -7,7 +7,9 @@ package net.sf.persism;
  * Time: 11:08 AM
  */
 
+import net.sf.persism.categories.LocalDB;
 import net.sf.persism.dao.*;
+import org.junit.experimental.categories.Category;
 
 import java.sql.*;
 import java.sql.Date;
@@ -16,6 +18,7 @@ import java.util.*;
 
 import static net.sf.persism.UtilsForTests.*;
 
+@Category(LocalDB.class)
 public final class TestSQLite extends BaseTest {
 
     // data types
@@ -197,7 +200,6 @@ public final class TestSQLite extends BaseTest {
                 " DateAndTime DATETIME) ";
 
         executeCommand(sql, con);
-
 
 
     }
@@ -432,7 +434,7 @@ public final class TestSQLite extends BaseTest {
             customer.setCustomerId("123");
             customer.setContactName("FRED");
             //customer.setDateOfLastOrder(new Date(System.currentTimeMillis() - 1000000l));
-            customer.setDateOfLastOrder(LocalDateTime.ofEpochSecond(System.currentTimeMillis() - 1000000l,0, ZoneOffset.UTC));
+            customer.setDateOfLastOrder(LocalDateTime.ofEpochSecond(System.currentTimeMillis() - 1000000l, 0, ZoneOffset.UTC));
             session.insert(customer);
 
 

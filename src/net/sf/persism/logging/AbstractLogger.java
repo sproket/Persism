@@ -15,6 +15,7 @@ public abstract class AbstractLogger {
 	public abstract void debug(Object message, Object... params);
 
 	public abstract void info(Object message);
+	public abstract void info(Object message, Throwable t);
 
 	public abstract void warn(Object message);
 

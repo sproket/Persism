@@ -137,6 +137,25 @@
                 </plugins>
             </build>
         </profile>
+
+        <profile>
+            <id>exclude-test-containers-db</id>
+            <activation>
+                <activeByDefault>false</activeByDefault>
+            </activation>
+            <build>
+                <plugins>
+                    <plugin>
+                        <artifactId>maven-surefire-plugin</artifactId>
+                        <version>3.0.0-M5</version>
+                        <configuration>
+                            <excludedGroups>net.sf.persism.categories.TestContainerDB</excludedGroups>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+
         <profile>
             <id>release</id>
             <build>
@@ -223,7 +242,7 @@
 
         <dependency>
             <groupId>org.firebirdsql.jdbc</groupId>
-            <artifactId>jaybird-jdk18</artifactId>
+            <artifactId>jaybird</artifactId>
             <version>4.0.2.java8</version>
             <scope>test</scope>
         </dependency>
@@ -292,8 +311,8 @@
 
         <dependency>
             <groupId>com.oracle.database.jdbc</groupId>
-            <artifactId>ojdbc10</artifactId>
-            <version>19.10.0.0</version>
+            <artifactId>ojdbc8</artifactId>
+            <version>18.3.0.0</version>
         </dependency>
 
 

@@ -100,7 +100,7 @@ public class UtilsForTests {
             while (rs.next()) {
                 String proc = rs.getString("PROCEDURE_NAME");
                 // looks like spCustomerOrders;1 == where ;1 indicate # params
-                if (proc != null && proc.toLowerCase().startsWith(procName)) {
+                if (proc != null && proc.toLowerCase().startsWith(procName.toLowerCase())) {
                     result = true;
                     break;
                 }

@@ -38,18 +38,18 @@ Persism is under 60k. Yeah, fit it on a floppy if you want. Persism has Zero dep
 
 To run tests only basic tests: in memory databases (H2, HSSQL, Derby) + sqlite (faster)
 
-    mvn clean verify
+    mvn clean test
 
 To run basic tests + testContainers based tests (postgresql, mysql, mariadb, firebird). Need docker installed.
 
-    mvn clean verify -P include-test-containers-db
+    mvn clean test -P include-test-containers-db
 
 To run tests for every supported database. Needs Oracle up and running
 
-    mvn clean verify -P all-db
+    mvn clean test -P all-db
 
 To generate surefire reports with every database but Oracle  (in target/site/surefire-report.html)
 
-    mvn clean verify surefire-report:report -P include-test-containers-db
+    mvn clean test surefire-report:report -P include-test-containers-db
 
 Thanks!

@@ -2,7 +2,9 @@ package net.sf.persism.logging.implementation;
 
 import net.sf.persism.logging.AbstractLogger;
 import net.sf.persism.logging.LogMode;
+import org.apache.log4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.slf4j.Marker;
 
 public final class Slf4jLogger extends AbstractLogger {
 
@@ -23,6 +25,11 @@ public final class Slf4jLogger extends AbstractLogger {
 	@Override
 	public void info(Object message) {
 		LoggerFactory.getLogger(logName).info(String.format("%s", message));
+	}
+
+	@Override
+	public void info(Object message, Throwable t) {
+		LoggerFactory.getLogger(logName).info(String.format("%s", message), t);
 	}
 
 	@Override
