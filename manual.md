@@ -362,8 +362,9 @@ customer.setOrders(orders);
 
 | Java Type(s) | SQL Type(s)       | Notes |
 | :-------------    | :----------:                  | :----------: |
-|  boolean          | BIT, INT, SHORT, BYTE, NUMBER, CHAR(1)| Oracle doesn't have a bit so it reads number types as BigDecimal or Char(1) - 1 or '1' for true |
-|  short, int, long     | INT, BIGINT, LONG, AUTOINCREMENT  | Any whole number maps fine but you may see downcast warnings |
+|  boolean | BIT, INT, SHORT, BYTE, NUMBER, CHAR(1)| Oracle doesn't have a bit so it reads number types as BigDecimal or Char(1) - 1 or '1' for true |
+|  byte  | TINYINT| **NOT** recommended. MSSQL sees TINYINT as 0-255 and doesn't fit in Java's signed byte - Use Short instead.|
+|  short, int, long     | SMALLINT, TINYINT, INT, BIGINT, LONG, AUTOINCREMENT  | Any whole number maps fine but you may see downcast warnings |
 |  float, double, BigDecimal    | NUMBER, REAL, FLOAT, DOUBLE  | Any floating point type maps fine  but you may see downcast warnings |
 |  byte[]    | BLOB  | Binary large objects will be read as a byte array. **Do not** use Blob as a Java type in your POJO. Max size is 2147483647|
 |  String  | CHAR, VARCHAR, NVARCHAR, TEXT, CLOB  | Large or small char types map to String.  **Do not** use Clob a Java type in your POJO. Max size is 2147483647|

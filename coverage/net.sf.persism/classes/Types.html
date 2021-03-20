@@ -246,23 +246,25 @@
 <b class="fc"><i>172</i>&nbsp;        return result;</b>
 <i>173</i>&nbsp;    }
 <i>174</i>&nbsp;
-<i>175</i>&nbsp;    public Class getJavaType() {
+<i>175</i>&nbsp;    public Class&lt;?&gt; getJavaType() {
 <b class="fc"><i>176</i>&nbsp;        return type;</b>
 <i>177</i>&nbsp;    }
 <i>178</i>&nbsp;
-<i>179</i>&nbsp;    public boolean isCountable() {
-<b class="fc"><i>180</i>&nbsp;        return this == IntegerType || this == integerType || this == LongType || this == longType || this == byteType || this == ByteType</b>
-<i>181</i>&nbsp;                || this == ShortType || this == shortType || this == DoubleType || this == doubleType || this == BigDecimalType;
-<i>182</i>&nbsp;    }
-<i>183</i>&nbsp;}
-<i>184</i>&nbsp;
-<i>185</i>&nbsp;
+<i>179</i>&nbsp;    public boolean isEligibleForAutoinc() {
+<i>180</i>&nbsp;        // Oracle returns BigDecimalType for INT
+<i>181</i>&nbsp;        // PUBS has SmallInt -&gt; short
+<b class="fc"><i>182</i>&nbsp;        return this == IntegerType || this == integerType || this == LongType || this == longType</b>
+<i>183</i>&nbsp;                || this == ShortType || this == shortType || this == BigDecimalType || this == BigIntegerType;
+<i>184</i>&nbsp;    }
+<i>185</i>&nbsp;}
+<i>186</i>&nbsp;
+<i>187</i>&nbsp;
 </div>
 </div>
 
 <div class="footer">
     
-    <div style="float:right;">generated on 2021-03-02 04:00</div>
+    <div style="float:right;">generated on 2021-03-20 14:31</div>
 </div>
 </body>
 </html>
