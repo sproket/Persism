@@ -41,6 +41,7 @@ final class Log {
             logger = new Slf4jLogger(logName);
         } catch (ClassNotFoundException e) {
             try {
+                // todo org.apache.logging.log4j
                 Class.forName("org.apache.log4j.Logger");
                 logger = new Log4jLogger(logName);
             } catch (ClassNotFoundException e1) {

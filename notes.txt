@@ -25,3 +25,6 @@ Blob support only up to int max size (2,147,483,647)
 
 Oracle not on maven...
 https://stackoverflow.com/questions/9898499/oracle-jdbc-ojdbc6-jar-as-a-maven-dependency
+
+
+mvn install:install-file -Dfile=persism-1.0.3b.jar -DgroupId=io.github.sproket -DartifactId=persism -Dversion=1.0.3b -Dpackaging=jar

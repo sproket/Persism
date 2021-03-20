@@ -76,7 +76,7 @@ Caused by: java.lang.IllegalArgumentException: argument type mismatch
 https://www.cis.upenn.edu/~bcpierce/courses/629/jdkdocs/guide/jdbc/getstart/mapping.doc.html
 
 
-https://www.testcontainers.org/ ?
+IN PROGRESS https://www.testcontainers.org/
 
 Documentation: Remove "Persism" from Logo itself. Use separate Text instead.
 
@@ -91,7 +91,7 @@ add the query string as a key to the Column/Property Info objects? Duplicating b
 
 DONE SQL enum to Java enum? PostgreSQL, MySQL and H2. TODO Possible with MSSQL with CHECK constraints
 
-TODO @NotTable classes should allow getters only and we can set values through fields instead.
+TODO @NotTable classes should allow getters only and we can set values through fields instead. (even normal table should allow this for read only columns)
 TODO Add support for Records
 
 MAVEN:
@@ -100,11 +100,11 @@ http://tutorials.jenkov.com/maven/publish-to-central-maven-repository.html
 
 TODO add dual compile for 9+ with module-info.java - somewhere there's a tutorial for that
 
-TODO test for con.setAutoCommit(false) and commit at appropriate times. how does this affect connection pools
+DONE test for con.setAutoCommit(false) and commit at appropriate times. how does this affect connection pools
 
-TODO see https://www.reddit.com/r/java/comments/lvya1x/persism_101_released_a_zero_ceremony_orm_for_java/gpghfn4/
+DONE see https://www.reddit.com/r/java/comments/lvya1x/persism_101_released_a_zero_ceremony_orm_for_java/gpghfn4/
 
-TODO money types add map to int or long in cents (future javax.money)
+TODO money types add map to int or long in cents (future javax.money) (USELESS)
 
 DONE Merges Logger changes and make the classes package private - check the size of the jar after
 
@@ -119,6 +119,10 @@ TODO See about deprecating Column autoIncrement - I think all supported drivers 
 
 TODO Sample Oracle DB https://docs.oracle.com/cd/E11882_01/doc.112/e26211/loe.htm
 
-TODO Session autocommit false? https://www.reddit.com/r/java/comments/lvya1x/persism_101_released_a_zero_ceremony_orm_for_java/gpghfn4/
+IN PROGRESS Session autocommit false? https://www.reddit.com/r/java/comments/lvya1x/persism_101_released_a_zero_ceremony_orm_for_java/gpghfn4/
 
+DONE POM still gets log4j logback and slf4j - FFS
 
+// todo org.apache.logging.log4j s/b log4j2 - no support for log4j1 but test BRIDGE 1.x
+// If existing components use Log4j 1.x and you want to have this logging routed to Log4j 2, then remove any log4j 1.x dependencies and add the following.
+// http://logging.apache.org/log4j/2.x/maven-artifacts.html
