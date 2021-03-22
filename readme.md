@@ -1,4 +1,4 @@
-![](logo1.png) [Release notes 1.0.1](release-notes.md) 
+![](logo1.png) [Release notes](release-notes.md) 
 
 # Welcome
 
