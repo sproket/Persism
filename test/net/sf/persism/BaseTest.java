@@ -406,6 +406,8 @@ public abstract class BaseTest extends TestCase {
         log.info("Local Date: " + LocalDateTime.now() + " INSTANT: " + Instant.now());
 
         session.insert(contact);
+        contact.setNotes(null);
+        session.update(contact);
 
         Contact contact2 = new Contact();
         contact2.setIdentity(identity);
@@ -476,6 +478,20 @@ public abstract class BaseTest extends TestCase {
         contactForTest.setIdentity(randomUUID);
 
         assertFalse("Should not be found", session.fetch(contactForTest));
+
+        // null checks for unset properties.
+        contact = new Contact();
+        UUID rand = UUID.randomUUID();
+        contact.setIdentity(rand);
+        contact.setPartnerId(partnerId);
+        contact.setType("X");
+        contact.setFirstname("not null");
+        contact.setLastname("not null");
+        contact.setCompany("Y");
+        contact.setContactName("X");
+
+        session.insert(contact);
+        session.fetch(contact);
 
     }
 

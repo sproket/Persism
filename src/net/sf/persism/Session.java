@@ -70,7 +70,7 @@ public final class Session implements AutoCloseable {
      * @throws PersismException in case of SQLException where the transaction is rolled back.
      * to make public in 1.1.0
      */
-    void withTransaction(Runnable function) {
+    public void withTransaction(Runnable function) {
         try {
             connection.setAutoCommit(false);
             function.run();
@@ -396,7 +396,7 @@ public final class Session implements AutoCloseable {
 
         try {
 
-            exec(result, sql, parameters);
+            exec(result, sql, parameters); // todo we don't check parameter types here? Nope - we don't know anything at this point.
 
             while (result.rs.next()) {
                 if (isPOJO) {
@@ -660,7 +660,7 @@ public final class Session implements AutoCloseable {
             sqlColumnType = java.sql.Types.CHAR;
         }
 
-        Object value;
+        Object value = null;
 
         Types columnType = Types.convert(sqlColumnType); // note this could be null if we can't match a type
         if (columnType != null) {
@@ -683,9 +683,7 @@ public final class Session implements AutoCloseable {
 
                 case ClobType:
                     Clob clob = rs.getClob(column);
-                    if(clob == null){
-                        value = null; //jtds has this problem
-                    }else {
+                    if (clob != null) {
                         try (InputStream in = clob.getAsciiStream()) {
                             StringWriter writer = new StringWriter();
 
@@ -702,12 +700,14 @@ public final class Session implements AutoCloseable {
                 case BlobType:
                     byte[] buffer = new byte[1024];
                     Blob blob = rs.getBlob(column);
-                    try (InputStream in = blob.getBinaryStream()) {
-                        ByteArrayOutputStream bos = new ByteArrayOutputStream((int) blob.length());
-                        for (int len; (len = in.read(buffer)) != -1; ) {
-                            bos.write(buffer, 0, len);
+                    if (blob != null) {
+                        try (InputStream in = blob.getBinaryStream()) {
+                            ByteArrayOutputStream bos = new ByteArrayOutputStream((int) blob.length());
+                            for (int len; (len = in.read(buffer)) != -1; ) {
+                                bos.write(buffer, 0, len);
+                            }
+                            value = bos.toByteArray();
                         }
-                        value = bos.toByteArray();
                     }
                     break;
 

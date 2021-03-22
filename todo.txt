@@ -98,7 +98,8 @@ MAVEN:
 https://www.youtube.com/watch?v=bxP9IuJbcDQ
 http://tutorials.jenkov.com/maven/publish-to-central-maven-repository.html
 
-TODO add dual compile for 9+ with module-info.java - somewhere there's a tutorial for that
+DONE add dual compile for 9+ with module-info.java - somewhere there's a tutorial for that ADDED Automatic-Module-Name
+
 
 DONE test for con.setAutoCommit(false) and commit at appropriate times. how does this affect connection pools
 

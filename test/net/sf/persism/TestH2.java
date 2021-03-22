@@ -63,6 +63,20 @@ public final class TestH2 extends BaseTest {
     public void testContactTable() throws SQLException {
         super.testContactTable();
         assertTrue(true);
+
+        Contact contact = getContactForTest();
+        String sql = session.getMetaData().getSelectStatement(contact, con);
+
+        // this works
+        Contact other = new Contact();
+        other.setIdentity(contact.getIdentity());
+        session.fetch(other);
+
+        // todo the question here is how to allow a user to use the converter
+        // Fails with some DBs unless you convert yourself.
+        List<Contact> contacts = session.query(Contact.class, sql, Util.asBytes(contact.getIdentity()));
+        log.info(contacts);
+
     }
 
     @Override
@@ -608,6 +622,10 @@ public final class TestH2 extends BaseTest {
         log.info("SAVED SILVER: " + saveGame.getSilver());
         log.info("AFTER FETCH SIZE?" + saveGame.getSomethingBig().length);
         assertEquals("size should be the same ", size, saveGame.getSomethingBig().length);
+
+        saveGame.setSomethingBig(null);
+        session.update(saveGame);
+        session.fetch(saveGame);
     }
 
 

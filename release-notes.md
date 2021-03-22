@@ -4,6 +4,7 @@
 
 * Added support for MSAccess with UCanAccess jdbc driver
 * Added new method withTransaction() to Session - simplifying multiple operations in a single database transaction 
+* Added automatic module name sproket.github.io.persism for 9+ support 
 
 ### 1.0.2
 
