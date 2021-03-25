@@ -8,7 +8,7 @@ Persism is a wood simple, auto discovery, auto configuration, and convention ove
 <dependency>
     <groupId>io.github.sproket</groupId>
     <artifactId>persism</artifactId>
-    <version>1.0.1</version>
+    <version>1.0.2</version>
 </dependency>
 ```
 ## Simple
@@ -53,3 +53,4 @@ To generate surefire reports with every database but Oracle  (in target/site/sur
     mvn clean test surefire-report:report -P include-test-containers-db
 
 Thanks!
+
