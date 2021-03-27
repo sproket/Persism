@@ -19,7 +19,9 @@ public final class Slf4jLogger extends AbstractLogger {
 
     @Override
     public void debug(Object message, Object... params) {
-        LoggerFactory.getLogger(logName).debug(String.format(""+message, params));
+        if (isDebugEnabled()) {
+            LoggerFactory.getLogger(logName).debug(String.format(""+message, params));
+        }
     }
 
     @Override

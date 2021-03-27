@@ -4,6 +4,7 @@ package net.sf.persism;
 import net.sf.persism.logging.AbstractLogger;
 import net.sf.persism.logging.LogMode;
 import net.sf.persism.logging.implementation.JulLogger;
+import net.sf.persism.logging.implementation.Log4j2Logger;
 import net.sf.persism.logging.implementation.Log4jLogger;
 import net.sf.persism.logging.implementation.Slf4jLogger;
 
@@ -41,11 +42,15 @@ final class Log {
             logger = new Slf4jLogger(logName);
         } catch (ClassNotFoundException e) {
             try {
-                // todo org.apache.logging.log4j
                 Class.forName("org.apache.log4j.Logger");
                 logger = new Log4jLogger(logName);
             } catch (ClassNotFoundException e1) {
-                logger = new JulLogger(logName);
+                try {
+                    Class.forName("org.apache.logging.log4j.Logger");
+                    logger = new Log4j2Logger(logName);
+                } catch (ClassNotFoundException classNotFoundException) {
+                    logger = new JulLogger(logName);
+                }
             }
         }
         assert logger != null;

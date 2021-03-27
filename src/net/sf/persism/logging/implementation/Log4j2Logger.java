@@ -2,53 +2,53 @@ package net.sf.persism.logging.implementation;
 
 import net.sf.persism.logging.AbstractLogger;
 import net.sf.persism.logging.LogMode;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 
-public final class Log4jLogger extends AbstractLogger {
+public final class Log4j2Logger extends AbstractLogger {
 
-    public Log4jLogger(String logName) {
-        super(LogMode.LOG4J, logName);
+    public Log4j2Logger(String logName) {
+        super(LogMode.LOG4J2, logName);
     }
 
     @Override
     public boolean isDebugEnabled() {
-        return Logger.getLogger(logName).isDebugEnabled();
+        return LogManager.getLogger(logName).isDebugEnabled();
     }
 
     @Override
     public void debug(Object message, Object... params) {
         if (isDebugEnabled()) {
-            Logger.getLogger(logName).debug(String.format("" + message, params));
+            LogManager.getLogger(logName).debug(String.format("" + message, params));
         }
     }
 
     @Override
     public void info(Object message) {
-        Logger.getLogger(logName).info(message);
+        LogManager.getLogger(logName).info(message);
     }
 
     @Override
     public void info(Object message, Throwable t) {
-        Logger.getLogger(logName).info(message, t);
+        LogManager.getLogger(logName).info(message, t);
     }
 
     @Override
     public void warn(Object message) {
-        Logger.getLogger(logName).warn(message);
+        LogManager.getLogger(logName).warn(message);
     }
 
     @Override
     public void warn(Object message, Throwable t) {
-        Logger.getLogger(logName).warn(message, t);
+        LogManager.getLogger(logName).warn(message, t);
     }
 
     @Override
     public void error(Object message) {
-        Logger.getLogger(logName).error(message);
+        LogManager.getLogger(logName).error(message);
     }
 
     @Override
     public void error(Object message, Throwable t) {
-        Logger.getLogger(logName).error(message, t);
+        LogManager.getLogger(logName).error(message, t);
     }
 }

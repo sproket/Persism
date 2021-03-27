@@ -4,11 +4,12 @@
 
 * Added support for MSAccess with UCanAccess jdbc driver
 * Added new method withTransaction() to Session - simplifying multiple operations in a single database transaction 
-* Added automatic module name sproket.github.io.persism for 9+ support 
+* Added automatic module name sproket.github.io.persism for 9+ support
+* Added support for Log4j 2
 
 ### Breaking changes
 
-Persism now sees properties with getters only as possible columns (considered read-only columns). You will need to use the @NotColumn annotation to avoid the "<table/query> was not properly initialized." error.
+TODO FIX API - Persism now sees properties with getters only as possible columns (considered read-only columns). You will need to use the @NotColumn annotation to avoid the "<table/query> was not properly initialized." error.
 
 ### 1.0.2
 

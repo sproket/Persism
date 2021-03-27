@@ -73,6 +73,17 @@ public class TestPubs extends TestCase {
                 author.setContract(true);
 
                 session.insert(author);
+            } else {
+                author.setFirstName("Dan");
+                author.setLastName("Howard");
+                author.setAddress("123 Sesame Street");
+                author.setCity("MTL");
+                author.setState("OH");
+                author.setPostalCode("45143");
+                author.setContract(true);
+
+                session.update(author);
+                session.fetch(author);
             }
 
 

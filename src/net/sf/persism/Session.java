@@ -256,9 +256,7 @@ public final class Session implements AutoCloseable {
             st.execute();
             int ret = st.getUpdateCount();
 
-            if (log.isDebugEnabled()) {
-                log.debug("insert ret: " + ret);
-            }
+            log.debug("insert return count after insert: %s", ret);
 
             if (generatedKeys.size() > 0) {
                 rs = st.getGeneratedKeys();
@@ -268,9 +266,7 @@ public final class Session implements AutoCloseable {
                         Method setter = properties.get(column).setter;
                         Object value = getTypedValueReturnedFromGeneratedKeys(setter.getParameterTypes()[0], rs);
 
-                        if (log.isDebugEnabled()) {
-                            log.debug(column + " generated " + value);
-                        }
+                        log.debug("insert %s generated %s", column, value);
                         setter.invoke(object, value);
                     }
                 }
@@ -346,9 +342,8 @@ public final class Session implements AutoCloseable {
     // For unit tests only for now.
     boolean execute(String sql, Object... parameters) {
 
-        if (log.isDebugEnabled()) {
-            log.debug("execute: " + sql + " params: " + Arrays.asList(parameters));
-        }
+        log.debug("execute: %s params: %s", sql, Arrays.asList(parameters));
+
         Statement st = null;
         try {
 
@@ -456,9 +451,7 @@ public final class Session implements AutoCloseable {
             assert params.size() == columnInfos.size();
 
             String sql = metaData.getSelectStatement(object, connection);
-            if (log.isDebugEnabled()) {
-                log.debug("FETCH " + sql + " PARAMS: " + params);
-            }
+            log.debug("FETCH %s PARAMS: %s", sql, params);
             for (int j = 0; j < params.size(); j++) {
                 if (params.get(j) != null) {
                     params.set(j, convert(params.get(j), columnInfos.get(j).columnType.getJavaType(), columnInfos.get(j).columnName));
