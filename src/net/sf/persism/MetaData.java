@@ -692,7 +692,7 @@ final class MetaData {
     Map<String, PropertyInfo> getChangedProperties(Persistable persistable, Connection connection) throws PersismException {
 
         try {
-            Persistable original = (Persistable) persistable.getOriginalValue();
+            Persistable original = (Persistable) persistable.readOriginalValue();
 
             Map<String, PropertyInfo> columns = getTableColumnsPropertyInfo(persistable.getClass(), connection);
 

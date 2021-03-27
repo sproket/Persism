@@ -8,17 +8,13 @@ package net.sf.persism;
  */
 
 import net.sf.persism.categories.ExternalDB;
-import net.sf.persism.categories.TestContainerDB;
 import net.sf.persism.dao.*;
-import org.junit.ClassRule;
 import org.junit.experimental.categories.Category;
-import org.testcontainers.containers.MSSQLServerContainer;
 
 import java.math.BigDecimal;
 import java.sql.*;
 import java.sql.Date;
 import java.time.LocalDate;
-import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 
@@ -838,6 +834,8 @@ public class TestMSSQL extends BaseTest {
         session.insert(exam);
 
         assertTrue("ud > 0", exam.getExamId() > 0);
+        assertEquals("original value = 10", 10, exam.getOriginalValue());
+
         Exam exam1 = new Exam();
         exam1.setExamId(exam.getExamId());;
         session.fetch(exam1);

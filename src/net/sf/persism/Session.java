@@ -67,13 +67,26 @@ public final class Session implements AutoCloseable {
     /**
      * Function block of database operations to group together in one transaction.
      * This method will set autocommit to false then execute the function, commit and set autocommit back to true.
+     * <pre>{@code
+     * session.withTransaction(() -> {
+     *     Contact contact = getContactFromSomewhere();
      *
+     *     contact.setIdentity(randomUUID);
+     *     session.insert(contact);
+     *
+     *     contact.setContactName("Wilma Flintstone");
+     *
+     *     session.update(contact);
+     *     session.fetch(contact);
+     * });
+     * }</pre>
+     * @param transactionBlock Block of operations expected to run as a single transaction.
      * @throws PersismException in case of SQLException where the transaction is rolled back.
      */
-    public void withTransaction(Runnable function) {
+    public void withTransaction(Runnable transactionBlock) {
         try {
             connection.setAutoCommit(false);
-            function.run();
+            transactionBlock.run();
             connection.commit();
         } catch (SQLException e) {
             Util.rollback(connection);
@@ -210,6 +223,9 @@ public final class Session implements AutoCloseable {
             for (ColumnInfo columnInfo : columns.values()) {
 
                 PropertyInfo propertyInfo = properties.get(columnInfo.columnName);
+                if (propertyInfo.getter == null) {
+                    throw new PersismException(String.format("Class %s has no getter for property %s", object.getClass(), propertyInfo.propertyName));
+                }
                 if (!columnInfo.autoIncrement) {
 
                     if (columnInfo.hasDefault) {

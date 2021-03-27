@@ -53,7 +53,8 @@ public final class Contact implements Persistable<Contact> {
     private BigInteger bigInt;
 
     // for persistable
-    private Contact originalValue;
+    @NotColumn
+    private Contact originalContactObject;
 
     public UUID getIdentity() {
         return identity;
@@ -379,22 +380,16 @@ public final class Contact implements Persistable<Contact> {
 
     @Override
     public void saveReadState() throws PersismException {
-        originalValue = clone();
-    }
-
-    @NotColumn
-    @Override
-    public Contact getOriginalValue() {
-        return originalValue;
-    }
-
-    @Override
-    public Contact clone() {
         try {
-            return (Contact) super.clone();
+            originalContactObject = (Contact) clone();
         } catch (CloneNotSupportedException e) {
             throw new PersismException(e.getMessage(), e);
         }
+    }
+
+    @Override
+    public Contact readOriginalValue() {
+        return originalContactObject;
     }
 
 }

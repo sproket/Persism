@@ -21,10 +21,10 @@ public interface Persistable<T> extends Cloneable {
     void saveReadState() throws PersismException;
 
     /**
-     * Getter for the data object in it's original state. The state at the time it was read from the database.
+     * Getter (but not a Getter) for the data object in it's original state. The state at the time it was read from the database.
      *
      * @return The data object in it's original state.
      * @see PersistableObject for example implementation
      */
-    T getOriginalValue();
+    T readOriginalValue();
 }

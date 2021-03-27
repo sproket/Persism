@@ -25,7 +25,7 @@ public final class Category {
     private byte[] picture;
     private String data; // xml type in SQL
 
-    @NotColumn // TODO this change is a breaking change in that we 'see' getter only properties as possible Columns now.
+    @NotColumn // Fix for Breaking change in 1.1.0
     private BufferedImage image = null;
 
     public int getCategoryId() {
@@ -96,6 +96,6 @@ public final class Category {
                 ", categoryName='" + categoryName + '\'' +
                 ", description='" + description + '\'' +
                 ", picture=" + picture +
-                "}";
+                "} ";
     }
 }

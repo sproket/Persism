@@ -1,9 +1,11 @@
 package net.sf.persism.dao;
 
+import net.sf.persism.PersistableObject;
+
 import java.time.LocalDate;
 import java.util.Date;
 
-public final class Exam {
+public final class Exam extends PersistableObject<Exam> {
     private int examId;
     private String accessionNo;
     private int patientNo;
@@ -13,7 +15,9 @@ public final class Exam {
     private Date examDate;
     private int examCodeNo;
     private int roomNo;
-    private int originalValue;
+
+    // Has
+    private Object originalValue;
 
     public int getExamId() {
         return examId;
@@ -87,11 +91,11 @@ public final class Exam {
         this.roomNo = roomNo;
     }
 
-    public int getOriginalValue() {
+    public Object getOriginalValue() {
         return originalValue;
     }
 
-    public void setOriginalValue(int originalValue) {
+    public void setOriginalValue(Object originalValue) {
         this.originalValue = originalValue;
     }
 

@@ -11,21 +11,21 @@ import net.sf.persism.annotations.NotColumn;
  */
 public abstract class PersistableObject<T> implements Persistable<T> {
 
-    private T originalValue = null;
+    @NotColumn
+    private T persismOriginalValue = null;
 
     @Override
     public final void saveReadState() throws PersismException {
-        originalValue = clone();
+        persismOriginalValue = clone();
     }
 
     @Override
-    @NotColumn
-    public final T getOriginalValue() {
-        return originalValue;
+    public final T readOriginalValue() {
+        return persismOriginalValue;
     }
 
     /**
-     * Used for getting originalValue
+     * Used by saveReadState for persismOriginalValue
      *
      * @return Clone of T
      */

@@ -9,7 +9,9 @@
 
 ### Breaking changes
 
-TODO FIX API - Persism now sees properties with getters only as possible columns (considered read-only columns). You will need to use the @NotColumn annotation to avoid the "<table/query> was not properly initialized." error.
+* Property discovery now sees properties with getters only as possible columns (considered read-only columns). You will need to use the @NotColumn annotation to avoid the "<table/query> was not properly initialized." Runtime exception. (this was done for future support for Records)
+* Persistable interface was changed. Renamed getOriginalValue method to readOriginalValue to avoid possible collision with read-only properties. 
+
 
 ### 1.0.2
 
