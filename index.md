@@ -29,16 +29,18 @@ annotate only when something is outside the conventions.
 Persism is under 60k and has *Zero* dependencies however it will utilize logging based on whatever is available 
 at runtime - SLF4J, LOG4J or JUL.
 
-[Getting Started](/manual.md)
-
 [Javadoc](/javadoc/index.html)
 
 [Code Coverage](/coverage/index.html)
 
 [Release Notes](/release-notes.md)
 
+### Other documentation
+
+[Getting Started](/manual.md)
+
+[Cookbook: Implementing Persistable interface](cookbook-persistable.md)
+
 Supported Databases
 
 ![MSSQL](img/mssql.png) ![MySQL](img/mysql.png) ![JTDS](img/jtds.png) ![Derby](img/derby.png) ![Firebird](img/firebird.png) ![H2](img/h2.png) ![HQSLDB](img/hsqldb.jpg) ![Oracle](img/oracle.png) ![PostgreSQL](img/postgresql.png) ![SQLite](img/sqlite.png)
-
-<iframe src="https://discordapp.com/widget?id=824709787069448262&theme=dark" width="350" height="500" allowtransparency="true" frameborder="0" sandbox="allow-popups allow-popups-to-escape-sandbox allow-same-origin allow-scripts"></iframe>
