@@ -152,8 +152,8 @@ public class Contact implements Persistable<Contact> {
 }
 ```
 
-The Persistable interface extends Cloneable which is an easy way to copy a POJO though you may also use other 
-ways of doing that if you want to. 
+To implement *saveReadState* the Persistable interface extends Cloneable which is an easy way 
+to copy a POJO though you may also use other ways of doing that if you want to. 
 
 ```
 public class Contact implements Persistable<Contact> {
