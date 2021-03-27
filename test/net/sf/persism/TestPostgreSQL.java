@@ -58,9 +58,8 @@ public class TestPostgreSQL extends BaseTest {
 
         super.testContactTable();
 
-        // Insert specify GUID
+        // Insert NULL GUID -- should give us back a value
         Contact contact = new Contact();
-        //contact.setIdentity(UUID.randomUUID());
         contact.setFirstname("Fred");
         contact.setLastname("Flintstone");
         contact.setDivision("DIVISION X");
@@ -105,6 +104,9 @@ public class TestPostgreSQL extends BaseTest {
                 " ID SERIAL PRIMARY KEY, " +
                 " NAME VARCHAR(30) NULL, " +
                 " PAID BOOLEAN NULL, " +
+                " Prepaid BOOLEAN NULL," +
+                " IsCollect BOOLEAN NULL," +
+                " IsCancelled BOOLEAN NULL," +
                 " Customer_ID VARCHAR(10) NULL, " +
                 " Created TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL, " +
                 " Date_Paid TIMESTAMP NULL, " +
@@ -117,7 +119,6 @@ public class TestPostgreSQL extends BaseTest {
             commands.add("DROP TABLE Customers");
         }
 
-
         try {
             // Once you Create the type you need to drop any relations to it if you want to redefine it
             executeCommand("CREATE TYPE Regions AS ENUM ('North', 'South', 'East', 'West');", con);
@@ -125,6 +126,8 @@ public class TestPostgreSQL extends BaseTest {
             log.info(e.getMessage(), e);
         }
 
+        // https://stackoverflow.com/questions/1347646/postgres-error-on-insert-error-invalid-byte-sequence-for-encoding-utf8-0x0
+        // Postgres error on insert - ERROR: invalid byte sequence for encoding “UTF8”: 0x00 - CHAR if LEFT NULL
         commands.add("CREATE TABLE Customers ( " +
                 " Customer_ID VARCHAR(36) PRIMARY KEY DEFAULT uuid_generate_v1(), " +
                 " Company_Name VARCHAR(30) NULL, " +
@@ -137,7 +140,7 @@ public class TestPostgreSQL extends BaseTest {
                 " Country VARCHAR(2) NOT NULL DEFAULT 'US', " +
                 " Phone VARCHAR(30) NULL, " +
                 " Fax VARCHAR(30) NULL, " +
-                " STATUS CHAR(1), " +
+                " STATUS CHAR(1) DEFAULT '1' NOT NULL, " + // make to default in PostgreSQL
                 " Date_Registered TIMESTAMP with time zone DEFAULT CURRENT_TIMESTAMP NOT NULL, " +
                 " Date_Of_Last_Order DATE, " +
                 " TestLocalDate DATE, " +
@@ -152,9 +155,12 @@ public class TestPostgreSQL extends BaseTest {
                 " Invoice_ID SERIAL PRIMARY KEY, " +
                 " Customer_ID varchar(10) NOT NULL, " +
                 " Paid BOOLEAN NOT NULL, " +
+                " Status INT NOT NULL, " +
+                " Created TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL, " + // make read-only in Invoice Object
                 " Price NUMERIC(7,3) NOT NULL, " +
                 " Quantity INT NOT NULL, " +
-                " Total NUMERIC(10,3) NOT NULL " +
+                " Total NUMERIC(10,3) NOT NULL, " +
+                " Discount NUMERIC(10,3) NOT NULL " +
                 ") ");
 
 
@@ -307,5 +313,10 @@ public class TestPostgreSQL extends BaseTest {
     @Override
     public void testAllDates() {
         super.testAllDates();
+    }
+
+    @Override
+    public void testInvoice() {
+        super.testInvoice();
     }
 }

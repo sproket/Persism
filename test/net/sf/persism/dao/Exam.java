@@ -9,10 +9,11 @@ public final class Exam {
     private int patientNo;
     private LocalDate dateRequested;
     private String masterStatus;
-    private int status;
+    private int examStatusNo;
     private Date examDate;
     private int examCodeNo;
     private int roomNo;
+    private int originalValue;
 
     public int getExamId() {
         return examId;
@@ -34,8 +35,8 @@ public final class Exam {
         return masterStatus;
     }
 
-    public int getStatus() {
-        return status;
+    public int getExamStatusNo() {
+        return examStatusNo;
     }
 
     public Date getExamDate() {
@@ -62,8 +63,8 @@ public final class Exam {
         this.masterStatus = masterStatus;
     }
 
-    public void setStatus(int status) {
-        this.status = status;
+    public void setExamStatusNo(int examStatusNo) {
+        this.examStatusNo = examStatusNo;
     }
 
     public void setExamDate(Date examDate) {
@@ -86,6 +87,14 @@ public final class Exam {
         this.roomNo = roomNo;
     }
 
+    public int getOriginalValue() {
+        return originalValue;
+    }
+
+    public void setOriginalValue(int originalValue) {
+        this.originalValue = originalValue;
+    }
+
     @Override
     public String toString() {
         return "Exam{" +
@@ -96,7 +105,7 @@ public final class Exam {
                 ", roomNo=" + roomNo +
                 ", dateRequested=" + dateRequested +
                 ", masterStatus='" + masterStatus + '\'' +
-                ", status=" + status +
+                ", status=" + examStatusNo +
                 ", examDate=" + examDate +
                 '}';
     }

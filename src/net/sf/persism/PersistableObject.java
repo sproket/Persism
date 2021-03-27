@@ -1,7 +1,6 @@
 package net.sf.persism;
 
-import java.lang.reflect.InvocationTargetException;
-import java.util.Collection;
+import net.sf.persism.annotations.NotColumn;
 
 /**
  * Persism uses information from this class to detect which properties are modified in your data objects and only
@@ -20,6 +19,7 @@ public abstract class PersistableObject<T> implements Persistable<T> {
     }
 
     @Override
+    @NotColumn
     public final T getOriginalValue() {
         return originalValue;
     }

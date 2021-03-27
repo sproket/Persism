@@ -67,8 +67,8 @@ public final class Session implements AutoCloseable {
     /**
      * Function block of database operations to group together in one transaction.
      * This method will set autocommit to false then execute the function, commit and set autocommit back to true.
+     *
      * @throws PersismException in case of SQLException where the transaction is rolled back.
-     * to make public in 1.1.0
      */
     public void withTransaction(Runnable function) {
         try {
@@ -585,7 +585,7 @@ public final class Session implements AutoCloseable {
 
         // Test if all properties have column mapping and throw PersismException if not
         // This block verifies that the object is fully initialized.
-        // Any properties not marked by NotMapped should have been set (or if they have a getter only)
+        // Any properties not marked by NotColumn should have been set (or if they have a getter only)
         // If not throw a PersismException
         Collection<PropertyInfo> allProperties = MetaData.getPropertyInfo(objectClass);
         if (properties.values().size() < allProperties.size()) {
@@ -621,7 +621,14 @@ public final class Session implements AutoCloseable {
 
                 if (value != null) {
                     try {
-                        columnProperty.setter.invoke(object, value);
+                        if (columnProperty.readOnly) {
+                            // set the value on the field directly
+                            columnProperty.field.setAccessible(true);
+                            columnProperty.field.set(object, value);
+                            columnProperty.field.setAccessible(false);
+                        } else {
+                            columnProperty.setter.invoke(object, value);
+                        }
                     } catch (IllegalArgumentException e) {
                         String msg = "Object " + objectClass + ". Column: " + columnName + " Type of property: " + returnType + " - Type read: " + value.getClass() + " VALUE: " + value;
                         throw new PersismException(msg, e);
@@ -764,6 +771,13 @@ public final class Session implements AutoCloseable {
 //                    break;
 
                 case StringType:
+                    if (returnType.equals(Character.class) || returnType.equals(char.class)) {
+                        String s = rs.getString(column);
+                        if (s != null && s.length() > 0) {
+                            value = s.charAt(0);
+                        }
+                        break;
+                    }
                     value = rs.getString(column);
                     break;
 
@@ -834,7 +848,7 @@ public final class Session implements AutoCloseable {
                     returnValue = Short.parseShort("" + value);
 
                 } else if (targetType.equals(Byte.class) || targetType.equals(byte.class)) {
-                    returnValue = Byte.parseByte(""+value);
+                    returnValue = Byte.parseByte("" + value);
                 }
                 break;
 
@@ -1113,7 +1127,7 @@ public final class Session implements AutoCloseable {
     /*
      * Used by convert for convenience - common possible parsing
      */
-    private Date tryParseDate(Object value, Class targetType, String columnName, DateFormat df) throws PersismException {
+    private static Date tryParseDate(Object value, Class targetType, String columnName, DateFormat df) throws PersismException {
         try {
             return df.parse("" + value);
         } catch (ParseException e) {
@@ -1161,7 +1175,7 @@ public final class Session implements AutoCloseable {
 
     void setParameters(PreparedStatement st, Object[] parameters) throws SQLException {
         if (log.isDebugEnabled()) {
-            log.debug("PARAMS: " + Arrays.asList(parameters));
+            log.debug("PARAMS: %s", Arrays.asList(parameters));
         }
 
         int n = 1;

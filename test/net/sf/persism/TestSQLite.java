@@ -93,6 +93,9 @@ public final class TestSQLite extends BaseTest {
                 " ROW_ID VARCHAR(30) NULL, " +
                 " Customer_ID VARCHAR(10) NULL, " +
                 " PAID BIT NULL, " +
+                " Prepaid BIT NULL," +
+                " IsCollect BIT NULL," +
+                " IsCancelled BIT NULL," +
                 " CREATED datetime DEFAULT CURRENT_TIMESTAMP, " +
                 " DATE_PAID datetime NULL, " +
                 " DATE_SOMETHING datetime NULL" +
@@ -112,7 +115,7 @@ public final class TestSQLite extends BaseTest {
                 " City VARCHAR(30) NULL, " +
                 " Region VARCHAR(10) NULL, " +
                 " Postal_Code VARCHAR(10) NULL, " +
-                " Country VARCHAR(2) NULL, " +
+                " Country VARCHAR(2) DEFAULT 'US', " +
                 " Phone VARCHAR(30) NULL, " +
                 " STATUS CHAR(1) NULL, " +
                 " Fax VARCHAR(30) NULL, " +
@@ -120,6 +123,23 @@ public final class TestSQLite extends BaseTest {
                 " Date_Of_Last_Order DATE, " +
                 " TestLocalDate datetime, " +
                 " TestLocalDateTIme datetime " +
+                ") ");
+
+
+        if (UtilsForTests.isTableInDatabase("Invoices", con)) {
+            commands.add("DROP TABLE Invoices");
+        }
+
+        commands.add("CREATE TABLE Invoices ( " +
+                " Invoice_ID INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT UNIQUE, " +
+                " Customer_ID varchar(10) NOT NULL, " +
+                " Paid BIT NOT NULL, " +
+                " Price REAL NOT NULL, " +
+                " Status INT DEFAULT 1, " +
+                " Created DateTime default (datetime('now','localtime')), " + // make read-only in Invoice Object
+                " Quantity INTEGER NOT NULL, " +
+                " Total REAL NOT NULL, " +
+                " Discount REAL NOT NULL " +
                 ") ");
 
         if (isTableInDatabase("TABLENOPRIMARY", con)) {

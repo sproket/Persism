@@ -64,7 +64,7 @@ final class MetaData {
 
     private MetaData(Connection con) throws SQLException {
 
-        log.debug("MetaData CREATING instance [" + this + "] ");
+        log.debug("MetaData CREATING instance [%s] ", toString());
 
         connectionType = ConnectionTypes.get(con.getMetaData().getURL());
         if (connectionType == ConnectionTypes.Other) {
@@ -79,7 +79,7 @@ final class MetaData {
         if (metaData.get(url) == null) {
             metaData.put(url, new MetaData(con));
         }
-        log.debug("MetaData getting instance " + url);
+        log.debug("MetaData getting instance %s", url);
         return metaData.get(url);
     }
 
@@ -101,7 +101,7 @@ final class MetaData {
             // gives us real column names with case.
             String sql = new StringBuilder().append("SELECT * FROM ").append(sd).append(tableName).append(ed).append(" WHERE 1=0").toString();
             if (log.isDebugEnabled()) {
-                log.debug("determineColumns: " + sql);
+                log.debug("determineColumns: %s", sql);
             }
             rs = st.executeQuery(sql);
             return determinePropertyInfo(objectClass, rs);
@@ -330,81 +330,83 @@ final class MetaData {
         return determinePropertyInfo(objectClass);
     }
 
-    private static synchronized <T> Collection<PropertyInfo> determinePropertyInfo(Class<T> objectClass) {
+    static synchronized <T> Collection<PropertyInfo> determinePropertyInfo(Class<T> objectClass) {
         if (propertyMap.containsKey(objectClass)) {
             return propertyMap.get(objectClass);
         }
 
         Map<String, PropertyInfo> propertyNames = new HashMap<>(32);
 
+        List<Field> fields = new ArrayList<>(32);
+
+        // getDeclaredFields does not get fields from super classes.....
+        fields.addAll(Arrays.asList(objectClass.getDeclaredFields()));
+        Class<?> sup = objectClass.getSuperclass();
+        log.debug("fields for %s", sup);
+        while (!sup.equals(Object.class) && !sup.equals(PersistableObject.class)) {
+            fields.addAll(Arrays.asList(sup.getDeclaredFields()));
+            sup = sup.getSuperclass();
+            log.debug("fields for %s", sup);
+        }
+
         Method[] methods = objectClass.getMethods();
-        for (Method method : methods) {
-            String methodName = method.getName();
-            if (methodName.startsWith("set")) {
-                String propertyName = methodName.substring(3).toLowerCase();
 
-                PropertyInfo propertyInfo = propertyNames.get(propertyName);
-                if (propertyInfo == null) {
-                    propertyInfo = new PropertyInfo();
-                    propertyNames.put(propertyName, propertyInfo);
-                }
-                propertyInfo.setter = method;
-                propertyInfo.propertyName = propertyName;
-
-                Annotation[] annotations = method.getAnnotations();
-                for (Annotation annotation : annotations) {
-                    propertyInfo.annotations.put(annotation.annotationType(), annotation);
-                }
-            }
-
-            if (methodName.startsWith("is") || methodName.startsWith("get") && !"getClass".equalsIgnoreCase(methodName)) {
-                int index = 3;
-                if (methodName.startsWith("is")) {
-                    index = 2;
-                }
-                String propertyName = methodName.substring(index).toLowerCase();
-
-                PropertyInfo propertyInfo = propertyNames.get(propertyName);
-                if (propertyInfo == null) {
-                    propertyInfo = new PropertyInfo();
-                    propertyNames.put(propertyName, propertyInfo);
-                }
-                propertyInfo.getter = method;
-                propertyInfo.propertyName = propertyName;
-                Annotation[] annotations = method.getAnnotations();
-                for (Annotation annotation : annotations) {
-                    propertyInfo.annotations.put(annotation.annotationType(), annotation);
-                }
-            }
-        }
-
-        Field[] fields = objectClass.getDeclaredFields();
         for (Field field : fields) {
-            PropertyInfo propertyInfo = propertyNames.get(field.getName().toLowerCase());
-            if (propertyInfo != null) {
-                // Add the field annotations
-                Annotation[] annotations = field.getAnnotations();
-                for (Annotation annotation : annotations) {
-                    propertyInfo.annotations.put(annotation.annotationType(), annotation);
+            log.debug("Field Name: %s", field.getName());
+            String propertyName = field.getName().substring(0, 1).toUpperCase() + field.getName().substring(1);
+            log.debug("Property Name: *%s* ", propertyName);
+
+            PropertyInfo propertyInfo = new PropertyInfo();
+            propertyInfo.propertyName = propertyName;
+            propertyInfo.field = field;
+            Annotation[] annotations = field.getAnnotations();
+            for (Annotation annotation : annotations) {
+                propertyInfo.annotations.put(annotation.annotationType(), annotation);
+            }
+
+            for (Method method : methods) {
+                String propertyNameToTest = propertyName;
+                if (propertyNameToTest.startsWith("Is") && propertyNameToTest.length() > 2 && Character.isUpperCase(propertyNameToTest.charAt(2))) {
+                    propertyNameToTest = propertyName.substring(2);
+                }
+
+                String[] candidates = {"set" + propertyNameToTest, "get" + propertyNameToTest, "is" + propertyNameToTest};
+
+                if (Arrays.asList(candidates).contains(method.getName())) {
+                    log.debug("  METHOD: %s", method.getName());
+
+                    annotations = method.getAnnotations();
+                    for (Annotation annotation : annotations) {
+                        propertyInfo.annotations.put(annotation.annotationType(), annotation);
+                    }
+
+                    if (method.getName().equalsIgnoreCase("set" + propertyNameToTest)) {
+                        propertyInfo.setter = method;
+                    } else {
+                        propertyInfo.getter = method;
+                    }
                 }
             }
+
+            propertyInfo.readOnly = propertyInfo.setter == null;
+            propertyNames.put(propertyName.toLowerCase(), propertyInfo);
         }
 
-        // Remove any properties found with the NoColumn annotation OR ones missing a setter (meaning they are calculated properties)
+        // Remove any properties found with the NotColumn annotation
         // http://stackoverflow.com/questions/2026104/hashmap-keyset-foreach-and-remove
         Iterator<Map.Entry<String, PropertyInfo>> it = propertyNames.entrySet().iterator();
         while (it.hasNext()) {
             Map.Entry<String, PropertyInfo> entry = it.next();
             PropertyInfo info = entry.getValue();
-            if (info.getAnnotation(NotColumn.class) != null || info.setter == null) {
+            if (info.getAnnotation(NotColumn.class) != null) {
                 it.remove();
             }
         }
-        Collection<PropertyInfo> properties = propertyNames.values();
-        propertyMap.put(objectClass, properties);
-        return Collections.unmodifiableCollection(properties);
-    }
 
+        Collection<PropertyInfo> properties = Collections.unmodifiableCollection(propertyNames.values());
+        propertyMap.put(objectClass, properties);
+        return properties;
+    }
 
     private static final String[] tableTypes = {"TABLE"};
 
@@ -450,7 +452,7 @@ final class MetaData {
             // Note we don't not add Persistable updates to updateStatementsMap since they will be different each time.
             String sql = buildUpdateString(object, changes.keySet().iterator(), connection);
             if (log.isDebugEnabled()) {
-                log.debug("getUpdateStatement for " + object.getClass() + " for changed fields is " + sql);
+                log.debug("getUpdateStatement for %s for changed fields is %s", object.getClass(), sql);
             }
             return sql;
         }
@@ -476,7 +478,7 @@ final class MetaData {
         updateStatementsMap.put(object.getClass(), updateStatement);
 
         if (log.isDebugEnabled()) {
-            log.debug("determineUpdateStatement for " + object.getClass() + " is " + updateStatement);
+            log.debug("determineUpdateStatement for %s is %s", object.getClass(), updateStatement);
         }
 
         return updateStatement;
@@ -549,7 +551,7 @@ final class MetaData {
             insertStatement = sb.toString();
 
             if (log.isDebugEnabled()) {
-                log.debug("determineInsertStatement for " + object.getClass() + " is " + insertStatement);
+                log.debug("determineInsertStatement for %s is %s", object.getClass(), insertStatement);
             }
 
             // Do not put this insert statement into the map if any columns have defaults
@@ -596,7 +598,7 @@ final class MetaData {
         String deleteStatement = sb.toString();
 
         if (log.isDebugEnabled()) {
-            log.debug("determineDeleteStatement for " + object.getClass() + " is " + deleteStatement);
+            log.debug("determineDeleteStatement for %s is %s", object.getClass(), deleteStatement);
         }
 
         deleteStatementsMap.put(object.getClass(), deleteStatement);
@@ -646,7 +648,7 @@ final class MetaData {
         String selectStatement = sb.toString();
 
         if (log.isDebugEnabled()) {
-            log.debug("determineSelectStatement for " + object.getClass() + " is " + selectStatement);
+            log.debug("determineSelectStatement for %s is %s", object.getClass(), selectStatement);
         }
 
         selectStatementsMap.put(object.getClass(), selectStatement);
@@ -856,7 +858,7 @@ final class MetaData {
             }
         }
         if (log.isDebugEnabled()) {
-            log.debug("getPrimaryKeys for " + tableName + " " + primaryKeys);
+            log.debug("getPrimaryKeys for %s %s", tableName, primaryKeys);
         }
         return primaryKeys;
     }
@@ -864,4 +866,5 @@ final class MetaData {
     ConnectionTypes getConnectionType() {
         return connectionType;
     }
+
 }

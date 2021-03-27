@@ -1,19 +1,6 @@
 package net.sf.persism.annotations;
 
-/*
- * $RCSfile: $
- * $Revision: $
- * $Date: $
- * Created by IntelliJ IDEA.
- * User: DHoward
- * Date: 9/8/11
- * Time: 6:18 AM
- */
-
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
+import java.lang.annotation.*;
 
 /**
  * Indicates that the property is not mapped to a column. This annotation can appear on the class field, getter or setter.

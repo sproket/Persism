@@ -91,6 +91,9 @@ public class TestMySQL extends BaseTest {
                 " ID INT NOT NULL AUTO_INCREMENT, PRIMARY KEY(ID), " +
                 " NAME VARCHAR(30) NULL, " +
                 " PAID BIT NULL, " +
+                " Prepaid BIT NULL," +
+                " IsCollect BIT NULL," +
+                " IsCancelled BIT NULL," +
                 " Customer_ID VARCHAR(10) NULL, " +
                 " Created TIMESTAMP, " +
                 " Date_Paid DATE NULL, " +
@@ -99,12 +102,30 @@ public class TestMySQL extends BaseTest {
 
         executeCommands(commands, con);
 
+        if (UtilsForTests.isTableInDatabase("Invoices", con)) {
+            executeCommand("DROP TABLE Invoices",con);
+        }
+
+        String sql = "CREATE TABLE Invoices ( " +
+                " Invoice_ID INT NOT NULL AUTO_INCREMENT, PRIMARY KEY(Invoice_ID), " +
+                " Customer_ID varchar(10) NOT NULL, " +
+                " Paid BIT NOT NULL, " +
+                " Price NUMERIC(7,3) NOT NULL, " +
+                " Status INT DEFAULT 1, " +
+                " Created TIMESTAMP DEFAULT CURRENT_TIMESTAMP, " + // make read-only in Invoice Object
+                " Quantity NUMERIC(10) NOT NULL, " +
+                " Total NUMERIC(10,3) NOT NULL, " +
+                " Discount NUMERIC(10,3) NOT NULL )";
+
+        executeCommand(sql, con);
+
+
         if (UtilsForTests.isTableInDatabase("Contacts", con)) {
             executeCommand("DROP TABLE Contacts", con);
         }
 
         // https://mysqlserverteam.com/storing-uuid-values-in-mysql-tables/
-        String sql = "CREATE TABLE Contacts( " +
+        sql = "CREATE TABLE Contacts( " +
                 "   identity binary(16) NOT NULL, PRIMARY KEY(identity), " +  // test binary(16)
                 "   PartnerID varchar(36) NOT NULL, " + // test varchar(36)
                 "   Type char(2) NOT NULL, " +

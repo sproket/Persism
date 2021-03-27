@@ -4,10 +4,12 @@ import junit.framework.TestCase;
 import net.sf.persism.dao.*;
 
 import java.lang.reflect.InvocationTargetException;
+import java.math.BigDecimal;
 import java.sql.*;
 import java.sql.Date;
 import java.sql.ResultSet;
 import java.text.DateFormat;
+import java.text.NumberFormat;
 import java.text.SimpleDateFormat;
 import java.time.*;
 import java.time.format.DateTimeFormatter;
@@ -239,6 +241,8 @@ public abstract class BaseTest extends TestCase {
 
         assertTrue("order # > 0", order.getId() > 0);
 
+        session.fetch(order);
+
         List<Order> orders = session.query(Order.class, "select * from Orders");
         assertEquals("should have 1 order", 1, orders.size());
         assertTrue("order id s/b > 0", orders.get(0).getId() > 0);
@@ -456,6 +460,8 @@ public abstract class BaseTest extends TestCase {
         contact = getContactForTest();
         session.insert(contact);
 
+        boolean shouldFail = false;
+
         final UUID randomUUID = UUID.randomUUID();
         try {
             session.withTransaction(() -> {
@@ -469,11 +475,15 @@ public abstract class BaseTest extends TestCase {
                 log.info("contact after insert/update before commit/rollback: " + contactForTest);
 
                 // NOW FAIL the transaction to see that the new contact was not committed
-                session.query(Object.class, "select * FROM MISSING CONTACT");
+                session.query(Object.class, "select * FROM TABLE THAT DOESN'T EXIST!!!!");
             });
         } catch (Exception e) {
-            log.info("FAILS?: " + e);
+            log.info("SHOULD FAIL: " + e);
+            shouldFail = true;
         }
+
+        assertTrue(shouldFail);
+
         Contact contactForTest = getContactForTest();
         contactForTest.setIdentity(randomUUID);
 
@@ -688,6 +698,84 @@ public abstract class BaseTest extends TestCase {
         }
 
     }
+
+    public void testIsNamedBooleanProperties() throws SQLException {
+        Order order = DAOFactory.newOrder(con);
+        order.setName("test 1");
+        order.setCancelled(true);
+        order.setCollect(true);
+        order.setCancelled(true);
+        order.setPrepaid(true);
+        order.setPaid(true);
+        session.insert(order);
+
+        assertTrue("order # > 0", order.getId() > 0);
+
+        Order order2 = DAOFactory.newOrder(con);
+        order2.setId(order.getId());
+        assertTrue("should be found ", session.fetch(order2));
+
+        assertTrue("paid", order2.isPaid());
+        assertTrue("cancelled", order2.isCancelled());
+        assertTrue("prepaid", order2.isPrepaid());
+        assertTrue("collect", order2.isCollect());
+    }
+
+    public void testInvoice() {
+
+        Customer customer = new Customer();
+        customer.setCompanyName("TEST");
+        customer.setCustomerId("MOO");
+        customer.setAddress("123 sesame street");
+        customer.setCity("city");
+        customer.setContactName("fred flintstone");
+        customer.setContactTitle("Lord");
+        //customer.setCountry("US");
+        customer.setDateRegistered(new java.sql.Timestamp(System.currentTimeMillis()));
+        customer.setFax("123-456-7890");
+        customer.setPhone("456-678-1234");
+        customer.setPostalCode("54321");
+        customer.setRegion(Regions.East);
+        //customer.setStatus('1');
+        session.insert(customer);
+
+        session.fetch(customer); // DOESNT FAIl?
+
+        assertEquals("country s/b US", "US", customer.getCountry());
+
+        Invoice invoice = new Invoice();
+        invoice.setCustomerId("MOO");
+        invoice.setPrice(10.5f);
+        invoice.setQuantity(10);
+        invoice.setTotal(new BigDecimal(invoice.getPrice() * invoice.getQuantity()));
+        invoice.setPaid(true);
+
+        session.insert(invoice);
+
+        assertTrue("Invoice ID > 0", invoice.getInvoiceId() > 0);
+        assertNotNull("Created s/b not null", invoice.getCreated()); // note no setter
+        assertNotNull("what about junk1? ", invoice.getJunk1());
+
+        List<Invoice> invoices = session.query(Invoice.class, "select * from Invoices where CUSTOMER_ID=?", "MOO");
+        log.info(invoices);
+        assertEquals("invoices s/b 1", 1, invoices.size());
+
+        invoice = invoices.get(0);
+
+        log.info(invoice);
+
+        assertEquals("customer s/b MOO", "MOO", invoice.getCustomerId());
+        assertEquals("invoice # s/b 1", 1, invoice.getInvoiceId());
+        assertEquals("price s/b 10.5", 10.5f, invoice.getPrice());
+        assertEquals("qty s/b 10", 10, invoice.getQuantity());
+
+        NumberFormat nf = NumberFormat.getInstance();
+
+        assertEquals("totals/b 105.00", nf.format(105.0f), nf.format(invoice.getTotal()));
+
+    }
+
+
 
     public void testGetDbMetaData() throws SQLException {
         if (true) {

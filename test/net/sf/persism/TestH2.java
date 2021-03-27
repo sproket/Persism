@@ -92,6 +92,9 @@ public final class TestH2 extends BaseTest {
                 " ID IDENTITY PRIMARY KEY, " +
                 " NAME VARCHAR(30) NULL, " +
                 " PAID BIT NULL, " +
+                " Prepaid BIT NULL," + // would match to getter? Not if it's GETPrePaid FFS
+                " IsCollect BIT NULL," +
+                " IsCancelled BIT NULL," + // property is IsCancelled
                 " Customer_ID VARCHAR(10) NULL, " +
                 " Created TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL, " +
                 " Date_Paid TIMESTAMP NULL, " +
@@ -133,6 +136,7 @@ public final class TestH2 extends BaseTest {
                 " Paid BIT NOT NULL, " +
                 " Price NUMERIC(7,3) NOT NULL, " +
                 " Status INT DEFAULT 1, " +
+                " Created DateTime default current_timestamp, " + // make read-only in Invoice Object
                 " Quantity NUMERIC(10) NOT NULL, " +
                 " Total NUMERIC(10,3) NOT NULL, " +
                 " Discount NUMERIC(10,3) NOT NULL " +
@@ -336,51 +340,9 @@ public final class TestH2 extends BaseTest {
         assertEquals("name s/b PHHHH", "PHHHH", order.getName());
     }
 
+    @Override
     public void testInvoice() {
-
-        Customer customer = new Customer();
-        customer.setCompanyName("TEST");
-        customer.setCustomerId("MOO");
-        customer.setAddress("123 sesame street");
-        customer.setCity("city");
-        customer.setContactName("fred flintstone");
-        customer.setContactTitle("Lord");
-        customer.setCountry("US");
-        customer.setDateRegistered(new java.sql.Timestamp(System.currentTimeMillis()));
-        customer.setFax("123-456-7890");
-        customer.setPhone("456-678-1234");
-        customer.setPostalCode("54321");
-        customer.setRegion(Regions.East);
-
-        session.insert(customer);
-
-        Invoice invoice = new Invoice();
-        invoice.setCustomerId("MOO");
-        invoice.setPrice(10.5f);
-        invoice.setQuantity(10);
-        invoice.setTotal(new BigDecimal(invoice.getPrice() * invoice.getQuantity()));
-        invoice.setPaid(true);
-
-        session.insert(invoice);
-
-        assertTrue("Invoice ID > 0", invoice.getInvoiceId() > 0);
-
-        List<Invoice> invoices = session.query(Invoice.class, "select * from invoices where customer_id=?", "MOO");
-        assertEquals("invoices s/b 1", 1, invoices.size());
-
-        invoice = invoices.get(0);
-
-        log.info(invoice);
-
-        assertEquals("customer s/b MOO", "MOO", invoice.getCustomerId());
-        assertEquals("invoice # s/b 1", 1, invoice.getInvoiceId());
-        assertEquals("price s/b 10.5", 10.5f, invoice.getPrice());
-        assertEquals("qty s/b 10", 10, invoice.getQuantity());
-
-        NumberFormat nf = NumberFormat.getInstance();
-
-        assertEquals("totals/b 105.00", nf.format(105.0f), nf.format(invoice.getTotal()));
-
+        super.testInvoice();
     }
 
     public void testColumnDefaults() {
@@ -484,6 +446,7 @@ public final class TestH2 extends BaseTest {
             Util.cleanup(st, rs);
         }
     }
+
 
     public void testDatabaseMetaData() {
 

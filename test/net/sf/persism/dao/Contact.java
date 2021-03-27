@@ -382,6 +382,7 @@ public final class Contact implements Persistable<Contact> {
         originalValue = clone();
     }
 
+    @NotColumn
     @Override
     public Contact getOriginalValue() {
         return originalValue;

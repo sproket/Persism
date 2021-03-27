@@ -1,11 +1,21 @@
 package net.sf.persism;
 
 import junit.framework.TestCase;
+import net.sf.persism.dao.ByteData;
+import net.sf.persism.dao.Contact;
+import net.sf.persism.dao.OracleOrder;
+import net.sf.persism.dao.Order;
+import org.slf4j.LoggerFactory;
 
+import java.lang.annotation.Annotation;
+import java.lang.reflect.Field;
+import java.lang.reflect.Method;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.util.*;
+
+import static java.lang.System.out;
 
 public final class TestMetaData extends TestCase {
 
@@ -157,5 +167,81 @@ public final class TestMetaData extends TestCase {
         }
 
         return parsedQuery.toString();
+    }
+
+    public void testDeterminePropertyInfo() {
+        Collection<PropertyInfo> propertyInfo = MetaData.determinePropertyInfo(ByteData.class);
+        log.warn(propertyInfo.size());
+    }
+
+    public void testReflection() {
+
+        Class<?> classToTest = OracleOrder.class;
+
+        Map<String, PropertyInfo> propertyNames = new HashMap<>(32);
+
+        List<Field> fields = new ArrayList<>(32);
+
+        // getDeclaredFields does not get fields from super classes.....
+        fields.addAll(Arrays.asList(classToTest.getDeclaredFields()));
+        Class<?> sup = classToTest.getSuperclass();
+        log.warn(sup);
+        while (!sup.equals(Object.class)) {
+            fields.addAll(Arrays.asList(sup.getDeclaredFields()));
+            sup = sup.getSuperclass();
+            log.warn(sup);
+        }
+
+        List<Method> methods = Arrays.asList(classToTest.getMethods());
+
+        fields.forEach((field) -> {
+            out.println("Field Name: " + field.getName());
+            // Candidate getters
+            String propertyName = field.getName().substring(0, 1).toUpperCase() + field.getName().substring(1);
+            out.println("Property Name: *" + propertyName + "* ");
+
+            PropertyInfo propertyInfo = new PropertyInfo();
+            propertyInfo.propertyName = propertyName;
+            propertyInfo.field = field;
+            Annotation[] annotations = field.getAnnotations();
+            for (Annotation annotation : annotations) {
+                propertyInfo.annotations.put(annotation.annotationType(), annotation);
+            }
+
+            for (Method method : methods) {
+                String propertyNameToTest = propertyName;
+                if (propertyNameToTest.startsWith("Is") && propertyNameToTest.length() > 2 && Character.isUpperCase(propertyNameToTest.charAt(2))) {
+                    propertyNameToTest = propertyName.substring(2);
+                }
+                //out.println("PROPERTY NAME TO TEST: " + propertyNameToTest);
+
+                if (method.getName().toLowerCase().endsWith(propertyNameToTest.toLowerCase()) && method.getName().length() - propertyNameToTest.length() <= 3) {
+                    //out.println(method.getName().length() - propertyNameToTest.length() > 3);
+                    out.println("METHOD: " + method.getName() + " " + (method.getName().length() - propertyNameToTest.length())); // found it! MYABE?
+
+                    annotations = method.getAnnotations();
+                    for (Annotation annotation : annotations) {
+                        propertyInfo.annotations.put(annotation.annotationType(), annotation);
+                    }
+
+                    if (method.getName().equalsIgnoreCase("set" + propertyNameToTest)) {
+                        propertyInfo.setter = method;
+                    } else {
+                        propertyInfo.getter = method;
+                    }
+                }
+            }
+
+            propertyInfo.readOnly = propertyInfo.setter == null;
+            propertyNames.put(propertyName, propertyInfo);
+        });
+
+        out.println("--------------------");
+//
+//        for (Field field : fields) {
+//            out.println("**" + field.getName() + "**");
+//            methods.stream().filter(m -> m.getName().equals(field.getName()) || m.getName().toLowerCase().contains(field.getName().toLowerCase())).forEach(out::println);
+//        }
+
     }
 }

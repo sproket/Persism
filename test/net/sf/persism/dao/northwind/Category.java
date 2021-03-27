@@ -2,6 +2,7 @@ package net.sf.persism.dao.northwind;
 
 import javafx.embed.swing.SwingFXUtils;
 import javafx.scene.image.Image;
+import net.sf.persism.annotations.NotColumn;
 
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
@@ -24,6 +25,7 @@ public final class Category {
     private byte[] picture;
     private String data; // xml type in SQL
 
+    @NotColumn // TODO this change is a breaking change in that we 'see' getter only properties as possible Columns now.
     private BufferedImage image = null;
 
     public int getCategoryId() {

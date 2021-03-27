@@ -73,6 +73,9 @@ public final class TestDerby extends BaseTest {
                 "ID INTEGER NOT NULL GENERATED ALWAYS AS IDENTITY (START WITH 1, INCREMENT BY 1), " +
                 " NAME VARCHAR(30), " +
                 " PAID BOOLEAN, " +
+                " Prepaid BOOLEAN," +
+                " IsCollect BOOLEAN," +
+                " IsCancelled BOOLEAN," +
                 " Customer_ID VARCHAR(10), " +
                 " Created TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL, " +
                 " Date_Paid TIMESTAMP, " +
@@ -113,9 +116,12 @@ public final class TestDerby extends BaseTest {
                 "Invoice_ID INTEGER NOT NULL GENERATED ALWAYS AS IDENTITY (START WITH 1, INCREMENT BY 1), " +
                 " Customer_ID varchar(10) NOT NULL, " +
                 " Paid BOOLEAN NOT NULL, " +
+                " Created TIMESTAMP DEFAULT CURRENT_TIMESTAMP, " + // make read-only in Invoice Object
+                " Status INT DEFAULT 1, " +
                 " Price NUMERIC(7,3) NOT NULL, " +
                 " Quantity INT NOT NULL, " +
-                " Total NUMERIC(10,3) NOT NULL " +
+                " Total NUMERIC(10,3) NOT NULL, " +
+                " Discount NUMERIC(10,3) NOT NULL " +
                 ") ");
 
 

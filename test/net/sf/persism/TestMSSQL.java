@@ -95,6 +95,9 @@ public class TestMSSQL extends BaseTest {
                 " ROW_ID VARCHAR(30) NULL, " +
                 " Customer_ID VARCHAR(10) NULL, " +
                 " PAID BIT NULL, " +
+                " Prepaid BIT NULL," +
+                " IsCollect BIT NULL," +
+                " IsCancelled BIT NULL," +
                 " STATUS CHAR(1) NULL, " +
                 " CREATED datetime, " +
                 " DATE_PAID datetime, " +
@@ -116,7 +119,7 @@ public class TestMSSQL extends BaseTest {
                 " City VARCHAR(30) NULL, " +
                 " Region VARCHAR(10) NULL, " +
                 " Postal_Code VARCHAR(10) NULL, " +
-                " Country VARCHAR(2) NULL, " +
+                " Country VARCHAR(2) DEFAULT 'US', " +
                 " Phone VARCHAR(30) NULL, " +
                 " Fax VARCHAR(30) NULL, " +
                 " STATUS CHAR(1) NULL, " +
@@ -125,6 +128,24 @@ public class TestMSSQL extends BaseTest {
                 " TestLocalDate datetime, " +
                 " TestLocalDateTime datetime " +
                 ") ");
+
+        if (UtilsForTests.isTableInDatabase("Invoices", con)) {
+            commands.add("DROP TABLE Invoices");
+        }
+
+        commands.add("CREATE TABLE Invoices ( " +
+                " Invoice_ID [int] IDENTITY(1,1) NOT NULL," +
+                " Customer_ID varchar(10) NOT NULL, " +
+                " Paid BIT NOT NULL, " +
+                " Price NUMERIC(7,3) NOT NULL, " +
+                " Status INT DEFAULT 1, " +
+                " Created DateTime default current_timestamp, " + // make read-only in Invoice Object
+                " Quantity NUMERIC(10) NOT NULL, " +
+                " Total NUMERIC(10,3) NOT NULL, " +
+                " Discount NUMERIC(10,3) NOT NULL " +
+                ") ");
+
+
 
         if (isTableInDatabase("TABLENOPRIMARY", con)) {
             commands.add("DROP TABLE TABLENOPRIMARY");
@@ -391,7 +412,8 @@ public class TestMSSQL extends BaseTest {
                 "   [PrimaryAuthorization] [varchar](20) NULL, " +
                 "   [SecondaryAuthorization] [varchar](20) NULL, " +
                 "   [Field42] [varchar](40) NULL, " +
-                "   [Modifiers] [varchar](15) NULL " +
+                "   [Modifiers] [varchar](15) NULL, " +
+                "   [OriginalValue] int NULL, " +
                 ") ON [PRIMARY] TEXTIMAGE_ON [PRIMARY] ";
 
         commands.add(sql);
@@ -812,7 +834,14 @@ public class TestMSSQL extends BaseTest {
         exam.setExamCodeNo(procedure.getExamCodeNo());
         exam.setRoomNo(room.getRoomNo());
         exam.setExamDate(new Date(System.currentTimeMillis()));
+        exam.setOriginalValue(10);
         session.insert(exam);
+
+        assertTrue("ud > 0", exam.getExamId() > 0);
+        Exam exam1 = new Exam();
+        exam1.setExamId(exam.getExamId());;
+        session.fetch(exam1);
+        assertEquals("sb/v 10?", 10, exam1.getOriginalValue()); // can't read this value back since we remove it
 
         String sql;
         sql = "select top 10 ExamID, p.DESC_E ProcedureDescription, r.DESC_E RoomDescription, eXaMdAtE from exams " +
@@ -880,7 +909,7 @@ public class TestMSSQL extends BaseTest {
         } catch (PersismException e) {
             shouldHaveFailed = true;
             log.info(e.getMessage(), e);
-            assertEquals("message should be ", "Object class net.sf.persism.dao.ContactFail was not properly initialized. Some properties not initialized in the queried columns (fail).", e.getMessage());
+            assertEquals("message should be ", "Object class net.sf.persism.dao.ContactFail was not properly initialized. Some properties not initialized in the queried columns (Fail).", e.getMessage());
         }
 
         assertEquals("should have failed", true, shouldHaveFailed);

@@ -24,7 +24,7 @@ public class Customer {
     private String country;
     private String phone;
     private String fax;
-    private char status;
+    private Character status;
 
     @Column (hasDefault = true)
     private Timestamp dateRegistered;
@@ -147,11 +147,11 @@ public class Customer {
 //        this.dateOfLastOrder = dateOfLastOrder;
 //    }
 
-    public char getStatus() {
+    public Character getStatus() {
         return status;
     }
 
-    public void setStatus(char status) {
+    public void setStatus(Character status) {
         this.status = status;
     }
 

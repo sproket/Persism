@@ -8,6 +8,8 @@ package net.sf.persism;
 import junit.framework.TestCase;
 import net.sf.persism.dao.Postman;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
 
@@ -62,5 +64,17 @@ public class TestUtil extends TestCase {
                 password("123");
 
         log.info(postman);
+
+
+        List<String> stringList = new ArrayList<>();
+        stringList.add("a");
+        stringList.add("b");
+        stringList.add("c");
+
+        stringList.stream().forEach(str -> {
+            if (str.equals("b")) return; // only skips this iteration.
+
+            System.out.println(str);
+        });
     }
 }
