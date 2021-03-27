@@ -533,11 +533,15 @@ Here's an example logback configuration for logging with Persism:
 </configuration>
 ```
 
+## Next Steps
+
+[Cookbook: Implementing Persistable interface](cookbook-persistable.md)
+
 ## Known Issues
 
 - No support for newer Timezone related date types yet
-- No support for XML type yet  
-- Boolean type columns using "Is" style names will require annotations 
+- No support for XML/JSON types  
+- Boolean type columns using "Is" style names will require annotations (FIXED) 
 - Generated primary keys only work with Autoincrement types. UUID/String types with generated 
   defaults do not return into the inserted object as primary keys.
 - Singular/plural table name guessing does not work with words like Tax - Taxes, Fax - Faxes
