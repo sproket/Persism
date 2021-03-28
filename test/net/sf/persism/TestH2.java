@@ -270,6 +270,35 @@ public final class TestH2 extends BaseTest {
                 "BYTE1 INT, " +
                 "BYTE2 INT ) ";
         executeCommand(sql, con);
+
+        if (UtilsForTests.isTableInDatabase("Products", con)) {
+            executeCommand("DROP TABLE Products", con);
+        }
+
+        sql = "CREATE TABLE Products ( " +
+                " ID INT NOT NULL PRIMARY KEY, " +
+                " Description VARCHAR(100), " +
+                " Cost REAL ) ";
+
+        executeCommand(sql, con);
+
+    }
+
+    public void testRecord() {
+        Product product = new Product(1, "prod 1", 10.24d);
+        log.info(product);
+
+        session.insert(product);
+
+        product = new Product(2, "prod 1", 10.24d);
+        log.info(product);
+
+        // FAILS
+//        product = session.fetch(Product.class, "select * from Products Where ID = ?", 1);
+//        log.info(product);
+        Product product1 = new Product(1,null, 0);
+        session.fetch(product1);
+
     }
 
     public void testByteData() {
