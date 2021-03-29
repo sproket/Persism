@@ -275,29 +275,87 @@ public final class TestH2 extends BaseTest {
             executeCommand("DROP TABLE Products", con);
         }
 
+//        sql = "CREATE TABLE Products ( " +
+//                " ID INT NOT NULL PRIMARY KEY, " +
+//                "ASS varchar(10), " +
+//                " Cost REAL, " +
+//                " Description VARCHAR(100) )";
+
         sql = "CREATE TABLE Products ( " +
                 " ID INT NOT NULL PRIMARY KEY, " +
                 " Description VARCHAR(100), " +
-                " Cost REAL ) ";
+                " Cost REAL) ";
 
         executeCommand(sql, con);
 
     }
 
     public void testRecord() {
+
+        /*
+        basically this all works with the caveats
+            simple fetch won't work because we expect to be able to change the existing instance properties
+            defaults in the DB won't work because we can't fetch back and change the record instance
+            SQL Column order is assumed to be the same as the constructor order -
+            todo can we look at the constructor order and make sure to SELECT in that same order - YES
+
+            Parameter parameters[] = constructor.getParameters();
+            for(Parameter parameter : parameters) {
+                log.warn("param: " + parameter.getName());
+            }
+
+         */
+
         Product product = new Product(1, "prod 1", 10.24d);
         log.info(product);
-
         session.insert(product);
 
-        product = new Product(2, "prod 1", 10.24d);
+        product = new Product(2, "prod 2", 10.25d);
+        log.info(product);
+        session.insert(product);
+
+
+        product = session.fetch(Product.class, "select * from Products Where ID = ?", 1);
         log.info(product);
 
-        // FAILS
-//        product = session.fetch(Product.class, "select * from Products Where ID = ?", 1);
-//        log.info(product);
-        Product product1 = new Product(1,null, 0);
-        session.fetch(product1);
+        product = session.fetch(Product.class, "select * from Products Where ID = ?", 2);
+        log.info(product);
+
+        List<Product> products = session.query(Product.class, "select * from Products");
+        log.info(products);
+
+        // how to update? Make a new product with id you want to update
+        Product product2 = new Product(2, "Change Description and price", 10.26d);
+        session.update(product2);
+
+        log.warn(session.getMetaData().getSelectStatement(product2, con));
+
+        products = session.query(Product.class, "select * from Products");
+        log.info(products);
+
+//        String [] junk = {"1","2"};
+//        products = session.query(Product.class, "select * from Products",  junk);
+
+
+        // THIS DOES NOT MAKE SENSE and is not supported
+        boolean fail = false;
+        try {
+            Product product1 = new Product(1, null, 0);
+            session.fetch(product1);
+        } catch (Exception e) {
+            fail = true;
+            log.info(e.getMessage());
+        }
+        assertTrue(fail);
+
+        // select in wrong order
+        List<Product> list = session.query(Product.class, "SELECT dEsCRIpTiOn, CoST, iD FROM Products");
+        log.info(list);
+        assertEquals("s/b 2", 2, list.size());
+
+        Product singleProduct = session.fetch(Product.class, "SELECT dEsCRIpTiOn, CoST, iD FROM Products where Id=?", 2);
+        log.info(singleProduct);
+        assertNotNull(singleProduct);
 
     }
 

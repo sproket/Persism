@@ -26,6 +26,14 @@ final class PropertyInfo {
         return annotations.get(annotationClass);
     }
 
+    String getPropertyName() {
+        return propertyName;
+    }
+
+    PropertyInfo getThis() {
+        return this;
+    }
+
     @Override
     public String toString() {
         return "PropertyInfo{" +

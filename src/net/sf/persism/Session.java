@@ -3,8 +3,10 @@ package net.sf.persism;
 import net.sf.persism.annotations.NotTable;
 
 import java.io.*;
+import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.lang.reflect.Parameter;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.sql.*;
@@ -80,6 +82,7 @@ public final class Session implements AutoCloseable {
      *     session.fetch(contact);
      * });
      * }</pre>
+     *
      * @param transactionBlock Block of operations expected to run as a single transaction.
      * @throws PersismException in case of SQLException where the transaction is rolled back.
      */
@@ -399,6 +402,7 @@ public final class Session implements AutoCloseable {
 
         // If we know this type it means it's a primitive type. Not a DAO so we use a different rule to read those
         boolean isPOJO = Types.getType(objectClass) == null;
+        boolean isRecord = isPOJO && objectClass.isRecord();
 
         if (isPOJO && objectClass.getAnnotation(NotTable.class) == null) {
             // Make sure columns are initialized if this is a table.
@@ -410,9 +414,10 @@ public final class Session implements AutoCloseable {
             exec(result, sql, parameters); // todo we don't check parameter types here? Nope - we don't know anything at this point.
 
             while (result.rs.next()) {
-                if (isPOJO) {
-                    // should be getDeclaredConstructor().newInstance() now.
-                    T t = objectClass.newInstance();
+                if (isRecord) {
+                    list.add(readRecord(objectClass, result.rs));
+                } else if (isPOJO) {
+                    T t = objectClass.getDeclaredConstructor().newInstance();
                     list.add(readObject(t, result.rs));
                 } else {
                     list.add((T) readColumn(result.rs, 1, objectClass));
@@ -440,6 +445,10 @@ public final class Session implements AutoCloseable {
      */
     public boolean fetch(Object object) throws PersismException {
         Class<?> objectClass = object.getClass();
+
+        if (objectClass.isRecord()) {
+            throw new PersismException("Records are not supported for simple fetch. Use fetch with SQL or query");
+        }
 
         // If we know this type it means it's a primitive type. This method cannot be used for primitives
         boolean readPrimitive = Types.getType(objectClass) != null;
@@ -524,6 +533,7 @@ public final class Session implements AutoCloseable {
     public <T> T fetch(Class<T> objectClass, String sql, Object... parameters) throws PersismException {
         // If we know this type it means it's a primitive type. Not a DAO so we use a different rule to read those
         boolean isPOJO = Types.getType(objectClass) == null;
+        boolean isRecord = isPOJO && objectClass.isRecord();
 
         Result result = new Result();
         try {
@@ -531,11 +541,11 @@ public final class Session implements AutoCloseable {
             exec(result, sql, parameters);
 
             if (result.rs.next()) {
-
-                if (isPOJO) {
-                    T t = objectClass.newInstance();
-                    readObject(t, result.rs);
-                    return t;
+                if (isRecord) {
+                    return readRecord(objectClass, result.rs);
+                } else if (isPOJO) {
+                    T t = objectClass.getDeclaredConstructor().newInstance();
+                    return readObject(t, result.rs);
                 } else {
                     return (T) readColumn(result.rs, 1, objectClass);
                 }
@@ -545,9 +555,110 @@ public final class Session implements AutoCloseable {
 
         } catch (Exception e) {
             Util.rollback(connection);
-            throw new PersismException(e.getMessage(), e);
+            throw new PersismException(e.getClass() + " " + e.getMessage(), e);
         } finally {
             Util.cleanup(result.st, result.rs);
+        }
+    }
+
+    private <T> T readRecord(Class<?> objectClass, ResultSet rs) {
+        // resultset may not have columns in the proper order
+        // resultset may not have all columns
+        // step 1 - get column order based on which properties are found
+        // read
+
+        Map<String, PropertyInfo> propertiesByColumn;
+        if (objectClass.getAnnotation(NotTable.class) == null) {
+            propertiesByColumn = metaData.getTableColumnsPropertyInfo(objectClass, connection);
+        } else {
+            propertiesByColumn = metaData.getQueryColumnsPropertyInfo(objectClass, rs);
+        }
+
+        Constructor<?>[] constructors = objectClass.getConstructors();
+        Constructor<?> selectedConstructor = null;
+
+        // Find constructor with the most params
+        int paramCount = 0;
+        for (var con : constructors) {
+            if (con.getParameterCount() > paramCount) {
+                selectedConstructor = con;
+                paramCount = con.getParameterCount();
+            }
+        }
+        assert selectedConstructor != null;
+
+        if (selectedConstructor.getParameterCount() != propertiesByColumn.keySet().size()) {
+            throw new PersismException("TEMP: constructor mismatch to columns ...." );
+        }
+
+        // now read resultset by property order
+        Map<String, PropertyInfo> propertyInfoByConstructorOrder = new LinkedHashMap<>(paramCount);
+        for (Parameter param : selectedConstructor.getParameters()) {
+            for (String col : propertiesByColumn.keySet()) {
+                if (param.getName().equals(propertiesByColumn.get(col).field.getName())) {
+                    propertyInfoByConstructorOrder.put(col, propertiesByColumn.get(col));
+                }
+            }
+        }
+
+        // now read by this order
+        List<Object> constructorParams = new ArrayList<>(12);
+        List<Class<?>> constructorTypes = new ArrayList<>(12);
+
+        try {
+            for (String col : propertyInfoByConstructorOrder.keySet()) {
+                constructorParams.add(rs.getObject(col));
+                constructorTypes.add(propertyInfoByConstructorOrder.get(col).field.getType());
+            }
+
+            Constructor<?> constructor = objectClass.getConstructor(constructorTypes.toArray(new Class<?>[0]));
+            Parameter[] parameters = constructor.getParameters();
+            for(Parameter parameter : parameters) {
+                log.warn("param: " + parameter.getName());
+            }
+            return (T) constructor.newInstance(constructorParams.toArray());
+
+        } catch (SQLException | InstantiationException | IllegalAccessException | InvocationTargetException | NoSuchMethodException e) {
+            throw new PersismException(e.getMessage(), e);
+        }
+    }
+
+    private <T> T XreadRecord(Class<?> objectClass, ResultSet rs) {
+
+        Map<String, PropertyInfo> properties;
+        if (objectClass.getAnnotation(NotTable.class) == null) {
+            properties = metaData.getTableColumnsPropertyInfo(objectClass, connection);
+        } else {
+            properties = metaData.getQueryColumnsPropertyInfo(objectClass, rs);
+        }
+
+        try {
+            ResultSetMetaData rsmd = rs.getMetaData();
+            int columnCount = rsmd.getColumnCount();
+
+            List<Object> constructorParams = new ArrayList<>(12);
+            List<Class<?>> constructorTypes = new ArrayList<>(12);
+
+            // IF THIS SQL is in param order.....
+
+            for (int j = 1; j <= columnCount; j++) {
+                String columnName = rsmd.getColumnLabel(j);
+                PropertyInfo columnProperty = properties.get(columnName);
+                if (columnProperty != null) { // occurs if you have a column in the DB not referenced in the Record
+                    constructorParams.add(rs.getObject(j));
+                    constructorTypes.add(columnProperty.field.getType());
+                }
+            }
+
+            Constructor<?> constructor = objectClass.getConstructor(constructorTypes.toArray(new Class<?>[0]));
+            Parameter parameters[] = constructor.getParameters();
+            for(Parameter parameter : parameters) {
+                log.warn("param: " + parameter.getName());
+            }
+            return (T) constructor.newInstance(constructorParams.toArray());
+
+        } catch (SQLException | NoSuchMethodException | InstantiationException | IllegalAccessException | InvocationTargetException e) {
+            throw new PersismException(e.getMessage(), e);
         }
     }
 
