@@ -119,6 +119,7 @@ public final class TestDerby extends BaseTest {
                 " Created TIMESTAMP DEFAULT CURRENT_TIMESTAMP, " + // make read-only in Invoice Object
                 " Status INT DEFAULT 1, " +
                 " Price NUMERIC(7,3) NOT NULL, " +
+                " ActualPrice NUMERIC(7,3) NOT NULL, " +
                 " Quantity INT NOT NULL, " +
                 " Total NUMERIC(10,3) NOT NULL, " +
                 " Discount NUMERIC(10,3) NOT NULL " +

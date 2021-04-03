@@ -74,7 +74,7 @@ public final class TestH2 extends BaseTest {
 
         // todo the question here is how to allow a user to use the converter
         // Fails with some DBs unless you convert yourself.
-        List<Contact> contacts = session.query(Contact.class, sql, Util.asBytes(contact.getIdentity()));
+        List<Contact> contacts = session.query(Contact.class, sql, (Object) Convertor.asBytes(contact.getIdentity()));
         log.info(contacts);
 
     }
@@ -135,6 +135,7 @@ public final class TestH2 extends BaseTest {
                 " Customer_ID varchar(10) NOT NULL, " +
                 " Paid BIT NOT NULL, " +
                 " Price NUMERIC(7,3) NOT NULL, " +
+                " ActualPrice NUMERIC(7,3) NOT NULL, " +
                 " Status INT DEFAULT 1, " +
                 " Created DateTime default current_timestamp, " + // make read-only in Invoice Object
                 " Quantity NUMERIC(10) NOT NULL, " +
@@ -266,7 +267,7 @@ public final class TestH2 extends BaseTest {
             executeCommand("DROP TABLE ByteData", con);
         }
         sql = "CREATE TABLE ByteData ( " +
-                "ID VARCHAR(60), " +
+                "ID VARCHAR(1), " +
                 "BYTE1 INT, " +
                 "BYTE2 INT ) ";
         executeCommand(sql, con);
@@ -274,7 +275,7 @@ public final class TestH2 extends BaseTest {
 
     public void testByteData() {
         ByteData bd = new ByteData();
-        bd.setId("test 1");
+        bd.setId('1');
         bd.setByte1((byte) 42);
         bd.setByte2((short) 299);
 
@@ -287,8 +288,6 @@ public final class TestH2 extends BaseTest {
         log.info(bd);
 
         session.query(ByteData.class, "select * from ByteData");
-
-
     }
 
     public void testH2InsertAndReadBack() throws SQLException {

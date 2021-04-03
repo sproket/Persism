@@ -5,7 +5,8 @@ import net.sf.persism.annotations.NotColumn;
 
 public final class ByteData {
     @Column(primary = true)
-    private String id;
+    private Character id;
+
     private byte byte1;
     private short byte2;
 
@@ -14,11 +15,11 @@ public final class ByteData {
     @NotColumn
     private short somethingShort;
 
-    public String getId() {
+    public Character getId() {
         return id;
     }
 
-    public void setId(String id) {
+    public void setId(Character id) {
         this.id = id;
     }
 

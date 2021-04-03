@@ -118,7 +118,7 @@ public class TestMSSQL extends BaseTest {
                 " Country VARCHAR(2) DEFAULT 'US', " +
                 " Phone VARCHAR(30) NULL, " +
                 " Fax VARCHAR(30) NULL, " +
-                " STATUS CHAR(1) NULL, " +
+                " STATUS VARCHAR(1) NULL, " +
                 " Date_Registered datetime  default current_timestamp, " +
                 " Date_Of_Last_Order DATE, " +
                 " TestLocalDate datetime, " +
@@ -134,6 +134,7 @@ public class TestMSSQL extends BaseTest {
                 " Customer_ID varchar(10) NOT NULL, " +
                 " Paid BIT NOT NULL, " +
                 " Price NUMERIC(7,3) NOT NULL, " +
+                " ACTUAL_Price NUMERIC(7,3) NOT NULL, " +
                 " Status INT DEFAULT 1, " +
                 " Created DateTime default current_timestamp, " + // make read-only in Invoice Object
                 " Quantity NUMERIC(10) NOT NULL, " +
@@ -766,7 +767,11 @@ public class TestMSSQL extends BaseTest {
         c1.setCustomerId("123");
         c1.setCompanyName("ABC INC");
         c1.setRegion(Regions.East);
+        c1.setStatus('1');
         session.insert(c1);
+        session.fetch(c1);
+        c1.setStatus('2');
+        session.update(c1);
 
         Customer cx = new Customer();
         cx.setCustomerId("123");

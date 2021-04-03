@@ -45,7 +45,7 @@ public final class TestOracle extends BaseTest {
         String password = props.getProperty("database.password");
 
         Class.forName(driver);
-        log.warn(props);
+        log.info(props);
 //        con = DriverManager.getConnection(url); //, username, password);
         con = OracleDataSource.getInstance().getConnection();
 
@@ -140,13 +140,13 @@ end;
             try {
                 executeCommand("DROP TRIGGER BI_ORDERS", con);
             } catch (SQLException e) {
-                log.warn(e.getMessage());
+                log.info(e.getMessage());
             }
             executeCommand("DROP TABLE ORDERS", con);
             try {
                 executeCommand("DROP SEQUENCE ORDERS_SEQ", con);
             } catch (SQLException e) {
-                log.warn(e.getMessage());
+                log.info(e.getMessage());
             }
 
         }
@@ -277,6 +277,7 @@ end;
                 " \"CUSTOMER_ID\" varchar(10) NOT NULL, " +
                 " \"Paid\" CHAR(1) NOT NULL, " +
                 " \"Price\" NUMERIC(7,3) NOT NULL, " +
+                " \"ActualPrice\" NUMERIC(7,3) NOT NULL, " +
                 " \"Status\" INT DEFAULT 1, " +
                 " \"Created\" TIMESTAMP DEFAULT CURRENT_TIMESTAMP, " + // make read-only in Invoice Object
                 " \"Quantity\" NUMERIC(10) NOT NULL, " +

@@ -749,6 +749,7 @@ public abstract class BaseTest extends TestCase {
         invoice.setQuantity(10);
         invoice.setTotal(new BigDecimal(invoice.getPrice() * invoice.getQuantity()));
         invoice.setPaid(true);
+        invoice.setActualPrice(new BigDecimal("10.23"));
 
         session.insert(invoice);
 

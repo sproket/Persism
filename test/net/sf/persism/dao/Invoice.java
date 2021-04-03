@@ -18,6 +18,7 @@ public class Invoice {
     private float price;
     private int quantity;
     private double discount;
+    private BigDecimal actualPrice;
 
     @NotColumn
     private String junk1;
@@ -103,6 +104,14 @@ public class Invoice {
 
     public void setStatus(int status) {
         this.status = status;
+    }
+
+    public BigDecimal getActualPrice() {
+        return actualPrice;
+    }
+
+    public void setActualPrice(BigDecimal actualPrice) {
+        this.actualPrice = actualPrice;
     }
 
     @Override

@@ -8,6 +8,9 @@ import net.sf.persism.logging.implementation.Log4j2Logger;
 import net.sf.persism.logging.implementation.Log4jLogger;
 import net.sf.persism.logging.implementation.Slf4jLogger;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -33,10 +36,12 @@ final class Log {
 
     private static final Map<String, Log> loggers = new ConcurrentHashMap<String, Log>(12);
 
+    private static final List<String> warnings = new ArrayList<>(32);
+
     private Log() {
     }
 
-    public Log(String logName) {
+    Log(String logName) {
         try {
             Class.forName("org.slf4j.Logger");
             logger = new Slf4jLogger(logName);
@@ -54,6 +59,16 @@ final class Log {
             }
         }
         assert logger != null;
+    }
+
+    void warnNoDuplicates(String message) {
+        //noinspection OptionalGetWithoutIsPresent
+        String additional = Arrays.stream(new Throwable().getStackTrace()).skip(2).findFirst().get().toString().trim();
+        String msg = message + " " + additional;
+        if (!warnings.contains(msg)) {
+            warnings.add(msg);
+            warn(msg);
+        }
     }
 
     public static Log getLogger(Class logName) {
