@@ -484,6 +484,18 @@ public abstract class BaseTest extends TestCase {
 
         assertTrue(shouldFail);
 
+        // pass one
+        session.withTransaction(() -> {
+            Contact contactForTest = getContactForTest();
+            contactForTest.setIdentity(UUID.randomUUID());
+            session.insert(contactForTest);
+            contactForTest.setContactName("HELLO?!@");
+            session.update(contactForTest);
+            session.fetch(contactForTest);
+
+            log.info("contact after insert/update before commit/rollback: " + contactForTest);
+        });
+
         Contact contactForTest = getContactForTest();
         contactForTest.setIdentity(randomUUID);
 

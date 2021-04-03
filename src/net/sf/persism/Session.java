@@ -83,6 +83,7 @@ public final class Session implements AutoCloseable {
      *     session.fetch(contact);
      * });
      * }</pre>
+     *
      * @param transactionBlock Block of operations expected to run as a single transaction.
      * @throws PersismException in case of SQLException where the transaction is rolled back.
      */
@@ -91,7 +92,7 @@ public final class Session implements AutoCloseable {
             connection.setAutoCommit(false);
             transactionBlock.run();
             connection.commit();
-        } catch (SQLException e) {
+        } catch (Exception e) {
             Util.rollback(connection);
             throw new PersismException(e.getMessage(), e);
         } finally {
