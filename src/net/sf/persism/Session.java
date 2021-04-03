@@ -402,7 +402,7 @@ public final class Session implements AutoCloseable {
 
         // If we know this type it means it's a primitive type. Not a DAO so we use a different rule to read those
         boolean isPOJO = Types.getType(objectClass) == null;
-        boolean isRecord = isPOJO && objectClass.isRecord();
+        boolean isRecord = isPOJO && Util.isRecord(objectClass);
 
         if (isPOJO && objectClass.getAnnotation(NotTable.class) == null) {
             // Make sure columns are initialized if this is a table.
@@ -446,7 +446,7 @@ public final class Session implements AutoCloseable {
     public boolean fetch(Object object) throws PersismException {
         Class<?> objectClass = object.getClass();
 
-        if (objectClass.isRecord()) {
+        if (Util.isRecord(objectClass)) {
             throw new PersismException("Records are not supported for simple fetch. Use fetch with SQL or query");
         }
 
@@ -533,7 +533,7 @@ public final class Session implements AutoCloseable {
     public <T> T fetch(Class<T> objectClass, String sql, Object... parameters) throws PersismException {
         // If we know this type it means it's a primitive type. Not a DAO so we use a different rule to read those
         boolean isPOJO = Types.getType(objectClass) == null;
-        boolean isRecord = isPOJO && objectClass.isRecord();
+        boolean isRecord = isPOJO && Util.isRecord(objectClass); // objectClass.isRecord();
 
         Result result = new Result();
         try {
@@ -579,7 +579,7 @@ public final class Session implements AutoCloseable {
 
         // Find constructor with the most params
         int paramCount = 0;
-        for (var con : constructors) {
+        for (Constructor con : constructors) {
             if (con.getParameterCount() > paramCount) {
                 selectedConstructor = con;
                 paramCount = con.getParameterCount();
@@ -606,11 +606,24 @@ public final class Session implements AutoCloseable {
         List<Class<?>> constructorTypes = new ArrayList<>(12);
 
         try {
+            ResultSetMetaData rsmd = rs.getMetaData();
+            Map<String, Integer> ordinals = new HashMap<>(rsmd.getColumnCount());
+            for (int j = 1; j <= rsmd.getColumnCount(); j++) {
+                ordinals.put(rsmd.getColumnLabel(j), j);
+            }
             for (String col : propertyInfoByConstructorOrder.keySet()) {
-                constructorParams.add(rs.getObject(col));
+
+//                constructorParams.add(rs.getObject(col)); // todo rs.getObject could be a problem really we want to call readColum which reads and converts
+
+                // THROWS Cannot invoke "java.lang.Integer.intValue()" because the return value of "java.util.Map.get(Object)" is null
+                // IF you DIDN'T INCLUDE THE COLUMN
+                Object value = readColumn(rs, ordinals.get(col), propertyInfoByConstructorOrder.get(col).field.getType());
+                constructorParams.add(value); // todo rs.getObject could be a problem really we want to call readColum which reads and converts
+
                 constructorTypes.add(propertyInfoByConstructorOrder.get(col).field.getType());
             }
 
+            // TODO why do I need to get the constructor? Didn't I select a constructor above?
             Constructor<?> constructor = objectClass.getConstructor(constructorTypes.toArray(new Class<?>[0]));
             Parameter[] parameters = constructor.getParameters();
             for(Parameter parameter : parameters) {
@@ -618,7 +631,7 @@ public final class Session implements AutoCloseable {
             }
             return (T) constructor.newInstance(constructorParams.toArray());
 
-        } catch (SQLException | InstantiationException | IllegalAccessException | InvocationTargetException | NoSuchMethodException e) {
+        } catch (SQLException | InstantiationException | IllegalAccessException | InvocationTargetException | NoSuchMethodException | IOException e) {
             throw new PersismException(e.getMessage(), e);
         }
     }
@@ -775,6 +788,11 @@ public final class Session implements AutoCloseable {
         }
 
         return (T) object;
+    }
+
+    private Object readColumn(ResultSet rs, String column, Class<?> returnType) throws SQLException, IOException {
+        // todo
+        return null;
     }
 
     private Object readColumn(ResultSet rs, int column, Class<?> returnType) throws SQLException, IOException {
@@ -1432,6 +1450,10 @@ public final class Session implements AutoCloseable {
 
             n++;
         }
+    }
+
+    final Connection getConnection() {
+        return connection;
     }
 
     // Prevent duplicate "Possible overflow column" and other possibly repeating messages

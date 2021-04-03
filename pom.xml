@@ -6,7 +6,7 @@
 
     <groupId>io.github.sproket</groupId>
     <artifactId>persism</artifactId>
-    <version>1.1.0-beta</version>
+    <version>1.1.0d-beta</version>
     <packaging>jar</packaging>
 
     <build>
@@ -30,6 +30,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-jar-plugin</artifactId>
+                <version>2.4</version>
                 <configuration>
                     <archive>
                         <manifestEntries>
@@ -388,6 +389,21 @@
             <version>4.0.4</version>
             <scope>test</scope>
         </dependency>
+
+        <dependency>
+            <groupId>com.toddfast.typeconverter</groupId>
+            <artifactId>typeconverter</artifactId>
+            <version>1.0</version>
+            <scope>test</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.reflections</groupId>
+            <artifactId>reflections</artifactId>
+            <version>0.9.11</version>
+            <scope>test</scope>
+        </dependency>
+
     </dependencies>
 
 </project>

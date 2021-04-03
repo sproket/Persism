@@ -221,7 +221,18 @@ public final class TestSQLite extends BaseTest {
 
         executeCommand(sql, con);
 
-
+        if (isTableInDatabase("ANUS", con)) {
+            executeCommand("DROP TABLE ANUS", con);
+        }
+        sql = "CREATE TABLE ANUS (\n" +
+                "    ID COW,\n" +
+                "    NAME GIRAFFE NULL,\n" +
+                "    PAID ELEPHANT NOT NULL,\n" +
+                "    EXTRA_COLUMN MONKEY NUT NULL,\n" +
+                "    Customer_ID FLATWORM KNOLL,\n" +
+                "    DateCREATED LION\n" +
+                ")";
+        executeCommand(sql, con);
     }
 
     public void testOrders() throws Exception {

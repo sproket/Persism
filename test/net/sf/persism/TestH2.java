@@ -74,7 +74,7 @@ public final class TestH2 extends BaseTest {
 
         // todo the question here is how to allow a user to use the converter
         // Fails with some DBs unless you convert yourself.
-        List<Contact> contacts = session.query(Contact.class, sql, Util.asBytes(contact.getIdentity()));
+        List<Contact> contacts = session.query(Contact.class, sql, (Object) Util.asBytes(contact.getIdentity()));
         log.info(contacts);
 
     }
@@ -283,6 +283,7 @@ public final class TestH2 extends BaseTest {
 
         sql = "CREATE TABLE Products ( " +
                 " ID INT NOT NULL PRIMARY KEY, " +
+                " JUNK binary(16), " +
                 " Description VARCHAR(100), " +
                 " Cost REAL) ";
 
@@ -291,6 +292,8 @@ public final class TestH2 extends BaseTest {
     }
 
     public void testRecord() {
+
+        // Don't bother testing in Java 8 since we can't extend java.lang.Record
 
         /*
         basically this all works with the caveats
@@ -306,11 +309,11 @@ public final class TestH2 extends BaseTest {
 
          */
 
-        Product product = new Product(1, "prod 1", 10.24d);
+        Product product = new Product(1, "prod 1", 10.24d, UUID.randomUUID());
         log.info(product);
         session.insert(product);
 
-        product = new Product(2, "prod 2", 10.25d);
+        product = new Product(2, "prod 2", 10.25d, UUID.randomUUID());
         log.info(product);
         session.insert(product);
 
@@ -325,7 +328,7 @@ public final class TestH2 extends BaseTest {
         log.info(products);
 
         // how to update? Make a new product with id you want to update
-        Product product2 = new Product(2, "Change Description and price", 10.26d);
+        Product product2 = new Product(2, "Change Description and price", 10.26d, UUID.randomUUID());
         session.update(product2);
 
         log.warn(session.getMetaData().getSelectStatement(product2, con));
@@ -340,7 +343,7 @@ public final class TestH2 extends BaseTest {
         // THIS DOES NOT MAKE SENSE and is not supported
         boolean fail = false;
         try {
-            Product product1 = new Product(1, null, 0);
+            Product product1 = new Product(1, null, 0, UUID.randomUUID());
             session.fetch(product1);
         } catch (Exception e) {
             fail = true;
@@ -349,11 +352,11 @@ public final class TestH2 extends BaseTest {
         assertTrue(fail);
 
         // select in wrong order
-        List<Product> list = session.query(Product.class, "SELECT dEsCRIpTiOn, CoST, iD FROM Products");
+        List<Product> list = session.query(Product.class, "SELECT dEsCRIpTiOn, CoST, JUNK, iD FROM Products");
         log.info(list);
         assertEquals("s/b 2", 2, list.size());
 
-        Product singleProduct = session.fetch(Product.class, "SELECT dEsCRIpTiOn, CoST, iD FROM Products where Id=?", 2);
+        Product singleProduct = session.fetch(Product.class, "SELECT JUNK, dEsCRIpTiOn, CoST, iD FROM Products where Id=?", 2);
         log.info(singleProduct);
         assertNotNull(singleProduct);
 
