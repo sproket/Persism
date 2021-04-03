@@ -7,13 +7,13 @@ import java.math.BigDecimal;
 import java.util.Date;
 
 /**
- * Comments for OrderView go here.
+ * test for Record style where getters don't start with "get" and instead match the field name.
  *
  * @author Dan Howard
  * @since 5/25/12 5:59 AM
  */
 @NotTable
-public class OrderView {
+public final class OrderView {
 
     private int orderId;
     private String customerId;
@@ -31,120 +31,59 @@ public class OrderView {
     private String employeeName;
     private String productName;
 
-
     @NotColumn
     private int junk;
 
-    public int getOrderId() {
+    public int orderId() {
         return orderId;
     }
 
-    public void setOrderId(int orderId) {
-        this.orderId = orderId;
-    }
-
-    public String getCustomerId() {
+    public String customerId() {
         return customerId;
     }
 
-    public void setCustomerId(String customerId) {
-        this.customerId = customerId;
-    }
-
-    public int getEmployeeId() {
+    public int employeeId() {
         return employeeId;
     }
 
-    public void setEmployeeId(int employeeId) {
-        this.employeeId = employeeId;
-    }
-
-    public Date getOrderDate() {
+    public Date orderDate() {
         return orderDate;
     }
 
-    public void setOrderDate(Date orderDate) {
-        this.orderDate = orderDate;
-    }
-
-    public Date getRequiredDate() {
+    public Date requiredDate() {
         return requiredDate;
     }
 
-    public void setRequiredDate(Date requiredDate) {
-        this.requiredDate = requiredDate;
-    }
-
-    public Date getShippedDate() {
+    public Date shippedDate() {
         return shippedDate;
     }
 
-    public void setShippedDate(Date shippedDate) {
-        this.shippedDate = shippedDate;
-    }
-
-    public int getProductId() {
+    public int productId() {
         return productId;
     }
 
-    public void setProductId(int productId) {
-        this.productId = productId;
-    }
-
-    public float getUnitPrice() {
+    public float unitPrice() {
         return unitPrice;
     }
 
-    public void setUnitPrice(float unitPrice) {
-        this.unitPrice = unitPrice;
-    }
-
-    public int getQuantity() {
+    public int quantity() {
         return quantity;
     }
 
-    public void setQuantity(int quantity) {
-        this.quantity = quantity;
-    }
-
-    public BigDecimal getDiscount() {
+    public BigDecimal discount() {
         return discount;
     }
 
-    public void setDiscount(BigDecimal discount) {
-        this.discount = discount;
-    }
-
-    public String getCustomerName() {
+    public String customerName() {
         return customerName;
     }
 
-    public void setCustomerName(String customerName) {
-        this.customerName = customerName;
-    }
-
-    public String getEmployeeName() {
+    public String employeeName() {
         return employeeName;
     }
 
-    public void setEmployeeName(String employeeName) {
-        this.employeeName = employeeName;
-    }
-
-    public String getProductName() {
+    public String productName() {
         return productName;
-    }
-
-    public void setProductName(String productName) {
-        this.productName = productName;
-    }
-
-    public int getJunk() {
-        return junk;
-    }
-
-    public void setJunk(int junk) {
-        this.junk = junk;
     }
 
     @Override

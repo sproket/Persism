@@ -69,7 +69,7 @@ final class Reader {
             PropertyInfo columnProperty = properties.get(columnName);
 
             if (columnProperty != null) {
-                Class<?> returnType = columnProperty.getter.getReturnType();
+                Class<?> returnType =  columnProperty.getter.getReturnType();
 
                 Object value = readColumn(rs, j, returnType);
 

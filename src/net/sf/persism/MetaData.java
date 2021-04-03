@@ -370,7 +370,7 @@ final class MetaData {
                     propertyNameToTest = propertyName.substring(2);
                 }
 
-                String[] candidates = {"set" + propertyNameToTest, "get" + propertyNameToTest, "is" + propertyNameToTest};
+                String[] candidates = {"set" + propertyNameToTest, "get" + propertyNameToTest, "is" + propertyNameToTest, field.getName()};
 
                 if (Arrays.asList(candidates).contains(method.getName())) {
                     log.debug("  METHOD: %s", method.getName());

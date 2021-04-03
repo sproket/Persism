@@ -91,7 +91,7 @@ add the query string as a key to the Column/Property Info objects? Duplicating b
 
 DONE SQL enum to Java enum? PostgreSQL, MySQL and H2. TODO Possible with MSSQL with CHECK constraints
 
-TODO @NotTable classes should allow getters only and we can set values through fields instead. (even normal table should allow this for read only columns)
+DONE @NotTable classes should allow getters only and we can set values through fields instead. (even normal table should allow this for read only columns)
 TODO Add support for Records
 
 MAVEN:
@@ -120,7 +120,7 @@ TODO See about deprecating Column autoIncrement - I think all supported drivers 
 
 TODO Sample Oracle DB https://docs.oracle.com/cd/E11882_01/doc.112/e26211/loe.htm
 
-IN PROGRESS Session autocommit false? https://www.reddit.com/r/java/comments/lvya1x/persism_101_released_a_zero_ceremony_orm_for_java/gpghfn4/
+DONE Session autocommit false? https://www.reddit.com/r/java/comments/lvya1x/persism_101_released_a_zero_ceremony_orm_for_java/gpghfn4/
 
 DONE POM still gets log4j logback and slf4j - FFS
 
