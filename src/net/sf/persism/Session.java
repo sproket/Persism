@@ -403,6 +403,7 @@ public final class Session implements AutoCloseable {
 
         // If we know this type it means it's a primitive type. Not a DAO so we use a different rule to read those
         boolean isPOJO = Types.getType(objectClass) == null;
+        boolean isRecord = isPOJO && isRecord(objectClass);
 
         if (isPOJO && objectClass.getAnnotation(NotTable.class) == null) {
             // Make sure columns are initialized if this is a table.
@@ -410,16 +411,17 @@ public final class Session implements AutoCloseable {
         }
 
         try {
-
-            exec(result, sql, parameters); // todo we don't check parameter types here? Nope - we don't know anything at this point.
+            // we don't check parameter types here? Nope - we don't know anything at this point.
+            exec(result, sql, parameters);
 
             while (result.rs.next()) {
-                if (isPOJO) {
-                    // should be getDeclaredConstructor().newInstance() now.
-                    T t = objectClass.newInstance();
+                if (isRecord) {
+                    list.add(reader.readRecord(objectClass, result.rs));
+                } else if (isPOJO) {
+                    T t = objectClass.getDeclaredConstructor().newInstance();
                     list.add(reader.readObject(t, result.rs));
                 } else {
-                    list.add((T) reader.readColumn(result.rs, 1, objectClass));
+                    list.add(reader.readColumn(result.rs, 1, objectClass));
                 }
             }
 
@@ -450,6 +452,10 @@ public final class Session implements AutoCloseable {
         if (readPrimitive) {
             // For unit tests
             throw new PersismException("Cannot read a primitive type object with this method.");
+        }
+
+        if (isRecord(objectClass)) {
+            throw new PersismException("Cannot read a Record type object with this method.");
         }
 
         List<String> primaryKeys = metaData.getPrimaryKeys(objectClass, connection);
@@ -507,6 +513,7 @@ public final class Session implements AutoCloseable {
     public <T> T fetch(Class<T> objectClass, String sql, Object... parameters) throws PersismException {
         // If we know this type it means it's a primitive type. Not a DAO so we use a different rule to read those
         boolean isPOJO = Types.getType(objectClass) == null;
+        boolean isRecord = isPOJO && isRecord(objectClass);
 
         Result result = new Result();
         try {
@@ -514,13 +521,13 @@ public final class Session implements AutoCloseable {
             exec(result, sql, parameters);
 
             if (result.rs.next()) {
-
-                if (isPOJO) {
-                    T t = objectClass.newInstance();
-                    reader.readObject(t, result.rs);
-                    return t;
+                if (isRecord) {
+                    return reader.readRecord(objectClass, result.rs);
+                } else if (isPOJO) {
+                    T t = objectClass.getDeclaredConstructor().newInstance();
+                    return reader.readObject(t, result.rs);
                 } else {
-                    return (T) reader.readColumn(result.rs, 1, objectClass);
+                    return reader.readColumn(result.rs, 1, objectClass);
                 }
             }
 
@@ -545,7 +552,6 @@ public final class Session implements AutoCloseable {
     Connection getConnection() {
         return connection;
     }
-
     /*
     Private methods
      */
@@ -568,6 +574,18 @@ public final class Session implements AutoCloseable {
             result.rs = cst.executeQuery();
         }
         return result;
+    }
+
+    private static <T> boolean isRecord(Class<T> objectClass) {
+        // Java 8 test for isRecord since class.isRecord doesn't exist in Java 8
+        Class<?> sup = objectClass.getSuperclass();
+        while (!sup.equals(Object.class) ) {
+            if ("java.lang.Record".equals(sup.getName())) {
+                return true;
+            }
+            sup = sup.getSuperclass();
+        }
+        return false;
     }
 
     private <T> T getTypedValueReturnedFromGeneratedKeys(Class<T> objectClass, ResultSet rs) throws SQLException {

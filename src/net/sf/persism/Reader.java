@@ -6,7 +6,9 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.StringWriter;
+import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Parameter;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.sql.*;
@@ -69,7 +71,7 @@ final class Reader {
             PropertyInfo columnProperty = properties.get(columnName);
 
             if (columnProperty != null) {
-                Class<?> returnType =  columnProperty.getter.getReturnType();
+                Class<?> returnType = columnProperty.getter.getReturnType();
 
                 Object value = readColumn(rs, j, returnType);
 
@@ -113,7 +115,81 @@ final class Reader {
         return (T) object;
     }
 
-    Object readColumn(ResultSet rs, int column, Class<?> returnType) throws SQLException, IOException {
+    <T> T readRecord(Class<?> objectClass, ResultSet rs) throws SQLException, IOException, NoSuchMethodException, IllegalAccessException, InvocationTargetException, InstantiationException {
+        // resultset may not have columns in the proper order
+        // resultset may not have all columns
+        // step 1 - get column order based on which properties are found
+        // read
+        // Note: We can't use this method to read Objects without default constructors using the Record styled conventions
+        //       since Java 8 does not have the constructor parameter names.
+
+        Map<String, PropertyInfo> propertiesByColumn;
+        if (objectClass.getAnnotation(NotTable.class) == null) {
+            propertiesByColumn = metaData.getTableColumnsPropertyInfo(objectClass, connection);
+        } else {
+            propertiesByColumn = metaData.getQueryColumnsPropertyInfo(objectClass, rs);
+        }
+
+        Constructor<?>[] constructors = objectClass.getConstructors();
+        Constructor<?> selectedConstructor = null;
+
+        // Find constructor with the most params
+        int paramCount = 0;
+        for (Constructor con : constructors) {
+            if (con.getParameterCount() > paramCount) {
+                selectedConstructor = con;
+                paramCount = con.getParameterCount();
+            }
+        }
+        assert selectedConstructor != null;
+
+        if (selectedConstructor.getParameterCount() != propertiesByColumn.keySet().size()) {
+            throw new PersismException("TEMP: constructor mismatch to columns ....");
+        }
+
+        // now read resultset by property order
+        Map<String, PropertyInfo> propertyInfoByConstructorOrder = new LinkedHashMap<>(paramCount);
+        for (Parameter param : selectedConstructor.getParameters()) {
+            for (String col : propertiesByColumn.keySet()) {
+                if (param.getName().equals(propertiesByColumn.get(col).field.getName())) {
+                    propertyInfoByConstructorOrder.put(col, propertiesByColumn.get(col));
+                }
+            }
+        }
+
+        // now read by this order
+        List<Object> constructorParams = new ArrayList<>(12);
+        List<Class<?>> constructorTypes = new ArrayList<>(12);
+
+        ResultSetMetaData rsmd = rs.getMetaData();
+        Map<String, Integer> ordinals = new HashMap<>(rsmd.getColumnCount());
+        for (int j = 1; j <= rsmd.getColumnCount(); j++) {
+            ordinals.put(rsmd.getColumnLabel(j), j);
+        }
+        for (String col : propertyInfoByConstructorOrder.keySet()) {
+
+//                constructorParams.add(rs.getObject(col)); // todo rs.getObject could be a problem really we want to call readColum which reads and converts
+
+            // THROWS Cannot invoke "java.lang.Integer.intValue()" because the return value of "java.util.Map.get(Object)" is null
+            // IF you DIDN'T INCLUDE THE COLUMN
+            Object value = readColumn(rs, ordinals.get(col), propertyInfoByConstructorOrder.get(col).field.getType());
+            constructorParams.add(value); // todo rs.getObject could be a problem really we want to call readColum which reads and converts
+
+            constructorTypes.add(propertyInfoByConstructorOrder.get(col).field.getType());
+        }
+
+        // TODO why do I need to get the constructor? Didn't I select a constructor above?
+        Constructor<?> constructor = objectClass.getConstructor(constructorTypes.toArray(new Class<?>[0]));
+        Parameter[] parameters = constructor.getParameters();
+        for (Parameter parameter : parameters) {
+            log.warn("param: " + parameter.getName());
+        }
+        return (T) constructor.newInstance(constructorParams.toArray());
+
+    }
+
+
+    <T> T readColumn(ResultSet rs, int column, Class<?> returnType) throws SQLException, IOException {
         ResultSetMetaData rsmd = rs.getMetaData();
         int sqlColumnType = rsmd.getColumnType(column);
         String columnName = rsmd.getColumnLabel(column);
@@ -252,7 +328,6 @@ final class Reader {
             value = convertor.convert(value, returnType, columnName);
         }
 
-        return value;
+        return (T) value;
     }
-
 }
