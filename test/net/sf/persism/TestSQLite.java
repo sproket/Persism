@@ -135,10 +135,11 @@ public final class TestSQLite extends BaseTest {
                 " Customer_ID varchar(10) NOT NULL, " +
                 " Paid BIT NOT NULL, " +
                 " Price REAL NOT NULL, " +
+                " ActualPrice REAL NOT NULL, " +
                 " Status INT DEFAULT 1, " +
                 " Created DateTime default (datetime('now','localtime')), " + // make read-only in Invoice Object
                 " Quantity INTEGER NOT NULL, " +
-                " Total REAL NOT NULL, " +
+                //" Total REAL NOT NULL, " +
                 " Discount REAL NOT NULL " +
                 ") ");
 
@@ -221,18 +222,7 @@ public final class TestSQLite extends BaseTest {
 
         executeCommand(sql, con);
 
-        if (isTableInDatabase("ANUS", con)) {
-            executeCommand("DROP TABLE ANUS", con);
-        }
-        sql = "CREATE TABLE ANUS (\n" +
-                "    ID COW,\n" +
-                "    NAME GIRAFFE NULL,\n" +
-                "    PAID ELEPHANT NOT NULL,\n" +
-                "    EXTRA_COLUMN MONKEY NUT NULL,\n" +
-                "    Customer_ID FLATWORM KNOLL,\n" +
-                "    DateCREATED LION\n" +
-                ")";
-        executeCommand(sql, con);
+
     }
 
     public void testOrders() throws Exception {
@@ -605,6 +595,11 @@ public final class TestSQLite extends BaseTest {
             Util.cleanup(st, rs);
         }
 
+    }
+
+    @Override
+    public void testInvoice() {
+        super.testInvoice();
     }
 
     @Override

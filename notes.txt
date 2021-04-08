@@ -29,3 +29,12 @@ https://stackoverflow.com/questions/9898499/oracle-jdbc-ojdbc6-jar-as-a-maven-de
 
 mvn install:install-file -Dfile=persism-1.0.3b.jar -DgroupId=io.github.sproket -DartifactId=persism -Dversion=1.0.3b -Dpackaging=jar
 mvn install:install-file -Dfile=persism-1.1.0d-beta.jar -DgroupId=io.github.sproket -DartifactId=persism -Dversion=1.1.0d-beta -Dpackaging=jar
+
+
+Insert Records that the DB may generate autoinc or columns have defaults
+Options:
+1 FAIL with a nice error message
+2 WARN that the Record is out of date since the insert
+3 Change return for insert (others?) to return Object containing the new Record + the int count of rows changed?
+4 Add a new insertRecord method (and updateRecord) etc....
+

@@ -111,10 +111,11 @@ public class TestMySQL extends BaseTest {
                 " Customer_ID varchar(10) NOT NULL, " +
                 " Paid BIT NOT NULL, " +
                 " Price NUMERIC(7,3) NOT NULL, " +
+                " ActualPrice NUMERIC(7,3) NOT NULL, " +
                 " Status INT DEFAULT 1, " +
                 " Created TIMESTAMP DEFAULT CURRENT_TIMESTAMP, " + // make read-only in Invoice Object
                 " Quantity NUMERIC(10) NOT NULL, " +
-                " Total NUMERIC(10,3) NOT NULL, " +
+                //" Total NUMERIC(10,3) NOT NULL, " +
                 " Discount NUMERIC(10,3) NOT NULL )";
 
         executeCommand(sql, con);

@@ -484,6 +484,18 @@ public abstract class BaseTest extends TestCase {
 
         assertTrue(shouldFail);
 
+        // pass one
+        session.withTransaction(() -> {
+            Contact contactForTest = getContactForTest();
+            contactForTest.setIdentity(UUID.randomUUID());
+            session.insert(contactForTest);
+            contactForTest.setContactName("HELLO?!@");
+            session.update(contactForTest);
+            session.fetch(contactForTest);
+
+            log.info("contact after insert/update before commit/rollback: " + contactForTest);
+        });
+
         Contact contactForTest = getContactForTest();
         contactForTest.setIdentity(randomUUID);
 
@@ -743,18 +755,20 @@ public abstract class BaseTest extends TestCase {
 
         assertEquals("country s/b US", "US", customer.getCountry());
 
-        Invoice invoice = new Invoice();
-        invoice.setCustomerId("MOO");
-        invoice.setPrice(10.5f);
-        invoice.setQuantity(10);
-        invoice.setTotal(new BigDecimal(invoice.getPrice() * invoice.getQuantity()));
-        invoice.setPaid(true);
+        Invoice invoice = new Invoice("MOO", 10.5f, 10, 0, new BigDecimal("10.23"), false);
+//        invoice.setCustomerId("MOO");
+//        invoice.setPrice(10.5f);
+//        invoice.setQuantity(10);
+//        invoice.setTotal(new BigDecimal(invoice.getPrice() * invoice.getQuantity()));
+//        invoice.setPaid(true);
+//        invoice.setActualPrice(new BigDecimal("10.23"));
 
         session.insert(invoice);
 
-        assertTrue("Invoice ID > 0", invoice.getInvoiceId() > 0);
-        assertNotNull("Created s/b not null", invoice.getCreated()); // note no setter
-        assertNotNull("what about junk1? ", invoice.getJunk1());
+
+        assertTrue("Invoice ID > 0", invoice.invoiceId() > 0);
+        assertNotNull("Created s/b not null", invoice.created()); // note no setter
+
 
         List<Invoice> invoices = session.query(Invoice.class, "select * from Invoices where CUSTOMER_ID=?", "MOO");
         log.info(invoices);
@@ -764,14 +778,27 @@ public abstract class BaseTest extends TestCase {
 
         log.info(invoice);
 
-        assertEquals("customer s/b MOO", "MOO", invoice.getCustomerId());
-        assertEquals("invoice # s/b 1", 1, invoice.getInvoiceId());
-        assertEquals("price s/b 10.5", 10.5f, invoice.getPrice());
-        assertEquals("qty s/b 10", 10, invoice.getQuantity());
+        assertEquals("customer s/b MOO", "MOO", invoice.customerId());
+        assertEquals("invoice # s/b 1", 1, invoice.invoiceId().intValue());
+        assertEquals("price s/b 10.5", 10.5f, invoice.price());
+        assertEquals("qty s/b 10", 10, invoice.quantity());
+        assertFalse("paid s/b false", invoice.paid());
 
         NumberFormat nf = NumberFormat.getInstance();
 
-        assertEquals("totals/b 105.00", nf.format(105.0f), nf.format(invoice.getTotal()));
+        assertEquals("totals/b 105.00", nf.format(105.0f), nf.format(invoice.total()));
+
+
+        Invoice updatedInvoice = new Invoice(invoice.invoiceId(), invoice.customerId(), invoice.price(), invoice.quantity() + 20, invoice.discount(), invoice.actualPrice(),invoice.created(), true);
+        session.update(updatedInvoice);
+
+
+        invoices = session.query(Invoice.class, "select * from Invoices where CUSTOMER_ID=?", "MOO");
+        log.info(invoices);
+        assertEquals("invoices s/b 1", 1, invoices.size());
+        updatedInvoice = invoices.get(0);
+        assertEquals("qty should now be 20", 20, updatedInvoice.quantity());
+        assertTrue("paid s/b true", updatedInvoice.paid());
 
     }
 

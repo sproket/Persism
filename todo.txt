@@ -129,3 +129,9 @@ DONE POM still gets log4j logback and slf4j - FFS
 // http://logging.apache.org/log4j/2.x/maven-artifacts.html
 
 todo see if contributors want mentions in the pom.xml see https://github.com/jahlborn/jackcess/blob/master/pom.xml
+
+
+
+https://mkyong.com/maven/maven-jacoco-code-coverage-example/
+https://duckduckgo.com/?q=maven+generate+code+coverage
+

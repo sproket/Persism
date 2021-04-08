@@ -74,7 +74,7 @@ public final class TestH2 extends BaseTest {
 
         // todo the question here is how to allow a user to use the converter
         // Fails with some DBs unless you convert yourself.
-        List<Contact> contacts = session.query(Contact.class, sql, (Object) Util.asBytes(contact.getIdentity()));
+        List<Contact> contacts = session.query(Contact.class, sql, (Object) Convertor.asBytes(contact.getIdentity()));
         log.info(contacts);
 
     }
@@ -135,10 +135,10 @@ public final class TestH2 extends BaseTest {
                 " Customer_ID varchar(10) NOT NULL, " +
                 " Paid BIT NOT NULL, " +
                 " Price NUMERIC(7,3) NOT NULL, " +
+                " ActualPrice NUMERIC(7,3) NOT NULL, " +
                 " Status INT DEFAULT 1, " +
                 " Created DateTime default current_timestamp, " + // make read-only in Invoice Object
                 " Quantity NUMERIC(10) NOT NULL, " +
-                " Total NUMERIC(10,3) NOT NULL, " +
                 " Discount NUMERIC(10,3) NOT NULL " +
                 ") ");
 
@@ -266,105 +266,15 @@ public final class TestH2 extends BaseTest {
             executeCommand("DROP TABLE ByteData", con);
         }
         sql = "CREATE TABLE ByteData ( " +
-                "ID VARCHAR(60), " +
+                "ID VARCHAR(1), " +
                 "BYTE1 INT, " +
                 "BYTE2 INT ) ";
         executeCommand(sql, con);
-
-        if (UtilsForTests.isTableInDatabase("Products", con)) {
-            executeCommand("DROP TABLE Products", con);
-        }
-
-//        sql = "CREATE TABLE Products ( " +
-//                " ID INT NOT NULL PRIMARY KEY, " +
-//                "ASS varchar(10), " +
-//                " Cost REAL, " +
-//                " Description VARCHAR(100) )";
-
-        sql = "CREATE TABLE Products ( " +
-                " ID INT NOT NULL PRIMARY KEY, " +
-                " JUNK binary(16), " +
-                " Description VARCHAR(100), " +
-                " Cost REAL) ";
-
-        executeCommand(sql, con);
-
-    }
-
-    public void testRecord() {
-
-        // Don't bother testing in Java 8 since we can't extend java.lang.Record
-
-        /*
-        basically this all works with the caveats
-            simple fetch won't work because we expect to be able to change the existing instance properties
-            defaults in the DB won't work because we can't fetch back and change the record instance
-            SQL Column order is assumed to be the same as the constructor order -
-            todo can we look at the constructor order and make sure to SELECT in that same order - YES
-
-            Parameter parameters[] = constructor.getParameters();
-            for(Parameter parameter : parameters) {
-                log.warn("param: " + parameter.getName());
-            }
-
-         */
-
-        Product product = new Product(1, "prod 1", 10.24d, UUID.randomUUID());
-        log.info(product);
-        session.insert(product);
-
-        product = new Product(2, "prod 2", 10.25d, UUID.randomUUID());
-        log.info(product);
-        session.insert(product);
-
-
-        product = session.fetch(Product.class, "select * from Products Where ID = ?", 1);
-        log.info(product);
-
-        product = session.fetch(Product.class, "select * from Products Where ID = ?", 2);
-        log.info(product);
-
-        List<Product> products = session.query(Product.class, "select * from Products");
-        log.info(products);
-
-        // how to update? Make a new product with id you want to update
-        Product product2 = new Product(2, "Change Description and price", 10.26d, UUID.randomUUID());
-        session.update(product2);
-
-        log.warn(session.getMetaData().getSelectStatement(product2, con));
-
-        products = session.query(Product.class, "select * from Products");
-        log.info(products);
-
-//        String [] junk = {"1","2"};
-//        products = session.query(Product.class, "select * from Products",  junk);
-
-
-        // THIS DOES NOT MAKE SENSE and is not supported
-        boolean fail = false;
-        try {
-            Product product1 = new Product(1, null, 0, UUID.randomUUID());
-            session.fetch(product1);
-        } catch (Exception e) {
-            fail = true;
-            log.info(e.getMessage());
-        }
-        assertTrue(fail);
-
-        // select in wrong order
-        List<Product> list = session.query(Product.class, "SELECT dEsCRIpTiOn, CoST, JUNK, iD FROM Products");
-        log.info(list);
-        assertEquals("s/b 2", 2, list.size());
-
-        Product singleProduct = session.fetch(Product.class, "SELECT JUNK, dEsCRIpTiOn, CoST, iD FROM Products where Id=?", 2);
-        log.info(singleProduct);
-        assertNotNull(singleProduct);
-
     }
 
     public void testByteData() {
         ByteData bd = new ByteData();
-        bd.setId("test 1");
+        bd.setId('1');
         bd.setByte1((byte) 42);
         bd.setByte2((short) 299);
 
@@ -377,8 +287,6 @@ public final class TestH2 extends BaseTest {
         log.info(bd);
 
         session.query(ByteData.class, "select * from ByteData");
-
-
     }
 
     public void testH2InsertAndReadBack() throws SQLException {

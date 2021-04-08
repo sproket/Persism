@@ -25,56 +25,28 @@ public final class CustomerOrder {
         return customerId;
     }
 
-    public void setCustomerId(String customerId) {
-        this.customerId = customerId;
-    }
-
     public String getCompanyName() {
         return companyName;
-    }
-
-    public void setCompanyName(String companyName) {
-        this.companyName = companyName;
-    }
-
-    public long getOrderId() {
-        return orderId;
-    }
-
-    public void setOrderId(long orderId) {
-        this.orderId = orderId;
-    }
-
-    public Date getDateCreated() {
-        return dateCreated;
-    }
-
-    public void setDateCreated(Date dateCreated) {
-        this.dateCreated = dateCreated;
     }
 
     public String getDescription() {
         return description;
     }
 
-    public void setDescription(String description) {
-        this.description = description;
+    public long getOrderId() {
+        return orderId;
     }
 
-    public boolean isPaid() {
-        return paid;
-    }
-
-    public void setPaid(boolean paid) {
-        this.paid = paid;
+    public Date getDateCreated() {
+        return dateCreated;
     }
 
     public Date getDatePaid() {
         return datePaid;
     }
 
-    public void setDatePaid(Date datePaid) {
-        this.datePaid = datePaid;
+    public boolean isPaid() {
+        return paid;
     }
 
     @Override
