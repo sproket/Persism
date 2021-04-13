@@ -11,6 +11,50 @@ Persism is a wood simple, auto discovery, auto configuration, and convention ove
     <version>1.0.2</version>
 </dependency>
 ```
+```
+Connection con = DriverManager.getConnection(url, username, password);
+
+// Instantiate a Persism session object with the connection
+Session session = new Session(con);
+
+List<Customer> list = session.query(Customer.class,"select * from Customers where name = ?", "Fred");
+// or
+List<Customer> list = session.query(Customer.class, "sp_FindCustomers(?)", "Fred");
+
+Customer customer;
+customer = session.fetch(Customer.class, "select * from Customers where name = ?", "Fred");
+// or   customer = session.fetch(Customer.class, "sp_FindCustomer(?)", "Fred");
+if (customer != null) {
+    // etc...
+}
+
+// fetch an existing instance
+Customer customer = new Customer();
+customer.setCustomerId(123);
+if (session.fetch(customer)) {
+    // customer found
+} 
+
+// Supports basic types
+String result = session.fetch(String.class, "select Name from Customers where ID = ?", 10);
+
+// Enums are supported 
+int count = session.fetch(int.class, "select count(*) from Customers where Region = ?", Region.West);
+
+// Insert - get autoinc
+Customer customer = new Customer();
+customer.setCustomerName("Fred");
+customer.setAddress("123 Sesame Street");
+
+session.insert(customer); 
+
+// Inserted and new autoinc value assigned 
+assert customer.getCustomerId() > 0
+
+// Updates
+customer.setCustomerName("Barney");
+sesion.update(customer); // Update Customer   
+```
 ## Simple
 
 The API for Persism is small. Mostly you just need a Connection and a persism Session object and you're good to go.
