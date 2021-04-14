@@ -32,7 +32,7 @@ if (customer != null) {
 Customer customer = new Customer();
 customer.setCustomerId(123);
 if (session.fetch(customer)) {
-    // customer found
+    // customer found and initialized
 } 
 
 // Supports basic types
