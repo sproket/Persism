@@ -8,7 +8,7 @@ Persism is a wood simple, auto discovery, auto configuration, and convention ove
 <dependency>
     <groupId>io.github.sproket</groupId>
     <artifactId>persism</artifactId>
-    <version>1.0.2</version>
+    <version>1.0.3</version>
 </dependency>
 ```
 ```
