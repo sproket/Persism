@@ -2,17 +2,21 @@ package net.sf.persism;
 
 import net.sf.persism.categories.LocalDB;
 import net.sf.persism.dao.*;
+import net.sf.persism.dao.records.RecordTest1;
+import net.sf.persism.dao.records.RecordTest2;
 import org.junit.experimental.categories.Category;
 
 import java.io.File;
 import java.io.IOException;
-import java.math.BigDecimal;
 import java.nio.file.Files;
 import java.sql.*;
-import java.text.NumberFormat;
 import java.time.*;
 import java.util.*;
 import java.util.Date;
+
+import static net.sf.persism.Parameters.*;
+import static net.sf.persism.Parameters.none;
+import static net.sf.persism.SQL.sql;
 
 /**
  * Comments for TestH2 go here.
@@ -64,17 +68,29 @@ public final class TestH2 extends BaseTest {
         super.testContactTable();
         assertTrue(true);
 
+        List<Contact> list2 = session.query(Contact.class);
+        log.info(list2);
+
+
         Contact contact = getContactForTest();
-        String sql = session.getMetaData().getSelectStatement(contact, con);
+        String sql = session.getMetaData().getSelectStatement(contact.getClass(), con);
+
+        Query<?> ass = new Query<>(contact, session);
+        ass.where("ass").eq("mii");
+
+        Query<?> q = new Query<>(contact, session);
+        q.select("partnerId", "type", "lastName").where("type").eq(10);
+
+        log.error("SQL: " + ass + " -> " + ass.getParameters());
+        log.error("SQL: " + q + " -> " + q.getParameters());
 
         // this works
         Contact other = new Contact();
         other.setIdentity(contact.getIdentity());
         session.fetch(other);
 
-        // todo the question here is how to allow a user to use the converter
-        // Fails with some DBs unless you convert yourself.
-        List<Contact> contacts = session.query(Contact.class, sql, (Object) Convertor.asBytes(contact.getIdentity()));
+        // TODO Fails with some DBs unless you convert yourself. the question here is how to allow a user to use the converter
+        List<Contact> contacts = session.query(Contact.class, sql(sql), params((Object) Convertor.asBytes(contact.getIdentity())));
         log.info(contacts);
 
     }
@@ -141,7 +157,6 @@ public final class TestH2 extends BaseTest {
                 " Quantity NUMERIC(10) NOT NULL, " +
                 " Discount NUMERIC(10,3) NOT NULL " +
                 ") ");
-
 
         if (UtilsForTests.isTableInDatabase("TABLEMULTIPRIMARY", con)) {
             commands.add("DROP TABLE TABLEMULTIPRIMARY");
@@ -270,6 +285,69 @@ public final class TestH2 extends BaseTest {
                 "BYTE1 INT, " +
                 "BYTE2 INT ) ";
         executeCommand(sql, con);
+
+        if (UtilsForTests.isTableInDatabase("RecordTest1", con)) {
+            executeCommand("DROP TABLE RecordTest1", con);
+        }
+
+        // UUID id, String name, int something, double total
+        executeCommand("CREATE TABLE RecordTest1 ( " +
+                " ID binary(16) NOT NULL PRIMARY KEY," +
+                " NAME varchar(10) NOT NULL, " +
+                " Something int NOT NULL, " +
+                " Total NUMERIC(7,3) NOT NULL " +
+                ") ", con);
+
+        if (UtilsForTests.isTableInDatabase("RecordTest2", con)) {
+            executeCommand("DROP TABLE RecordTest2", con);
+        }
+
+        // int id, int something, double total
+        executeCommand("CREATE TABLE RecordTest2 ( " +
+                " ID IDENTITY PRIMARY KEY, " +
+                " CreatedOn DATETIME default current_timestamp, " +
+                " Something int NOT NULL, " +
+                " Total NUMERIC(7,3) NOT NULL " +
+                ") ", con);
+
+    }
+
+    public void testRecords() {
+
+        UUID id = UUID.randomUUID();
+
+        RecordTest1 rt1 = new RecordTest1(id, "test 1", 100, 25.434);
+        session.insert(rt1);
+
+        RecordTest1 x = session.fetch(RecordTest1.class, sql("select * from RecordTest1"), none());
+        log.warn(x);
+
+        RecordTest1 z = session.fetch(RecordTest1.class, sql("select Total, Something, Name, ID from RecordTest1"), none());
+        log.warn(z);
+        RecordTest2 rt2 = new RecordTest2(0, 100, 25.434);
+        log.info(rt2);
+
+        Result<RecordTest2> result = session.insert(rt2);
+        assertEquals("id should still be 0", 0, rt2.id());
+        assertNull("should have null createdOn", rt2.createdOn());
+        log.info(rt2);
+
+        assertEquals("rows s/b 1", 1, result.rows());
+        assertEquals("Object ID s/b 1", 1, result.dataObject().id());
+        assertNotNull("should have createdOn ", result.dataObject().createdOn());
+        log.info("after: " + result.dataObject());
+        boolean fail = false;
+        try {
+            session.fetch(rt2);
+
+        } catch (PersismException e) {
+            fail = true;
+            assertEquals("s/b 'Cannot read a Record type object with simple fetch. Use the fetch method passing the class, sql and parameters instead.'",
+                    "Cannot read a Record type object with simple fetch. Use the fetch method passing the class, sql and parameters instead.",
+                    e.getMessage());
+        }
+        assertTrue(fail);
+
     }
 
     public void testByteData() {
@@ -286,7 +364,7 @@ public final class TestH2 extends BaseTest {
         session.update(bd);
         log.info(bd);
 
-        session.query(ByteData.class, "select * from ByteData");
+        session.query(ByteData.class, sql("select * from ByteData"));
     }
 
     public void testH2InsertAndReadBack() throws SQLException {
@@ -304,7 +382,7 @@ public final class TestH2 extends BaseTest {
 
         log.info("testH2InsertAndReadBack AFTER INSERT: " + order);
 
-        List<Order> list = session.query(Order.class, "SELECT * FROM ORDERS");
+        List<Order> list = session.query(Order.class, sql("SELECT * FROM ORDERS"));
         log.info(list);
         assertEquals("list should be 1", 1, list.size());
 
@@ -321,7 +399,7 @@ public final class TestH2 extends BaseTest {
         order.setName("PHHHH");
         session.insert(order);
 
-        list = session.query(Order.class, "SELECT * FROM Orders ORDER BY ID");
+        list = session.query(Order.class, sql("SELECT * FROM Orders ORDER BY ID"));
         assertEquals("list size s/b 4", 4, list.size());
         log.info(list);
 
@@ -336,6 +414,9 @@ public final class TestH2 extends BaseTest {
 
         order = list.get(3);
         assertEquals("name s/b PHHHH", "PHHHH", order.getName());
+        log.warn("BELFORE LIOST " + list.size());
+        list = session.query(Order.class, params(1, 2));
+        log.warn("AFTER " + list.size());
     }
 
     @Override
@@ -392,7 +473,6 @@ public final class TestH2 extends BaseTest {
             customer.setCustomerId("123");
             customer.setContactName("FRED");
             session.insert(customer);
-
 
             session.fetch(customer);
 
@@ -480,33 +560,53 @@ public final class TestH2 extends BaseTest {
     }
 
     public void testMultiPrimary() {
-        TableMultiPrimary tmp = new TableMultiPrimary();
-        tmp.setOrderId(1);
-        tmp.setProductId(1);
-        tmp.setUnitPrice(10.23);
-        tmp.setQuantity((short) 256);
-        tmp.setDiscount(0);
-        session.insert(tmp);
-        log.info(tmp);
+        TableMultiPrimary mp = new TableMultiPrimary();
+        mp.setOrderId(1);
+        mp.setProductId(1);
+        mp.setUnitPrice(10.23);
+        mp.setQuantity((short) 256);
+        mp.setDiscount(0);
+        session.insert(mp);
 
-        tmp.setDiscount(0.25f);
+        log.info(mp);
 
-        session.update(tmp);
+        mp.setDiscount(0.25f);
 
-        List<TableMultiPrimary> list = session.query(TableMultiPrimary.class, "SELECT * FROM TableMultiPrimary");
+        session.update(mp);
+
+        TableMultiPrimary mp2 = new TableMultiPrimary();
+        mp2.setOrderId(1);
+        mp2.setProductId(2);
+        mp2.setUnitPrice(9.99);
+        mp2.setQuantity((short) 30);
+        mp2.setDiscount(0);
+        session.insert(mp2);
+
+        log.info(mp2);
+
+        List<TableMultiPrimary> list = session.query(TableMultiPrimary.class, sql("SELECT * FROM TableMultiPrimary WHERE OrderID IN (1,2,3) AND ProductID IN (1,2,3)"));
         log.info(list);
 
-        session.fetch(tmp);
-        session.delete(tmp);
+        list = session.query(TableMultiPrimary.class, params(1, 1));
+        log.info(list);
+
+        list = session.query(TableMultiPrimary.class, params(1, 2));
+        log.info(list);
+
+        list = session.query(TableMultiPrimary.class, params(1, 2, 1, 1));
+        log.info(list);
+
+        session.fetch(mp);
+        session.delete(mp);
 
         boolean nullInsertFail = false;
         try {
-            tmp = new TableMultiPrimary();
-            session.insert(tmp);
-            session.insert(tmp);
-            session.insert(tmp);
-            session.insert(tmp);
-            session.insert(tmp);
+            mp = new TableMultiPrimary();
+            session.insert(mp);
+            session.insert(mp);
+            session.insert(mp);
+            session.insert(mp);
+            session.insert(mp);
 
         } catch (Exception e) {
             log.info(e.getMessage());
@@ -516,6 +616,8 @@ public final class TestH2 extends BaseTest {
         }
 
         assertTrue("nullInsertFail s/b true", nullInsertFail);
+
+        //session.query(TableMultiPrimary.class, PrimaryKey.keys(1,1));
     }
 
     public void testColumnDef() {
@@ -577,7 +679,7 @@ public final class TestH2 extends BaseTest {
         log.info(" ETC>>> " + returnedSavedGame.getWhatTimeIsIt());
         assertTrue("TIME s/b > 0 - we should have time:", cal.get(Calendar.HOUR_OF_DAY) + cal.get(Calendar.MINUTE) + cal.get(Calendar.SECOND) > 0);
 
-        saveGame = session.fetch(SavedGame.class, "select * from SavedGames");
+        saveGame = session.fetch(SavedGame.class, sql("select * from SavedGames"), none());
         assertNotNull(saveGame);
         log.info("SAVED GOLD: " + saveGame.getGold());
         log.info("SAVED SILVER: " + saveGame.getSilver());

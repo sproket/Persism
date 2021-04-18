@@ -16,6 +16,7 @@ import java.sql.Date;
 import java.time.*;
 import java.util.*;
 
+import static net.sf.persism.SQL.sql;
 import static net.sf.persism.UtilsForTests.*;
 
 @Category(LocalDB.class)
@@ -250,7 +251,7 @@ public final class TestSQLite extends BaseTest {
         order.setName("PHHHH");
         session.insert(order);
 
-        List<Order> list = session.query(Order.class, "SELECT * FROM Orders ORDER BY ID");
+        List<Order> list = session.query(Order.class, sql("SELECT * FROM Orders ORDER BY ID"));
         assertEquals("list size s/b 4", 4, list.size());
         log.info("ORDERS\n" + list);
 
@@ -316,7 +317,7 @@ public final class TestSQLite extends BaseTest {
 
         assertTrue("duplicate key should fail", dupFail);
 
-        List<Customer> list = session.query(Customer.class, "select * from customers");
+        List<Customer> list = session.query(Customer.class, sql("select * from customers"));
 
         assertEquals("list should have 1 customer", 1, list.size());
 
@@ -324,7 +325,7 @@ public final class TestSQLite extends BaseTest {
 
         boolean notInitialized = false;
         try {
-            list = session.query(Customer.class, "select Customer_ID from Customers");
+            list = session.query(Customer.class, sql("select Customer_ID from Customers"));
         } catch (PersismException e) {
             log.info(e.getMessage());
             assertTrue("exception should be Customer was not properly initialized", e.getMessage().startsWith("Object class net.sf.persism.dao.Customer was not properly initialized."));
@@ -345,7 +346,7 @@ public final class TestSQLite extends BaseTest {
 
         session.delete(customer);
 
-        list = session.query(Customer.class, "select * from customers");
+        list = session.query(Customer.class, sql("select * from customers"));
 
         assertEquals("list should have 0 customers", 0, list.size());
 
@@ -531,7 +532,7 @@ public final class TestSQLite extends BaseTest {
         // This should work OK
         session.insert(junk);
 
-        log.info(session.query(TableNoPrimary.class, "SELECT * FROM TableNoPrimary"));
+        log.info(session.query(TableNoPrimary.class, sql("SELECT * FROM TableNoPrimary")));
 
         boolean shouldFail = false;
 

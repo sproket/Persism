@@ -30,7 +30,9 @@ public class TestFirebird extends BaseTest {
             String username = props.getProperty("database.username");
             String password = props.getProperty("database.password");
             Class.forName(driver);
+            // defaultHoldable
             con = DriverManager.getConnection(url, username, password);
+//            con = DriverManager.getConnection(url, props);
 
             log.info(con.getMetaData().getDatabaseProductName());
 

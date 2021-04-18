@@ -23,6 +23,8 @@ import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.util.*;
 
+import static net.sf.persism.SQL.sql;
+
 // Does not share common tests - this is just to do some specific tests on SQL with PUBS DB
 @Category(ExternalDB.class)
 public class TestPubs extends TestCase {
@@ -113,10 +115,10 @@ public class TestPubs extends TestCase {
             }
             assertTrue("phone constraint should fail", constraintFailed);
 
-            List<Author> list = session.query(Author.class, "Select * From authors");
+            List<Author> list = session.query(Author.class, sql("Select * From authors"));
             log.info(list.size());
 
-            List<PublisherInfo> publishers = session.query(PublisherInfo.class, "select * from pub_info");
+            List<PublisherInfo> publishers = session.query(PublisherInfo.class, sql("select * from pub_info"));
             log.info(publishers);
 
         } catch (Exception e) {
@@ -128,7 +130,7 @@ public class TestPubs extends TestCase {
     }
 
     public void testJobTypes() {
-        List<JobType> jobs = session.query(JobType.class, "select * from jobs");
+        List<JobType> jobs = session.query(JobType.class, sql("select * from jobs"));
         log.info(jobs);
         log.info(jobs.size());
 

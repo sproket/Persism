@@ -1,7 +1,8 @@
 package net.sf.persism.dao.access;
 
+import com.healthmarketscience.jackcess.complex.Attachment;
 import net.sf.persism.annotations.Column;
-import net.ucanaccess.complex.Attachment;
+
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;

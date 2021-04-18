@@ -2,6 +2,8 @@ package net.sf.persism;
 
 import junit.framework.TestCase;
 import net.sf.persism.dao.*;
+import net.sf.persism.dao.records.CustomerOrderRec;
+import net.sf.persism.dao.records.CustomerOrderGarbage;
 
 import java.lang.reflect.InvocationTargetException;
 import java.math.BigDecimal;
@@ -14,6 +16,9 @@ import java.text.SimpleDateFormat;
 import java.time.*;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
+
+import static net.sf.persism.Parameters.*;
+import static net.sf.persism.SQL.*;
 
 /**
  * Comments for BaseTest go here.
@@ -53,7 +58,7 @@ public abstract class BaseTest extends TestCase {
     }
 
     public void testDates() {
-        List<Customer> list = session.query(Customer.class, "select * from Customers");
+        List<Customer> list = session.query(Customer.class, sql("select * from Customers"), none());
         log.info(list);
 
         Customer customer = new Customer();
@@ -103,7 +108,7 @@ public abstract class BaseTest extends TestCase {
     }
 
     public void testStoredProcs() {
-
+        // todo testStoredProcs?
     }
 
 
@@ -188,7 +193,7 @@ public abstract class BaseTest extends TestCase {
         boolean failOnMissingProperties = false;
 
         try {
-            session.query(Customer.class, "SELECT Country, PHONE from Customers");
+            session.query(Customer.class, sql("SELECT Country, PHONE from Customers"), none());
         } catch (Exception e) {
             log.info(e.getMessage());
             assertTrue("message should contain 'Customer was not properly initialized'", e.getMessage().contains("Customer was not properly initialized"));
@@ -196,8 +201,14 @@ public abstract class BaseTest extends TestCase {
         }
         assertTrue("Should not be able to read fields if there are missing properties", failOnMissingProperties);
 
+        String sql = """
+                SELECT company_NAME, Date_Of_Last_ORDER, contact_title, pHone, rEGion, postal_CODE, FAX, DATE_Registered, 
+                ADDress, CUStomer_id, Contact_name, country, city, STATUS, TestLocalDate, TestLocalDateTime 
+                from Customers
+                """;
+
         // Make sure all columns are NOT the CASE of the ones in the DB.
-        List<Customer> list = session.query(Customer.class, "SELECT company_NAME, Date_Of_Last_ORDER, contact_title, pHone, rEGion, postal_CODE, FAX, DATE_Registered, ADDress, CUStomer_id, Contact_name, country, city, STATUS, TestLocalDate, TestLocalDateTime from Customers");
+        List<Customer> list = session.query(Customer.class, sql(sql), none());
 
         log.info(list);
         assertEquals("list should be 1", 1, list.size());
@@ -207,8 +218,150 @@ public abstract class BaseTest extends TestCase {
     }
 
     public void testQueryResult() throws Exception {
+        queryDataSetup();
+
+        StringBuilder sb = new StringBuilder();
+        sb.append("SELECT c.Customer_ID, c.Company_Name, o.ID Order_ID, o.Name AS Description, o.Date_Paid, o.Created AS DateCreated, o.PAID ");
+        sb.append(" FROM Orders o");
+        sb.append(" JOIN Customers c ON o.Customer_ID = c.Customer_ID");
+
+        String sql = sb.toString();
+        log.info(sql);
+
+        List<CustomerOrder> results = session.query(CustomerOrder.class, sql(sql), none());
+        log.info(results);
+        assertEquals("size should be 4", 4, results.size());
+
+        // ORDER 1 s/b paid = true others paid = false
+        for (CustomerOrder customerOrder : results) {
+            log.info("date created? " + customerOrder.getDateCreated());
+            log.info("date paid? " + customerOrder.getDatePaid());
+            if ("ORDER 1".equals(customerOrder.getDescription())) {
+                assertTrue("order 1 s/b paid", customerOrder.isPaid());
+            } else {
+                assertFalse("order OTHER s/b NOT paid", customerOrder.isPaid());
+            }
+        }
+    }
+
+    public void testSelectMultipleByPrimaryKey() throws SQLException {
+        queryDataSetup();
+        List<Order> orders = session.query(Order.class);
+        log.info(orders);
+
+        assertEquals("should be 4 ", 4, orders.size());
+
+        orders = session.query(Order.class, params(1, 4));
+
+        log.info(orders);
+
+        assertEquals("should be 2 ", 2, orders.size());
+    }
+
+    public void testQueryResultRecord() throws Exception {
+        String sql;
+        StringBuilder sb;
+        List<CustomerOrderRec> results;
+
+        log.error("testQueryResultRecord");
+        queryDataSetup();
+
+        sb = new StringBuilder();
+        sb.append("SELECT c.Customer_ID, c.Company_Name, o.ID Order_ID, o.Name AS Description, o.Date_Paid, o.Created AS DateCreated, o.PAID ");
+        sb.append(" FROM Orders o");
+        sb.append(" JOIN Customers c ON o.Customer_ID = c.Customer_ID");
+
+        sql = sb.toString();
+        log.info(sql);
+
+        results = session.query(CustomerOrderRec.class, sql(sql));
+        log.info(results);
+        assertEquals("size should be 4", 4, results.size());
+
+        // ORDER 1 s/b paid = true others paid = false
+        for (CustomerOrderRec customerOrder : results) {
+            log.info("date created? " + customerOrder.dateCreated());
+            log.info("date paid? " + customerOrder.datePaid());
+            if ("ORDER 1".equals(customerOrder.description())) {
+                assertTrue("order 1 s/b paid", customerOrder.paid());
+            } else {
+                assertFalse("order OTHER s/b NOT paid", customerOrder.paid());
+            }
+        }
+
+        // should fail? missing column? - removed alias o.Created AS DateCreated YES
+        sb = new StringBuilder();
+        sb.append("SELECT c.Customer_ID, c.Company_Name, o.ID Order_ID, o.Name AS Description, o.Date_Paid, o.PAID ");
+        sb.append(" FROM Orders o");
+        sb.append(" JOIN Customers c ON o.Customer_ID = c.Customer_ID");
+
+        sql = sb.toString();
+        log.info(sql);
+
+        boolean failed = false;
+        try {
+            var fail = session.query(CustomerOrderRec.class, sql(sql));
+        } catch (PersismException e) {
+            failed = true;
+            assertEquals("Object class net.sf.persism.dao.records.CustomerOrderRec was not properly initialized. Some properties not initialized in the queried columns (dateCreated).",
+                    e.getMessage());
+        }
+        assertTrue(failed);
+
+    }
+
+    public void testQueryResultRecordNegative() throws Exception {
+        log.error("testQueryResultRecordNegative");
+        queryDataSetup();
+
+        var sb = new StringBuilder();
+
+        sb.append("SELECT c.Customer_ID");
+        sb.append(" FROM Orders o");
+        sb.append(" JOIN Customers c ON o.Customer_ID = c.Customer_ID");
+
+        var sql = sb.toString();
+        log.info(sql);
+
+        boolean failed = false;
+
+        try {
+            var fail1 = session.query(CustomerOrderGarbage.class, sql(sql));
+        } catch (PersismException e) {
+            // should fail since there are other properties on CustomerOrderGarbage not referenced by the query AND we don't do anything with @NotColumn
+            assertTrue("startswith",
+                    e.getMessage().startsWith("Object class net.sf.persism.dao.records.CustomerOrderGarbage was not properly initialized."));
+            failed = true;
+        }
+
+        assertTrue(failed);
+
+        sb = new StringBuilder();
+        sb.append("SELECT c.Customer_ID, c.Company_Name, o.ID Order_ID, o.Name AS Description, o.Date_Paid, o.PAID ");
+        sb.append(" FROM Orders o");
+        sb.append(" JOIN Customers c ON o.Customer_ID = c.Customer_ID");
+
+        sql = sb.toString();
+        log.info(sql);
+
+        failed = false;
+        // should fail will no appropriate constructor
+        // DOESNT FAIL - IGNORES ALL OTHER COLUMNS. WTF
+        try {
+            var fail2 = session.query(CustomerOrderGarbage.class, sql(sql));
+
+        } catch (PersismException e) {
+            // should fail since there are other properties on CustomerOrderGarbage not referenced by the query AND we don't do anything with @NotColumn
+            // AND we can't match these property names
+            assertTrue("startswith",
+                    e.getMessage().startsWith("Object class net.sf.persism.dao.records.CustomerOrderGarbage was not properly initialized."));
+            failed = true;
+        }
+        assertTrue(failed);
+    }
 
 
+    private void queryDataSetup() throws SQLException {
         Customer c1 = new Customer();
         c1.setCustomerId("123");
         c1.setCompanyName("ABC INC");
@@ -231,19 +384,11 @@ public abstract class BaseTest extends TestCase {
         order.setPaid(true);
         session.insert(order);
 
-//        Order order2;
-//        order2 = DAOFactory.newOrder(con);
-//        order2.setCustomerId("446");
-//        order2.setName("ORDER 2");
-//        order2.setCreated(LocalDate.now());
-//        order2.setPaid(true);
-//        session.insert(order);
-
         assertTrue("order # > 0", order.getId() > 0);
 
         session.fetch(order);
 
-        List<Order> orders = session.query(Order.class, "select * from Orders");
+        List<Order> orders = session.query(Order.class, sql("select * from Orders"));
         assertEquals("should have 1 order", 1, orders.size());
         assertTrue("order id s/b > 0", orders.get(0).getId() > 0);
 
@@ -264,30 +409,6 @@ public abstract class BaseTest extends TestCase {
         order.setName("ORDER 4");
         order.setCreated(LocalDate.now());
         session.insert(order);
-
-        // REMOVE DATE_PAID ALIAS
-        StringBuilder sb = new StringBuilder();
-        sb.append("SELECT c.Customer_ID, c.Company_Name, o.ID Order_ID, o.Name AS Description, o.Date_Paid, o.Created AS DateCreated, o.PAID ");
-        sb.append(" FROM Orders o");
-        sb.append(" JOIN Customers c ON o.Customer_ID = c.Customer_ID");
-
-        String sql = sb.toString();
-        log.info(sql);
-
-        List<CustomerOrder> results = session.query(CustomerOrder.class, sql);
-        log.info(results);
-        assertEquals("size should be 4", 4, results.size());
-
-        // ORDER 1 s/b paid = true others paid = false
-        for (CustomerOrder customerOrder : results) {
-            log.info("date created? " + customerOrder.getDateCreated());
-            log.info("date paid? " + customerOrder.getDatePaid());
-            if ("ORDER 1".equals(customerOrder.getDescription())) {
-                assertTrue("order 1 s/b paid", customerOrder.isPaid());
-            } else {
-                assertFalse("order OTHER s/b NOT paid", customerOrder.isPaid());
-            }
-        }
 
     }
 
@@ -313,7 +434,7 @@ public abstract class BaseTest extends TestCase {
         session.delete(customer); // in case it already exists.
         session.insert(customer);
 
-        List<String> list = session.query(String.class, "SELECT Country from Customers");
+        List<String> list = session.query(String.class, sql("SELECT Country from Customers"));
 
 
         Order order;
@@ -331,24 +452,24 @@ public abstract class BaseTest extends TestCase {
         assertEquals("list should have 1", 1, list.size());
         assertEquals("String should be US", "US", list.get(0));
 
-        String countryString = session.fetch(String.class, "SELECT Country from Customers");
+        String countryString = session.fetch(String.class, sql("SELECT Country from Customers"), none());
         assertEquals("String should be US", "US", countryString);
 
         countryString = "NOT US";
-        countryString = session.fetch(String.class, "SELECT Country from Customers");
+        countryString = session.fetch(String.class, sql("SELECT Country from Customers"), none());
         assertEquals("String should be US", "US", countryString);
 
-        List<Date> dates = session.query(Date.class, "select Date_Registered from Customers ");
+        List<Date> dates = session.query(Date.class, sql("select Date_Registered from Customers "));
         log.info(dates);
 
-        Date dt = session.fetch(Date.class, "select Date_Registered from Customers ");
+        Date dt = session.fetch(Date.class, sql("select Date_Registered from Customers "), none());
         log.info(dt);
 
         // Fails because there is no way to instantiate java.sql.Date - no default constructor.
-        List<java.sql.Date> sdates = session.query(java.sql.Date.class, "select Date_Registered from Customers ");
+        List<java.sql.Date> sdates = session.query(java.sql.Date.class, sql("select Date_Registered from Customers "));
         log.info(sdates);
 
-        java.sql.Date sdt = session.fetch(java.sql.Date.class, "select Date_Registered from Customers ");
+        java.sql.Date sdt = session.fetch(java.sql.Date.class, sql("select Date_Registered from Customers "), none());
         log.info(sdt);
 
         // this should fail. We can't do simple read on a primitive
@@ -357,7 +478,9 @@ public abstract class BaseTest extends TestCase {
             session.fetch(countryString);
         } catch (PersismException e) {
             failed = true;
-            assertEquals("message s/b 'Cannot read a primitive type object with this method.'", "Cannot read a primitive type object with this method.", e.getMessage());
+            assertEquals("message s/b 'Cannot read a primitive type object with this method.'",
+                    "Cannot read a primitive type object with simple fetch. Use the fetch method passing the class, sql and parameters instead.",
+                    e.getMessage());
         }
         assertTrue("should have thrown the exception", failed);
 
@@ -426,7 +549,8 @@ public abstract class BaseTest extends TestCase {
         contact.setDivision("Y");
         assertEquals("0 update?", 0, session.update(contact));
 
-        List<Contact> contacts = session.query(Contact.class, "SELECT * FROM Contacts");
+        List<Contact> contacts = session.query(Contact.class, sql("SELECT * FROM Contacts"));
+        log.info(contacts);
         assertEquals("should have 1? ", 1, contacts.size());
 
         Contact contact1 = contacts.get(0);
@@ -475,7 +599,7 @@ public abstract class BaseTest extends TestCase {
                 log.info("contact after insert/update before commit/rollback: " + contactForTest);
 
                 // NOW FAIL the transaction to see that the new contact was not committed
-                session.query(Object.class, "select * FROM TABLE THAT DOESN'T EXIST!!!!");
+                session.query(Object.class, sql("select * FROM TABLE THAT DOESN'T EXIST!!!!"));
             });
         } catch (Exception e) {
             log.info("SHOULD FAIL: " + e);
@@ -548,40 +672,41 @@ public abstract class BaseTest extends TestCase {
         testSQLTypes1.setUtilDateAndTime(udate);
         log.info("BEFORE: " + testSQLTypes1);
 
-        session.insert(testSQLTypes1);
+        session.withTransaction(() -> {
+            session.insert(testSQLTypes1);
 
-        DateTestSQLTypes testSQLTypes2 = new DateTestSQLTypes();
-        testSQLTypes2.setId(testSQLTypes1.getId());
-        assertTrue(session.fetch(testSQLTypes2));
+            DateTestSQLTypes testSQLTypes2 = new DateTestSQLTypes();
+            testSQLTypes2.setId(testSQLTypes1.getId());
+            assertTrue(session.fetch(testSQLTypes2));
 
-        log.info("AFTER:  " + testSQLTypes2);
+            log.info("AFTER:  " + testSQLTypes2);
 
-        SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm.ss.SSS");
+            SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm.ss.SSS");
 
-        assertEquals("date s/b '1992-02-17'", sdate.toString(), testSQLTypes2.getDateOnly().toString());
-        assertEquals("time s/b '22:23:41'", time.toString(), testSQLTypes2.getTimeOnly().toString());
-        if (connectionType == ConnectionTypes.MySQL) {
-            // MySQL rounds off milliseconds - comes out like 1992-02-17 10:23:41.0
-            String s1 = ts.toString();
-            String s2 = testSQLTypes2.getDateAndTime().toString();
+            assertEquals("date s/b '1992-02-17'", sdate.toString(), testSQLTypes2.getDateOnly().toString());
+            assertEquals("time s/b '22:23:41'", time.toString(), testSQLTypes2.getTimeOnly().toString());
+            if (connectionType == ConnectionTypes.MySQL) {
+                // MySQL rounds off milliseconds - comes out like 1992-02-17 10:23:41.0
+                String s1 = ts.toString();
+                String s2 = testSQLTypes2.getDateAndTime().toString();
 
-            assertEquals("datetime s/b '1992-02-17 22:23:41'", s1.substring(0, s1.indexOf('.')), s2.substring(0, s2.indexOf('.')));
+                assertEquals("datetime s/b '1992-02-17 22:23:41'", s1.substring(0, s1.indexOf('.')), s2.substring(0, s2.indexOf('.')));
 
-            assertEquals("util date s/b '1992-02-17 22:23.41.000'", "1992-02-17 22:23.41.000", df.format(testSQLTypes2.getUtilDateAndTime()));
+                assertEquals("util date s/b '1992-02-17 22:23.41.000'", "1992-02-17 22:23.41.000", df.format(testSQLTypes2.getUtilDateAndTime()));
 
-        } else {
-            assertEquals("datetime s/b '1992-02-17 22:23:41.107'", ts.toString(), testSQLTypes2.getDateAndTime().toString());
-            assertEquals("util date s/b '1992-02-17 22:23.41.107'", "1992-02-17 22:23.41.107", df.format(testSQLTypes2.getUtilDateAndTime()));
-        }
+            } else {
+                assertEquals("datetime s/b '1992-02-17 22:23:41.107'", ts.toString(), testSQLTypes2.getDateAndTime().toString());
+                assertEquals("util date s/b '1992-02-17 22:23.41.107'", "1992-02-17 22:23.41.107", df.format(testSQLTypes2.getUtilDateAndTime()));
+            }
 
 
-        session.update(testSQLTypes2);
+            session.update(testSQLTypes2);
 
-        List<DateTestSQLTypes> list = session.query(DateTestSQLTypes.class, "select * FROM DateTestSQLTypes");
-        log.info(list);
+            List<DateTestSQLTypes> list = session.query(DateTestSQLTypes.class, sql("select * FROM DateTestSQLTypes"));
+            log.info(list);
 
-        assertTrue(session.delete(testSQLTypes1) > 0);
-
+            assertTrue(session.delete(testSQLTypes1) > 0);
+        });
     }
 
     private void LocalDateTypesTest() {
@@ -600,58 +725,61 @@ public abstract class BaseTest extends TestCase {
 
         log.info("BEFORE: " + testLocalTypes1);
 
-        session.insert(testLocalTypes1);
+        session.withTransaction(() -> {
+            session.insert(testLocalTypes1);
 
-        DateTestLocalTypes testLocalTypes2 = new DateTestLocalTypes();
-        testLocalTypes2.setId(testLocalTypes1.getId());
-        assertTrue(session.fetch(testLocalTypes2));
+            DateTestLocalTypes testLocalTypes2 = new DateTestLocalTypes();
+            testLocalTypes2.setId(testLocalTypes1.getId());
+            assertTrue(session.fetch(testLocalTypes2));
 
-        log.info("AFTER:  " + testLocalTypes2);
-        String localTime = lt.format(DateTimeFormatter.ISO_TIME);
-        // Remove millis since most of the DBs don't store it anyway
-        if (localTime.indexOf('.') > 0) {
-            localTime = localTime.substring(0, localTime.indexOf('.'));
-        }
-        assertEquals("date s/b '1997-02-17'", ld.format(DateTimeFormatter.ISO_DATE), testLocalTypes2.getDateOnly().format(DateTimeFormatter.ISO_DATE));
-        assertEquals("time s/b '10:23:43'", localTime, testLocalTypes2.getTimeOnly().format(DateTimeFormatter.ISO_TIME));
+            log.info("AFTER:  " + testLocalTypes2);
+            String localTime = lt.format(DateTimeFormatter.ISO_TIME);
+            // Remove millis since most of the DBs don't store it anyway
+            if (localTime.indexOf('.') > 0) {
+                localTime = localTime.substring(0, localTime.indexOf('.'));
+            }
+            assertEquals("date s/b '1997-02-17'", ld.format(DateTimeFormatter.ISO_DATE), testLocalTypes2.getDateOnly().format(DateTimeFormatter.ISO_DATE));
+            assertEquals("time s/b '10:23:43'", localTime, testLocalTypes2.getTimeOnly().format(DateTimeFormatter.ISO_TIME));
 
-        if (connectionType == ConnectionTypes.MySQL) {
-            // MySQL rounds off milliseconds - 1998-02-17T10:23:43.567 comes out like 1998-02-17T10:23:43
-            String s = ldt.format(DateTimeFormatter.ISO_DATE_TIME);
-            assertEquals("datetime s/b '1998-02-17 10:23:43'",
-                    s.substring(0, s.indexOf('.')),
-                    testLocalTypes2.getDateAndTime().format(DateTimeFormatter.ISO_DATE_TIME));
-        } else {
-            assertEquals("datetime s/b '1998-02-17 10:23:43.567'", ldt.format(DateTimeFormatter.ISO_DATE_TIME), testLocalTypes2.getDateAndTime().format(DateTimeFormatter.ISO_DATE_TIME));
-        }
+            if (connectionType == ConnectionTypes.MySQL) {
+                // MySQL rounds off milliseconds - 1998-02-17T10:23:43.567 comes out like 1998-02-17T10:23:43
+                String s = ldt.format(DateTimeFormatter.ISO_DATE_TIME);
+                assertEquals("datetime s/b '1998-02-17 10:23:43'",
+                        s.substring(0, s.indexOf('.')),
+                        testLocalTypes2.getDateAndTime().format(DateTimeFormatter.ISO_DATE_TIME));
+            } else {
+                assertEquals("datetime s/b '1998-02-17 10:23:43.567'", ldt.format(DateTimeFormatter.ISO_DATE_TIME), testLocalTypes2.getDateAndTime().format(DateTimeFormatter.ISO_DATE_TIME));
+            }
 
-        session.update(testLocalTypes2);
+            session.update(testLocalTypes2);
 
-        DateTestLocalTypes testLocalTypes3 = new DateTestLocalTypes();
-        testLocalTypes3.setId(2);
-        testLocalTypes3.setDescription("time later in the day to test awfulness of SQLite");
-        testLocalTypes3.setTimeOnly(lt2);
+            DateTestLocalTypes testLocalTypes3 = new DateTestLocalTypes();
+            testLocalTypes3.setId(2);
+            testLocalTypes3.setDescription("time later in the day to test awfulness of SQLite");
+            testLocalTypes3.setTimeOnly(lt2);
 
-        assertEquals("s/b 1?", 1, session.insert(testLocalTypes3));
+            assertEquals("s/b 1?", 1, session.insert(testLocalTypes3).rows());
 
-        List<DateTestLocalTypes> list = session.query(DateTestLocalTypes.class, "select * FROM DateTestLocalTypes");
-        log.info(list);
-
-
-        DateTestLocalTypes testLocalTypes4 = new DateTestLocalTypes();
-        testLocalTypes4.setId(2);
-        assertTrue(session.fetch(testLocalTypes4));
-
-        localTime = lt2.format(DateTimeFormatter.ISO_TIME);
-        // Remove millis since most of the DBs don't store it anyway
-        if (localTime.indexOf('.') > 0) {
-            localTime = localTime.substring(0, localTime.indexOf('.'));
-        }
-        assertEquals("time s/b " + localTime + " (FROM lt2)", localTime, testLocalTypes4.getTimeOnly().toString());
+            List<DateTestLocalTypes> list = session.query(DateTestLocalTypes.class, sql("select * FROM DateTestLocalTypes"));
+            log.info(list);
 
 
-        assertTrue(session.delete(testLocalTypes1) > 0);
-        assertTrue(session.delete(testLocalTypes3) > 0);
+            DateTestLocalTypes testLocalTypes4 = new DateTestLocalTypes();
+            testLocalTypes4.setId(2);
+            assertTrue(session.fetch(testLocalTypes4));
+
+            localTime = lt2.format(DateTimeFormatter.ISO_TIME);
+            // Remove millis since most of the DBs don't store it anyway
+            if (localTime.indexOf('.') > 0) {
+                localTime = localTime.substring(0, localTime.indexOf('.'));
+            }
+            assertEquals("time s/b " + localTime + " (FROM lt2)", localTime, testLocalTypes4.getTimeOnly().toString());
+
+
+            assertTrue(session.delete(testLocalTypes1) > 0);
+            assertTrue(session.delete(testLocalTypes3) > 0);
+
+        });
     }
 
     // internal insert/update/delete/select statements pass parameters through a converter
@@ -755,22 +883,21 @@ public abstract class BaseTest extends TestCase {
 
         assertEquals("country s/b US", "US", customer.getCountry());
 
-        Invoice invoice = new Invoice("MOO", 10.5f, 10, 0, new BigDecimal("10.23"), false);
-//        invoice.setCustomerId("MOO");
-//        invoice.setPrice(10.5f);
-//        invoice.setQuantity(10);
-//        invoice.setTotal(new BigDecimal(invoice.getPrice() * invoice.getQuantity()));
-//        invoice.setPaid(true);
-//        invoice.setActualPrice(new BigDecimal("10.23"));
+        Invoice invoice = new Invoice();
+        invoice.setCustomerId("MOO");
+        invoice.setPrice(10.5f);
+        invoice.setQuantity(10);
+        invoice.setPaid(true);
+        invoice.setActualPrice(new BigDecimal("10.23"));
 
         session.insert(invoice);
 
 
-        assertTrue("Invoice ID > 0", invoice.invoiceId() > 0);
-        assertNotNull("Created s/b not null", invoice.created()); // note no setter
+        assertTrue("Invoice ID > 0", invoice.getInvoiceId() > 0);
+        assertNotNull("Created s/b not null", invoice.getCreated()); // note no setter
 
 
-        List<Invoice> invoices = session.query(Invoice.class, "select * from Invoices where CUSTOMER_ID=?", "MOO");
+        List<Invoice> invoices = session.query(Invoice.class, sql("select * from Invoices where CUSTOMER_ID=?"), params("MOO"));
         log.info(invoices);
         assertEquals("invoices s/b 1", 1, invoices.size());
 
@@ -778,30 +905,16 @@ public abstract class BaseTest extends TestCase {
 
         log.info(invoice);
 
-        assertEquals("customer s/b MOO", "MOO", invoice.customerId());
-        assertEquals("invoice # s/b 1", 1, invoice.invoiceId().intValue());
-        assertEquals("price s/b 10.5", 10.5f, invoice.price());
-        assertEquals("qty s/b 10", 10, invoice.quantity());
-        assertFalse("paid s/b false", invoice.paid());
+        assertEquals("customer s/b MOO", "MOO", invoice.getCustomerId());
+        assertEquals("invoice # s/b 1", 1, invoice.getInvoiceId().intValue());
+        assertEquals("price s/b 10.5", 10.5f, invoice.getPrice());
+        assertEquals("qty s/b 10", 10, invoice.getQuantity());
+        assertTrue("paid s/b true", invoice.isPaid());
 
         NumberFormat nf = NumberFormat.getInstance();
 
-        assertEquals("totals/b 105.00", nf.format(105.0f), nf.format(invoice.total()));
-
-
-        Invoice updatedInvoice = new Invoice(invoice.invoiceId(), invoice.customerId(), invoice.price(), invoice.quantity() + 20, invoice.discount(), invoice.actualPrice(),invoice.created(), true);
-        session.update(updatedInvoice);
-
-
-        invoices = session.query(Invoice.class, "select * from Invoices where CUSTOMER_ID=?", "MOO");
-        log.info(invoices);
-        assertEquals("invoices s/b 1", 1, invoices.size());
-        updatedInvoice = invoices.get(0);
-        assertEquals("qty should now be 20", 20, updatedInvoice.quantity());
-        assertTrue("paid s/b true", updatedInvoice.paid());
-
+        assertEquals("totals/b 105.00", nf.format(105.0f), invoice.getTotal().toString());
     }
-
 
 
     public void testGetDbMetaData() throws SQLException {

@@ -6,7 +6,9 @@ import net.sf.persism.annotations.Table;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
 import java.sql.*;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
@@ -74,7 +76,7 @@ final class MetaData {
     }
 
     static synchronized MetaData getInstance(Connection con) throws SQLException {
-
+        // TODO null check and find a work around for informix
         String url = con.getMetaData().getURL();
         if (metaData.get(url) == null) {
             metaData.put(url, new MetaData(con));
@@ -113,12 +115,12 @@ final class MetaData {
     }
 
     // Should only be called IF the map does not contain the column meta information yet.
-    // Version for Queries
+    // Version for Queries NO TABLES CALLS THIS TOO WANKER
     private synchronized <T> Map<String, PropertyInfo> determinePropertyInfo(Class<T> objectClass, ResultSet rs) {
         // double check map - note this could be called with a Query were we never have that in here
-        if (propertyInfoMap.containsKey(objectClass)) {
-            return propertyInfoMap.get(objectClass);
-        }
+//        if (propertyInfoMap.containsKey(objectClass)) {
+//            return propertyInfoMap.get(objectClass);
+//        }
 
         try {
             ResultSetMetaData rsmd = rs.getMetaData();
@@ -157,8 +159,8 @@ final class MetaData {
                     log.warn("Property not found for column: " + realColumnName + " class: " + objectClass);
                 }
             }
-
-            propertyInfoMap.put(objectClass, columns);
+// TODO HOW ARE WE HANDLING QUERIES? FFS
+//            propertyInfoMap.put(objectClass, columns);
             return columns;
 
         } catch (SQLException e) {
@@ -330,7 +332,7 @@ final class MetaData {
         return determinePropertyInfo(objectClass);
     }
 
-    static synchronized <T> Collection<PropertyInfo> determinePropertyInfo(Class<T> objectClass) {
+    private static synchronized <T> Collection<PropertyInfo> determinePropertyInfo(Class<T> objectClass) {
         if (propertyMap.containsKey(objectClass)) {
             return propertyMap.get(objectClass);
         }
@@ -352,8 +354,12 @@ final class MetaData {
         Method[] methods = objectClass.getMethods();
 
         for (Field field : fields) {
+            // Skip static fields
+            if (Modifier.isStatic(field.getModifiers())) {
+                continue;
+            }
             log.debug("Field Name: %s", field.getName());
-            String propertyName = field.getName().substring(0, 1).toUpperCase() + field.getName().substring(1);
+            String propertyName = field.getName();
             log.debug("Property Name: *%s* ", propertyName);
 
             PropertyInfo propertyInfo = new PropertyInfo();
@@ -365,7 +371,8 @@ final class MetaData {
             }
 
             for (Method method : methods) {
-                String propertyNameToTest = propertyName;
+                String propertyNameToTest = field.getName().substring(0, 1).toUpperCase() + field.getName().substring(1);
+                log.debug("property name for testing %s", propertyNameToTest);
                 if (propertyNameToTest.startsWith("Is") && propertyNameToTest.length() > 2 && Character.isUpperCase(propertyNameToTest.charAt(2))) {
                     propertyNameToTest = propertyName.substring(2);
                 }
@@ -399,7 +406,13 @@ final class MetaData {
             Map.Entry<String, PropertyInfo> entry = it.next();
             PropertyInfo info = entry.getValue();
             if (info.getAnnotation(NotColumn.class) != null) {
-                it.remove();
+
+                if (!Util.isRecord(objectClass)) {
+                    it.remove();
+                } else {
+                    log.warn("@NotColumn is not applicable for records. Ignoring. Please remove this annotation from " + info.propertyName + " to prevent these warnings in the future.");
+                }
+
             }
         }
 
@@ -606,32 +619,32 @@ final class MetaData {
         return deleteStatement;
     }
 
-    String getSelectStatement(Object object, Connection connection) {
-        if (selectStatementsMap.containsKey(object.getClass())) {
-            return selectStatementsMap.get(object.getClass());
+    String getSelectStatement(Class<?> objectClass, Connection connection) {
+        if (selectStatementsMap.containsKey(objectClass)) {
+            return selectStatementsMap.get(objectClass);
         }
-        return determineSelectStatement(object, connection);
+        return determineSelectStatement(objectClass, connection);
     }
 
-    private synchronized String determineSelectStatement(Object object, Connection connection) {
+    private synchronized String determineSelectStatement(Class<?> objectClass, Connection connection) {
 
-        if (selectStatementsMap.containsKey(object.getClass())) {
-            return selectStatementsMap.get(object.getClass());
+        if (selectStatementsMap.containsKey(objectClass)) {
+            return selectStatementsMap.get(objectClass);
         }
 
         String sd = connectionType.getKeywordStartDelimiter();
         String ed = connectionType.getKeywordEndDelimiter();
 
-        String tableName = getTableName(object.getClass(), connection);
+        String tableName = getTableName(objectClass, connection);
 
-        List<String> primaryKeys = getPrimaryKeys(object.getClass(), connection);
+        List<String> primaryKeys = getPrimaryKeys(objectClass, connection);
 
         StringBuilder sb = new StringBuilder();
         sb.append("SELECT ");
 
         String sep = "";
 
-        Map<String, ColumnInfo> columns = getColumns(object.getClass(), connection);
+        Map<String, ColumnInfo> columns = getColumns(objectClass, connection);
         for (String column : columns.keySet()) {
             ColumnInfo columnInfo = columns.get(column);
             sb.append(sep).append(sd).append(columnInfo.columnName).append(ed);
@@ -648,10 +661,10 @@ final class MetaData {
         String selectStatement = sb.toString();
 
         if (log.isDebugEnabled()) {
-            log.debug("determineSelectStatement for %s is %s", object.getClass(), selectStatement);
+            log.debug("determineSelectStatement for %s is %s", objectClass, selectStatement);
         }
 
-        selectStatementsMap.put(object.getClass(), selectStatement);
+        selectStatementsMap.put(objectClass, selectStatement);
 
         return selectStatement;
     }
@@ -732,9 +745,10 @@ final class MetaData {
     }
 
     <T> Map<String, PropertyInfo> getQueryColumnsPropertyInfo(Class<T> objectClass, ResultSet rs) throws PersismException {
-        if (propertyInfoMap.containsKey(objectClass)) {
-            return propertyInfoMap.get(objectClass);
-        }
+        // should not be mapped since ResultSet could contain different # of columns at different times.
+//        if (propertyInfoMap.containsKey(objectClass)) {
+//            return propertyInfoMap.get(objectClass);
+//        }
 
         return determinePropertyInfo(objectClass, rs);
     }
@@ -838,11 +852,11 @@ final class MetaData {
 
         guess = camelToTitleCase(className);
         guesses.add(guess); // name with spaces
-        guesses.add(replaceAll(guess, ' ', '_')); // name with spaces changed to _
+        guesses.add(guess.replaceAll(" ", "_")); // name with spaces changed to _
 
         guess = camelToTitleCase(pluralClassName);
         guesses.add(guess); // plural name with spaces
-        guesses.add(replaceAll(guess, ' ', '_')); // plural name with spaces changed to _
+        guesses.add(guess.replaceAll(" ", "_")); // plural name with spaces changed to _
     }
 
     List<String> getPrimaryKeys(Class<?> objectClass, Connection connection) throws PersismException {

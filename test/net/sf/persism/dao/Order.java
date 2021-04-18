@@ -117,7 +117,7 @@ public class Order extends PersistableObject {
 
     @Override
     public String toString() {
-        return "Order{" +
+        return "\nOrder{" +
                 "id=" + id +
                 ", name='" + name + '\'' +
                 ", created=" + created +
@@ -128,6 +128,6 @@ public class Order extends PersistableObject {
                 ", prepaid=" + prepaid +
                 ", isCollect=" + isCollect +
                 ", isCancelled=" + isCancelled +
-                '}';
+                "}";
     }
 }

@@ -1,6 +1,5 @@
 package net.sf.persism.dao.northwind;
 
-import net.sf.persism.annotations.NotColumn;
 import net.sf.persism.annotations.NotTable;
 
 import java.math.BigDecimal;

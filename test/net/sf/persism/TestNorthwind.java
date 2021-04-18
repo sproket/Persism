@@ -18,6 +18,9 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Properties;
 
+import static net.sf.persism.Parameters.*;
+import static net.sf.persism.SQL.sql;
+
 
 /**
  * Does not share common tests - this is just to do some specific tests on SQL with Northwind DB
@@ -68,7 +71,7 @@ public class TestNorthwind extends TestCase {
 
         // Images come across as byte arrays
         try {
-            List<Category> list = session.query(Category.class, "select * from categories");
+            List<Category> list = session.query(Category.class, sql("select * from categories"));
 
             for (Category cat : list) {
                 log.info(cat);
@@ -109,7 +112,7 @@ public class TestNorthwind extends TestCase {
             session.delete(customer);
 
 
-            List<Customer> list = session.query(Customer.class, "select top 10 * from Customers");
+            List<Customer> list = session.query(Customer.class, sql("select top 10 * from Customers"));
 
             for (Customer cust : list) {
                 log.info(cust);
@@ -175,7 +178,7 @@ public class TestNorthwind extends TestCase {
     public void testQuery() {
 
         long now = System.currentTimeMillis();
-        List<OrderView> list = session.query(OrderView.class, ORDER_QUERY);
+        List<OrderView> list = session.query(OrderView.class, sql(ORDER_QUERY));
         log.info("time to get list " + (System.currentTimeMillis() - now));
 
 
@@ -183,11 +186,11 @@ public class TestNorthwind extends TestCase {
         log.info("rows: " + list.size());
 
         now = System.currentTimeMillis();
-        list = session.query(OrderView.class, ORDER_QUERY);
+        list = session.query(OrderView.class, sql(ORDER_QUERY));
         log.info("time to get list " + (System.currentTimeMillis() - now));
 
         now = System.currentTimeMillis();
-        list = session.query(OrderView.class, ORDER_QUERY);
+        list = session.query(OrderView.class, sql(ORDER_QUERY));
         log.info("time to get list " + (System.currentTimeMillis() - now));
 
     }
@@ -265,7 +268,7 @@ public class TestNorthwind extends TestCase {
                 customer.setDateOfLastResort(new Date(System.currentTimeMillis()));
                 session.update(customer);
 // remove orders and details for 'MOO'
-                List<Order> orders = session.query(Order.class, "select * from orders where customerID=?", "MOO");
+                List<Order> orders = session.query(Order.class, sql("select * from orders where customerID=?"), params("MOO"));
                 for (Order order : orders) {
                     session.execute("DELETE FROM \"ORDER Details\" WHERE OrderID=?", order.getOrderId());
                 }
@@ -277,19 +280,19 @@ public class TestNorthwind extends TestCase {
 
             // Find employee to place this order
             // Leverling	Janet
-            Employee employee = session.fetch(Employee.class, "SELECT * FROM Employees WHERE LastName=? and FirstName=?", "Leverling", "Janet");
+            Employee employee = session.fetch(Employee.class, sql("SELECT * FROM Employees WHERE LastName=? and FirstName=?"), params("Leverling", "Janet"));
 
             assertTrue("employee should be found ", employee != null && employee.getEmployeeId() > 0);
             employee.setStatus('a');
             employee.setWhatTimeIsIt(new Time(System.currentTimeMillis()));
             session.update(employee);
 
-            employee = session.fetch(Employee.class, "SELECT * FROM Employees WHERE LastName=? and FirstName=?", "Leverling", "Janet");
+            employee = session.fetch(Employee.class, sql("SELECT * FROM Employees WHERE LastName=? and FirstName=?"), params("Leverling", "Janet"));
             assertNotNull(employee);
             assertEquals("status s/b 'a'", 'a', employee.getStatus());
 
             // Find shipper
-            Shipper shipper = session.fetch(Shipper.class, "SELECT * FROM Shippers WHERE CompanyName=?", "Speedy Express");
+            Shipper shipper = session.fetch(Shipper.class, sql("SELECT * FROM Shippers WHERE CompanyName=?"), params("Speedy Express"));
             assertTrue("Shipper should be found ", shipper != null && shipper.getShipperId() > 0);
 
 
@@ -307,7 +310,7 @@ public class TestNorthwind extends TestCase {
 
             session.insert(order);
 
-            List<Product> products = session.query(Product.class, "select * from Products where ProductName like ?", "%Cranberry%");
+            List<Product> products = session.query(Product.class, sql("select * from Products where ProductName like ?"), params("%Cranberry%"));
             assertEquals("should have 1", 1, products.size());
 
             Product product = products.get(0);
@@ -401,7 +404,7 @@ public class TestNorthwind extends TestCase {
 
         boolean failOnMissingProperties = false;
         try {
-            session.query(Customer.class, "SELECT Country from CUSTOMERS");
+            session.query(Customer.class, sql("SELECT Country from CUSTOMERS"));
         } catch (Exception e) {
             log.info(e.getMessage());
             assertTrue("message should contain 'Customer was not properly initialized'", e.getMessage().contains("Customer was not properly initialized"));
@@ -410,7 +413,7 @@ public class TestNorthwind extends TestCase {
         assertTrue("Should not be able to read fields if there are missing properties", failOnMissingProperties);
 
         // Make sure all columns are NOT the CASE of the ones in the DB.
-        List<Customer> list = session.query(Customer.class, "SELECT companyNAME, contacttitle, pHone, rEGion, postalCODE, FAX, ADDress, CUStomerid, conTacTname, coUntry, cIty, DAteOfLastResort,DATEOFDOOM, wtfDATE, nowMF, TESTLocalDateTime  from CuStOMeRS WHERE CustomerID='MOo'");
+        List<Customer> list = session.query(Customer.class, sql("SELECT companyNAME, contacttitle, pHone, rEGion, postalCODE, FAX, ADDress, CUStomerid, conTacTname, coUntry, cIty, DAteOfLastResort,DATEOFDOOM, wtfDATE, nowMF, TESTLocalDateTime  from CuStOMeRS WHERE CustomerID='MOo'"));
 
         log.info(list);
         assertEquals("list should be 1", 1, list.size());

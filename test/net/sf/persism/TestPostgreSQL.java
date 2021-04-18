@@ -13,6 +13,8 @@ import java.time.LocalTime;
 import java.time.ZoneId;
 import java.util.*;
 
+import static net.sf.persism.SQL.sql;
+
 /**
  * Comments for TestPostgreSQL go here.
  *
@@ -271,7 +273,7 @@ public class TestPostgreSQL extends BaseTest {
         // this was a test to see if I could prepare a statement and return all columns. Nope.....
 
         // ensure metadata is there
-        log.info(session.query(Contact.class, "select * from Contacts"));
+        log.info(session.query(Contact.class, sql("select * from Contacts")));
 
         String insertStatement = "INSERT INTO Contacts (FirstName, LastName, Type, Status) VALUES ( ?, ?, ?, ? ) ";
 

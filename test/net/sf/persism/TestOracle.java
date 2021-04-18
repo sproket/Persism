@@ -23,6 +23,8 @@ import java.util.Date;
 import java.util.List;
 import java.util.Properties;
 
+import static net.sf.persism.SQL.sql;
+
 @Category(ExternalDB.class)
 public final class TestOracle extends BaseTest {
 
@@ -351,7 +353,7 @@ end;
         order.setName("MOO3");
         session.insert(order);
 
-        List<Order> list = session.query(Order.class, "select * from ORDERS");
+        List<Order> list = session.query(Order.class, sql("select * from ORDERS"));
         log.info("List of orders:" + list);
 
     }
@@ -437,7 +439,7 @@ end;
         assertNull(test.isPaid());
         assertNull(test.isGarbage());
 
-        session.query(OracleBit.class, "select * from OracleBit");
+        session.query(OracleBit.class, sql("select * from OracleBit"));
 
         // count 3 after from query
     }

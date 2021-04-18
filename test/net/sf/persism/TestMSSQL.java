@@ -11,6 +11,7 @@ import net.sf.persism.categories.ExternalDB;
 import net.sf.persism.dao.*;
 import org.junit.experimental.categories.Category;
 
+import javax.net.ssl.SSLParameters;
 import java.math.BigDecimal;
 import java.sql.*;
 import java.sql.Date;
@@ -18,6 +19,8 @@ import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 
+import static net.sf.persism.Parameters.params;
+import static net.sf.persism.SQL.sql;
 import static net.sf.persism.UtilsForTests.*;
 
 @Category(ExternalDB.class)
@@ -27,6 +30,7 @@ public class TestMSSQL extends BaseTest {
 
     @Override
     protected void setUp() throws Exception {
+
 
         // LIST SYSTEM PROPERTIES
         System.getProperties().list(System.out);
@@ -43,6 +47,8 @@ public class TestMSSQL extends BaseTest {
             //        BaseTest.mssqlmode = false; // to run in JTDS MODE
             log.info("SQLMODE? " + BaseTest.mssqlmode);
             con = MSSQLDataSource.getInstance().getConnection();
+            //TODO SHOULD I DO THIS ALWAYS? con.setHoldability(ResultSet.HOLD_CURSORS_OVER_COMMIT);
+
             log.info("PRODUCT? " + con.getMetaData().getDriverName() + " - " + con.getMetaData().getDriverVersion());
 
             createTables();
@@ -573,7 +579,7 @@ public class TestMSSQL extends BaseTest {
         barney.setAmountOwed(100.23f);
         barney.setNotes("B:AH B:AH VBLAH\r  BLAH BLAY!");
 
-        int count = session.query(Contact.class, "select * from Contacts").size();
+        int count = session.query(Contact.class, sql("select * from Contacts")).size();
 
         boolean failed = false;
         try {
@@ -588,9 +594,9 @@ public class TestMSSQL extends BaseTest {
 
         assertEquals("should have same count in Contacts",
                 count,
-                session.query(Contact.class, "select * from Contacts").size());
+                session.query(Contact.class, sql("select * from Contacts")).size());
 
-        log.info(session.query(Contact.class, "select * from Contacts"));
+        log.info(session.query(Contact.class, sql("select * from Contacts")));
 
     }
 
@@ -604,7 +610,7 @@ public class TestMSSQL extends BaseTest {
         boolean fail = false;
         try {
             con.setAutoCommit(false);
-            session.query(Procedure.class, "SELECT ExamCode_No, EXAMTYPE_NO, DESC_E FROM EXAMCODE");
+            session.query(Procedure.class, sql("SELECT ExamCode_No, EXAMTYPE_NO, DESC_E FROM EXAMCODE"));
         } catch (PersismException e) {
             fail = true;
             assertTrue("exception should be 'Object class net.sf.persism.dao.Procedure was not properly initialized.'", e.getMessage().startsWith("Object class net.sf.persism.dao.Procedure was not properly initialized"));
@@ -613,12 +619,12 @@ public class TestMSSQL extends BaseTest {
         assertTrue(fail);
 
         long now = System.currentTimeMillis();
-        List<Procedure> list = session.query(Procedure.class, "SELECT * FROM EXAMCODE");
+        List<Procedure> list = session.query(Procedure.class, sql("SELECT * FROM EXAMCODE"));
         log.info("time to read procs 1: " + (System.currentTimeMillis() - now));
         log.info(list.toString());
 
         now = System.currentTimeMillis();
-        list = session.query(Procedure.class, "SELECT * FROM EXAMCODE");
+        list = session.query(Procedure.class, sql("SELECT * FROM EXAMCODE"));
         log.info("time to read procs 2: " + (System.currentTimeMillis() - now));
 
         for (Procedure procedure : list) {
@@ -647,18 +653,18 @@ public class TestMSSQL extends BaseTest {
         assertTrue("proc1 should have an id? ", proc1.getExamCodeNo() > 0);
 
         // test fetch
-        Procedure proc2 = session.fetch(Procedure.class, "select * from EXAMCODE WHERE ExamCode_No=?", 2);
+        Procedure proc2 = session.fetch(Procedure.class, sql("select * from EXAMCODE WHERE ExamCode_No=?"), Parameters.params(2));
         assertNotNull("proc2 should be found ", proc2);
 
-        Procedure proc3 = session.fetch(Procedure.class, "select * from EXAMCODE WHERE ExamCode_No=?", -99);
+        Procedure proc3 = session.fetch(Procedure.class, sql("select * from EXAMCODE WHERE ExamCode_No=?"), Parameters.params(-99));
         assertNull("proc3 should NOT be found ", proc3);
 
-        Procedure proc4 = session.fetch(Procedure.class, "select * from EXAMCODE WHERE ExamCode_No=?", 2);
+        Procedure proc4 = session.fetch(Procedure.class, sql("select * from EXAMCODE WHERE ExamCode_No=?"), Parameters.params(2));
         assertNotNull("proc4 should be found ", proc4);
 
 
         now = System.currentTimeMillis();
-        list = session.query(Procedure.class, "select * from EXAMCODE WHERE ExamCode_No=?", 2);
+        list = session.query(Procedure.class, sql("select * from EXAMCODE WHERE ExamCode_No=?"), params(2));
         log.info("time to read procs 3: " + (System.currentTimeMillis() - now));
         assertEquals("should only have 1 proc in the list", 1, list.size());
 
@@ -676,11 +682,11 @@ public class TestMSSQL extends BaseTest {
         session.insert(roomX);
 
         long now = System.currentTimeMillis();
-        List<Room> list = session.query(Room.class, "SELECT Room_no, Desc_E, Intervals, [Weird$#@]  FROM ROOMS");
+        List<Room> list = session.query(Room.class, sql("SELECT Room_no, Desc_E, Intervals, [Weird$#@]  FROM ROOMS"));
         log.info("time to read rooms: " + (System.currentTimeMillis() - now) + " size: " + list.size());
 
         now = System.currentTimeMillis();
-        list = session.query(Room.class, "SELECT *  FROM ROOMS"); // Room_no, Desc_E, Intervals
+        list = session.query(Room.class, sql("SELECT *  FROM ROOMS")); // Room_no, Desc_E, Intervals
         log.info("time to read rooms again: " + (System.currentTimeMillis() - now));
 
         now = System.currentTimeMillis();
@@ -808,20 +814,20 @@ public class TestMSSQL extends BaseTest {
 
         session.fetch(order);
 
-        List<CustomerOrder> list = session.query(CustomerOrder.class, "[spCustomerOrders](?)", "123");
+        List<CustomerOrder> list = session.query(CustomerOrder.class, sql("[spCustomerOrders](?)"), params("123"));
         log.info(list);
         // Both forms should work - the 1st is a cleaner way but this should be supported
-        list = session.query(CustomerOrder.class, "{call [spCustomerOrders](?) }", "123");
+        list = session.query(CustomerOrder.class, sql("{call [spCustomerOrders](?) }"), params("123"));
         log.info(list);
 
         // query orders by date
         //DateFormat df = new SimpleDateFormat("MM/dd/yyyy");
         //DateTimeFormatter df = DateTimeFormatter.ISO_DATE;
 
-        List<Order> orders = session.query(Order.class, "select * from Orders where CONVERT(varchar, created, 112) = ?", order.getCreated().format(DateTimeFormatter.ISO_LOCAL_DATE));
+        List<Order> orders = session.query(Order.class, sql("select * from Orders where CONVERT(varchar, created, 112) = ?"), params(order.getCreated().format(DateTimeFormatter.ISO_LOCAL_DATE)));
         log.info("ORDERS?  " + orders);
 
-        orders = session.query(Order.class, "select * from Orders where created = ?", order.getCreated().format(DateTimeFormatter.ISO_LOCAL_DATE));
+        orders = session.query(Order.class, sql("select * from Orders where created = ?"), params(order.getCreated().format(DateTimeFormatter.ISO_LOCAL_DATE)));
         log.info("ORDERS AGAIN?  " + orders);
     }
 
@@ -854,7 +860,7 @@ public class TestMSSQL extends BaseTest {
                 "left join EXAMCODE as p ON Exams.ExamCode_No = p.ExamCode_No " +
                 "left join ROOMS as r ON Exams.Room_No = r.Room_No ";
 
-        List<QueryResult> list = session.query(QueryResult.class, sql);
+        List<QueryResult> list = session.query(QueryResult.class, sql(sql));
         log.info(list.toString());
         assertTrue("size should be > 0 ", list.size() > 0);
 
@@ -863,7 +869,7 @@ public class TestMSSQL extends BaseTest {
                 "left join EXAMCODE as p ON Exams.ExamCode_No = p.ExamCode_No " +
                 "left join ROOMS as r ON Exams.Room_No = r.Room_No ";
 
-        list = session.query(QueryResult.class, sql);
+        list = session.query(QueryResult.class, sql(sql));
         log.info(list.toString());
         assertTrue("size should be > 0 ", list.size() > 0);
 
@@ -872,7 +878,7 @@ public class TestMSSQL extends BaseTest {
                 "left join EXAMCODE as p ON Exams.ExamCode_No = p.ExamCode_No " +
                 "left join ROOMS as r ON Exams.Room_No = r.Room_No ";
 
-        simpleList = session.query(Integer.class, sql);
+        simpleList = session.query(Integer.class, sql(sql));
         log.info(simpleList.toString());
         assertTrue("size should be > 0 ", simpleList.size() > 0);
     }
@@ -889,7 +895,7 @@ public class TestMSSQL extends BaseTest {
 
         boolean shouldHaveFailed = false;
         try {
-            session.fetch(Contact.class, "select [identity] from Contacts");
+            session.fetch(Contact.class, sql("select [identity] from Contacts"), Parameters.none());
         } catch (PersismException e) {
             shouldHaveFailed = true;
             log.info(e.getMessage(), e);
@@ -911,11 +917,11 @@ public class TestMSSQL extends BaseTest {
 
         boolean shouldHaveFailed = false;
         try {
-            session.fetch(ContactFail.class, "select * from Contacts");
+            session.fetch(ContactFail.class, sql("select * from Contacts"));
         } catch (PersismException e) {
             shouldHaveFailed = true;
             log.info(e.getMessage(), e);
-            assertEquals("message should be ", "Object class net.sf.persism.dao.ContactFail was not properly initialized. Some properties not initialized in the queried columns (Fail).", e.getMessage());
+            assertEquals("message should be ", "Object class net.sf.persism.dao.ContactFail was not properly initialized. Some properties not initialized in the queried columns (fail).", e.getMessage());
         }
 
         assertEquals("should have failed", true, shouldHaveFailed);
@@ -935,18 +941,18 @@ public class TestMSSQL extends BaseTest {
         String sql;
         sql = "select examdate from exams";
 
-        java.util.Date date = session.fetch(java.util.Date.class, sql);
+        java.util.Date date = session.fetch(java.util.Date.class, sql(sql));
         log.info("DATE? " + date);
 
         sql = "select count(*) from exams";
-        int exams = session.fetch(Integer.class, sql);
+        int exams = session.fetch(Integer.class, sql(sql));
         log.info("" + exams);
         assertTrue("should be > 0", exams > 0);
 
         sql = "select count(*) from exams where examDate > ?";
         Date d = new Date(1997 - 1900, 2, 4);
         log.info("" + d);
-        exams = session.fetch(Integer.class, sql, d);
+        exams = session.fetch(Integer.class, sql(sql), Parameters.params(d));
         log.info("" + exams);
         assertTrue("should be > 0", exams > 0);
 
@@ -990,7 +996,7 @@ public class TestMSSQL extends BaseTest {
             order.setName("MOO");
             session.insert(order);
 
-            List<Order> orders = session.query(Order.class, "SELECT * FROM ORDERS");
+            List<Order> orders = session.query(Order.class, sql("SELECT * FROM ORDERS"));
             assertEquals("size s/b 1", 1, orders.size());
 
             order = orders.get(0);
@@ -1095,7 +1101,7 @@ public class TestMSSQL extends BaseTest {
         // this was a test to see if I could prepare a statement and return all columns. Nope.....
 
         // ensure metadata is there
-        log.info(session.query(Contact.class, "select * from Contacts"));
+        log.info(session.query(Contact.class, sql("select * from Contacts")));
 
 //        String insertStatement = "INSERT INTO Customers (Customer_ID, Company_Name, Contact_Name) VALUES ( ?, ?, ? ) ";
         String insertStatement = "INSERT INTO Contacts (FirstName, LastName, Type, Status) VALUES ( ?, ?, ?, ? ) ";

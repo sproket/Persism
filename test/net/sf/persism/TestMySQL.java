@@ -14,6 +14,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 
+import static net.sf.persism.SQL.sql;
+
 /**
  * @author Dan Howard
  * @since 6/4/12 9:52 PM
@@ -103,7 +105,7 @@ public class TestMySQL extends BaseTest {
         executeCommands(commands, con);
 
         if (UtilsForTests.isTableInDatabase("Invoices", con)) {
-            executeCommand("DROP TABLE Invoices",con);
+            executeCommand("DROP TABLE Invoices", con);
         }
 
         String sql = "CREATE TABLE Invoices ( " +
@@ -196,15 +198,15 @@ public class TestMySQL extends BaseTest {
 
         session.insert(customer);
 
-        List<Customer> customers = session.query(Customer.class, "SELECT * FROM Customers");
+        List<Customer> customers = session.query(Customer.class, sql("SELECT * FROM Customers"));
         log.info(customers);
 
-        String result = session.fetch(String.class, "select `Contact_Name` from Customers where Customer_ID = ?", 123);
+        String result = session.fetch(String.class, sql("select `Contact_Name` from Customers where Customer_ID = ?"), Parameters.params(123));
         log.info(result);
         assertEquals("should be Fred", "Fred", result);
 
-        int count = session.fetch(int.class, "select count(*) from Customers where Region = ?", Regions.East);
-        assertEquals("should be 1", 1, count);
+        Integer count = session.fetch(Integer.class, sql("select count(*) from Customers where Region = ?"), Parameters.params(Regions.East));
+        assertEquals("should be 1", "1", "" + count);
         log.info("count " + count);
 
     }

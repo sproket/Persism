@@ -6,25 +6,25 @@
 
     <groupId>io.github.sproket</groupId>
     <artifactId>persism</artifactId>
-    <version>1.1.0d-beta</version>
+    <version>2.0.0-beta</version>
     <packaging>jar</packaging>
 
-    <reporting>
-        <plugins>
-            <plugin>
-                <groupId>org.codehaus.mojo</groupId>
-                <artifactId>cobertura-maven-plugin</artifactId>
-                <version>2.7</version>
-                <configuration>
-                    <formats>
-                        <format>html</format>
-                        <format>xml</format>
-                    </formats>
-                    <check/>
-                </configuration>
-            </plugin>
-        </plugins>
-    </reporting>
+<!--    <reporting>-->
+<!--        <plugins>-->
+<!--            <plugin>-->
+<!--                <groupId>org.codehaus.mojo</groupId>-->
+<!--                <artifactId>cobertura-maven-plugin</artifactId>-->
+<!--                <version>2.7</version>-->
+<!--                <configuration>-->
+<!--                    <formats>-->
+<!--                        <format>html</format>-->
+<!--                        <format>xml</format>-->
+<!--                    </formats>-->
+<!--                    <check/>-->
+<!--                </configuration>-->
+<!--            </plugin>-->
+<!--        </plugins>-->
+<!--    </reporting>-->
 
     <build>
         <sourceDirectory>./src</sourceDirectory>
@@ -32,6 +32,9 @@
         <testResources>
             <testResource>
                 <directory>./test</directory>
+<!--                <includes>-->
+<!--                    <include>*.*</include>-->
+<!--                </includes>-->
             </testResource>
         </testResources>
         <plugins>
@@ -41,10 +44,12 @@
                 <version>3.8.1</version>
                 <!-- MSSQL does not seem to able to connect with 16 -->
                 <configuration>
-                    <source>15</source>
-                    <target>15</target>
+                    <source>16</source>
+                    <target>16</target>
                     <compilerArgs>
-                        <arg>--enable-preview</arg>
+<!--                        <arg>&#45;&#45;enable-preview</arg>-->
+<!--                        <arg>&#45;&#45;release 8</arg>-->
+<!-- DO NOT USE - NON-STANDARD <arg>-parameters</arg>-->
                     </compilerArgs>
                 </configuration>
             </plugin>
@@ -63,7 +68,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-source-plugin</artifactId>
-                <version>2.2.1</version>
+                <version>3.2.1</version>
                 <executions>
                     <execution>
                         <id>attach-sources</id>
@@ -76,9 +81,10 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-javadoc-plugin</artifactId>
-                <version>2.9.1</version>
+                <version>3.2.0</version>
                 <configuration>
                     <excludePackageNames>net.sf.persism.log*;net.sf.persism.logging.*</excludePackageNames>
+                    <source>16</source>
                 </configuration>
                 <executions>
                     <execution>
@@ -109,31 +115,31 @@
                 </configuration>
             </plugin>
 
-            <plugin>
-                <groupId>org.codehaus.mojo</groupId>
-                <artifactId>cobertura-maven-plugin</artifactId>
-                <version>2.7</version>
+<!--            <plugin>-->
+<!--                <groupId>org.codehaus.mojo</groupId>-->
+<!--                <artifactId>cobertura-maven-plugin</artifactId>-->
+<!--                <version>2.7</version>-->
 
-                <configuration>
-                    <instrumentation>
-                        <ignores>
-                            <ignore>com.example.boringcode.*</ignore>
-                        </ignores>
-                        <excludes>
-                            <exclude>com/example/dullcode/**/*.class</exclude>
-                            <exclude>com/example/**/*Test.class</exclude>
-                        </excludes>
-                    </instrumentation>
-                    <check/>
-                </configuration>
-                <executions>
-                    <execution>
-                        <goals>
-                            <goal>clean</goal>
-                        </goals>
-                    </execution>
-                </executions>
-            </plugin>
+<!--                <configuration>-->
+<!--                    <instrumentation>-->
+<!--                        <ignores>-->
+<!--                            <ignore>com.example.boringcode.*</ignore>-->
+<!--                        </ignores>-->
+<!--                        <excludes>-->
+<!--                            <exclude>com/example/dullcode/**/*.class</exclude>-->
+<!--                            <exclude>com/example/**/*Test.class</exclude>-->
+<!--                        </excludes>-->
+<!--                    </instrumentation>-->
+<!--                    <check/>-->
+<!--                </configuration>-->
+<!--                <executions>-->
+<!--                    <execution>-->
+<!--                        <goals>-->
+<!--                            <goal>clean</goal>-->
+<!--                        </goals>-->
+<!--                    </execution>-->
+<!--                </executions>-->
+<!--            </plugin>-->
 
         </plugins>
     </build>
@@ -224,6 +230,7 @@
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-jar-plugin</artifactId>
+                        <version>3.2.0</version>
                         <configuration>
                             <archive>
                                 <manifestEntries>
@@ -235,7 +242,7 @@
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-source-plugin</artifactId>
-                        <version>2.2.1</version>
+                        <version>3.2.1</version>
                         <executions>
                             <execution>
                                 <id>attach-sources</id>
@@ -248,7 +255,7 @@
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-javadoc-plugin</artifactId>
-                        <version>2.9.1</version>
+                        <version>3.2.0</version>
                         <executions>
                             <execution>
                                 <id>attach-javadocs</id>
@@ -351,7 +358,7 @@
             <!-- using older version as 2.5.1 collides with ucanaccess -->
             <groupId>org.hsqldb</groupId>
             <artifactId>hsqldb</artifactId>
-            <version>2.3.1</version>
+            <version>2.5.1</version>
             <scope>test</scope>
             <!--            <classifier>debug</classifier>-->
         </dependency>
@@ -367,7 +374,7 @@
         <dependency>
             <groupId>com.microsoft.sqlserver</groupId>
             <artifactId>mssql-jdbc</artifactId>
-            <version>9.2.0.jre8</version>
+            <version>8.4.1.jre8</version>
             <scope>test</scope>
         </dependency>
 
@@ -436,7 +443,7 @@
         <dependency>
             <groupId>net.sf.ucanaccess</groupId>
             <artifactId>ucanaccess</artifactId>
-            <version>4.0.4</version>
+            <version>5.0.1</version>
             <scope>test</scope>
         </dependency>
 
@@ -455,18 +462,19 @@
         </dependency>
 
         <!-- https://mvnrepository.com/artifact/org.codehaus.mojo/cobertura-maven-plugin -->
-        <dependency>
-            <groupId>org.codehaus.mojo</groupId>
-            <artifactId>cobertura-maven-plugin</artifactId>
-            <version>2.7</version>
-            <scope>test</scope>
-            <exclusions>
-                <exclusion>
-                    <groupId>com.sun</groupId>
-                    <artifactId>tools</artifactId>
-                </exclusion>
-            </exclusions>
-        </dependency>
+        <!-- DOES NOT WORK with JAVA 8 + -->
+<!--        <dependency>-->
+<!--            <groupId>org.codehaus.mojo</groupId>-->
+<!--            <artifactId>cobertura-maven-plugin</artifactId>-->
+<!--            <version>2.7</version>-->
+<!--            <scope>test</scope>-->
+<!--            <exclusions>-->
+<!--                <exclusion>-->
+<!--                    <groupId>com.sun</groupId>-->
+<!--                    <artifactId>tools</artifactId>-->
+<!--                </exclusion>-->
+<!--            </exclusions>-->
+<!--        </dependency>-->
 
 
     </dependencies>

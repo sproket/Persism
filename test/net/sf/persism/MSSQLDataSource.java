@@ -6,6 +6,7 @@ import org.apache.commons.dbcp.PoolableConnectionFactory;
 import org.apache.commons.dbcp.PoolingDataSource;
 import org.apache.commons.pool.impl.GenericObjectPool;
 
+import javax.net.ssl.SSLParameters;
 import javax.sql.DataSource;
 import java.io.InputStream;
 import java.sql.Connection;
@@ -31,6 +32,7 @@ public class MSSQLDataSource {
         } else {
             props.load(getClass().getResourceAsStream("/jtds.properties"));
         }
+
 
         String driver = props.getProperty("database.driver");
         Class.forName(driver);

@@ -170,7 +170,7 @@ public final class TestMetaData extends TestCase {
     }
 
     public void testDeterminePropertyInfo() {
-        Collection<PropertyInfo> propertyInfo = MetaData.determinePropertyInfo(ByteData.class);
+        Collection<PropertyInfo> propertyInfo = MetaData.getPropertyInfo(ByteData.class);
         log.warn(propertyInfo.size());
     }
 
