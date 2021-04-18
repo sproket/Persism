@@ -148,8 +148,29 @@ Persism will usually discover primary keys, so you usually do not have to specif
 in your POJO with Annotations. Persism will also set defaults to properties if they were 
 not set and there's a default defined for that mapped column in the database.
 
-**Note:** Wherever you have defaults you should not use primitve types since there's no way to 
+**Note:** Wherever you have defaults you should not use primitive types since there's no way to 
 detect NULL. Best practice is to use Object types for these cases.
+
+## Multiple operations in a Transaction
+
+Version 1.0.3 has added a new method to the session called withTransaction. This allows you to group
+multiple operations into a single transaction. This will set autocommit to false then execute the 
+operations, commit and set autocommit back to true. If something goes wrong Persism will rollback 
+and throw ```PersismException```.
+
+``` 
+session.withTransaction(() -> {
+    Contact contact = getContactFromSomewhere();
+
+    contact.setIdentity(randomUUID);
+    session.insert(contact);
+
+    contact.setContactName("Wilma Flintstone");
+
+    session.update(contact);
+    session.fetch(contact);
+});
+```
 
 ## Writing Data Objects (POJOs)
 

@@ -18,7 +18,7 @@ public class Contact {
 }
 ```
 
-We'll fetch one from our databse and change the company name.
+We'll fetch one from our database and change the company name.
 
 ```
 Contact contact = new Contact();
