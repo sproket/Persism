@@ -61,7 +61,7 @@
     0%
   </span>
   <span class="absValue">
-    (0/ 17)
+    (0/ 18)
   </span>
 </td>
 </tr>
@@ -82,56 +82,58 @@
 <i>8</i>&nbsp;
 <i>9</i>&nbsp;public final class JulLogger extends AbstractLogger {
 <i>10</i>&nbsp;
-<i>11</i>&nbsp;	public JulLogger(String logName) {
-<b class="nc"><i>12</i>&nbsp;		super(LogMode.JUL, logName);</b>
-<b class="nc"><i>13</i>&nbsp;	}</b>
+<i>11</i>&nbsp;    public JulLogger(String logName) {
+<b class="nc"><i>12</i>&nbsp;        super(LogMode.JUL, logName);</b>
+<b class="nc"><i>13</i>&nbsp;    }</b>
 <i>14</i>&nbsp;
-<i>15</i>&nbsp;	@Override
-<i>16</i>&nbsp;	public boolean isDebugEnabled() {
-<b class="nc"><i>17</i>&nbsp;		return Logger.getLogger(logName).isLoggable(Level.FINE);</b>
-<i>18</i>&nbsp;	}
+<i>15</i>&nbsp;    @Override
+<i>16</i>&nbsp;    public boolean isDebugEnabled() {
+<b class="nc"><i>17</i>&nbsp;        return Logger.getLogger(logName).isLoggable(Level.FINE);</b>
+<i>18</i>&nbsp;    }
 <i>19</i>&nbsp;
-<i>20</i>&nbsp;	@Override
-<i>21</i>&nbsp;	public void debug(Object message, Object... params) {
-<b class="nc"><i>22</i>&nbsp;		Logger.getLogger(logName).fine(String.format(&quot;%s&quot;, message));</b>
-<b class="nc"><i>23</i>&nbsp;	}</b>
-<i>24</i>&nbsp;
-<i>25</i>&nbsp;	@Override
-<i>26</i>&nbsp;	public void info(Object message) {
-<b class="nc"><i>27</i>&nbsp;		Logger.getLogger(logName).info(String.format(&quot;%s&quot;, message));</b>
-<b class="nc"><i>28</i>&nbsp;	}</b>
-<i>29</i>&nbsp;
-<i>30</i>&nbsp;	@Override
-<i>31</i>&nbsp;	public void info(Object message, Throwable t) {
-<b class="nc"><i>32</i>&nbsp;		Logger.getLogger(logName).log(Level.INFO, String.format(&quot;%s&quot;, message), t);</b>
-<b class="nc"><i>33</i>&nbsp;	}</b>
-<i>34</i>&nbsp;
-<i>35</i>&nbsp;	@Override
-<i>36</i>&nbsp;	public void warn(Object message) {
-<b class="nc"><i>37</i>&nbsp;		Logger.getLogger(logName).warning(String.format(&quot;%s&quot;, message));</b>
-<b class="nc"><i>38</i>&nbsp;	}</b>
-<i>39</i>&nbsp;
-<i>40</i>&nbsp;	@Override
-<i>41</i>&nbsp;	public void warn(Object message, Throwable t) {
-<b class="nc"><i>42</i>&nbsp;		Logger.getLogger(logName).log(Level.WARNING, String.format(&quot;%s&quot;, message), t);</b>
-<b class="nc"><i>43</i>&nbsp;	}</b>
-<i>44</i>&nbsp;
-<i>45</i>&nbsp;	@Override
-<i>46</i>&nbsp;	public void error(Object message) {
-<b class="nc"><i>47</i>&nbsp;		Logger.getLogger(logName).severe(String.format(&quot;%s&quot;, message));</b>
-<b class="nc"><i>48</i>&nbsp;	}</b>
-<i>49</i>&nbsp;
-<i>50</i>&nbsp;	@Override
-<i>51</i>&nbsp;	public void error(Object message, Throwable t) {
-<b class="nc"><i>52</i>&nbsp;		Logger.getLogger(logName).log(Level.SEVERE, String.format(&quot;%s&quot;, message), t);</b>
-<b class="nc"><i>53</i>&nbsp;	}</b>
-<i>54</i>&nbsp;}
+<i>20</i>&nbsp;    @Override
+<i>21</i>&nbsp;    public void debug(Object message, Object... params) {
+<b class="nc"><i>22</i>&nbsp;        if (isDebugEnabled()) {</b>
+<b class="nc"><i>23</i>&nbsp;            Logger.getLogger(logName).fine(String.format(&quot;&quot; + message, params));</b>
+<i>24</i>&nbsp;        }
+<b class="nc"><i>25</i>&nbsp;    }</b>
+<i>26</i>&nbsp;
+<i>27</i>&nbsp;    @Override
+<i>28</i>&nbsp;    public void info(Object message) {
+<b class="nc"><i>29</i>&nbsp;        Logger.getLogger(logName).info(String.format(&quot;%s&quot;, message));</b>
+<b class="nc"><i>30</i>&nbsp;    }</b>
+<i>31</i>&nbsp;
+<i>32</i>&nbsp;    @Override
+<i>33</i>&nbsp;    public void info(Object message, Throwable t) {
+<b class="nc"><i>34</i>&nbsp;        Logger.getLogger(logName).log(Level.INFO, String.format(&quot;%s&quot;, message), t);</b>
+<b class="nc"><i>35</i>&nbsp;    }</b>
+<i>36</i>&nbsp;
+<i>37</i>&nbsp;    @Override
+<i>38</i>&nbsp;    public void warn(Object message) {
+<b class="nc"><i>39</i>&nbsp;        Logger.getLogger(logName).warning(String.format(&quot;%s&quot;, message));</b>
+<b class="nc"><i>40</i>&nbsp;    }</b>
+<i>41</i>&nbsp;
+<i>42</i>&nbsp;    @Override
+<i>43</i>&nbsp;    public void warn(Object message, Throwable t) {
+<b class="nc"><i>44</i>&nbsp;        Logger.getLogger(logName).log(Level.WARNING, String.format(&quot;%s&quot;, message), t);</b>
+<b class="nc"><i>45</i>&nbsp;    }</b>
+<i>46</i>&nbsp;
+<i>47</i>&nbsp;    @Override
+<i>48</i>&nbsp;    public void error(Object message) {
+<b class="nc"><i>49</i>&nbsp;        Logger.getLogger(logName).severe(String.format(&quot;%s&quot;, message));</b>
+<b class="nc"><i>50</i>&nbsp;    }</b>
+<i>51</i>&nbsp;
+<i>52</i>&nbsp;    @Override
+<i>53</i>&nbsp;    public void error(Object message, Throwable t) {
+<b class="nc"><i>54</i>&nbsp;        Logger.getLogger(logName).log(Level.SEVERE, String.format(&quot;%s&quot;, message), t);</b>
+<b class="nc"><i>55</i>&nbsp;    }</b>
+<i>56</i>&nbsp;}
 </div>
 </div>
 
 <div class="footer">
     
-    <div style="float:right;">generated on 2021-03-20 14:31</div>
+    <div style="float:right;">generated on 2021-04-03 07:29</div>
 </div>
 </body>
 </html>

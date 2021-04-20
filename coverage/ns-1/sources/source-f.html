@@ -1,0 +1,99 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <title>Coverage Report > Persistable</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/highlight-idea.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.pack.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">net.sf.persism</a>
+</div>
+
+<h1>Coverage Summary for Class: Persistable (net.sf.persism)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+</tr>
+<tr>
+  <td class="name">Persistable</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<div class="sourceCode" id="sourceCode"><i class="no-highlight">1</i>&nbsp;package net.sf.persism;
+<i class="no-highlight">2</i>&nbsp;
+<i class="no-highlight">3</i>&nbsp;/**
+<i class="no-highlight">4</i>&nbsp; * Indicates that Persism should keep track of changed columns in order to only include those columns in the SQL UPDATE statement.
+<i class="no-highlight">5</i>&nbsp; * You can use this interface in situations where you can&#39;t or don&#39;t want your data objects to inherit PersistableObject.
+<i class="no-highlight">6</i>&nbsp; *
+<i class="no-highlight">7</i>&nbsp; * @author Dan Howard
+<i class="no-highlight">8</i>&nbsp; * @see PersistableObject PersistableObject for implementation.
+<i class="no-highlight">9</i>&nbsp; * @since 10/8/11 9:51 AM
+<i class="no-highlight">10</i>&nbsp; */
+<i class="no-highlight">11</i>&nbsp;public interface Persistable&lt;T&gt; extends Cloneable {
+<i class="no-highlight">12</i>&nbsp;
+<i class="no-highlight">13</i>&nbsp;
+<i class="no-highlight">14</i>&nbsp;    /**
+<i class="no-highlight">15</i>&nbsp;     * Saves the current state of the data object to later detect changes for SQL UPDATE statements.
+<i class="no-highlight">16</i>&nbsp;     * Persism calls this method internally, you usually don&#39;t have to call this method yourself.
+<i class="no-highlight">17</i>&nbsp;     *
+<i class="no-highlight">18</i>&nbsp;     * @throws PersismException If an SQL or other exception occurs.
+<i class="no-highlight">19</i>&nbsp;     * @see PersistableObject for example implementation
+<i class="no-highlight">20</i>&nbsp;     */
+<i class="no-highlight">21</i>&nbsp;    void saveReadState() throws PersismException;
+<i class="no-highlight">22</i>&nbsp;
+<i class="no-highlight">23</i>&nbsp;    /**
+<i class="no-highlight">24</i>&nbsp;     * Getter (but not a Getter) for the data object in it&#39;s original state. The state at the time it was read from the database.
+<i class="no-highlight">25</i>&nbsp;     *
+<i class="no-highlight">26</i>&nbsp;     * @return The data object in it&#39;s original state.
+<i class="no-highlight">27</i>&nbsp;     * @see PersistableObject for example implementation
+<i class="no-highlight">28</i>&nbsp;     */
+<i class="no-highlight">29</i>&nbsp;    T readOriginalValue();
+<i class="no-highlight">30</i>&nbsp;}
+</div>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+        var codeBlock = document.getElementById('sourceCode');
+
+        if (codeBlock) {
+            hljs.highlightBlock(codeBlock);
+        }
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2021-04-20 05:23</div>
+</div>
+</body>
+</html>

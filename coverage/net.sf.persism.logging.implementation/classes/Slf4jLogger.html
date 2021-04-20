@@ -58,10 +58,10 @@
 </td>
 <td class="coverageStat">
   <span class="percent">
-    88.2%
+    88.9%
   </span>
   <span class="absValue">
-    (15/ 17)
+    (16/ 18)
   </span>
 </td>
 </tr>
@@ -82,56 +82,58 @@
 <i>8</i>&nbsp;
 <i>9</i>&nbsp;public final class Slf4jLogger extends AbstractLogger {
 <i>10</i>&nbsp;
-<i>11</i>&nbsp;	public Slf4jLogger(String logName) {
-<b class="fc"><i>12</i>&nbsp;		super(LogMode.SLF4J, logName);</b>
-<b class="fc"><i>13</i>&nbsp;	}</b>
+<i>11</i>&nbsp;    public Slf4jLogger(String logName) {
+<b class="fc"><i>12</i>&nbsp;        super(LogMode.SLF4J, logName);</b>
+<b class="fc"><i>13</i>&nbsp;    }</b>
 <i>14</i>&nbsp;
-<i>15</i>&nbsp;	@Override
-<i>16</i>&nbsp;	public boolean isDebugEnabled() {
-<b class="fc"><i>17</i>&nbsp;		return LoggerFactory.getLogger(logName).isDebugEnabled();</b>
-<i>18</i>&nbsp;	}
+<i>15</i>&nbsp;    @Override
+<i>16</i>&nbsp;    public boolean isDebugEnabled() {
+<b class="fc"><i>17</i>&nbsp;        return LoggerFactory.getLogger(logName).isDebugEnabled();</b>
+<i>18</i>&nbsp;    }
 <i>19</i>&nbsp;
-<i>20</i>&nbsp;	@Override
-<i>21</i>&nbsp;	public void debug(Object message, Object... params) {
-<b class="fc"><i>22</i>&nbsp;		LoggerFactory.getLogger(logName).debug(String.format(&quot;%s&quot;, message), params);</b>
-<b class="fc"><i>23</i>&nbsp;	}</b>
-<i>24</i>&nbsp;
-<i>25</i>&nbsp;	@Override
-<i>26</i>&nbsp;	public void info(Object message) {
-<b class="fc"><i>27</i>&nbsp;		LoggerFactory.getLogger(logName).info(String.format(&quot;%s&quot;, message));</b>
-<b class="fc"><i>28</i>&nbsp;	}</b>
-<i>29</i>&nbsp;
-<i>30</i>&nbsp;	@Override
-<i>31</i>&nbsp;	public void info(Object message, Throwable t) {
-<b class="fc"><i>32</i>&nbsp;		LoggerFactory.getLogger(logName).info(String.format(&quot;%s&quot;, message), t);</b>
-<b class="fc"><i>33</i>&nbsp;	}</b>
-<i>34</i>&nbsp;
-<i>35</i>&nbsp;	@Override
-<i>36</i>&nbsp;	public void warn(Object message) {
-<b class="fc"><i>37</i>&nbsp;		LoggerFactory.getLogger(logName).warn(String.format(&quot;%s&quot;, message));</b>
-<b class="fc"><i>38</i>&nbsp;	}</b>
-<i>39</i>&nbsp;
-<i>40</i>&nbsp;	@Override
-<i>41</i>&nbsp;	public void warn(Object message, Throwable t) {
-<b class="nc"><i>42</i>&nbsp;		LoggerFactory.getLogger(logName).warn(String.format(&quot;%s&quot;, message), t);</b>
-<b class="nc"><i>43</i>&nbsp;	}</b>
-<i>44</i>&nbsp;
-<i>45</i>&nbsp;	@Override
-<i>46</i>&nbsp;	public void error(Object message) {
-<b class="fc"><i>47</i>&nbsp;		LoggerFactory.getLogger(logName).error(String.format(&quot;%s&quot;, message));</b>
-<b class="fc"><i>48</i>&nbsp;	}</b>
-<i>49</i>&nbsp;
-<i>50</i>&nbsp;	@Override
-<i>51</i>&nbsp;	public void error(Object message, Throwable t) {
-<b class="fc"><i>52</i>&nbsp;		LoggerFactory.getLogger(logName).error(String.format(&quot;%s&quot;, message), t);</b>
-<b class="fc"><i>53</i>&nbsp;	}</b>
-<i>54</i>&nbsp;}
+<i>20</i>&nbsp;    @Override
+<i>21</i>&nbsp;    public void debug(Object message, Object... params) {
+<b class="fc"><i>22</i>&nbsp;        if (isDebugEnabled()) {</b>
+<b class="fc"><i>23</i>&nbsp;            LoggerFactory.getLogger(logName).debug(String.format(&quot;&quot;+message, params));</b>
+<i>24</i>&nbsp;        }
+<b class="fc"><i>25</i>&nbsp;    }</b>
+<i>26</i>&nbsp;
+<i>27</i>&nbsp;    @Override
+<i>28</i>&nbsp;    public void info(Object message) {
+<b class="fc"><i>29</i>&nbsp;        LoggerFactory.getLogger(logName).info(String.format(&quot;%s&quot;, message));</b>
+<b class="fc"><i>30</i>&nbsp;    }</b>
+<i>31</i>&nbsp;
+<i>32</i>&nbsp;    @Override
+<i>33</i>&nbsp;    public void info(Object message, Throwable t) {
+<b class="fc"><i>34</i>&nbsp;        LoggerFactory.getLogger(logName).info(String.format(&quot;%s&quot;, message), t);</b>
+<b class="fc"><i>35</i>&nbsp;    }</b>
+<i>36</i>&nbsp;
+<i>37</i>&nbsp;    @Override
+<i>38</i>&nbsp;    public void warn(Object message) {
+<b class="fc"><i>39</i>&nbsp;        LoggerFactory.getLogger(logName).warn(String.format(&quot;%s&quot;, message));</b>
+<b class="fc"><i>40</i>&nbsp;    }</b>
+<i>41</i>&nbsp;
+<i>42</i>&nbsp;    @Override
+<i>43</i>&nbsp;    public void warn(Object message, Throwable t) {
+<b class="nc"><i>44</i>&nbsp;        LoggerFactory.getLogger(logName).warn(String.format(&quot;%s&quot;, message), t);</b>
+<b class="nc"><i>45</i>&nbsp;    }</b>
+<i>46</i>&nbsp;
+<i>47</i>&nbsp;    @Override
+<i>48</i>&nbsp;    public void error(Object message) {
+<b class="fc"><i>49</i>&nbsp;        LoggerFactory.getLogger(logName).error(String.format(&quot;%s&quot;, message));</b>
+<b class="fc"><i>50</i>&nbsp;    }</b>
+<i>51</i>&nbsp;
+<i>52</i>&nbsp;    @Override
+<i>53</i>&nbsp;    public void error(Object message, Throwable t) {
+<b class="fc"><i>54</i>&nbsp;        LoggerFactory.getLogger(logName).error(String.format(&quot;%s&quot;, message), t);</b>
+<b class="fc"><i>55</i>&nbsp;    }</b>
+<i>56</i>&nbsp;}
 </div>
 </div>
 
 <div class="footer">
     
-    <div style="float:right;">generated on 2021-03-20 14:31</div>
+    <div style="float:right;">generated on 2021-04-03 07:29</div>
 </div>
 </body>
 </html>

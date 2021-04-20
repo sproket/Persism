@@ -74,32 +74,32 @@
 
 <div class="sourceCode"><i>1</i>&nbsp;package net.sf.persism;
 <i>2</i>&nbsp;
-<i>3</i>&nbsp;import java.lang.reflect.InvocationTargetException;
-<i>4</i>&nbsp;import java.util.Collection;
-<i>5</i>&nbsp;
-<i>6</i>&nbsp;/**
-<i>7</i>&nbsp; * Persism uses information from this class to detect which properties are modified in your data objects and only
-<i>8</i>&nbsp; * includes those columns in the SQL UPDATE statements. Data objects can optionally inherit from this class.
-<i>9</i>&nbsp; *
-<i>10</i>&nbsp; * @author Dan Howard
-<i>11</i>&nbsp; * @since 9/15/11 7:14 AM
-<i>12</i>&nbsp; */
-<b class="fc"><i>13</i>&nbsp;public abstract class PersistableObject&lt;T&gt; implements Persistable&lt;T&gt; {</b>
-<i>14</i>&nbsp;
-<b class="fc"><i>15</i>&nbsp;    private T originalValue = null;</b>
+<i>3</i>&nbsp;import net.sf.persism.annotations.NotColumn;
+<i>4</i>&nbsp;
+<i>5</i>&nbsp;/**
+<i>6</i>&nbsp; * Persism uses information from this class to detect which properties are modified in your data objects and only
+<i>7</i>&nbsp; * includes those columns in the SQL UPDATE statements. Data objects can optionally inherit from this class.
+<i>8</i>&nbsp; *
+<i>9</i>&nbsp; * @author Dan Howard
+<i>10</i>&nbsp; * @since 9/15/11 7:14 AM
+<i>11</i>&nbsp; */
+<b class="fc"><i>12</i>&nbsp;public abstract class PersistableObject&lt;T&gt; implements Persistable&lt;T&gt; {</b>
+<i>13</i>&nbsp;
+<b class="fc"><i>14</i>&nbsp;    @NotColumn</b>
+<i>15</i>&nbsp;    private T persismOriginalValue = null;
 <i>16</i>&nbsp;
 <i>17</i>&nbsp;    @Override
 <i>18</i>&nbsp;    public final void saveReadState() throws PersismException {
-<b class="fc"><i>19</i>&nbsp;        originalValue = clone();</b>
+<b class="fc"><i>19</i>&nbsp;        persismOriginalValue = clone();</b>
 <b class="fc"><i>20</i>&nbsp;    }</b>
 <i>21</i>&nbsp;
 <i>22</i>&nbsp;    @Override
-<i>23</i>&nbsp;    public final T getOriginalValue() {
-<b class="fc"><i>24</i>&nbsp;        return originalValue;</b>
+<i>23</i>&nbsp;    public final T readOriginalValue() {
+<b class="fc"><i>24</i>&nbsp;        return persismOriginalValue;</b>
 <i>25</i>&nbsp;    }
 <i>26</i>&nbsp;
 <i>27</i>&nbsp;    /**
-<i>28</i>&nbsp;     * Used for getting originalValue
+<i>28</i>&nbsp;     * Used by saveReadState for persismOriginalValue
 <i>29</i>&nbsp;     *
 <i>30</i>&nbsp;     * @return Clone of T
 <i>31</i>&nbsp;     */
@@ -117,7 +117,7 @@
 
 <div class="footer">
     
-    <div style="float:right;">generated on 2021-03-20 14:31</div>
+    <div style="float:right;">generated on 2021-04-03 07:29</div>
 </div>
 </body>
 </html>

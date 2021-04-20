@@ -1,0 +1,159 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <title>Coverage Report > Log4jLogger</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/highlight-idea.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.pack.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">net.sf.persism.logging.implementation</a>
+</div>
+
+<h1>Coverage Summary for Class: Log4jLogger (net.sf.persism.logging.implementation)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">Log4jLogger</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/9)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/18)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<div class="sourceCode" id="sourceCode"><i class="no-highlight">1</i>&nbsp;package net.sf.persism.logging.implementation;
+<i class="no-highlight">2</i>&nbsp;
+<i class="no-highlight">3</i>&nbsp;import net.sf.persism.logging.AbstractLogger;
+<i class="no-highlight">4</i>&nbsp;import net.sf.persism.logging.LogMode;
+<i class="no-highlight">5</i>&nbsp;import org.apache.log4j.Logger;
+<i class="no-highlight">6</i>&nbsp;
+<i class="no-highlight">7</i>&nbsp;public final class Log4jLogger extends AbstractLogger {
+<i class="no-highlight">8</i>&nbsp;
+<i class="no-highlight">9</i>&nbsp;    public Log4jLogger(String logName) {
+<b class="nc"><i class="no-highlight">10</i>&nbsp;        super(LogMode.LOG4J, logName);</b>
+<b class="nc"><i class="no-highlight">11</i>&nbsp;    }</b>
+<i class="no-highlight">12</i>&nbsp;
+<i class="no-highlight">13</i>&nbsp;    @Override
+<i class="no-highlight">14</i>&nbsp;    public boolean isDebugEnabled() {
+<b class="nc"><i class="no-highlight">15</i>&nbsp;        return Logger.getLogger(logName).isDebugEnabled();</b>
+<i class="no-highlight">16</i>&nbsp;    }
+<i class="no-highlight">17</i>&nbsp;
+<i class="no-highlight">18</i>&nbsp;    @Override
+<i class="no-highlight">19</i>&nbsp;    public void debug(Object message, Object... params) {
+<b class="nc"><i class="no-highlight">20</i>&nbsp;        if (isDebugEnabled()) {</b>
+<b class="nc"><i class="no-highlight">21</i>&nbsp;            Logger.getLogger(logName).debug(String.format(&quot;&quot; + message, params));</b>
+<i class="no-highlight">22</i>&nbsp;        }
+<b class="nc"><i class="no-highlight">23</i>&nbsp;    }</b>
+<i class="no-highlight">24</i>&nbsp;
+<i class="no-highlight">25</i>&nbsp;    @Override
+<i class="no-highlight">26</i>&nbsp;    public void info(Object message) {
+<b class="nc"><i class="no-highlight">27</i>&nbsp;        Logger.getLogger(logName).info(message);</b>
+<b class="nc"><i class="no-highlight">28</i>&nbsp;    }</b>
+<i class="no-highlight">29</i>&nbsp;
+<i class="no-highlight">30</i>&nbsp;    @Override
+<i class="no-highlight">31</i>&nbsp;    public void info(Object message, Throwable t) {
+<b class="nc"><i class="no-highlight">32</i>&nbsp;        Logger.getLogger(logName).info(message, t);</b>
+<b class="nc"><i class="no-highlight">33</i>&nbsp;    }</b>
+<i class="no-highlight">34</i>&nbsp;
+<i class="no-highlight">35</i>&nbsp;    @Override
+<i class="no-highlight">36</i>&nbsp;    public void warn(Object message) {
+<b class="nc"><i class="no-highlight">37</i>&nbsp;        Logger.getLogger(logName).warn(message);</b>
+<b class="nc"><i class="no-highlight">38</i>&nbsp;    }</b>
+<i class="no-highlight">39</i>&nbsp;
+<i class="no-highlight">40</i>&nbsp;    @Override
+<i class="no-highlight">41</i>&nbsp;    public void warn(Object message, Throwable t) {
+<b class="nc"><i class="no-highlight">42</i>&nbsp;        Logger.getLogger(logName).warn(message, t);</b>
+<b class="nc"><i class="no-highlight">43</i>&nbsp;    }</b>
+<i class="no-highlight">44</i>&nbsp;
+<i class="no-highlight">45</i>&nbsp;    @Override
+<i class="no-highlight">46</i>&nbsp;    public void error(Object message) {
+<b class="nc"><i class="no-highlight">47</i>&nbsp;        Logger.getLogger(logName).error(message);</b>
+<b class="nc"><i class="no-highlight">48</i>&nbsp;    }</b>
+<i class="no-highlight">49</i>&nbsp;
+<i class="no-highlight">50</i>&nbsp;    @Override
+<i class="no-highlight">51</i>&nbsp;    public void error(Object message, Throwable t) {
+<b class="nc"><i class="no-highlight">52</i>&nbsp;        Logger.getLogger(logName).error(message, t);</b>
+<b class="nc"><i class="no-highlight">53</i>&nbsp;    }</b>
+<i class="no-highlight">54</i>&nbsp;}
+</div>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+        var codeBlock = document.getElementById('sourceCode');
+
+        if (codeBlock) {
+            hljs.highlightBlock(codeBlock);
+        }
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2021-04-20 05:23</div>
+</div>
+</body>
+</html>

@@ -1,0 +1,367 @@
+
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html id="htmlId">
+<head>
+  <title>Coverage Report :: Reader</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+  </style>
+</head>
+
+<body>
+<div class="header"></div>
+
+<div class="content">
+<div class="breadCrumbs">
+    [ <a href="../../index.html">all classes</a> ]
+    [ <a href="../index.html">net.sf.persism</a> ]
+</div>
+
+<h1>Coverage Summary for Class: Reader (net.sf.persism)</h1>
+
+<table class="coverageStats">
+
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">Reader</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (4/ 4)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    98.4%
+  </span>
+  <span class="absValue">
+    (120/ 122)
+  </span>
+</td>
+</tr>
+  <tr>
+    <td class="name">Reader$1</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (1/ 1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (1/ 1)
+  </span>
+</td>
+  </tr>
+<tr>
+  <td class="name"><strong>total</strong></td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (5/ 5)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    98.4%
+  </span>
+  <span class="absValue">
+    (121/ 123)
+  </span>
+</td>
+</tr>
+</table>
+
+<br/>
+<br/>
+
+
+<div class="sourceCode"><i>1</i>&nbsp;package net.sf.persism;
+<i>2</i>&nbsp;
+<i>3</i>&nbsp;import net.sf.persism.annotations.NotTable;
+<i>4</i>&nbsp;
+<i>5</i>&nbsp;import java.io.ByteArrayOutputStream;
+<i>6</i>&nbsp;import java.io.IOException;
+<i>7</i>&nbsp;import java.io.InputStream;
+<i>8</i>&nbsp;import java.io.StringWriter;
+<i>9</i>&nbsp;import java.lang.reflect.InvocationTargetException;
+<i>10</i>&nbsp;import java.math.BigDecimal;
+<i>11</i>&nbsp;import java.math.BigInteger;
+<i>12</i>&nbsp;import java.sql.*;
+<i>13</i>&nbsp;import java.util.*;
+<i>14</i>&nbsp;
+<b class="fc"><i>15</i>&nbsp;final class Reader {</b>
+<i>16</i>&nbsp;
+<b class="fc"><i>17</i>&nbsp;    private static final Log log = Log.getLogger(Reader.class);</b>
+<i>18</i>&nbsp;
+<i>19</i>&nbsp;    private Connection connection;
+<i>20</i>&nbsp;    private MetaData metaData;
+<i>21</i>&nbsp;    private Convertor convertor;
+<i>22</i>&nbsp;
+<b class="fc"><i>23</i>&nbsp;    Reader(Session session) {</b>
+<b class="fc"><i>24</i>&nbsp;        this.connection = session.getConnection();</b>
+<b class="fc"><i>25</i>&nbsp;        this.metaData = session.getMetaData();</b>
+<b class="fc"><i>26</i>&nbsp;        this.convertor = session.getConvertor();</b>
+<b class="fc"><i>27</i>&nbsp;    }</b>
+<i>28</i>&nbsp;
+<i>29</i>&nbsp;    &lt;T&gt; T readObject(Object object, ResultSet rs) throws IllegalAccessException, SQLException, InvocationTargetException, IOException {
+<i>30</i>&nbsp;
+<b class="fc"><i>31</i>&nbsp;        Class&lt;?&gt; objectClass = object.getClass();</b>
+<i>32</i>&nbsp;        // We should never call this method with a primitive type.
+<b class="fc"><i>33</i>&nbsp;        assert Types.getType(objectClass) == null;</b>
+<i>34</i>&nbsp;
+<i>35</i>&nbsp;        Map&lt;String, PropertyInfo&gt; properties;
+<b class="fc"><i>36</i>&nbsp;        if (objectClass.getAnnotation(NotTable.class) == null) {</b>
+<b class="fc"><i>37</i>&nbsp;            properties = metaData.getTableColumnsPropertyInfo(objectClass, connection);</b>
+<i>38</i>&nbsp;        } else {
+<b class="fc"><i>39</i>&nbsp;            properties = metaData.getQueryColumnsPropertyInfo(objectClass, rs);</b>
+<i>40</i>&nbsp;        }
+<i>41</i>&nbsp;
+<i>42</i>&nbsp;        // Test if all properties have column mapping and throw PersismException if not
+<i>43</i>&nbsp;        // This block verifies that the object is fully initialized.
+<i>44</i>&nbsp;        // Any properties not marked by NotColumn should have been set (or if they have a getter only)
+<i>45</i>&nbsp;        // If not throw a PersismException
+<b class="fc"><i>46</i>&nbsp;        Collection&lt;PropertyInfo&gt; allProperties = MetaData.getPropertyInfo(objectClass);</b>
+<b class="fc"><i>47</i>&nbsp;        if (properties.values().size() &lt; allProperties.size()) {</b>
+<b class="fc"><i>48</i>&nbsp;            Set&lt;PropertyInfo&gt; missing = new HashSet&lt;&gt;(allProperties.size());</b>
+<b class="fc"><i>49</i>&nbsp;            missing.addAll(allProperties);</b>
+<b class="fc"><i>50</i>&nbsp;            missing.removeAll(properties.values());</b>
+<i>51</i>&nbsp;
+<b class="fc"><i>52</i>&nbsp;            StringBuilder sb = new StringBuilder();</b>
+<b class="fc"><i>53</i>&nbsp;            String sep = &quot;&quot;;</b>
+<b class="fc"><i>54</i>&nbsp;            for (PropertyInfo prop : missing) {</b>
+<b class="fc"><i>55</i>&nbsp;                sb.append(sep).append(prop.propertyName);</b>
+<b class="fc"><i>56</i>&nbsp;                sep = &quot;,&quot;;</b>
+<b class="fc"><i>57</i>&nbsp;            }</b>
+<i>58</i>&nbsp;
+<b class="fc"><i>59</i>&nbsp;            throw new PersismException(&quot;Object &quot; + objectClass + &quot; was not properly initialized. Some properties not initialized in the queried columns (&quot; + sb + &quot;).&quot;);</b>
+<i>60</i>&nbsp;        }
+<i>61</i>&nbsp;
+<b class="fc"><i>62</i>&nbsp;        ResultSetMetaData rsmd = rs.getMetaData();</b>
+<b class="fc"><i>63</i>&nbsp;        int columnCount = rsmd.getColumnCount();</b>
+<b class="fc"><i>64</i>&nbsp;        List&lt;String&gt; foundColumns = new ArrayList&lt;&gt;(columnCount);</b>
+<i>65</i>&nbsp;
+<b class="fc"><i>66</i>&nbsp;        for (int j = 1; j &lt;= columnCount; j++) {</b>
+<i>67</i>&nbsp;
+<b class="fc"><i>68</i>&nbsp;            String columnName = rsmd.getColumnLabel(j);</b>
+<b class="fc"><i>69</i>&nbsp;            PropertyInfo columnProperty = properties.get(columnName);</b>
+<i>70</i>&nbsp;
+<b class="fc"><i>71</i>&nbsp;            if (columnProperty != null) {</b>
+<b class="fc"><i>72</i>&nbsp;                Class&lt;?&gt; returnType = columnProperty.getter.getReturnType();</b>
+<i>73</i>&nbsp;
+<b class="fc"><i>74</i>&nbsp;                Object value = readColumn(rs, j, returnType);</b>
+<i>75</i>&nbsp;
+<b class="fc"><i>76</i>&nbsp;                foundColumns.add(columnName);</b>
+<i>77</i>&nbsp;
+<b class="fc"><i>78</i>&nbsp;                if (value != null) {</b>
+<i>79</i>&nbsp;                    try {
+<b class="fc"><i>80</i>&nbsp;                        if (columnProperty.readOnly) {</b>
+<i>81</i>&nbsp;                            // set the value on the field directly
+<b class="fc"><i>82</i>&nbsp;                            columnProperty.field.setAccessible(true);</b>
+<b class="fc"><i>83</i>&nbsp;                            columnProperty.field.set(object, value);</b>
+<b class="fc"><i>84</i>&nbsp;                            columnProperty.field.setAccessible(false);</b>
+<i>85</i>&nbsp;                        } else {
+<b class="fc"><i>86</i>&nbsp;                            columnProperty.setter.invoke(object, value);</b>
+<i>87</i>&nbsp;                        }
+<b class="fc"><i>88</i>&nbsp;                    } catch (IllegalArgumentException e) {</b>
+<b class="fc"><i>89</i>&nbsp;                        String msg = &quot;Object &quot; + objectClass + &quot;. Column: &quot; + columnName + &quot; Type of property: &quot; + returnType + &quot; - Type read: &quot; + value.getClass() + &quot; VALUE: &quot; + value;</b>
+<b class="fc"><i>90</i>&nbsp;                        throw new PersismException(msg, e);</b>
+<b class="fc"><i>91</i>&nbsp;                    }</b>
+<i>92</i>&nbsp;                }
+<i>93</i>&nbsp;            }
+<i>94</i>&nbsp;        }
+<i>95</i>&nbsp;
+<i>96</i>&nbsp;        // This is doing a similar check to above but on the ResultSet itself.
+<i>97</i>&nbsp;        // This tests for when a user writes their own SQL and forgets a column.
+<b class="fc"><i>98</i>&nbsp;        if (foundColumns.size() &lt; properties.keySet().size()) {</b>
+<i>99</i>&nbsp;
+<b class="fc"><i>100</i>&nbsp;            Set&lt;String&gt; missing = new HashSet&lt;&gt;(columnCount);</b>
+<b class="fc"><i>101</i>&nbsp;            missing.addAll(properties.keySet());</b>
+<b class="fc"><i>102</i>&nbsp;            missing.removeAll(foundColumns);</b>
+<i>103</i>&nbsp;
+<i>104</i>&nbsp;            // todo maybe strict mode off logs warn? Should we do this if this is Query vs Table?
+<b class="fc"><i>105</i>&nbsp;            throw new PersismException(&quot;Object &quot; + objectClass + &quot; was not properly initialized. Some properties not initialized by the queried columns: &quot; + foundColumns + &quot; Missing:&quot; + missing);</b>
+<i>106</i>&nbsp;        }
+<i>107</i>&nbsp;
+<b class="fc"><i>108</i>&nbsp;        if (object instanceof Persistable) {</b>
+<i>109</i>&nbsp;            // Save this object initial state to later detect changed properties
+<b class="fc"><i>110</i>&nbsp;            ((Persistable) object).saveReadState();</b>
+<i>111</i>&nbsp;        }
+<i>112</i>&nbsp;
+<b class="fc"><i>113</i>&nbsp;        return (T) object;</b>
+<i>114</i>&nbsp;    }
+<i>115</i>&nbsp;
+<i>116</i>&nbsp;    Object readColumn(ResultSet rs, int column, Class&lt;?&gt; returnType) throws SQLException, IOException {
+<b class="fc"><i>117</i>&nbsp;        ResultSetMetaData rsmd = rs.getMetaData();</b>
+<b class="fc"><i>118</i>&nbsp;        int sqlColumnType = rsmd.getColumnType(column);</b>
+<b class="fc"><i>119</i>&nbsp;        String columnName = rsmd.getColumnLabel(column);</b>
+<i>120</i>&nbsp;
+<b class="fc"><i>121</i>&nbsp;        if (returnType.isEnum()) {</b>
+<i>122</i>&nbsp;            // Some DBs may read an enum type as other 1111 - we can tell it here to read it as a string.
+<b class="fc"><i>123</i>&nbsp;            sqlColumnType = java.sql.Types.CHAR;</b>
+<i>124</i>&nbsp;        }
+<i>125</i>&nbsp;
+<b class="fc"><i>126</i>&nbsp;        Object value = null;</b>
+<i>127</i>&nbsp;
+<b class="fc"><i>128</i>&nbsp;        Types columnType = Types.convert(sqlColumnType); // note this could be null if we can&#39;t match a type</b>
+<b class="fc"><i>129</i>&nbsp;        if (columnType != null) {</b>
+<i>130</i>&nbsp;
+<b class="fc"><i>131</i>&nbsp;            switch (columnType) {</b>
+<i>132</i>&nbsp;
+<i>133</i>&nbsp;                case TimestampType:
+<b class="fc"><i>134</i>&nbsp;                    if (returnType.equals(String.class)) { // JTDS</b>
+<b class="fc"><i>135</i>&nbsp;                        value = rs.getString(column);</b>
+<i>136</i>&nbsp;                    } else {
+<i>137</i>&nbsp;                        // work around to Oracle reading a oracle.sql.TIMESTAMP class with getObject
+<b class="fc"><i>138</i>&nbsp;                        value = rs.getTimestamp(column);</b>
+<i>139</i>&nbsp;                    }
+<b class="fc"><i>140</i>&nbsp;                    break;</b>
+<i>141</i>&nbsp;
+<i>142</i>&nbsp;                case ByteArrayType:
+<i>143</i>&nbsp;                case byteArrayType:
+<b class="fc"><i>144</i>&nbsp;                    value = rs.getBytes(column);</b>
+<b class="fc"><i>145</i>&nbsp;                    break;</b>
+<i>146</i>&nbsp;
+<i>147</i>&nbsp;                case ClobType:
+<b class="fc"><i>148</i>&nbsp;                    Clob clob = rs.getClob(column);</b>
+<b class="fc"><i>149</i>&nbsp;                    if (clob != null) {</b>
+<b class="fc"><i>150</i>&nbsp;                        try (InputStream in = clob.getAsciiStream()) {</b>
+<b class="fc"><i>151</i>&nbsp;                            StringWriter writer = new StringWriter();</b>
+<i>152</i>&nbsp;
+<b class="fc"><i>153</i>&nbsp;                            int c = -1;</b>
+<b class="fc"><i>154</i>&nbsp;                            while ((c = in.read()) != -1) {</b>
+<b class="fc"><i>155</i>&nbsp;                                writer.write(c);</b>
+<i>156</i>&nbsp;                            }
+<b class="fc"><i>157</i>&nbsp;                            writer.flush();</b>
+<b class="fc"><i>158</i>&nbsp;                            value = writer.toString();</b>
+<b class="fc"><i>159</i>&nbsp;                        }</b>
+<i>160</i>&nbsp;                    }
+<i>161</i>&nbsp;                    break;
+<i>162</i>&nbsp;
+<i>163</i>&nbsp;                case BlobType:
+<b class="fc"><i>164</i>&nbsp;                    byte[] buffer = new byte[1024];</b>
+<b class="fc"><i>165</i>&nbsp;                    Blob blob = rs.getBlob(column);</b>
+<b class="fc"><i>166</i>&nbsp;                    if (blob != null) {</b>
+<b class="fc"><i>167</i>&nbsp;                        try (InputStream in = blob.getBinaryStream()) {</b>
+<b class="fc"><i>168</i>&nbsp;                            ByteArrayOutputStream bos = new ByteArrayOutputStream((int) blob.length());</b>
+<b class="fc"><i>169</i>&nbsp;                            for (int len; (len = in.read(buffer)) != -1; ) {</b>
+<b class="fc"><i>170</i>&nbsp;                                bos.write(buffer, 0, len);</b>
+<i>171</i>&nbsp;                            }
+<b class="fc"><i>172</i>&nbsp;                            value = bos.toByteArray();</b>
+<b class="fc"><i>173</i>&nbsp;                        }</b>
+<i>174</i>&nbsp;                    }
+<i>175</i>&nbsp;                    break;
+<i>176</i>&nbsp;
+<i>177</i>&nbsp;                case IntegerType:
+<i>178</i>&nbsp;                    // stupid SQLite reports LONGS as Integers for date types which WRAPS past Integer.MAX - Clowns.
+<b class="fc"><i>179</i>&nbsp;                    if (metaData.getConnectionType() == ConnectionTypes.SQLite) {</b>
+<b class="fc"><i>180</i>&nbsp;                        value = rs.getObject(column);</b>
+<b class="fc"><i>181</i>&nbsp;                        if (value != null) {</b>
+<b class="fc"><i>182</i>&nbsp;                            if (value instanceof Long) {</b>
+<b class="fc"><i>183</i>&nbsp;                                value = rs.getLong(column);</b>
+<i>184</i>&nbsp;                            } else {
+<b class="fc"><i>185</i>&nbsp;                                value = rs.getInt(column);</b>
+<i>186</i>&nbsp;                            }
+<i>187</i>&nbsp;                        }
+<i>188</i>&nbsp;                    } else {
+<b class="fc"><i>189</i>&nbsp;                        value = rs.getObject(column) == null ? null : rs.getInt(column);</b>
+<i>190</i>&nbsp;                    }
+<b class="fc"><i>191</i>&nbsp;                    break;</b>
+<i>192</i>&nbsp;
+<i>193</i>&nbsp;                case LongType:
+<b class="fc"><i>194</i>&nbsp;                    value = rs.getObject(column) == null ? null : rs.getLong(column);</b>
+<b class="fc"><i>195</i>&nbsp;                    break;</b>
+<i>196</i>&nbsp;
+<i>197</i>&nbsp;                case FloatType:
+<b class="fc"><i>198</i>&nbsp;                    value = rs.getObject(column) == null ? null : rs.getFloat(column);</b>
+<b class="fc"><i>199</i>&nbsp;                    break;</b>
+<i>200</i>&nbsp;
+<i>201</i>&nbsp;                case DoubleType:
+<b class="fc"><i>202</i>&nbsp;                    value = rs.getObject(column) == null ? null : rs.getDouble(column);</b>
+<b class="fc"><i>203</i>&nbsp;                    break;</b>
+<i>204</i>&nbsp;
+<i>205</i>&nbsp;                case BigIntegerType:
+<i>206</i>&nbsp;                case BigDecimalType:
+<b class="fc"><i>207</i>&nbsp;                    value = null;</b>
+<b class="fc"><i>208</i>&nbsp;                    if (returnType.equals(BigInteger.class)) {</b>
+<b class="fc"><i>209</i>&nbsp;                        BigDecimal bd = rs.getBigDecimal(column);</b>
+<b class="fc"><i>210</i>&nbsp;                        if (bd != null) {</b>
+<b class="fc"><i>211</i>&nbsp;                            value = bd.toBigInteger();</b>
+<i>212</i>&nbsp;                        }
+<b class="fc"><i>213</i>&nbsp;                    } else {</b>
+<b class="fc"><i>214</i>&nbsp;                        value = rs.getBigDecimal(column);</b>
+<i>215</i>&nbsp;                    }
+<b class="fc"><i>216</i>&nbsp;                    break;</b>
+<i>217</i>&nbsp;
+<i>218</i>&nbsp;                case TimeType:
+<b class="fc"><i>219</i>&nbsp;                    value = rs.getTime(column);</b>
+<b class="fc"><i>220</i>&nbsp;                    break;</b>
+<i>221</i>&nbsp;
+<i>222</i>&nbsp;// We can&#39;t assume rs.getDate will work. SQLITE actually has a long value in here.
+<i>223</i>&nbsp;// We can live with rs.getObject and the convert method will handle it.
+<i>224</i>&nbsp;//                case SQLDateType:
+<i>225</i>&nbsp;//                case UtilDateType:
+<i>226</i>&nbsp;//                    value = rs.getDate(column);
+<i>227</i>&nbsp;//                    break;
+<i>228</i>&nbsp;
+<i>229</i>&nbsp;                case StringType:
+<b class="fc"><i>230</i>&nbsp;                    if (returnType.equals(Character.class) || returnType.equals(char.class)) {</b>
+<b class="fc"><i>231</i>&nbsp;                        String s = rs.getString(column);</b>
+<b class="fc"><i>232</i>&nbsp;                        if (s != null &amp;&amp; s.length() &gt; 0) {</b>
+<b class="fc"><i>233</i>&nbsp;                            value = s.charAt(0);</b>
+<i>234</i>&nbsp;                        }
+<i>235</i>&nbsp;                        break;
+<i>236</i>&nbsp;                    }
+<i>237</i>&nbsp;
+<b class="fc"><i>238</i>&nbsp;                    value = rs.getString(column);</b>
+<b class="fc"><i>239</i>&nbsp;                    break;</b>
+<i>240</i>&nbsp;
+<i>241</i>&nbsp;                default:
+<b class="fc"><i>242</i>&nbsp;                    value = rs.getObject(column);</b>
+<i>243</i>&nbsp;            }
+<i>244</i>&nbsp;
+<i>245</i>&nbsp;        } else {
+<b class="nc"><i>246</i>&nbsp;            log.warn(&quot;Column type not known for SQL type &quot; + sqlColumnType, new Throwable());</b>
+<b class="nc"><i>247</i>&nbsp;            value = rs.getObject(column);</b>
+<i>248</i>&nbsp;        }
+<i>249</i>&nbsp;
+<i>250</i>&nbsp;        // If value is null or column type is unknown - no need to try to convert anything.
+<b class="fc"><i>251</i>&nbsp;        if (value != null &amp;&amp; columnType != null) {</b>
+<b class="fc"><i>252</i>&nbsp;            value = convertor.convert(value, returnType, columnName);</b>
+<i>253</i>&nbsp;        }
+<i>254</i>&nbsp;
+<b class="fc"><i>255</i>&nbsp;        return value;</b>
+<i>256</i>&nbsp;    }
+<i>257</i>&nbsp;
+<i>258</i>&nbsp;}
+</div>
+</div>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2021-04-03 07:29</div>
+</div>
+</body>
+</html>

@@ -1,34 +1,70 @@
+/*
+ * Copyright 2000-2021 JetBrains s.r.o.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 * {
   margin: 0;
   padding: 0;
 }
 
 body {
-  font-size: 90%;
   background-color: #fff;
-  font-family: tahoma, verdana, arial, sans-serif;
-  color: #3f3f3f;
-}
-
-div.content {
-  padding: 0.2em 0.3em 0.2em 0.4em;
-  width: 99%;
+  font-family: helvetica neue, tahoma, arial, sans-serif;
+  font-size: 82%;
+  color: #151515;
 }
 
 h1 {
-  font:normal 18px tahoma, sans-serif;
-  margin: 0.5em 0 0.5em 0;
+  margin: 0.5em 0;
   color: #010101;
+  font-weight: normal;
+  font-size: 18px;
 }
 
 h2 {
-  margin: 0.5em 0 0.5em 0;
-  font:bold 14px tahoma, sans-serif;
+  margin: 0.5em 0;
   color: #010101;
+  font-weight: normal;
+  font-size: 16px;
+}
+
+a {
+  color: #1564C2;
+  text-decoration: none;
+}
+
+a:hover {
+  text-decoration: underline;
+}
+
+i {
+  background-color: #eee;
+}
+
+span.separator {
+  color: #9BA9BA;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+div.content {
+  width: 99%;
 }
 
 table.coverageStats {
-  width: 99%;
+  width: 100%;
   border-collapse: collapse;
 }
 
@@ -36,66 +72,53 @@ table.overallStats {
   width: 20%;
 }
 
+table.coverageStats td, table.coverageStats th {
+  padding: 4px 2px;
+  border-bottom: 1px solid #ccc;
+}
+
 table.coverageStats th {
+  background-color: #959BA4;
+  border: none;
   font-weight: bold;
   text-align: left;
+  color: #FFF;
 }
 
 table.coverageStats th.coverageStat {
   width: 20%;
 }
 
+table.coverageStats th a {
+  color: #FFF;
+}
+
+table.coverageStats th a:hover {
+  text-decoration: none;
+}
+
 table.coverageStats th.sortedDesc a {
-  background: #fff url(../img/arrowDown.gif) no-repeat 100% 0;
+  background: url(../img/arrowDown.gif) no-repeat 100% 2px;
   padding-right: 20px;
 }
 
 table.coverageStats th.sortedAsc a {
-  background: #fff url(../img/arrowUp.gif) no-repeat 100% 0;
+  background: url(../img/arrowUp.gif) no-repeat 100% 2px;
   padding-right: 20px;
 }
 
-table.coverageStats td, table.coverageStats th {
-  border: 1px solid #ccc;
-  padding: 2px;
-}
-
-a {
-  color: #0254D0;
-  text-decoration: none;
-}
-
-a:hover {
-  text-decoration: underline;
-  color: #0254D0;
-}
-
 div.footer {
-  margin: 2em 2em 2em 0.5em;
+  margin: 2em .5em;
   font-size: 85%;
   text-align: left;
   line-height: 140%;
 }
 
-div.header {
-  padding: 0.5em;
-  background-color: #E3E9EF;
-  color: #3773C9;
-  font-weight: bold;
-  font-size: 120%;
-  text-align: center;
-}
-
 div.sourceCode {
-  width: 99%;
-  white-space: pre;
+  width: 100%;
   border: 1px solid #ccc;
-  font-family: monospace;
-  padding: 0;
-}
-
-i {
-  background-color: #eee;
+  font: normal 12px 'Menlo', 'Bitstream Vera Sans Mono', 'Courier New', 'Courier', monospace;
+  white-space: pre;
 }
 
 div.sourceCode b {
@@ -103,26 +126,29 @@ div.sourceCode b {
 }
 
 div.sourceCode i {
-  font-style: normal;
-  width: 3em;
-  padding: 0 3px 0 0;
   display: block;
   float: left;
-  text-align: right;
+  width: 3em;
+  padding-right: 3px;
   border-right: 1px solid #ccc;
-  /*margin-right: 3px;*/
+  font-style: normal;
+  text-align: right;
+}
+
+div.sourceCode i.no-highlight span.number {
+  color: #151515;
 }
 
 div.sourceCode .fc, div.sourceCode .fc i {
-  background-color: #ccffcc;
+  background-color: #cfc;
 }
 
 div.sourceCode .pc, div.sourceCode .pc i {
-  background-color: #ffffcc;
+  background-color: #ffc;
 }
 
 div.sourceCode .nc, div.sourceCode .nc i {
-  background-color: #ffcccc;
+  background-color: #fcc;
 }
 
 .percent, .absValue {
@@ -130,11 +156,11 @@ div.sourceCode .nc, div.sourceCode .nc i {
 }
 
 .percent .green, .absValue .green {
-  color: limegreen;
+  color: #32cc32;
 }
 
 .percent .red, .absValue .red {
-  color: red;
+  color: #f00;
 }
 
 .percent .totalDiff {
