@@ -298,7 +298,6 @@
         </dependency>
 
         <dependency>
-            <!-- using older version as 2.5.1 collides with ucanaccess -->
             <groupId>org.hsqldb</groupId>
             <artifactId>hsqldb</artifactId>
             <version>2.3.1</version>
@@ -354,13 +353,6 @@
             <version>18.3.0.0</version>
             <scope>test</scope>
         </dependency>
-
-<!--        <dependency>-->
-<!--            <groupId>com.oracle</groupId>-->
-<!--            <artifactId>ojdbc6</artifactId>-->
-<!--            <version>11.2.0.4</version>-->
-<!--            <scope>test</scope>-->
-<!--        </dependency>-->
 
         <dependency>
             <groupId>org.postgresql</groupId>

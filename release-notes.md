@@ -2,7 +2,7 @@
 
 ### 1.0.3
 
-* Added partial support for MSAccess with UCanAccess jdbc driver (seems to be broken under Java 16 right now #13)
+* Added support for MSAccess with UCanAccess jdbc driver (seems to be broken under Java 16 right now #13)
 * Added new method withTransaction() to Session - simplifying multiple operations in a single database transaction 
 * Added automatic module name sproket.github.io.persism for 9+ support
 * Added support for Log4j 2
