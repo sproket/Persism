@@ -28,7 +28,11 @@ https://stackoverflow.com/questions/9898499/oracle-jdbc-ojdbc6-jar-as-a-maven-de
 
 
 mvn install:install-file -Dfile=persism-1.0.3b.jar -DgroupId=io.github.sproket -DartifactId=persism -Dversion=1.0.3b -Dpackaging=jar
-mvn install:install-file -Dfile=persism-1.1.0d-beta.jar -DgroupId=io.github.sproket -DartifactId=persism -Dversion=1.1.0d-beta -Dpackaging=jar
+mvn install:install-file -Dfile=persism-2.0.0-beta.jar -DgroupId=io.github.sproket -DartifactId=persism -Dversion=2.0.0-beta -Dpackaging
+
+
+
+
 
 
 Insert Records that the DB may generate autoinc or columns have defaults

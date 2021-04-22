@@ -185,7 +185,7 @@ public final class Session implements AutoCloseable {
      * Inserts the data object in the database refreshing with autoinc and other defaults that may exist.
      *
      * @param object the data object to insert.
-     * @param <T> Type of the returning data object in Result.
+     * @param <T>    Type of the returning data object in Result.
      * @return Result object containing rows changed (usually 1 to indicate rows changed via JDBC) and the data object itself which may have been changed by auto-inc or column defaults.
      * @throws PersismException When planet of the apes starts happening.
      */
@@ -312,7 +312,7 @@ public final class Session implements AutoCloseable {
             if (refreshAfterInsert) {
                 // Read the full object back to update any properties which had defaults
                 if (isRecord(object.getClass())) {
-                    SQL sql = new SQL(metaData.getSelectStatement(object.getClass(), connection));
+                    SQL sql = new SQL(metaData.getDefaultSelectStatement(object.getClass(), connection));
                     object = fetch(object.getClass(), sql, params(primaryKeyValues.toArray()));
                 } else {
                     fetch(object);
@@ -442,12 +442,11 @@ public final class Session implements AutoCloseable {
      * @throws PersismException Oh no. Not again.
      */
     public <T> List<T> query(Class<T> objectClass, Parameters parameters) {
-        String sql = metaData.getSelectStatement(objectClass, connection);
+        String sql = metaData.getDefaultSelectStatement(objectClass, connection);
 
         if (parameters.size() == 0) {
-            // Strip off where clause.
-            int n = sql.indexOf(" WHERE");
-            sql = sql.substring(0, n);
+            // Get the SELECT without any WHERE clause
+            sql = metaData.getSelectStatement(objectClass, connection);
             return query(objectClass, sql(sql), none());
         }
 
@@ -509,8 +508,14 @@ public final class Session implements AutoCloseable {
             if (log.isDebugEnabled()) {
                 log.debug("query: %s params: %s", sql, parameters);
             }
-            // we don't check parameter types here? Nope - we don't know anything at this point.
-            exec(result, sql.toString(), parameters.toArray());
+            if (sql.whereOnly) {
+                String ssql = metaData.getSelectStatement(objectClass, connection);
+                // TODO Here we could test parameters!
+                exec(result, ssql + " WHERE " + sql, parameters.toArray());
+            } else {
+                // we don't check parameter types here? Nope - we don't know anything at this point.
+                exec(result, sql.toString(), parameters.toArray());
+            }
 
             while (result.rs.next()) {
                 if (isRecord) {
@@ -575,7 +580,7 @@ public final class Session implements AutoCloseable {
             }
             assert params.size() == columnInfos.size();
 
-            String sql = metaData.getSelectStatement(object.getClass(), connection);
+            String sql = metaData.getDefaultSelectStatement(object.getClass(), connection);
             log.debug("FETCH %s PARAMS: %s", sql, params);
             for (int j = 0; j < params.size(); j++) {
                 if (params.get(j) != null) {
@@ -600,21 +605,23 @@ public final class Session implements AutoCloseable {
 
     /**
      * Fetch object by primary key(s)
+     *
      * @param objectClass Type to return
-     * @param parameters primary key values
-     * @param <T> Type
+     * @param parameters  primary key values
+     * @param <T>         Type
      * @return Instance of object type T or NULL if not found
      * @throws PersismException if something goes wrong.
      */
     public <T> T fetch(Class<T> objectClass, Parameters parameters) {
-        return fetch(objectClass, new SQL(metaData.getSelectStatement(objectClass, connection)), parameters);
+        return fetch(objectClass, new SQL(metaData.getDefaultSelectStatement(objectClass, connection)), parameters);
     }
 
     /**
      * Fetch object by arbitrary SQL
+     *
      * @param objectClass Type to return
-     * @param sql SQL query
-     * @param <T> Type
+     * @param sql         SQL query
+     * @param <T>         Type
      * @return Instance of object type T or NULL if not found
      * @throws PersismException if something goes wrong.
      */
@@ -638,22 +645,30 @@ public final class Session implements AutoCloseable {
         boolean isPOJO = Types.getType(objectClass) == null;
         boolean isRecord = isPOJO && isRecord(objectClass);
 
-        JDBCResult JDBCResult = new JDBCResult();
+        JDBCResult result = new JDBCResult();
         try {
 
             if (log.isDebugEnabled()) {
                 log.debug("fetch: %s params: %s", sql, parameters);
             }
-            exec(JDBCResult, sql.toString(), parameters.toArray());
 
-            if (JDBCResult.rs.next()) {
+            if (sql.whereOnly) {
+                String ssql = metaData.getSelectStatement(objectClass, connection);
+                // TODO Here we could test parameters!
+                exec(result, ssql + " WHERE " + sql, parameters.toArray());
+            } else {
+                // we don't check parameter types here? Nope - we don't know anything at this point.
+                exec(result, sql.toString(), parameters.toArray());
+            }
+
+            if (result.rs.next()) {
                 if (isRecord) {
-                    return reader.readRecord(objectClass, JDBCResult.rs);
+                    return reader.readRecord(objectClass, result.rs);
                 } else if (isPOJO) {
                     T t = objectClass.getDeclaredConstructor().newInstance();
-                    return reader.readObject(t, JDBCResult.rs);
+                    return reader.readObject(t, result.rs);
                 } else {
-                    return reader.readColumn(JDBCResult.rs, 1, objectClass);
+                    return reader.readColumn(result.rs, 1, objectClass);
                 }
             }
 
@@ -663,7 +678,7 @@ public final class Session implements AutoCloseable {
             Util.rollback(connection);
             throw new PersismException(e.getMessage(), e);
         } finally {
-            Util.cleanup(JDBCResult.st, JDBCResult.rs);
+            Util.cleanup(result.st, result.rs);
         }
     }
 

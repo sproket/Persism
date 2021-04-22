@@ -341,7 +341,7 @@ final class Convertor {
     /*
      * Used by convert for convenience - common possible parsing
      */
-    static Date tryParseDate(Object value, Class targetType, String columnName, DateFormat df) throws PersismException {
+    static Date tryParseDate(Object value, Class<?> targetType, String columnName, DateFormat df) throws PersismException {
         try {
             return df.parse("" + value);
         } catch (ParseException e) {
@@ -350,7 +350,7 @@ final class Convertor {
         }
     }
 
-    Timestamp tryParseTimestamp(Object value, Class targetType, String columnName) throws PersismException {
+    Timestamp tryParseTimestamp(Object value, Class<?> targetType, String columnName) throws PersismException {
         try {
             return Timestamp.valueOf("" + value);
         } catch (IllegalArgumentException e) {

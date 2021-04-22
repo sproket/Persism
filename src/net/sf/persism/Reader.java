@@ -247,6 +247,7 @@ final class Reader {
         }
     }
 
+    // TODO readColumn you could pass the ResultSetMetaData or ColumnType & ColumnLabel here too if you want...
     <T> T readColumn(ResultSet rs, int column, Class<?> returnType) throws SQLException, IOException {
         ResultSetMetaData rsmd = rs.getMetaData();
         int sqlColumnType = rsmd.getColumnType(column);

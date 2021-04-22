@@ -16,6 +16,9 @@ import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.*;
 
+import static net.sf.persism.Parameters.params;
+import static net.sf.persism.SQL.where;
+
 /**
  * Comments for TestDerby go here.
  *
@@ -287,5 +290,7 @@ public final class TestDerby extends BaseTest {
     @Override
     public void testAllDates() {
         super.testAllDates();
+
+        session.query(Contact.class, where("LastName = ?"), params("fred"));
     }
 }

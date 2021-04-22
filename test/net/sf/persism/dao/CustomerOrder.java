@@ -21,6 +21,19 @@ public final class CustomerOrder {
     private Date datePaid;
     private boolean paid;
 
+    public CustomerOrder() {
+    }
+
+    public CustomerOrder(String customerId, String companyName, String description, long orderId, Date dateCreated, Date datePaid, boolean paid) {
+        this.customerId = customerId;
+        this.companyName = companyName;
+        this.description = description;
+        this.orderId = orderId;
+        this.dateCreated = dateCreated;
+        this.datePaid = datePaid;
+        this.paid = paid;
+    }
+
     public String getCustomerId() {
         return customerId;
     }

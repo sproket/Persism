@@ -2,6 +2,7 @@ package net.sf.persism;
 
 import net.sf.persism.annotations.Column;
 import net.sf.persism.annotations.NotColumn;
+import net.sf.persism.annotations.NotTable;
 import net.sf.persism.annotations.Table;
 
 import java.lang.annotation.Annotation;
@@ -36,10 +37,12 @@ final class MetaData {
     private Map<Class, String> tableMap = new ConcurrentHashMap<Class, String>(32);
 
     // SQL for updates/inserts/deletes/selects for each class
-    private Map<Class, String> updateStatementsMap = new ConcurrentHashMap<Class, String>(32);
-    private Map<Class, String> insertStatementsMap = new ConcurrentHashMap<Class, String>(32);
-    private Map<Class, String> deleteStatementsMap = new ConcurrentHashMap<Class, String>(32);
-    private Map<Class, String> selectStatementsMap = new ConcurrentHashMap<Class, String>(32);
+    private Map<Class, String> insertStatementsMap = new ConcurrentHashMap<>(32);
+    // TODO For these 3 they have a common WHERE clause - should cache that separately
+    private Map<Class, String> updateStatementsMap = new ConcurrentHashMap<>(32);
+    private Map<Class, String> deleteStatementsMap = new ConcurrentHashMap<>(32);
+    private Map<Class, String> selectStatementsMap = new ConcurrentHashMap<>(32);
+    private Map<Class, String> whereClauseMap = new ConcurrentHashMap<>(32);
 
     // Key is SQL with named params, Value is SQL with ?
     // private Map<String, String> sqlWitNamedParams = new ConcurrentHashMap<String, String>(32);
@@ -118,9 +121,9 @@ final class MetaData {
     // Version for Queries NO TABLES CALLS THIS TOO WANKER
     private synchronized <T> Map<String, PropertyInfo> determinePropertyInfo(Class<T> objectClass, ResultSet rs) {
         // double check map - note this could be called with a Query were we never have that in here
-//        if (propertyInfoMap.containsKey(objectClass)) {
-//            return propertyInfoMap.get(objectClass);
-//        }
+        if (propertyInfoMap.containsKey(objectClass)) {
+            return propertyInfoMap.get(objectClass);
+        }
 
         try {
             ResultSetMetaData rsmd = rs.getMetaData();
@@ -159,8 +162,13 @@ final class MetaData {
                     log.warn("Property not found for column: " + realColumnName + " class: " + objectClass);
                 }
             }
-// TODO HOW ARE WE HANDLING QUERIES? FFS
-//            propertyInfoMap.put(objectClass, columns);
+
+            // Do not put query classes into the metadata. It's possible the 1st run has a query with missing columns
+            // any calls afterward would fail because I never would refresh the columns again. Table is fine since we
+            // can do a SELECT * to get all columns up front but we can't do that with a query.
+            if (objectClass.getAnnotation(NotTable.class) == null) {
+                propertyInfoMap.put(objectClass, columns);
+            }
             return columns;
 
         } catch (SQLException e) {
@@ -470,11 +478,16 @@ final class MetaData {
             return sql;
         }
 
+        String sql;
         if (updateStatementsMap.containsKey(object.getClass())) {
-            return updateStatementsMap.get(object.getClass());
+            sql = updateStatementsMap.get(object.getClass());
+        } else {
+            sql = determineUpdateStatement(object, connection);
         }
-
-        return determineUpdateStatement(object, connection);
+        if (log.isDebugEnabled()) {
+            log.debug("getUpdateStatement for: %s %s", object.getClass(), sql);
+        }
+        return sql;
     }
 
     // Used by Objects not implementing Persistable since they will always use the same update statement
@@ -500,10 +513,18 @@ final class MetaData {
 
     // Note this will not include columns unless they have the associated property.
     String getInsertStatement(Object object, Connection connection) throws PersismException {
+        String sql;
+
         if (insertStatementsMap.containsKey(object.getClass())) {
-            return insertStatementsMap.get(object.getClass());
+            sql = insertStatementsMap.get(object.getClass());
+        } else {
+            sql = determineInsertStatement(object, connection);
         }
-        return determineInsertStatement(object, connection);
+
+        if (log.isDebugEnabled()) {
+            log.debug("getInsertStatement for: %s %s", object.getClass(), sql);
+        }
+        return sql;
     }
 
     private synchronized String determineInsertStatement(Object object, Connection connection) {
@@ -619,6 +640,58 @@ final class MetaData {
         return deleteStatement;
     }
 
+    String getWhereClause(Class<?> objectClass, Connection connection) {
+        if (whereClauseMap.containsKey(objectClass)) {
+            return whereClauseMap.get(objectClass);
+        }
+        return determineWhereClause(objectClass, connection);
+    }
+
+    private synchronized String determineWhereClause(Class<?> objectClass, Connection connection) {
+        if (whereClauseMap.containsKey(objectClass)) {
+            return whereClauseMap.get(objectClass);
+        }
+
+        String sep = "";
+
+        StringBuilder sb = new StringBuilder();
+        String sd = connectionType.getKeywordStartDelimiter();
+        String ed = connectionType.getKeywordEndDelimiter();
+
+        List<String> primaryKeys = getPrimaryKeys(objectClass, connection);
+
+        sb.append(" WHERE ");
+
+        sep = "";
+        for (String column : primaryKeys) {
+            sb.append(sep).append(sd).append(column).append(ed).append(" = ?");
+            sep = " AND ";
+        }
+
+        String where = sb.toString();
+        if (log.isDebugEnabled()) {
+            log.debug("determineWhereClause: %s %s", objectClass.getName(), where);
+        }
+        whereClauseMap.put(objectClass, where);
+        return where;
+    }
+
+    /**
+     * Default SELECT including WHERE Primary Keys
+     * @param objectClass
+     * @param connection
+     * @return
+     */
+    String getDefaultSelectStatement(Class<?> objectClass, Connection connection) {
+        return getSelectStatement(objectClass, connection) + getWhereClause(objectClass, connection);
+    }
+
+    /**
+     * SQL SELECT COLUMNS ONLY
+     * @param objectClass
+     * @param connection
+     * @return
+     */
     String getSelectStatement(Class<?> objectClass, Connection connection) {
         if (selectStatementsMap.containsKey(objectClass)) {
             return selectStatementsMap.get(objectClass);
@@ -637,8 +710,6 @@ final class MetaData {
 
         String tableName = getTableName(objectClass, connection);
 
-        List<String> primaryKeys = getPrimaryKeys(objectClass, connection);
-
         StringBuilder sb = new StringBuilder();
         sb.append("SELECT ");
 
@@ -650,13 +721,8 @@ final class MetaData {
             sb.append(sep).append(sd).append(columnInfo.columnName).append(ed);
             sep = ", ";
         }
-        sb.append(" FROM ").append(sd).append(tableName).append(ed).append(" WHERE ");
+        sb.append(" FROM ").append(sd).append(tableName).append(ed);
 
-        sep = "";
-        for (String column : primaryKeys) {
-            sb.append(sep).append(sd).append(column).append(ed).append(" = ?");
-            sep = " AND ";
-        }
 
         String selectStatement = sb.toString();
 

@@ -16,7 +16,7 @@ import java.util.Date;
 
 import static net.sf.persism.Parameters.*;
 import static net.sf.persism.Parameters.none;
-import static net.sf.persism.SQL.sql;
+import static net.sf.persism.SQL.*;
 
 /**
  * Comments for TestH2 go here.
@@ -73,7 +73,7 @@ public final class TestH2 extends BaseTest {
 
 
         Contact contact = getContactForTest();
-        String sql = session.getMetaData().getSelectStatement(contact.getClass(), con);
+        String sql = session.getMetaData().getDefaultSelectStatement(contact.getClass(), con);
 
         Query<?> ass = new Query<>(contact, session);
         ass.where("ass").eq("mii");
@@ -90,14 +90,15 @@ public final class TestH2 extends BaseTest {
         session.fetch(other);
 
         // TODO Fails with some DBs unless you convert yourself. the question here is how to allow a user to use the converter
-        List<Contact> contacts = session.query(Contact.class, sql(sql), params((Object) Convertor.asBytes(contact.getIdentity())));
+        byte[] uuid = Convertor.asBytes(contact.getIdentity());
+        List<Contact> contacts = session.query(Contact.class, sql(sql), params((Object) uuid));
         log.info(contacts);
 
     }
 
     @Override
     protected void createTables() throws SQLException {
-        List<String> commands = new ArrayList<String>(12);
+        List<String> commands = new ArrayList<>(12);
         String sql;
         if (UtilsForTests.isTableInDatabase("Orders", con)) {
             sql = "DROP TABLE Orders";
@@ -679,6 +680,8 @@ public final class TestH2 extends BaseTest {
         log.info(" ETC>>> " + returnedSavedGame.getWhatTimeIsIt());
         assertTrue("TIME s/b > 0 - we should have time:", cal.get(Calendar.HOUR_OF_DAY) + cal.get(Calendar.MINUTE) + cal.get(Calendar.SECOND) > 0);
 
+        List<SavedGame> savedGames = session.query(SavedGame.class, params(1));
+log.info("ALL SAVED GAMES " + savedGames.size() + " " + savedGames.get(0).getName() + " id: " + savedGames.get(0).getId());
         saveGame = session.fetch(SavedGame.class, sql("select * from SavedGames"), none());
         assertNotNull(saveGame);
         log.info("SAVED GOLD: " + saveGame.getGold());
@@ -689,7 +692,13 @@ public final class TestH2 extends BaseTest {
         saveGame.setSomethingBig(null);
         session.update(saveGame);
         session.fetch(saveGame);
+
+        // todo add asserts - fetch by name=BLAH as well
+        SavedGame sg = session.fetch(SavedGame.class, where("Silver > ?"), params(199));
+        log.warn(sg);
+//        sg = session.fetch(SavedGame.class, proc("spSearchSilver"), params(199));
     }
+
 
 
     @Override

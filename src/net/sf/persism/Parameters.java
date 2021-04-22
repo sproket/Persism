@@ -9,6 +9,8 @@ import java.util.List;
  */
 public final class Parameters {
     List<Object> parameters;
+    boolean okToVerify = false;
+    boolean areKeys = false;
 
     private static final Parameters none = new Parameters();
 
@@ -29,6 +31,17 @@ public final class Parameters {
      */
     public static Parameters params(Object... values) {
         return new Parameters(values);
+    }
+
+    /**
+     * Static initializer for a new set of Parameters indicating that they are primary key values
+     * @param values varargs list of arbitrary parameters for a query.
+     * @return new Parameters object
+     */
+    public static Parameters keys(Object... values) {
+        Parameters parameters = new Parameters(values);
+        parameters.areKeys = true;
+        return parameters;
     }
 
     /**
