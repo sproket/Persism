@@ -822,6 +822,12 @@ public class TestMSSQL extends BaseTest {
         log.info("ORDERS AGAIN?  " + orders);
     }
 
+    @Override
+    public void testQueryResult() throws Exception {
+        log.warn("WTF");
+        super.testQueryResult();
+    }
+
     public void testQuery() throws Exception {
         Procedure procedure = new Procedure();
         procedure.setDescription("proc 1");

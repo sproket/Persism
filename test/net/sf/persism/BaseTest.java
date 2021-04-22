@@ -265,16 +265,35 @@ public abstract class BaseTest extends TestCase {
         order.setCreated(LocalDate.now());
         session.insert(order);
 
-        // REMOVE DATE_PAID ALIAS
+
+        // SELECT LESS COLUMNS 1st.
         StringBuilder sb = new StringBuilder();
-        sb.append("SELECT c.Customer_ID, c.Company_Name, o.ID Order_ID, o.Name AS Description, o.Date_Paid, o.Created AS DateCreated, o.PAID ");
+        sb.append("SELECT c.Customer_ID, c.Company_Name");
         sb.append(" FROM Orders o");
         sb.append(" JOIN Customers c ON o.Customer_ID = c.Customer_ID");
 
         String sql = sb.toString();
         log.info(sql);
 
-        List<CustomerOrder> results = session.query(CustomerOrder.class, sql);
+
+        List<CustomerOrder> results;
+        try {
+            results = session.query(CustomerOrder.class, sql);
+        } catch (Exception e) {
+            log.warn("SHOULD ERROR HERE NOT ENOUGH COLUMNS " + e.getMessage());
+        }
+
+        // REMOVE DATE_PAID ALIAS
+        sb = new StringBuilder();
+        sb.append("SELECT c.Customer_ID, c.Company_Name, o.ID Order_ID, o.Name AS Description, o.Date_Paid, o.Created AS DateCreated, o.PAID ");
+        sb.append(" FROM Orders o");
+        sb.append(" JOIN Customers c ON o.Customer_ID = c.Customer_ID");
+
+        sql = sb.toString();
+        log.info(sql);
+
+        // This should not fail with missing columns.
+        results = session.query(CustomerOrder.class, sql);
         log.info(results);
         assertEquals("size should be 4", 4, results.size());
 

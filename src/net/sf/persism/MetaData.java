@@ -2,6 +2,7 @@ package net.sf.persism;
 
 import net.sf.persism.annotations.Column;
 import net.sf.persism.annotations.NotColumn;
+import net.sf.persism.annotations.NotTable;
 import net.sf.persism.annotations.Table;
 
 import java.lang.annotation.Annotation;
@@ -113,7 +114,6 @@ final class MetaData {
     }
 
     // Should only be called IF the map does not contain the column meta information yet.
-    // Version for Queries
     private synchronized <T> Map<String, PropertyInfo> determinePropertyInfo(Class<T> objectClass, ResultSet rs) {
         // double check map - note this could be called with a Query were we never have that in here
         if (propertyInfoMap.containsKey(objectClass)) {
@@ -158,7 +158,13 @@ final class MetaData {
                 }
             }
 
-            propertyInfoMap.put(objectClass, columns);
+            // Do not put query classes into the metadata. It's possible the 1st run has a query with missing columns
+            // any calls afterward would fail because I never would refresh the columns again. Table is fine since we
+            // can do a SELECT * to get all columns up front but we can't do that with a query.
+            if (objectClass.getAnnotation(NotTable.class) == null) {
+                propertyInfoMap.put(objectClass, columns);
+            }
+
             return columns;
 
         } catch (SQLException e) {
