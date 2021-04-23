@@ -915,7 +915,7 @@ public class TestMSSQL extends BaseTest {
         } catch (PersismException e) {
             shouldHaveFailed = true;
             log.info(e.getMessage(), e);
-            assertEquals("message should be ", "Object class net.sf.persism.dao.ContactFail was not properly initialized. Some properties not initialized in the queried columns (Fail).", e.getMessage());
+            assertEquals("message should be ", "Object class net.sf.persism.dao.ContactFail was not properly initialized. Some properties not initialized in the queried columns (fail).", e.getMessage());
         }
 
         assertEquals("should have failed", true, shouldHaveFailed);

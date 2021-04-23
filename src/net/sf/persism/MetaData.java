@@ -8,8 +8,8 @@ import net.sf.persism.annotations.Table;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
 import java.sql.*;
-import java.text.MessageFormat;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -373,8 +373,12 @@ final class MetaData {
         Method[] methods = objectClass.getMethods();
 
         for (Field field : fields) {
+            // Skip static fields
+            if (Modifier.isStatic(field.getModifiers())) {
+                continue;
+            }
             log.debug("Field Name: %s", field.getName());
-            String propertyName = field.getName().substring(0, 1).toUpperCase() + field.getName().substring(1);
+            String propertyName = field.getName();
             log.debug("Property Name: *%s* ", propertyName);
 
             PropertyInfo propertyInfo = new PropertyInfo();
@@ -386,7 +390,8 @@ final class MetaData {
             }
 
             for (Method method : methods) {
-                String propertyNameToTest = propertyName;
+                String propertyNameToTest = field.getName().substring(0, 1).toUpperCase() + field.getName().substring(1);
+                log.debug("property name for testing %s", propertyNameToTest);
                 if (propertyNameToTest.startsWith("Is") && propertyNameToTest.length() > 2 && Character.isUpperCase(propertyNameToTest.charAt(2))) {
                     propertyNameToTest = propertyName.substring(2);
                 }
@@ -420,7 +425,13 @@ final class MetaData {
             Map.Entry<String, PropertyInfo> entry = it.next();
             PropertyInfo info = entry.getValue();
             if (info.getAnnotation(NotColumn.class) != null) {
-                it.remove();
+
+                if (!Util.isRecord(objectClass)) {
+                    it.remove();
+                } else {
+                    log.warn("@NotColumn is not applicable for records. Ignoring. Please remove this annotation from " + info.propertyName + " to prevent these warnings in the future.");
+                }
+
             }
         }
 
@@ -478,11 +489,16 @@ final class MetaData {
             return sql;
         }
 
+        String sql;
         if (updateStatementsMap.containsKey(object.getClass())) {
-            return updateStatementsMap.get(object.getClass());
+            sql = updateStatementsMap.get(object.getClass());
+        } else {
+            sql = determineUpdateStatement(object, connection);
         }
-
-        return determineUpdateStatement(object, connection);
+        if (log.isDebugEnabled()) {
+            log.debug("getUpdateStatement for: %s %s", object.getClass(), sql);
+        }
+        return sql;
     }
 
     // Used by Objects not implementing Persistable since they will always use the same update statement
@@ -508,10 +524,18 @@ final class MetaData {
 
     // Note this will not include columns unless they have the associated property.
     String getInsertStatement(Object object, Connection connection) throws PersismException {
+        String sql;
+
         if (insertStatementsMap.containsKey(object.getClass())) {
-            return insertStatementsMap.get(object.getClass());
+            sql = insertStatementsMap.get(object.getClass());
+        } else {
+            sql = determineInsertStatement(object, connection);
         }
-        return determineInsertStatement(object, connection);
+
+        if (log.isDebugEnabled()) {
+            log.debug("getInsertStatement for: %s %s", object.getClass(), sql);
+        }
+        return sql;
     }
 
     private synchronized String determineInsertStatement(Object object, Connection connection) {
@@ -753,9 +777,10 @@ final class MetaData {
     }
 
     <T> Map<String, PropertyInfo> getQueryColumnsPropertyInfo(Class<T> objectClass, ResultSet rs) throws PersismException {
-        if (propertyInfoMap.containsKey(objectClass)) {
-            return propertyInfoMap.get(objectClass);
-        }
+        // should not be mapped since ResultSet could contain different # of columns at different times.
+//        if (propertyInfoMap.containsKey(objectClass)) {
+//            return propertyInfoMap.get(objectClass);
+//        }
 
         return determinePropertyInfo(objectClass, rs);
     }
