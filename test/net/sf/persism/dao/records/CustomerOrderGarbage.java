@@ -13,9 +13,9 @@ import java.sql.Time;
 // used for failing
 @NotTable
 public record CustomerOrderGarbage(String customerId,
-                                    @NotColumn String junk, // java: annotation type not applicable to this kind of declaration THIS ONLY FAILS IF I HAVE A COMPACT CONSTRUCTOR? WTF!
-                                    @NotColumn int missing,
-                                    @NotColumn Time whatTimeIsIt) {
+                                    String junk, // java: annotation type not applicable to this kind of declaration THIS ONLY FAILS IF I HAVE A COMPACT CONSTRUCTOR? WTF!
+                                     int missing,
+                                     Time whatTimeIsIt) {
 
     // todo test @Column as well.
 

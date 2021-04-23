@@ -2,6 +2,7 @@ package net.sf.persism;
 
 import junit.framework.TestCase;
 import net.sf.persism.dao.*;
+import net.sf.persism.dao.records.InvoiceRec;
 
 import java.lang.reflect.InvocationTargetException;
 import java.math.BigDecimal;
@@ -755,49 +756,59 @@ public abstract class BaseTest extends TestCase {
 
         assertEquals("country s/b US", "US", customer.getCountry());
 
-        Invoice invoice = new Invoice("MOO", 10.5f, 10, 0, new BigDecimal("10.23"), false);
-//        invoice.setCustomerId("MOO");
-//        invoice.setPrice(10.5f);
-//        invoice.setQuantity(10);
-//        invoice.setTotal(new BigDecimal(invoice.getPrice() * invoice.getQuantity()));
-//        invoice.setPaid(true);
-//        invoice.setActualPrice(new BigDecimal("10.23"));
+        Invoice invoice = new Invoice();
+        invoice.setCustomerId("MOO");
+        invoice.setPrice(10.5f);
+        invoice.setQuantity(10);
+        invoice.setDiscount(0);
+        invoice.setActualPrice(new BigDecimal("10.23"));
+        invoice.setPaid(false);
 
-        Result<Invoice> result = session.insert(invoice);
+        assertNull("org invoice s/b null", invoice.getInvoiceId());
+        assertNull("Created s/b null ", invoice.getCreated()); // note no setter
 
-        assertNull("org invoice s/b null", invoice.invoiceId());
+        Result<Invoice> res1 = session.insert(invoice);
+        assertTrue("Invoice ID > 0", res1.dataObject().getInvoiceId() > 0);
+        assertNotNull("Created s/b not null", res1.dataObject().getCreated()); // note no setter
+
+
+        InvoiceRec invoiceRec = new InvoiceRec("MOO", 10.5f, 10, 0, new BigDecimal("10.23"), false);
+
+        assertNull("org invoice s/b null", invoiceRec.invoiceId());
+        assertNull("Created s/b null", invoiceRec.created()); // note no setter
+
+        Result<InvoiceRec> result = session.insert(invoiceRec);
+
         assertTrue("Invoice ID > 0", result.dataObject().invoiceId() > 0);
-        assertNull("Created s/b null", invoice.created()); // note no setter
         assertNotNull("Created s/b not null", result.dataObject().created()); // note no setter
-
 
         List<Invoice> invoices = session.query(Invoice.class, "select * from Invoices where CUSTOMER_ID=?", "MOO");
         log.info(invoices);
-        assertEquals("invoices s/b 1", 1, invoices.size());
+        assertEquals("invoices s/b 2", 2, invoices.size()); // 2 now we add 1 via record and 1 via class
 
-        invoice = invoices.get(0);
+        invoiceRec = new InvoiceRec(invoices.get(0));
 
-        log.info(invoice);
+        log.info(invoiceRec);
 
-        assertEquals("customer s/b MOO", "MOO", invoice.customerId());
-        assertEquals("invoice # s/b 1", 1, invoice.invoiceId().intValue());
-        assertEquals("price s/b 10.5", 10.5f, invoice.price());
-        assertEquals("qty s/b 10", 10, invoice.quantity());
-        assertFalse("paid s/b false", invoice.paid());
+        assertEquals("customer s/b MOO", "MOO", invoiceRec.customerId());
+        assertEquals("invoice # s/b 1", 1, invoiceRec.invoiceId().intValue());
+        assertEquals("price s/b 10.5", 10.5f, invoiceRec.price());
+        assertEquals("qty s/b 10", 10, invoiceRec.quantity());
+        assertFalse("paid s/b false", invoiceRec.paid());
 
         NumberFormat nf = NumberFormat.getInstance();
 
-        assertEquals("totals/b 105.00", nf.format(105.0f), nf.format(invoice.total()));
+        assertEquals("totals/b 105.00", nf.format(105.0f), nf.format(invoiceRec.total()));
 
 
-        Invoice updatedInvoice = new Invoice(invoice.invoiceId(), invoice.customerId(), invoice.price(), invoice.quantity() + 20, invoice.discount(), invoice.actualPrice(),invoice.created(), true);
+        InvoiceRec updatedInvoice = new InvoiceRec(invoiceRec.invoiceId(), invoiceRec.customerId(), invoiceRec.price(), invoiceRec.quantity() + 20, invoiceRec.discount(), invoiceRec.actualPrice(),invoiceRec.created(), true);
         session.update(updatedInvoice);
 
 
-        invoices = session.query(Invoice.class, "select * from Invoices where CUSTOMER_ID=?", "MOO");
+        invoices = session.query(Invoice.class, "select * from Invoices where CUSTOMER_ID=? ORDER BY Invoice_ID", "MOO");
         log.info(invoices);
-        assertEquals("invoices s/b 1", 1, invoices.size());
-        updatedInvoice = invoices.get(0);
+        assertEquals("invoices s/b 1", 2, invoices.size());
+        updatedInvoice = new InvoiceRec(invoices.get(0));
         assertEquals("qty should now be 30", 30, updatedInvoice.quantity());
         assertTrue("paid s/b true", updatedInvoice.paid());
 

@@ -182,7 +182,7 @@ final class Reader {
         Constructor<?> constructor = objectClass.getConstructor(constructorTypes.toArray(new Class<?>[0]));
         Parameter[] parameters = constructor.getParameters();
         for (Parameter parameter : parameters) {
-            log.warn("param: " + parameter.getName());
+            log.debug("readRecord param: %s", parameter.getName());
         }
         return (T) constructor.newInstance(constructorParams.toArray());
 

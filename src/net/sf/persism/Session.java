@@ -186,7 +186,7 @@ public final class Session implements AutoCloseable {
      * @return usually 1 to indicate rows changed via JDBC.
      * @throws PersismException When planet of the apes starts happening.
      */
-    public <T> Result<T> insert(Object object) {
+    public <T> Result<T> insert(Object object) throws PersismException {
         String insertStatement = metaData.getInsertStatement(object, connection);
 
         PreparedStatement st = null;
