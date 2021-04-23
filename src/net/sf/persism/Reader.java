@@ -6,7 +6,9 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.StringWriter;
-import java.lang.reflect.*;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Parameter;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.sql.*;
@@ -78,11 +80,14 @@ final class Reader {
                 if (value != null) {
                     try {
                         if (columnProperty.readOnly) {
-                            Util.setFieldValue(columnProperty.field, object, value);
+                            // set the value on the field directly
+                            columnProperty.field.setAccessible(true);
+                            columnProperty.field.set(object, value);
+                            columnProperty.field.setAccessible(false);
                         } else {
                             columnProperty.setter.invoke(object, value);
                         }
-                    } catch (IllegalArgumentException | NoSuchFieldException e) {
+                    } catch (IllegalArgumentException e) {
                         String msg = "Object " + objectClass + ". Column: " + columnName + " Type of property: " + returnType + " - Type read: " + value.getClass() + " VALUE: " + value;
                         throw new PersismException(msg, e);
                     }
@@ -130,7 +135,7 @@ final class Reader {
 
         // Find constructor with the most params
         int paramCount = 0;
-        for (Constructor<?> con : constructors) {
+        for (Constructor con : constructors) {
             if (con.getParameterCount() > paramCount) {
                 selectedConstructor = con;
                 paramCount = con.getParameterCount();
@@ -200,6 +205,15 @@ final class Reader {
         if (columnType != null) {
 
             switch (columnType) {
+
+                case BooleanType:
+                case booleanType:
+                    if (returnType.equals(Boolean.class) || returnType.equals(boolean.class)) {
+                        value = rs.getBoolean(column);
+                    } else {
+                        value = rs.getByte(column);
+                    }
+                    break;
 
                 case TimestampType:
                     if (returnType.equals(String.class)) { // JTDS

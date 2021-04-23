@@ -632,7 +632,7 @@ public abstract class BaseTest extends TestCase {
         testLocalTypes3.setDescription("time later in the day to test awfulness of SQLite");
         testLocalTypes3.setTimeOnly(lt2);
 
-        assertEquals("s/b 1?", 1, session.insert(testLocalTypes3));
+        assertEquals("s/b 1?", 1, session.insert(testLocalTypes3).rows());
 
         List<DateTestLocalTypes> list = session.query(DateTestLocalTypes.class, "select * FROM DateTestLocalTypes");
         log.info(list);
@@ -763,11 +763,12 @@ public abstract class BaseTest extends TestCase {
 //        invoice.setPaid(true);
 //        invoice.setActualPrice(new BigDecimal("10.23"));
 
-        session.insert(invoice);
+        Result<Invoice> result = session.insert(invoice);
 
-
-        assertTrue("Invoice ID > 0", invoice.invoiceId() > 0);
-        assertNotNull("Created s/b not null", invoice.created()); // note no setter
+        assertNull("org invoice s/b null", invoice.invoiceId());
+        assertTrue("Invoice ID > 0", result.dataObject().invoiceId() > 0);
+        assertNull("Created s/b null", invoice.created()); // note no setter
+        assertNotNull("Created s/b not null", result.dataObject().created()); // note no setter
 
 
         List<Invoice> invoices = session.query(Invoice.class, "select * from Invoices where CUSTOMER_ID=?", "MOO");
@@ -797,7 +798,7 @@ public abstract class BaseTest extends TestCase {
         log.info(invoices);
         assertEquals("invoices s/b 1", 1, invoices.size());
         updatedInvoice = invoices.get(0);
-        assertEquals("qty should now be 20", 20, updatedInvoice.quantity());
+        assertEquals("qty should now be 30", 30, updatedInvoice.quantity());
         assertTrue("paid s/b true", updatedInvoice.paid());
 
     }
