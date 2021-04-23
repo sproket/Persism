@@ -651,7 +651,7 @@ public abstract class BaseTest extends TestCase {
         testLocalTypes3.setDescription("time later in the day to test awfulness of SQLite");
         testLocalTypes3.setTimeOnly(lt2);
 
-        assertEquals("s/b 1?", 1, session.insert(testLocalTypes3));
+        assertEquals("s/b 1?", 1, session.insert(testLocalTypes3).rows());
 
         List<DateTestLocalTypes> list = session.query(DateTestLocalTypes.class, "select * FROM DateTestLocalTypes");
         log.info(list);

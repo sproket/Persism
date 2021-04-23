@@ -142,7 +142,7 @@ public class TestMySQL extends BaseTest {
                 "   StateProvince varchar(50) NULL, " +
                 "   ZipPostalCode varchar(10) NULL, " +
                 "   Country nvarchar(50) NULL, " +
-                "   Status TINYINT NOT NULL, " +
+                "   Status TINYINT(1) NOT NULL, " +
                 "   DateAdded Date NULL, " +
                 "   LastModified DATETIME NULL, " +
                 "   Notes text NULL, " +

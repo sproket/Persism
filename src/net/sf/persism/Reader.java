@@ -182,7 +182,7 @@ final class Reader {
         Constructor<?> constructor = objectClass.getConstructor(constructorTypes.toArray(new Class<?>[0]));
         Parameter[] parameters = constructor.getParameters();
         for (Parameter parameter : parameters) {
-            log.warn("param: " + parameter.getName());
+            log.debug("readRecord param: %s", parameter.getName());
         }
         return (T) constructor.newInstance(constructorParams.toArray());
 
@@ -205,6 +205,15 @@ final class Reader {
         if (columnType != null) {
 
             switch (columnType) {
+
+                case BooleanType:
+                case booleanType:
+                    if (returnType.equals(Boolean.class) || returnType.equals(boolean.class)) {
+                        value = rs.getBoolean(column);
+                    } else {
+                        value = rs.getByte(column);
+                    }
+                    break;
 
                 case TimestampType:
                     if (returnType.equals(String.class)) { // JTDS

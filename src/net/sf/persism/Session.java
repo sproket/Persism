@@ -2,18 +2,12 @@ package net.sf.persism;
 
 import net.sf.persism.annotations.NotTable;
 
-import java.io.*;
-import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.math.BigDecimal;
-import java.math.BigInteger;
 import java.sql.*;
-import java.text.DateFormat;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
-import java.time.*;
 import java.util.*;
-import java.util.Date;
+
+import static net.sf.persism.Util.isRecord;
 
 /**
  * Performs various read and write operations in the database.
@@ -192,7 +186,7 @@ public final class Session implements AutoCloseable {
      * @return usually 1 to indicate rows changed via JDBC.
      * @throws PersismException When planet of the apes starts happening.
      */
-    public int insert(Object object) throws PersismException {
+    public <T> Result<T> insert(Object object) throws PersismException {
         String insertStatement = metaData.getInsertStatement(object, connection);
 
         PreparedStatement st = null;
@@ -219,7 +213,7 @@ public final class Session implements AutoCloseable {
                 st = connection.prepareStatement(insertStatement);
             }
 
-            boolean tableHasDefaultColumnValues = false;
+            boolean refreshAfterInsert = false;
 
             List<Object> params = new ArrayList<>(columns.size());
             List<ColumnInfo> columnInfos = new ArrayList<>(columns.size());
@@ -235,7 +229,6 @@ public final class Session implements AutoCloseable {
                     if (columnInfo.hasDefault) {
                         // Do not include if this column has a default and no value has been
                         // set on it's associated property.
-
                         if (propertyInfo.getter.getReturnType().isPrimitive()) {
                             log.warnNoDuplicates("Property " + propertyInfo.propertyName + " for column " + columnInfo.columnName + " for class " + object.getClass() +
                                     " should be an Object type to properly detect NULL for defaults (change it from the primitive type to its Boxed version).");
@@ -250,7 +243,7 @@ public final class Session implements AutoCloseable {
                                 }
                             }
 
-                            tableHasDefaultColumnValues = true;
+                            refreshAfterInsert = true;
                             continue;
                         }
                     }
@@ -278,31 +271,59 @@ public final class Session implements AutoCloseable {
 
             log.debug("insert return count after insert: %s", ret);
 
+            List<Object> primaryKeyValues = new ArrayList<>();
             if (generatedKeys.size() > 0) {
                 rs = st.getGeneratedKeys();
+                PropertyInfo propertyInfo;
                 for (String column : generatedKeys) {
                     if (rs.next()) {
 
-                        Method setter = properties.get(column).setter;
-                        Object value = getTypedValueReturnedFromGeneratedKeys(setter.getParameterTypes()[0], rs);
+                        propertyInfo = properties.get(column);
 
-                        log.debug("insert %s generated %s", column, value);
-                        setter.invoke(object, value);
+                        Method setter = propertyInfo.setter;
+                        Object value;
+                        if (setter != null) {
+                            value = getTypedValueReturnedFromGeneratedKeys(setter.getParameterTypes()[0], rs);
+                            setter.invoke(object, value);
+                        } else {
+                            // Set read-only property by field ONLY FOR NON-RECORDS.
+                            value = getTypedValueReturnedFromGeneratedKeys(propertyInfo.field.getType(), rs);
+                            if (!isRecord(object.getClass())) {
+                                propertyInfo.field.setAccessible(true);
+                                propertyInfo.field.set(object, value);
+                                propertyInfo.field.setAccessible(false);
+                                log.debug("insert %s generated %s", column, value);
+                            }
+                        }
+
+                        primaryKeyValues.add(value);
                     }
                 }
             }
 
-            if (tableHasDefaultColumnValues) {
+            // If it's a record we can't assign the autoinc so we need a refresh
+            if (generatedKeys.size() > 0 && isRecord(object.getClass())) {
+                refreshAfterInsert = true;
+            }
+
+            if (refreshAfterInsert) {
                 // Read the full object back to update any properties which had defaults
-                fetch(object);
-            } else {
-                if (object instanceof Persistable) {
-                    // Save this object new state to later detect changed properties
-                    ((Persistable) object).saveReadState();
+                if (isRecord(object.getClass())) {
+                    //SQL sql = new SQL(metaData.getDefaultSelectStatement(object.getClass(), connection));
+                    //object = fetch(object.getClass(), sql, params(primaryKeyValues.toArray()));
+                    object = fetch(object.getClass(), metaData.getSelectStatement(object, connection), primaryKeyValues.toArray());
+                } else {
+                    fetch(object);
                 }
             }
 
-            return ret;
+            if (object instanceof Persistable) {
+                // Save this object new state to later detect changed properties
+                ((Persistable<?>) object).saveReadState();
+            }
+
+            //noinspection unchecked
+            return new Result<>(ret, (T) object);
         } catch (Exception e) {
             Util.rollback(connection);
             throw new PersismException(e.getMessage(), e);
@@ -399,7 +420,7 @@ public final class Session implements AutoCloseable {
     public <T> List<T> query(Class<T> objectClass, String sql, Object... parameters) throws PersismException {
         List<T> list = new ArrayList<T>(32);
 
-        Result result = new Result();
+        JDBCResult result = new JDBCResult();
 
         // If we know this type it means it's a primitive type. Not a DAO so we use a different rule to read those
         boolean isPOJO = Types.getType(objectClass) == null;
@@ -467,7 +488,7 @@ public final class Session implements AutoCloseable {
         List<Object> params = new ArrayList<>(primaryKeys.size());
         List<ColumnInfo> columnInfos = new ArrayList<>(primaryKeys.size());
         Map<String, ColumnInfo> cols = metaData.getColumns(objectClass, connection);
-        Result result = new Result();
+        JDBCResult result = new JDBCResult();
         try {
             for (String column : primaryKeys) {
                 PropertyInfo propertyInfo = properties.get(column);
@@ -515,7 +536,7 @@ public final class Session implements AutoCloseable {
         boolean isPOJO = Types.getType(objectClass) == null;
         boolean isRecord = isPOJO && isRecord(objectClass);
 
-        Result result = new Result();
+        JDBCResult result = new JDBCResult();
         try {
 
             exec(result, sql, parameters);
@@ -556,7 +577,7 @@ public final class Session implements AutoCloseable {
     Private methods
      */
 
-    private Result exec(Result result, String sql, Object... parameters) throws SQLException {
+    private JDBCResult exec(JDBCResult result, String sql, Object... parameters) throws SQLException {
         if (sql.toLowerCase().startsWith("select ")) {
             result.st = connection.prepareStatement(sql);
 
@@ -576,17 +597,6 @@ public final class Session implements AutoCloseable {
         return result;
     }
 
-    private static <T> boolean isRecord(Class<T> objectClass) {
-        // Java 8 test for isRecord since class.isRecord doesn't exist in Java 8
-        Class<?> sup = objectClass.getSuperclass();
-        while (!sup.equals(Object.class) ) {
-            if ("java.lang.Record".equals(sup.getName())) {
-                return true;
-            }
-            sup = sup.getSuperclass();
-        }
-        return false;
-    }
 
     private <T> T getTypedValueReturnedFromGeneratedKeys(Class<T> objectClass, ResultSet rs) throws SQLException {
 
