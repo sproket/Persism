@@ -107,7 +107,7 @@ public final class Session implements AutoCloseable {
      * @return usually 1 to indicate rows changed via JDBC.
      * @throws PersismException Indicating the upcoming robot uprising.
      */
-    public int update(Object object) {
+    public int update(Object object) throws PersismException {
         List<String> primaryKeys = metaData.getPrimaryKeys(object.getClass(), connection);
         if (primaryKeys.size() == 0) {
             throw new PersismException("Cannot perform UPDATE - " + metaData.getTableName(object.getClass()) + " has no primary keys.");
@@ -189,7 +189,7 @@ public final class Session implements AutoCloseable {
      * @return Result object containing rows changed (usually 1 to indicate rows changed via JDBC) and the data object itself which may have been changed by auto-inc or column defaults.
      * @throws PersismException When planet of the apes starts happening.
      */
-    public <T> Result<T> insert(Object object) {
+    public <T> Result<T> insert(Object object) throws PersismException {
         String insertStatement = metaData.getInsertStatement(object, connection);
 
         PreparedStatement st = null;
@@ -341,7 +341,7 @@ public final class Session implements AutoCloseable {
      * @return usually 1 to indicate rows changed via JDBC.
      * @throws PersismException Perhaps when asteroid 1999 RQ36 hits us?
      */
-    public int delete(Object object) {
+    public int delete(Object object) throws PersismException {
 
         List<String> primaryKeys = metaData.getPrimaryKeys(object.getClass(), connection);
         if (primaryKeys.size() == 0) {
@@ -547,7 +547,7 @@ public final class Session implements AutoCloseable {
      * @return true if the object was found by the primary key.
      * @throws PersismException if something goes wrong.
      */
-    public boolean fetch(Object object) {
+    public boolean fetch(Object object) throws PersismException {
         Class<?> objectClass = object.getClass();
 
         // If we know this type it means it's a primitive type. This method cannot be used for primitives
@@ -698,7 +698,7 @@ public final class Session implements AutoCloseable {
     Private methods
      */
 
-    private void exec(JDBCResult result, String sql, Object... parameters) throws SQLException {
+    private JDBCResult exec(JDBCResult result, String sql, Object... parameters) throws SQLException {
         if (sql.toLowerCase().startsWith("select ")) {
             result.st = connection.prepareStatement(sql);
 
@@ -715,6 +715,7 @@ public final class Session implements AutoCloseable {
             setParameters(cst, parameters);
             result.rs = cst.executeQuery();
         }
+        return result;
     }
 
     private <T> T getTypedValueReturnedFromGeneratedKeys(Class<T> objectClass, ResultSet rs) throws SQLException {

@@ -265,6 +265,15 @@ final class Reader {
 
             switch (columnType) {
 
+                case BooleanType:
+                case booleanType:
+                    if (returnType.equals(Boolean.class) || returnType.equals(boolean.class)) {
+                        value = rs.getBoolean(column);
+                    } else {
+                        value = rs.getByte(column);
+                    }
+                    break;
+
                 case TimestampType:
                     if (returnType.equals(String.class)) { // JTDS
                         value = rs.getString(column);
