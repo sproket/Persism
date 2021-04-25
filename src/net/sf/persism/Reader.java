@@ -2,6 +2,7 @@ package net.sf.persism;
 
 import net.sf.persism.annotations.NotTable;
 
+import java.beans.ConstructorProperties;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -114,7 +115,7 @@ final class Reader {
         return (T) object;
     }
 
-    <T> T readRecord(Class<T> objectClass, ResultSet rs) throws SQLException, IOException, NoSuchMethodException, IllegalAccessException, InvocationTargetException, InstantiationException {
+    <T> T readRecord(Class<T> objectClass, ResultSet rs) throws SQLException, IOException {
         // resultset may not have columns in the proper order
         // resultset may not have all columns
         // step 1 - get column order based on which properties are found
@@ -138,9 +139,9 @@ final class Reader {
 
         // now read resultset by property order
         Map<String, PropertyInfo> propertyInfoByConstructorOrder = new LinkedHashMap<>(selectedConstructor.getParameterCount());
-        for (Parameter param : selectedConstructor.getParameters()) {
+        for (String paramName : propertyNames) {
             for (String col : propertiesByColumn.keySet()) {
-                if (param.getName().equals(propertiesByColumn.get(col).field.getName())) {
+                if (paramName.equals(propertiesByColumn.get(col).field.getName())) {
                     propertyInfoByConstructorOrder.put(col, propertiesByColumn.get(col));
                 }
             }
@@ -171,15 +172,15 @@ final class Reader {
             }
         }
 
-        // Select the constructor to double check we have the correct one
         try {
-
+            // Select the constructor to double check we have the correct one
+            // This would be a double check on the types rather than just the names
             Constructor<?> constructor = objectClass.getConstructor(constructorTypes.toArray(new Class<?>[0]));
             //noinspection unchecked
             return (T) constructor.newInstance(constructorParams.toArray());
 
         } catch (Exception e) {
-            throw new PersismException("readRecord: Could not find the appropriate constructor for: " + objectClass + " params: " + constructorParams + "(" + constructorTypes + ")", e);
+            throw new PersismException("readRecord: Could instantiate the constructor for: " + objectClass + " params: " + constructorParams + "(" + constructorTypes + ")", e);
         }
     }
 
@@ -198,13 +199,30 @@ final class Reader {
         Constructor<?> selectedConstructor = null;
 
         for (Constructor<?> constructor : constructors) {
-            // Maps into a list if parameter names and uses listEqualsIgnoreOrder to compare
+
+            // Check with canonical or maybe -parameters
             List<String> parameterNames = Arrays.stream(constructor.getParameters()).
                     map(Parameter::getName).collect(Collectors.toList());
 
             if (listEqualsIgnoreOrder(propertyNames, parameterNames)) {
+                // re-arrange the propertyNames to match parameterNames
+                propertyNames.clear();
+                propertyNames.addAll(parameterNames);
                 selectedConstructor = constructor;
                 break;
+            }
+
+            // Check with ConstructorProperties
+            ConstructorProperties constructorProperties = constructor.getAnnotation(ConstructorProperties.class);
+            if (constructorProperties != null) {
+                parameterNames = Arrays.asList(constructorProperties.value());
+                if (listEqualsIgnoreOrder(propertyNames, parameterNames)) {
+                    // re-arrange the propertyNames to match parameterNames
+                    propertyNames.clear();
+                    propertyNames.addAll(parameterNames);
+                    selectedConstructor = constructor;
+                    break;
+                }
             }
         }
 
