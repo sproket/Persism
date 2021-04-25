@@ -1,5 +1,6 @@
 /**
  * Comments for TestUtil go here.
+ *
  * @author Dan Howard
  * @since 5/24/12 5:33 PM
  */
@@ -8,11 +9,11 @@ package net.sf.persism;
 import junit.framework.TestCase;
 import net.sf.persism.dao.Invoice;
 import net.sf.persism.dao.Postman;
+import net.sf.persism.dao.records.CustomerOrderRec;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Set;
-import java.util.TreeSet;
+import java.beans.ConstructorProperties;
+import java.lang.reflect.Constructor;
+import java.util.*;
 
 public class TestUtil extends TestCase {
 
@@ -28,7 +29,7 @@ public class TestUtil extends TestCase {
 
     public void testReplaceAll() {
         String text = "this is a test";
-        text = Util.replaceAll(text,' ', '_');
+        text = Util.replaceAll(text, ' ', '_');
         log.info(text);
     }
 
@@ -79,12 +80,28 @@ public class TestUtil extends TestCase {
         });
     }
 
-    public void testFieldReflection() {
-        // https://docs.oracle.com/javase/tutorial/reflect/member/fieldModifiers.html
+    public void testReflectionStuff() {
+        Class<?> objectClass = CustomerOrderRec.class;
 
-        FieldModifierSpy.spy(Invoice.class, "final","private");
+        Constructor<?>[] cons = objectClass.getConstructors();
+        for (int i = 0; i < cons.length; i++) {
+            log.info(i + " " + cons[i]);
+
+            log.info("PARAMS: ");
+            for (int k = 0; k < cons[i].getParameters().length; k++) {
+                log.info("   " + k + " " + cons[i].getParameters()[k].getName());
+            }
+
+            if (cons[i].getAnnotation(ConstructorProperties.class) != null) {
+                ConstructorProperties x = cons[i].getAnnotation(ConstructorProperties.class);
+                for (int k = 0; k < x.value().length; k++) {
+                    log.info("   " + k + " " + x.value()[k]);
+                }
+            } else {
+                log.info("no ConstructorProperties?");
+            }
+        }
 
     }
-
 
 }

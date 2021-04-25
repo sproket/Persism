@@ -2,6 +2,7 @@ package net.sf.persism;
 
 import junit.framework.TestCase;
 import net.sf.persism.dao.*;
+import net.sf.persism.dao.records.CustomerOrderRec;
 import net.sf.persism.dao.records.InvoiceRec;
 
 import java.lang.reflect.InvocationTargetException;
@@ -209,7 +210,38 @@ public abstract class BaseTest extends TestCase {
 
     public void testQueryResult() throws Exception {
 
+        setupDataForQuery();
 
+        // REMOVE DATE_PAID ALIAS
+        StringBuilder sb = new StringBuilder();
+        sb.append("SELECT c.Customer_ID, c.Company_Name, o.ID Order_ID, o.Name AS Description, o.Date_Paid, o.Created AS DateCreated, o.PAID ");
+        sb.append(" FROM Orders o");
+        sb.append(" JOIN Customers c ON o.Customer_ID = c.Customer_ID");
+
+        String sql = sb.toString();
+        log.info(sql);
+
+        List<CustomerOrder> results = session.query(CustomerOrder.class, sql);
+        log.info(results);
+        assertEquals("size should be 4", 4, results.size());
+
+        // ORDER 1 s/b paid = true others paid = false
+        for (CustomerOrder customerOrder : results) {
+            log.info("date created? " + customerOrder.getDateCreated());
+            log.info("date paid? " + customerOrder.getDatePaid());
+            if ("ORDER 1".equals(customerOrder.getDescription())) {
+                assertTrue("order 1 s/b paid", customerOrder.isPaid());
+            } else {
+                assertFalse("order OTHER s/b NOT paid", customerOrder.isPaid());
+            }
+        }
+
+        List<CustomerOrderRec> resultsRec = session.query(CustomerOrderRec.class, sql);
+        log.info(results);
+        assertEquals("size should be 4", 4, results.size());
+    }
+
+    private void setupDataForQuery() throws SQLException {
         Customer c1 = new Customer();
         c1.setCustomerId("123");
         c1.setCompanyName("ABC INC");
@@ -231,14 +263,6 @@ public abstract class BaseTest extends TestCase {
 
         order.setPaid(true);
         session.insert(order);
-
-//        Order order2;
-//        order2 = DAOFactory.newOrder(con);
-//        order2.setCustomerId("446");
-//        order2.setName("ORDER 2");
-//        order2.setCreated(LocalDate.now());
-//        order2.setPaid(true);
-//        session.insert(order);
 
         assertTrue("order # > 0", order.getId() > 0);
 
@@ -265,31 +289,6 @@ public abstract class BaseTest extends TestCase {
         order.setName("ORDER 4");
         order.setCreated(LocalDate.now());
         session.insert(order);
-
-        // REMOVE DATE_PAID ALIAS
-        StringBuilder sb = new StringBuilder();
-        sb.append("SELECT c.Customer_ID, c.Company_Name, o.ID Order_ID, o.Name AS Description, o.Date_Paid, o.Created AS DateCreated, o.PAID ");
-        sb.append(" FROM Orders o");
-        sb.append(" JOIN Customers c ON o.Customer_ID = c.Customer_ID");
-
-        String sql = sb.toString();
-        log.info(sql);
-
-        List<CustomerOrder> results = session.query(CustomerOrder.class, sql);
-        log.info(results);
-        assertEquals("size should be 4", 4, results.size());
-
-        // ORDER 1 s/b paid = true others paid = false
-        for (CustomerOrder customerOrder : results) {
-            log.info("date created? " + customerOrder.getDateCreated());
-            log.info("date paid? " + customerOrder.getDatePaid());
-            if ("ORDER 1".equals(customerOrder.getDescription())) {
-                assertTrue("order 1 s/b paid", customerOrder.isPaid());
-            } else {
-                assertFalse("order OTHER s/b NOT paid", customerOrder.isPaid());
-            }
-        }
-
     }
 
 
@@ -801,7 +800,7 @@ public abstract class BaseTest extends TestCase {
         assertEquals("totals/b 105.00", nf.format(105.0f), nf.format(invoiceRec.total()));
 
 
-        InvoiceRec updatedInvoice = new InvoiceRec(invoiceRec.invoiceId(), invoiceRec.customerId(), invoiceRec.price(), invoiceRec.quantity() + 20, invoiceRec.discount(), invoiceRec.actualPrice(),invoiceRec.created(), true);
+        InvoiceRec updatedInvoice = new InvoiceRec(invoiceRec.invoiceId(), invoiceRec.customerId(), invoiceRec.price(), invoiceRec.quantity() + 20, invoiceRec.discount(), invoiceRec.actualPrice(), invoiceRec.created(), true);
         session.update(updatedInvoice);
 
 
@@ -812,8 +811,41 @@ public abstract class BaseTest extends TestCase {
         assertEquals("qty should now be 30", 30, updatedInvoice.quantity());
         assertTrue("paid s/b true", updatedInvoice.paid());
 
-    }
 
+        /*
+                " Invoice_ID IDENTITY PRIMARY KEY, " +
+                " Customer_ID varchar(10) NOT NULL, " +
+                " Paid BIT NOT NULL, " +
+                " Price NUMERIC(7,3) NOT NULL, " +
+                " ActualPrice NUMERIC(7,3) NOT NULL, " +
+                " Status INT DEFAULT 1, " +
+                " Created DateTime default current_timestamp, " + // make read-only in Invoice Object
+                " Quantity NUMERIC(10) NOT NULL, " +
+                " Discount NUMERIC(10,3) NOT NULL " +
+         */
+
+        // Select with various cases
+        List<InvoiceRec> list;
+        String sql;
+        sql = "select iNvoice_iD, cUsTomer_id, paid, pRice, ActualPrice, Status, Created, Quantity, Discount from Invoices where CUSTOMER_ID=? ORDER BY Invoice_ID";
+        list = session.query(InvoiceRec.class, sql, "MOO");
+        assertTrue("list should be ok", list.size() > 0);
+
+        boolean fail = false;
+
+        try {
+            // missing ActualPrice
+            session.query(InvoiceRec.class, "select iNvoice_iD, cUsTomer_id, paid, pRice, Status, Created, Quantity, Discount from Invoices where CUSTOMER_ID=? ORDER BY Invoice_ID", "MOO");
+        } catch (PersismException e) {
+            assertTrue("s/b 'readRecord: Could not find column in the SQL query for class: class net.sf.persism.dao.records.InvoiceRec. Missing column: ACTUALPRICE'",
+                    e.getMessage().startsWith("readRecord: Could not find column in the SQL query for class: class net.sf.persism.dao.records.InvoiceRec. Missing column:"));
+            fail = true;
+        }
+        assertTrue(fail);
+
+        // Random Order - should be fine
+        session.query(InvoiceRec.class, "select cUsTomer_id, paid, pRice, iNvoice_iD,  Status, Created, ActualPrice, Quantity, Discount from Invoices where CUSTOMER_ID=? ORDER BY Invoice_ID", "MOO");
+    }
 
 
     public void testGetDbMetaData() throws SQLException {

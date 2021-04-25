@@ -6,9 +6,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.StringWriter;
-import java.lang.reflect.Constructor;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Parameter;
+import java.lang.reflect.*;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.sql.*;
@@ -115,7 +113,7 @@ final class Reader {
         return (T) object;
     }
 
-    <T> T readRecord(Class<?> objectClass, ResultSet rs) throws SQLException, IOException, NoSuchMethodException, IllegalAccessException, InvocationTargetException, InstantiationException {
+    <T> T readRecord(Class<T> objectClass, ResultSet rs) throws SQLException, IOException, NoSuchMethodException, IllegalAccessException, InvocationTargetException, InstantiationException {
         // resultset may not have columns in the proper order
         // resultset may not have all columns
         // step 1 - get column order based on which properties are found
@@ -130,25 +128,14 @@ final class Reader {
             propertiesByColumn = metaData.getQueryColumnsPropertyInfo(objectClass, rs);
         }
 
-        Constructor<?>[] constructors = objectClass.getConstructors();
-        Constructor<?> selectedConstructor = null;
-
-        // Find constructor with the most params
-        int paramCount = 0;
-        for (Constructor con : constructors) {
-            if (con.getParameterCount() > paramCount) {
-                selectedConstructor = con;
-                paramCount = con.getParameterCount();
-            }
-        }
-        assert selectedConstructor != null;
+        Constructor<?> selectedConstructor = getCanonicalConstructor(objectClass);
 
         if (selectedConstructor.getParameterCount() != propertiesByColumn.keySet().size()) {
-            throw new PersismException("TEMP: constructor mismatch to columns ....");
+            throw new PersismException("readRecord: constructor for " + objectClass.getName() + " " + selectedConstructor + " mismatch to columns " + propertiesByColumn.keySet());
         }
 
         // now read resultset by property order
-        Map<String, PropertyInfo> propertyInfoByConstructorOrder = new LinkedHashMap<>(paramCount);
+        Map<String, PropertyInfo> propertyInfoByConstructorOrder = new LinkedHashMap<>(selectedConstructor.getParameterCount());
         for (Parameter param : selectedConstructor.getParameters()) {
             for (String col : propertiesByColumn.keySet()) {
                 if (param.getName().equals(propertiesByColumn.get(col).field.getName())) {
@@ -162,32 +149,46 @@ final class Reader {
         List<Class<?>> constructorTypes = new ArrayList<>(12);
 
         ResultSetMetaData rsmd = rs.getMetaData();
-        Map<String, Integer> ordinals = new HashMap<>(rsmd.getColumnCount());
+        Map<String, Integer> ordinals = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
         for (int j = 1; j <= rsmd.getColumnCount(); j++) {
             ordinals.put(rsmd.getColumnLabel(j), j);
         }
         for (String col : propertyInfoByConstructorOrder.keySet()) {
+            if (ordinals.containsKey(col)) {
+                Field field = propertyInfoByConstructorOrder.get(col).field;
+                Object value = readColumn(rs, ordinals.get(col), field.getType());
+                if (value == null && field.getType().isPrimitive()) {
+                    // Set null primitives to their default, otherwise the constructor will not be found
+                    value = Types.getDefaultValue(field.getType());
+                }
 
-//                constructorParams.add(rs.getObject(col)); // todo rs.getObject could be a problem really we want to call readColum which reads and converts
-
-            // THROWS Cannot invoke "java.lang.Integer.intValue()" because the return value of "java.util.Map.get(Object)" is null
-            // IF you DIDN'T INCLUDE THE COLUMN
-            Object value = readColumn(rs, ordinals.get(col), propertyInfoByConstructorOrder.get(col).field.getType());
-            constructorParams.add(value); // todo rs.getObject could be a problem really we want to call readColum which reads and converts
-
-            constructorTypes.add(propertyInfoByConstructorOrder.get(col).field.getType());
+                constructorParams.add(value);
+                constructorTypes.add(propertyInfoByConstructorOrder.get(col).field.getType());
+            } else {
+                throw new PersismException("readRecord: Could not find column in the SQL query for class: " + objectClass + ". Missing column: " + col);
+            }
         }
 
-        // TODO why do I need to get the constructor? Didn't I select a constructor above?
-        Constructor<?> constructor = objectClass.getConstructor(constructorTypes.toArray(new Class<?>[0]));
-        Parameter[] parameters = constructor.getParameters();
-        for (Parameter parameter : parameters) {
-            log.debug("readRecord param: %s", parameter.getName());
-        }
-        return (T) constructor.newInstance(constructorParams.toArray());
+        // Select the constructor to double check we have the correct one
+        try {
 
+            Constructor<?> constructor = objectClass.getConstructor(constructorTypes.toArray(new Class<?>[0]));
+            //noinspection unchecked
+            return (T) constructor.newInstance(constructorParams.toArray());
+
+        } catch (Exception e) {
+            throw new PersismException("readRecord: Could not find the appropriate constructor for: " + objectClass + " params: " + constructorParams + "(" + constructorTypes + ")", e);
+        }
     }
 
+    // https://stackoverflow.com/questions/67126109/is-there-a-way-to-recognise-a-java-16-records-canonical-constructor-via-reflect
+    private static <T> Constructor<T> getCanonicalConstructor(Class<T> recordClass)
+            throws NoSuchMethodException, SecurityException {
+        Class<?>[] componentTypes = Arrays.stream(recordClass.getRecordComponents())
+                .map(RecordComponent::getType)
+                .toArray(Class<?>[]::new);
+        return recordClass.getDeclaredConstructor(componentTypes);
+    }
 
     <T> T readColumn(ResultSet rs, int column, Class<?> returnType) throws SQLException, IOException {
         ResultSetMetaData rsmd = rs.getMetaData();

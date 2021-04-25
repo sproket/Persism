@@ -114,7 +114,7 @@ public final class TestHSQLDB extends BaseTest {
                 " Customer_ID varchar(10) NOT NULL, " +
                 " Paid BIT NOT NULL, " +
                 " Price NUMERIC(7,3) NOT NULL, " +
-                " ActualPrice NUMERIC(7,3) NOT NULL, " +
+                " ACTUALPRICE NUMERIC(7,3) NOT NULL, " +
                 " Status INT DEFAULT 1, " +
                 " Created TIMESTAMP DEFAULT NOW(), " + // make read-only in Invoice Object
                 " Quantity NUMERIC(10) NOT NULL, " +

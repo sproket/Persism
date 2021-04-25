@@ -29,7 +29,7 @@ public class TestMSSQL extends BaseTest {
     protected void setUp() throws Exception {
 
         // LIST SYSTEM PROPERTIES
-        System.getProperties().list(System.out);
+//        System.getProperties().list(System.out);
 
         if (BaseTest.mssqlmode) {
             connectionType = ConnectionTypes.MSSQL;
@@ -137,7 +137,7 @@ public class TestMSSQL extends BaseTest {
                 " Customer_ID varchar(10) NOT NULL, " +
                 " Paid BIT NOT NULL, " +
                 " Price NUMERIC(7,3) NOT NULL, " +
-                " ACTUAL_Price NUMERIC(7,3) NOT NULL, " +
+                " ActualPrice NUMERIC(7,3) NOT NULL, " +
                 " Status INT DEFAULT 1, " +
                 " Created DateTime default current_timestamp, " + // make read-only in Invoice Object
                 " Quantity NUMERIC(10) NOT NULL, " +
