@@ -26,9 +26,9 @@
                     <source>16</source>
                     <target>16</target>
                     <compilerArgs>
-<!--                        <arg>&#45;&#45;enable-preview</arg>-->
+                        <!--                        <arg>&#45;&#45;enable-preview</arg>-->
                         <!--                        <arg>&#45;&#45;release 8</arg>-->
-                        <!-- DO NOT USE - NON-STANDARD <arg>-parameters</arg>-->
+                        <!--                        <arg>-parameters</arg>-->
                     </compilerArgs>
 
                 </configuration>
@@ -311,9 +311,9 @@
             <groupId>org.hsqldb</groupId>
             <artifactId>hsqldb</artifactId>
             <version>2.3.1</version>
-<!--            <version>always sync with the version used by ucanaccess!</version>-->
+            <!--            <version>always sync with the version used by ucanaccess!</version>-->
             <scope>test</scope>
-<!--            <classifier>debug</classifier>-->
+            <!--            <classifier>debug</classifier>-->
         </dependency>
 
         <dependency>
@@ -326,7 +326,7 @@
         <dependency>
             <groupId>com.microsoft.sqlserver</groupId>
             <artifactId>mssql-jdbc</artifactId>
-<!--	    <version>8.4.1.jre8</version>-->
+            <!--	    <version>8.4.1.jre8</version>-->
             <version>9.2.0.jre8</version>
             <scope>test</scope>
         </dependency>

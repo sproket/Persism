@@ -239,6 +239,20 @@ public abstract class BaseTest extends TestCase {
         List<CustomerOrderRec> resultsRec = session.query(CustomerOrderRec.class, sql);
         log.info(results);
         assertEquals("size should be 4", 4, results.size());
+
+        // partial
+        // "paid", "description", "customerId", "companyName", "orderId", "datePaid"
+        sb = new StringBuilder();
+        sb.append("SELECT c.Customer_ID, c.Company_Name, o.ID Order_ID, o.Name AS Description, o.Date_Paid, o.PAID ");
+        sb.append(" FROM Orders o");
+        sb.append(" JOIN Customers c ON o.Customer_ID = c.Customer_ID");
+
+        sql = sb.toString();
+        log.info(sql);
+
+        resultsRec = session.query(CustomerOrderRec.class, sql);
+        log.info(resultsRec);
+        assertEquals("size should be 4", 4, resultsRec.size());
     }
 
     private void setupDataForQuery() throws SQLException {
@@ -799,10 +813,8 @@ public abstract class BaseTest extends TestCase {
 
         assertEquals("totals/b 105.00", nf.format(105.0f), nf.format(invoiceRec.total()));
 
-
         InvoiceRec updatedInvoice = new InvoiceRec(invoiceRec.invoiceId(), invoiceRec.customerId(), invoiceRec.price(), invoiceRec.quantity() + 20, invoiceRec.discount(), invoiceRec.actualPrice(), invoiceRec.created(), true);
         session.update(updatedInvoice);
-
 
         invoices = session.query(Invoice.class, "select * from Invoices where CUSTOMER_ID=? ORDER BY Invoice_ID", "MOO");
         log.info(invoices);

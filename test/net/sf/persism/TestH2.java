@@ -2,6 +2,8 @@ package net.sf.persism;
 
 import net.sf.persism.categories.LocalDB;
 import net.sf.persism.dao.*;
+import net.sf.persism.dao.records.RecordTest1;
+import net.sf.persism.dao.records.RecordTest2;
 import org.junit.experimental.categories.Category;
 
 import java.io.File;
@@ -270,6 +272,67 @@ public final class TestH2 extends BaseTest {
                 "BYTE1 INT, " +
                 "BYTE2 INT ) ";
         executeCommand(sql, con);
+
+        if (UtilsForTests.isTableInDatabase("RecordTest1", con)) {
+            executeCommand("DROP TABLE RecordTest1", con);
+        }
+        sql = "CREATE TABLE RecordTest1 ( " +
+                "ID binary(16), " +
+                "NAME VARCHAR(20), " +
+                "QTY INT, " +
+                "PRICE REAL " +
+                ") ";
+        executeCommand(sql, con);
+
+        if (UtilsForTests.isTableInDatabase("RecordTest2", con)) {
+            executeCommand("DROP TABLE RecordTest2", con);
+        }
+        sql = "CREATE TABLE RecordTest2 ( " +
+                "ID INT, " +
+                "DESCRIPTION VARCHAR(20), " +
+                "QTY INT, " +
+                "PRICE REAL, " +
+                "CREATED_ON DATETIME " +
+                ") ";
+        executeCommand(sql, con);
+    }
+
+    public void testRecord1() {
+        UUID id = UUID.randomUUID();
+        RecordTest1 rt1 = new RecordTest1(id, "test 1", 10, 4.23f, 0.0d);
+
+        session.insert(rt1);
+
+        // Any fetch or query should fail - see RecordTest1 has a bad constructor
+        boolean fail = false;
+        try {
+            session.fetch(RecordTest1.class, "select * from RecordTest1 where id = ? ", (Object) Convertor.asBytes(id));
+        } catch (PersismException e) {
+            fail = true;
+            log.error(e.getMessage());
+            assertTrue("msg should start with 'readRecord: Could instantiate the constructor for: class net.sf.persism.dao.records.RecordTest1'",
+                    e.getMessage().startsWith("readRecord: Could instantiate the constructor for: class net.sf.persism.dao.records.RecordTest1"));
+        }
+        assertTrue(fail);
+    }
+
+    public void testRecord2() {
+        RecordTest2 rt2 = new RecordTest2(1, "test 1", 10, 3.99, LocalDateTime.now());
+        log.info(rt2);
+        session.insert(rt2);
+        log.info(rt2.total());
+
+        RecordTest2 rt22 = session.fetch(RecordTest2.class, "select CrEATED_ON, PRiCE, QtY, DESCrIPTION, iD FROM RecordTest2 where ID = ?", 1);
+        log.info(rt22);
+        assertNotNull(rt22);
+        log.info(rt22.total());
+
+        RecordTest2 rt23 = new RecordTest2(2, "test 2", 1, 0.05d);
+        session.insert(rt23);
+        log.info(rt23);
+
+        rt23 = session.fetch(RecordTest2.class, "select PRiCE, QtY, Created_ON, DESCrIPTION, iD FROM RecordTest2 where ID = ?", 2);
+        log.info(rt23);
     }
 
     public void testByteData() {
