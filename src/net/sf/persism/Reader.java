@@ -11,6 +11,7 @@ import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.sql.*;
 import java.util.*;
+import java.util.stream.Collectors;
 
 final class Reader {
 
@@ -128,9 +129,15 @@ final class Reader {
             propertiesByColumn = metaData.getQueryColumnsPropertyInfo(objectClass, rs);
         }
 
-        Constructor<?> selectedConstructor = getCanonicalConstructor(objectClass);
+        // TODO ALL THIS IS CALLED once PER ROW. Can we optimize? We could cache.
+        List<String> propertyNames = propertiesByColumn.values().stream().
+                map(PropertyInfo::propertyName).
+                collect(Collectors.toList());
+
+        Constructor<?> selectedConstructor = findConstructor(objectClass, propertyNames);
 
         if (selectedConstructor.getParameterCount() != propertiesByColumn.keySet().size()) {
+            // todo will this ever occur now? We throw an exception in findConstructor
             throw new PersismException("readRecord: constructor for " + objectClass.getName() + " " + selectedConstructor + " mismatch to columns " + propertiesByColumn.keySet());
         }
 
@@ -182,12 +189,40 @@ final class Reader {
     }
 
     // https://stackoverflow.com/questions/67126109/is-there-a-way-to-recognise-a-java-16-records-canonical-constructor-via-reflect
-    private static <T> Constructor<T> getCanonicalConstructor(Class<T> recordClass)
-            throws NoSuchMethodException, SecurityException {
-        Class<?>[] componentTypes = Arrays.stream(recordClass.getRecordComponents())
-                .map(RecordComponent::getType)
-                .toArray(Class<?>[]::new);
-        return recordClass.getDeclaredConstructor(componentTypes);
+    // Can't be used with Java 8
+//    private static <T> Constructor<T> getCanonicalConstructor(Class<T> recordClass)
+//            throws NoSuchMethodException, SecurityException {
+//        Class<?>[] componentTypes = Arrays.stream(recordClass.getRecordComponents())
+//                .map(RecordComponent::getType)
+//                .toArray(Class<?>[]::new);
+//        return recordClass.getDeclaredConstructor(componentTypes);
+//    }
+
+    private Constructor<?> findConstructor(Class<?> objectClass, List<String> propertyNames) {
+        Constructor<?>[] constructors = objectClass.getConstructors();
+        Constructor<?> selectedConstructor = null;
+
+        for (Constructor<?> constructor : constructors) {
+            // Maps into a list if parameter names and uses listEqualsIgnoreOrder to compare
+            List<String> parameterNames = Arrays.stream(constructor.getParameters()).
+                    map(Parameter::getName).collect(Collectors.toList());
+
+            if (listEqualsIgnoreOrder(propertyNames, parameterNames)) {
+                selectedConstructor = constructor;
+                break;
+            }
+        }
+
+        log.debug("findConstructor: %s", selectedConstructor);
+        if (selectedConstructor == null) {
+            throw new PersismException("findConstructor: Could not find a constructor for class: " + objectClass + " properties: " + propertyNames);
+        }
+        return selectedConstructor;
+    }
+
+    // https://stackoverflow.com/questions/1075656/simple-way-to-find-if-two-different-lists-contain-exactly-the-same-elements
+    private static <T> boolean listEqualsIgnoreOrder(List<T> list1, List<T> list2) {
+        return new HashSet<>(list1).equals(new HashSet<>(list2));
     }
 
     <T> T readColumn(ResultSet rs, int column, Class<?> returnType) throws SQLException, IOException {

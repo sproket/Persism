@@ -12,6 +12,7 @@ import java.lang.reflect.Modifier;
 import java.sql.*;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.stream.Collectors;
 
 import static java.text.MessageFormat.format;
 import static net.sf.persism.Util.*;
@@ -27,20 +28,22 @@ final class MetaData {
     private static final Log log = Log.getLogger(MetaData.class);
 
     // properties for each class - static because this won't change between MetaData instances
-    private static final Map<Class, Collection<PropertyInfo>> propertyMap = new ConcurrentHashMap<>(32);
+    private static final Map<Class<?>, Collection<PropertyInfo>> propertyMap = new ConcurrentHashMap<>(32);
+    private static final Map<Class<?>, List<String>> propertyNames = new ConcurrentHashMap<>(32);
 
     // column to property map for each class
-    private Map<Class, Map<String, PropertyInfo>> propertyInfoMap = new ConcurrentHashMap<Class, Map<String, PropertyInfo>>(32);
-    private Map<Class, Map<String, ColumnInfo>> columnInfoMap = new ConcurrentHashMap<Class, Map<String, ColumnInfo>>(32);
+    private Map<Class<?>, Map<String, PropertyInfo>> propertyInfoMap = new ConcurrentHashMap<>(32);
+    private Map<Class<?>, Map<String, ColumnInfo>> columnInfoMap = new ConcurrentHashMap<>(32);
 
     // table name for each class
-    private Map<Class, String> tableMap = new ConcurrentHashMap<Class, String>(32);
+    private Map<Class<?>, String> tableMap = new ConcurrentHashMap<>(32);
 
     // SQL for updates/inserts/deletes/selects for each class
-    private Map<Class, String> updateStatementsMap = new ConcurrentHashMap<Class, String>(32);
-    private Map<Class, String> insertStatementsMap = new ConcurrentHashMap<Class, String>(32);
-    private Map<Class, String> deleteStatementsMap = new ConcurrentHashMap<Class, String>(32);
-    private Map<Class, String> selectStatementsMap = new ConcurrentHashMap<Class, String>(32);
+    private Map<Class<?>, String> updateStatementsMap = new ConcurrentHashMap<>(32);
+    private Map<Class<?>, String> insertStatementsMap = new ConcurrentHashMap<>(32);
+    private Map<Class<?>, String> deleteStatementsMap = new ConcurrentHashMap<>(32);
+    private Map<Class<?>, String> selectStatementsMap = new ConcurrentHashMap<>(32);
+
 
     // Key is SQL with named params, Value is SQL with ?
     // private Map<String, String> sqlWitNamedParams = new ConcurrentHashMap<String, String>(32);
@@ -344,6 +347,27 @@ final class MetaData {
         }
     }
 
+    static <T> Collection<String> getPropertyNames(Class<T> objectClass) {
+        if (propertyNames.containsKey(objectClass)) {
+            return propertyNames.get(objectClass);
+        }
+        return determinePropertyNames(objectClass);
+    }
+
+    private static synchronized <T> Collection<String> determinePropertyNames(Class<T> objectClass) {
+        if (propertyNames.containsKey(objectClass)) {
+            return propertyNames.get(objectClass);
+        }
+        // get
+
+//        List<String> propertyNames = propertiesByColumn.values().stream().
+//                map(PropertyInfo::propertyName).
+//                collect(Collectors.toList());
+// todo later maybe
+        return Collections.EMPTY_LIST;
+    }
+
+
     static <T> Collection<PropertyInfo> getPropertyInfo(Class<T> objectClass) {
         if (propertyMap.containsKey(objectClass)) {
             return propertyMap.get(objectClass);
@@ -351,7 +375,7 @@ final class MetaData {
         return determinePropertyInfo(objectClass);
     }
 
-    static synchronized <T> Collection<PropertyInfo> determinePropertyInfo(Class<T> objectClass) {
+    private static synchronized <T> Collection<PropertyInfo> determinePropertyInfo(Class<T> objectClass) {
         if (propertyMap.containsKey(objectClass)) {
             return propertyMap.get(objectClass);
         }
