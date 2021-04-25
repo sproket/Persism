@@ -208,7 +208,34 @@ public abstract class BaseTest extends TestCase {
 
     public void testQueryResult() throws Exception {
 
+        setupDataForQuery();
 
+        // REMOVE DATE_PAID ALIAS
+        StringBuilder sb = new StringBuilder();
+        sb.append("SELECT c.Customer_ID, c.Company_Name, o.ID Order_ID, o.Name AS Description, o.Date_Paid, o.Created AS DateCreated, o.PAID ");
+        sb.append(" FROM Orders o");
+        sb.append(" JOIN Customers c ON o.Customer_ID = c.Customer_ID");
+
+        String sql = sb.toString();
+        log.info(sql);
+
+        List<CustomerOrder> results = session.query(CustomerOrder.class, sql);
+        log.info(results);
+        assertEquals("size should be 4", 4, results.size());
+
+        // ORDER 1 s/b paid = true others paid = false
+        for (CustomerOrder customerOrder : results) {
+            log.info("date created? " + customerOrder.getDateCreated());
+            log.info("date paid? " + customerOrder.getDatePaid());
+            if ("ORDER 1".equals(customerOrder.getDescription())) {
+                assertTrue("order 1 s/b paid", customerOrder.isPaid());
+            } else {
+                assertFalse("order OTHER s/b NOT paid", customerOrder.isPaid());
+            }
+        }
+    }
+
+    private void setupDataForQuery() throws SQLException {
         Customer c1 = new Customer();
         c1.setCustomerId("123");
         c1.setCompanyName("ABC INC");
@@ -230,14 +257,6 @@ public abstract class BaseTest extends TestCase {
 
         order.setPaid(true);
         session.insert(order);
-
-//        Order order2;
-//        order2 = DAOFactory.newOrder(con);
-//        order2.setCustomerId("446");
-//        order2.setName("ORDER 2");
-//        order2.setCreated(LocalDate.now());
-//        order2.setPaid(true);
-//        session.insert(order);
 
         assertTrue("order # > 0", order.getId() > 0);
 
@@ -264,50 +283,6 @@ public abstract class BaseTest extends TestCase {
         order.setName("ORDER 4");
         order.setCreated(LocalDate.now());
         session.insert(order);
-
-
-        // SELECT LESS COLUMNS 1st.
-        StringBuilder sb = new StringBuilder();
-        sb.append("SELECT c.Customer_ID, c.Company_Name");
-        sb.append(" FROM Orders o");
-        sb.append(" JOIN Customers c ON o.Customer_ID = c.Customer_ID");
-
-        String sql = sb.toString();
-        log.info(sql);
-
-
-        List<CustomerOrder> results;
-        try {
-            results = session.query(CustomerOrder.class, sql);
-        } catch (Exception e) {
-            log.warn("SHOULD ERROR HERE NOT ENOUGH COLUMNS " + e.getMessage());
-        }
-
-        // REMOVE DATE_PAID ALIAS
-        sb = new StringBuilder();
-        sb.append("SELECT c.Customer_ID, c.Company_Name, o.ID Order_ID, o.Name AS Description, o.Date_Paid, o.Created AS DateCreated, o.PAID ");
-        sb.append(" FROM Orders o");
-        sb.append(" JOIN Customers c ON o.Customer_ID = c.Customer_ID");
-
-        sql = sb.toString();
-        log.info(sql);
-
-        // This should not fail with missing columns.
-        results = session.query(CustomerOrder.class, sql);
-        log.info(results);
-        assertEquals("size should be 4", 4, results.size());
-
-        // ORDER 1 s/b paid = true others paid = false
-        for (CustomerOrder customerOrder : results) {
-            log.info("date created? " + customerOrder.getDateCreated());
-            log.info("date paid? " + customerOrder.getDatePaid());
-            if ("ORDER 1".equals(customerOrder.getDescription())) {
-                assertTrue("order 1 s/b paid", customerOrder.isPaid());
-            } else {
-                assertFalse("order OTHER s/b NOT paid", customerOrder.isPaid());
-            }
-        }
-
     }
 
 
@@ -797,16 +772,11 @@ public abstract class BaseTest extends TestCase {
         log.info(invoice);
 
         assertEquals("customer s/b MOO", "MOO", invoice.getCustomerId());
-        assertEquals("invoice # s/b 1", 1, invoice.getInvoiceId());
+        assertEquals("invoice # s/b 1", 1, invoice.getInvoiceId().intValue());
         assertEquals("price s/b 10.5", 10.5f, invoice.getPrice());
         assertEquals("qty s/b 10", 10, invoice.getQuantity());
 
-        NumberFormat nf = NumberFormat.getInstance();
-
-        assertEquals("totals/b 105.00", nf.format(105.0f), nf.format(invoice.getTotal()));
-
     }
-
 
 
     public void testGetDbMetaData() throws SQLException {

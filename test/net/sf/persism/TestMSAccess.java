@@ -57,6 +57,9 @@ public class TestMSAccess extends TestCase {
         // test Contacts.accddb should contain 1 row ID 1 with 2 attachments
         // Note Access fails with multiple test methods - so any other testing put here.
 
+        List<Contact> list = session.query(Contact.class, "select * from Contacts");
+        log.info(list);
+
         Contact contact;
 
         contact = new Contact();
@@ -75,7 +78,7 @@ public class TestMSAccess extends TestCase {
         log.info("created on  " + contact.getCreated());
         assertNotNull("created date defaulted?", contact.getCreated());
 
-        List<Contact> list = session.query(Contact.class, "select * from Contacts");
+        list = session.query(Contact.class, "select * from Contacts");
         log.info(list);
         assertEquals("should be 2", 2, list.size());
 

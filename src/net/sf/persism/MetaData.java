@@ -27,20 +27,22 @@ final class MetaData {
     private static final Log log = Log.getLogger(MetaData.class);
 
     // properties for each class - static because this won't change between MetaData instances
-    private static final Map<Class, Collection<PropertyInfo>> propertyMap = new ConcurrentHashMap<>(32);
+    private static final Map<Class<?>, Collection<PropertyInfo>> propertyMap = new ConcurrentHashMap<>(32);
+    // private static final Map<Class<?>, List<String>> propertyNames = new ConcurrentHashMap<>(32);
 
     // column to property map for each class
-    private Map<Class, Map<String, PropertyInfo>> propertyInfoMap = new ConcurrentHashMap<Class, Map<String, PropertyInfo>>(32);
-    private Map<Class, Map<String, ColumnInfo>> columnInfoMap = new ConcurrentHashMap<Class, Map<String, ColumnInfo>>(32);
+    private Map<Class<?>, Map<String, PropertyInfo>> propertyInfoMap = new ConcurrentHashMap<>(32);
+    private Map<Class<?>, Map<String, ColumnInfo>> columnInfoMap = new ConcurrentHashMap<>(32);
 
     // table name for each class
-    private Map<Class, String> tableMap = new ConcurrentHashMap<Class, String>(32);
+    private Map<Class<?>, String> tableMap = new ConcurrentHashMap<>(32);
 
     // SQL for updates/inserts/deletes/selects for each class
-    private Map<Class, String> updateStatementsMap = new ConcurrentHashMap<Class, String>(32);
-    private Map<Class, String> insertStatementsMap = new ConcurrentHashMap<Class, String>(32);
-    private Map<Class, String> deleteStatementsMap = new ConcurrentHashMap<Class, String>(32);
-    private Map<Class, String> selectStatementsMap = new ConcurrentHashMap<Class, String>(32);
+    private Map<Class<?>, String> updateStatementsMap = new ConcurrentHashMap<>(32);
+    private Map<Class<?>, String> insertStatementsMap = new ConcurrentHashMap<>(32);
+    private Map<Class<?>, String> deleteStatementsMap = new ConcurrentHashMap<>(32);
+    private Map<Class<?>, String> selectStatementsMap = new ConcurrentHashMap<>(32);
+
 
     // Key is SQL with named params, Value is SQL with ?
     // private Map<String, String> sqlWitNamedParams = new ConcurrentHashMap<String, String>(32);
@@ -351,12 +353,12 @@ final class MetaData {
         return determinePropertyInfo(objectClass);
     }
 
-    static synchronized <T> Collection<PropertyInfo> determinePropertyInfo(Class<T> objectClass) {
+    private static synchronized <T> Collection<PropertyInfo> determinePropertyInfo(Class<T> objectClass) {
         if (propertyMap.containsKey(objectClass)) {
             return propertyMap.get(objectClass);
         }
 
-        Map<String, PropertyInfo> propertyNames = new HashMap<>(32);
+        Map<String, PropertyInfo> propertyInfos = new HashMap<>(32);
 
         List<Field> fields = new ArrayList<>(32);
 
@@ -415,27 +417,21 @@ final class MetaData {
             }
 
             propertyInfo.readOnly = propertyInfo.setter == null;
-            propertyNames.put(propertyName.toLowerCase(), propertyInfo);
+            propertyInfos.put(propertyName.toLowerCase(), propertyInfo);
         }
 
         // Remove any properties found with the NotColumn annotation
         // http://stackoverflow.com/questions/2026104/hashmap-keyset-foreach-and-remove
-        Iterator<Map.Entry<String, PropertyInfo>> it = propertyNames.entrySet().iterator();
+        Iterator<Map.Entry<String, PropertyInfo>> it = propertyInfos.entrySet().iterator();
         while (it.hasNext()) {
             Map.Entry<String, PropertyInfo> entry = it.next();
             PropertyInfo info = entry.getValue();
             if (info.getAnnotation(NotColumn.class) != null) {
-
-                if (!Util.isRecord(objectClass)) {
-                    it.remove();
-                } else {
-                    log.warn("@NotColumn is not applicable for records. Ignoring. Please remove this annotation from " + info.propertyName + " to prevent these warnings in the future.");
-                }
-
+                it.remove();
             }
         }
 
-        Collection<PropertyInfo> properties = Collections.unmodifiableCollection(propertyNames.values());
+        Collection<PropertyInfo> properties = Collections.unmodifiableCollection(propertyInfos.values());
         propertyMap.put(objectClass, properties);
         return properties;
     }

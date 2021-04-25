@@ -111,11 +111,11 @@ public class TestMySQL extends BaseTest {
                 " Customer_ID varchar(10) NOT NULL, " +
                 " Paid BIT NOT NULL, " +
                 " Price NUMERIC(7,3) NOT NULL, " +
-                " ActualPrice NUMERIC(7,3) NOT NULL, " +
+                " ACTUALPRICE NUMERIC(7,3) NOT NULL, " +
                 " Status INT DEFAULT 1, " +
                 " Created TIMESTAMP DEFAULT CURRENT_TIMESTAMP, " + // make read-only in Invoice Object
                 " Quantity NUMERIC(10) NOT NULL, " +
-                " Total NUMERIC(10,3) NOT NULL, " +
+                //" Total NUMERIC(10,3) NOT NULL, " +
                 " Discount NUMERIC(10,3) NOT NULL )";
 
         executeCommand(sql, con);
@@ -142,7 +142,7 @@ public class TestMySQL extends BaseTest {
                 "   StateProvince varchar(50) NULL, " +
                 "   ZipPostalCode varchar(10) NULL, " +
                 "   Country nvarchar(50) NULL, " +
-                "   Status TINYINT(1) NOT NULL, " +
+                "   Status TINYINT NOT NULL, " +
                 "   DateAdded Date NULL, " +
                 "   LastModified DATETIME NULL, " +
                 "   Notes text NULL, " +

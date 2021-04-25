@@ -135,11 +135,11 @@ public final class TestSQLite extends BaseTest {
                 " Customer_ID varchar(10) NOT NULL, " +
                 " Paid BIT NOT NULL, " +
                 " Price REAL NOT NULL, " +
-                " ActualPrice REAL NOT NULL, " +
+                " ACTUALPRICE REAL NOT NULL, " +
                 " Status INT DEFAULT 1, " +
                 " Created DateTime default (datetime('now','localtime')), " + // make read-only in Invoice Object
                 " Quantity INTEGER NOT NULL, " +
-                " Total REAL NOT NULL, " +
+                //" Total REAL NOT NULL, " +
                 " Discount REAL NOT NULL " +
                 ") ");
 

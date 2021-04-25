@@ -1,11 +1,9 @@
 package net.sf.persism.dao.access;
 
-import net.sf.persism.annotations.Column;
 import net.ucanaccess.complex.Attachment;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
-import java.util.Arrays;
 
 public final class Contact  { // implements Persistable<Contact>
 
@@ -40,7 +38,7 @@ public final class Contact  { // implements Persistable<Contact>
     private String notes;
 
 //    private Object Attachments;  // this would work for unknown type - up to u to cast it or whatever.
-    private Attachment[] Attachments;  // This works if you know the specific type - you can see it logged as a warning
+    private Attachment[] attachments;  // This works if you know the specific type - you can see it logged as a warning
 
     private LocalDateTime created;
 
@@ -209,11 +207,11 @@ public final class Contact  { // implements Persistable<Contact>
     }
 
     public Attachment[] getAttachments() {
-        return Attachments;
+        return attachments;
     }
 
     public void setAttachments(Attachment[] attachments) {
-        Attachments = attachments;
+        this.attachments = attachments;
     }
 
     @Override

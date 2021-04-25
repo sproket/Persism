@@ -13,18 +13,20 @@ import java.time.LocalDateTime;
  */
 public class Invoice {
 
-    private int invoiceId;
+    // todo Constructor String customerId, float price, int quantity, double discount, BigDecimal actualPrice, boolean paid
+    private Integer invoiceId;
     private String customerId;
     private float price;
+    private BigDecimal actualPrice;
     private int quantity;
     private double discount;
-    private BigDecimal actualPrice;
 
     @NotColumn
     private String junk1;
 
     private LocalDateTime created;
 
+    @NotColumn
     private BigDecimal total;
     private boolean paid;
 
@@ -39,11 +41,11 @@ public class Invoice {
         this.customerId = customerId;
     }
 
-    public int getInvoiceId() {
+    public Integer getInvoiceId() {
         return invoiceId;
     }
 
-    public void setInvoiceId(int invoiceId) {
+    public void setInvoiceId(Integer invoiceId) {
         this.invoiceId = invoiceId;
     }
 
