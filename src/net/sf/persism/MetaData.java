@@ -12,7 +12,6 @@ import java.lang.reflect.Modifier;
 import java.sql.*;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.stream.Collectors;
 
 import static java.text.MessageFormat.format;
 import static net.sf.persism.Util.*;
@@ -29,7 +28,7 @@ final class MetaData {
 
     // properties for each class - static because this won't change between MetaData instances
     private static final Map<Class<?>, Collection<PropertyInfo>> propertyMap = new ConcurrentHashMap<>(32);
-    private static final Map<Class<?>, List<String>> propertyNames = new ConcurrentHashMap<>(32);
+    // private static final Map<Class<?>, List<String>> propertyNames = new ConcurrentHashMap<>(32);
 
     // column to property map for each class
     private Map<Class<?>, Map<String, PropertyInfo>> propertyInfoMap = new ConcurrentHashMap<>(32);
@@ -347,27 +346,6 @@ final class MetaData {
         }
     }
 
-    static <T> Collection<String> getPropertyNames(Class<T> objectClass) {
-        if (propertyNames.containsKey(objectClass)) {
-            return propertyNames.get(objectClass);
-        }
-        return determinePropertyNames(objectClass);
-    }
-
-    private static synchronized <T> Collection<String> determinePropertyNames(Class<T> objectClass) {
-        if (propertyNames.containsKey(objectClass)) {
-            return propertyNames.get(objectClass);
-        }
-        // get
-
-//        List<String> propertyNames = propertiesByColumn.values().stream().
-//                map(PropertyInfo::propertyName).
-//                collect(Collectors.toList());
-// todo later maybe
-        return Collections.EMPTY_LIST;
-    }
-
-
     static <T> Collection<PropertyInfo> getPropertyInfo(Class<T> objectClass) {
         if (propertyMap.containsKey(objectClass)) {
             return propertyMap.get(objectClass);
@@ -380,7 +358,7 @@ final class MetaData {
             return propertyMap.get(objectClass);
         }
 
-        Map<String, PropertyInfo> propertyNames = new HashMap<>(32);
+        Map<String, PropertyInfo> propertyInfos = new HashMap<>(32);
 
         List<Field> fields = new ArrayList<>(32);
 
@@ -439,27 +417,21 @@ final class MetaData {
             }
 
             propertyInfo.readOnly = propertyInfo.setter == null;
-            propertyNames.put(propertyName.toLowerCase(), propertyInfo);
+            propertyInfos.put(propertyName.toLowerCase(), propertyInfo);
         }
 
         // Remove any properties found with the NotColumn annotation
         // http://stackoverflow.com/questions/2026104/hashmap-keyset-foreach-and-remove
-        Iterator<Map.Entry<String, PropertyInfo>> it = propertyNames.entrySet().iterator();
+        Iterator<Map.Entry<String, PropertyInfo>> it = propertyInfos.entrySet().iterator();
         while (it.hasNext()) {
             Map.Entry<String, PropertyInfo> entry = it.next();
             PropertyInfo info = entry.getValue();
             if (info.getAnnotation(NotColumn.class) != null) {
-
-                if (!Util.isRecord(objectClass)) {
-                    it.remove();
-                } else {
-                    log.warn("@NotColumn is not applicable for records. Ignoring. Please remove this annotation from " + info.propertyName + " to prevent these warnings in the future.");
-                }
-
+                it.remove();
             }
         }
 
-        Collection<PropertyInfo> properties = Collections.unmodifiableCollection(propertyNames.values());
+        Collection<PropertyInfo> properties = Collections.unmodifiableCollection(propertyInfos.values());
         propertyMap.put(objectClass, properties);
         return properties;
     }

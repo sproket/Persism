@@ -136,11 +136,6 @@ final class Reader {
 
         Constructor<?> selectedConstructor = findConstructor(objectClass, propertyNames);
 
-        if (selectedConstructor.getParameterCount() != propertiesByColumn.keySet().size()) {
-            // todo will this ever occur now? We throw an exception in findConstructor
-            throw new PersismException("readRecord: constructor for " + objectClass.getName() + " " + selectedConstructor + " mismatch to columns " + propertiesByColumn.keySet());
-        }
-
         // now read resultset by property order
         Map<String, PropertyInfo> propertyInfoByConstructorOrder = new LinkedHashMap<>(selectedConstructor.getParameterCount());
         for (Parameter param : selectedConstructor.getParameters()) {
