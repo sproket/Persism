@@ -6,7 +6,7 @@
 
     <groupId>io.github.sproket</groupId>
     <artifactId>persism</artifactId>
-    <version>1.0.3</version>
+    <version>1.1.0b</version>
     <packaging>jar</packaging>
 
     <build>
@@ -30,6 +30,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-jar-plugin</artifactId>
+                <version>3.2.0</version>
                 <configuration>
                     <archive>
                         <manifestEntries>
@@ -41,7 +42,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-source-plugin</artifactId>
-                <version>2.2.1</version>
+                <version>3.2.1</version>
                 <executions>
                     <execution>
                         <id>attach-sources</id>
@@ -54,7 +55,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-javadoc-plugin</artifactId>
-                <version>2.9.1</version>
+                <version>3.2.0</version>
                 <configuration>
                     <excludePackageNames>net.sf.persism.log*;net.sf.persism.logging.*</excludePackageNames>
                 </configuration>
@@ -71,6 +72,8 @@
                 <artifactId>maven-surefire-plugin</artifactId>
                 <version>3.0.0-M5</version>
                 <configuration>
+                    <forkCount>0</forkCount>
+                    <reuseForks>true</reuseForks>
                     <excludedGroups>net.sf.persism.categories.ExternalDB,net.sf.persism.categories.TestContainerDB</excludedGroups>
                 </configuration>
             </plugin>
@@ -373,6 +376,14 @@
             <version>3.34.0</version>
             <scope>test</scope>
         </dependency>
+
+        <dependency>
+            <groupId>com.ibm.informix</groupId>
+            <artifactId>jdbc</artifactId>
+            <version>4.50.4.1</version>
+            <scope>test</scope>
+        </dependency>
+
 
         <dependency>
             <groupId>net.sf.ucanaccess</groupId>

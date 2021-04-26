@@ -3,13 +3,15 @@ package net.sf.persism;
 import junit.framework.TestCase;
 
 import java.sql.*;
+import java.util.Properties;
 
-// placeholder
 public class TestInformix extends TestCase {
 
     @Override
     public void setUp() throws Exception {
         super.setUp();
+
+        // TODO TestInformix
     }
 
     @Override
