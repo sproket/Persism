@@ -22,7 +22,7 @@ public class TestInformix extends TestCase {
 //        Class.forName(driver);
 
         url = "jdbc:informix-direct://pinf;user=pinf;password=pinf";
-        Connection con = DriverManager.getConnection(url, "pinf", "pinf");
+     //   Connection con = DriverManager.getConnection(url, "pinf", "pinf");
 
     }
 

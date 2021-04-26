@@ -1,13 +1,9 @@
 package net.sf.persism.dao.northwind;
 
-//import javafx.embed.swing.SwingFXUtils;
-//import javafx.scene.image.Image;
 import net.sf.persism.annotations.NotColumn;
 
 import java.awt.image.BufferedImage;
-import java.io.ByteArrayInputStream;
 import java.io.IOException;
-import java.io.InputStream;
 
 /**
  * Data object for the Northwind categories table.

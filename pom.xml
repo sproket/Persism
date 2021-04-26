@@ -72,8 +72,8 @@
                 <artifactId>maven-surefire-plugin</artifactId>
                 <version>3.0.0-M5</version>
                 <configuration>
-                    <forkCount>0</forkCount>
-                    <reuseForks>true</reuseForks>
+<!--                    <forkCount>0</forkCount>-->
+<!--                    <reuseForks>true</reuseForks>-->
                     <excludedGroups>net.sf.persism.categories.ExternalDB,net.sf.persism.categories.TestContainerDB</excludedGroups>
                 </configuration>
             </plugin>
