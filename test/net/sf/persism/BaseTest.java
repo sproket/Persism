@@ -791,7 +791,7 @@ public abstract class BaseTest extends TestCase {
         assertNull("Created s/b null", invoiceRec.created()); // note no setter
 
         Result<InvoiceRec> result = session.insert(invoiceRec);
-
+        assertTrue("rows s/b > 0", result.rows() > 0);
         assertTrue("Invoice ID > 0", result.dataObject().invoiceId() > 0);
         assertNotNull("Created s/b not null", result.dataObject().created()); // note no setter
 

@@ -27,6 +27,11 @@ public record CustomerOrderRec(String customerId,
         System.out.println("CustomerOrderRec");
     }
 
+    @ConstructorProperties({"customerId", "companyName", "description", "orderId"})
+    public CustomerOrderRec(String customerId, String companyName, String description, long orderId) {
+        this(customerId, companyName, description, orderId, null, null, false);
+    }
+
     // NOTE: NONE OF THESE WORK BECAUSE parameters are in the class file as arg1, arg2, arg3....
     // It is possible to get the real names using javac -parameters but that's non standard so it's not supported
     // You can use @ConstructorProperties to name them though

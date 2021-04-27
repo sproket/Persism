@@ -628,7 +628,7 @@ public final class Session implements AutoCloseable {
 
     void setParameters(PreparedStatement st, Object[] parameters) throws SQLException {
         if (log.isDebugEnabled()) {
-            log.debug("PARAMS: %s", Arrays.asList(parameters));
+            log.debug("setParameters PARAMS: %s", Arrays.asList(parameters));
         }
 
         int n = 1;
