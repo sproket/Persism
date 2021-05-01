@@ -1,10 +1,22 @@
 package net.sf.persism.dao.records;
 
+import java.beans.ConstructorProperties;
 import java.time.LocalDateTime;
 
-public record RecordTest2(int id, int something, double total, LocalDateTime createdOn) {
+/**
+ * test for calculated field
+ * test for 2nd constructor with a missing property. Doesn't really have any effect.
+ * The 2nd is just a convenience constructor.
+ */
+public record RecordTest2(int id, String description, int qty, double price, LocalDateTime createdOn) {
 
-    public RecordTest2(int id, int something, double total) {
-        this(id, something, total, null);
+    // calculated field
+    public double total() {
+        return price * qty;
+    }
+
+    @ConstructorProperties({"id", "description", "qty", "price"})
+    public RecordTest2(int id, String description, int qty, double price) {
+        this(id, description, qty, price, null);
     }
 }

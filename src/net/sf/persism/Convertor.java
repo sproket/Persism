@@ -85,6 +85,8 @@ final class Convertor {
                     returnValue = new Timestamp(lval);
 
                 } else if (targetType.equals(Integer.class) || targetType.equals(int.class)) {
+//                    overflowWarn();
+                    // todo - add more info like class name, property name??
                     log.warnNoDuplicates("Possible overflow column " + columnName + " - Target type is INT and Value type is LONG");
                     returnValue = Integer.parseInt("" + lval);
 
@@ -336,6 +338,10 @@ final class Convertor {
                 break;
         }
         return returnValue;
+    }
+
+    void overflowWarn(Class<?> pojo, Class<?> x, Class<?> y, String columnName) {
+
     }
 
     /*

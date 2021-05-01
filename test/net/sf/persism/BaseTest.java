@@ -109,6 +109,7 @@ public abstract class BaseTest extends TestCase {
 
     public void testStoredProcs() {
         // todo testStoredProcs?
+
     }
 
 
@@ -306,8 +307,11 @@ public abstract class BaseTest extends TestCase {
             }
         }
 
-        // should fail? missing column? - removed alias o.Created AS DateCreated YES
+        // should fail? missing column? - removed alias o.Created AS DateCreated
+        // No, we added a constructor for it. See RecordTest1 for fail case
+
         sb = new StringBuilder();
+
         sb.append("SELECT c.Customer_ID, c.Company_Name, o.ID Order_ID, o.Name AS Description, o.Date_Paid, o.PAID ");
         sb.append(" FROM Orders o");
         sb.append(" JOIN Customers c ON o.Customer_ID = c.Customer_ID");
@@ -315,15 +319,8 @@ public abstract class BaseTest extends TestCase {
         sql = sb.toString();
         log.info(sql);
 
-        boolean failed = false;
-        try {
-            var fail = session.query(CustomerOrderRec.class, sql(sql));
-        } catch (PersismException e) {
-            failed = true;
-            assertEquals("Object class net.sf.persism.dao.records.CustomerOrderRec was not properly initialized. Some properties not initialized in the queried columns (dateCreated).",
-                    e.getMessage());
-        }
-        assertTrue(failed);
+        var fail = session.query(CustomerOrderRec.class, sql(sql));
+        log.warn(fail);
 
     }
 
@@ -346,8 +343,12 @@ public abstract class BaseTest extends TestCase {
             var fail1 = session.query(CustomerOrderGarbage.class, sql(sql));
         } catch (PersismException e) {
             // should fail since there are other properties on CustomerOrderGarbage not referenced by the query AND we don't do anything with @NotColumn
+            log.error(e.getMessage());
             assertTrue("startswith",
-                    e.getMessage().startsWith("Object class net.sf.persism.dao.records.CustomerOrderGarbage was not properly initialized."));
+                    e.getMessage().startsWith("findConstructor: Could not find a constructor for class: class net.sf.persism.dao.records.CustomerOrderGarbage"));
+            // todo older message was more informative. findConstructor should have some way to privide more info on what's wrong.
+//            assertTrue("startswith",
+//                    e.getMessage().startsWith("Object class net.sf.persism.dao.records.CustomerOrderGarbage was not properly initialized."));
             failed = true;
         }
 
@@ -370,8 +371,9 @@ public abstract class BaseTest extends TestCase {
         } catch (PersismException e) {
             // should fail since there are other properties on CustomerOrderGarbage not referenced by the query AND we don't do anything with @NotColumn
             // AND we can't match these property names
+            log.error(e.getMessage());
             assertTrue("startswith",
-                    e.getMessage().startsWith("Object class net.sf.persism.dao.records.CustomerOrderGarbage was not properly initialized."));
+                    e.getMessage().startsWith("findConstructor: Could not find a constructor for class: class net.sf.persism.dao.records.CustomerOrderGarbage"));
             failed = true;
         }
         assertTrue(failed);
@@ -496,7 +498,7 @@ public abstract class BaseTest extends TestCase {
         } catch (PersismException e) {
             failed = true;
             assertEquals("message s/b 'Cannot read a primitive type object with this method.'",
-                    "Cannot read a primitive type object with simple fetch. Use the fetch method passing the class, sql and parameters instead.",
+                    "Cannot read a primitive type object with this method.",
                     e.getMessage());
         }
         assertTrue("should have thrown the exception", failed);

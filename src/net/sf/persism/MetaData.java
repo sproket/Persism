@@ -14,6 +14,7 @@ import java.sql.*;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
+import static java.text.MessageFormat.format;
 import static net.sf.persism.Util.*;
 
 /**
@@ -27,21 +28,21 @@ final class MetaData {
     private static final Log log = Log.getLogger(MetaData.class);
 
     // properties for each class - static because this won't change between MetaData instances
-    private static final Map<Class, Collection<PropertyInfo>> propertyMap = new ConcurrentHashMap<>(32);
+    private static final Map<Class<?>, Collection<PropertyInfo>> propertyMap = new ConcurrentHashMap<>(32);
+    // private static final Map<Class<?>, List<String>> propertyNames = new ConcurrentHashMap<>(32);
 
     // column to property map for each class
-    private Map<Class, Map<String, PropertyInfo>> propertyInfoMap = new ConcurrentHashMap<Class, Map<String, PropertyInfo>>(32);
-    private Map<Class, Map<String, ColumnInfo>> columnInfoMap = new ConcurrentHashMap<Class, Map<String, ColumnInfo>>(32);
+    private Map<Class<?>, Map<String, PropertyInfo>> propertyInfoMap = new ConcurrentHashMap<>(32);
+    private Map<Class<?>, Map<String, ColumnInfo>> columnInfoMap = new ConcurrentHashMap<>(32);
 
     // table name for each class
-    private Map<Class, String> tableMap = new ConcurrentHashMap<Class, String>(32);
+    private Map<Class<?>, String> tableMap = new ConcurrentHashMap<>(32);
 
     // SQL for updates/inserts/deletes/selects for each class
-    private Map<Class, String> insertStatementsMap = new ConcurrentHashMap<>(32);
-    // TODO For these 3 they have a common WHERE clause - should cache that separately
-    private Map<Class, String> updateStatementsMap = new ConcurrentHashMap<>(32);
-    private Map<Class, String> deleteStatementsMap = new ConcurrentHashMap<>(32);
-    private Map<Class, String> selectStatementsMap = new ConcurrentHashMap<>(32);
+    private Map<Class<?>, String> updateStatementsMap = new ConcurrentHashMap<>(32);
+    private Map<Class<?>, String> insertStatementsMap = new ConcurrentHashMap<>(32);
+    private Map<Class<?>, String> deleteStatementsMap = new ConcurrentHashMap<>(32);
+    private Map<Class<?>, String> selectStatementsMap = new ConcurrentHashMap<>(32);
     private Map<Class, String> whereClauseMap = new ConcurrentHashMap<>(32);
 
     // Key is SQL with named params, Value is SQL with ?
@@ -78,14 +79,17 @@ final class MetaData {
         populateTableList(con);
     }
 
-    static synchronized MetaData getInstance(Connection con) throws SQLException {
-        // TODO null check and find a work around for informix
-        String url = con.getMetaData().getURL();
-        if (metaData.get(url) == null) {
-            metaData.put(url, new MetaData(con));
+    static synchronized MetaData getInstance(Connection con, String sessionKey) throws SQLException {
+
+        if (sessionKey == null) {
+            sessionKey = con.getMetaData().getURL();
         }
-        log.debug("MetaData getting instance %s", url);
-        return metaData.get(url);
+
+        if (metaData.get(sessionKey) == null) {
+            metaData.put(sessionKey, new MetaData(con));
+        }
+        log.debug("MetaData getting instance %s", sessionKey);
+        return metaData.get(sessionKey);
     }
 
     // Should only be called IF the map does not contain the column meta information yet.
@@ -118,7 +122,6 @@ final class MetaData {
     }
 
     // Should only be called IF the map does not contain the column meta information yet.
-    // Version for Queries NO TABLES CALLS THIS TOO WANKER
     private synchronized <T> Map<String, PropertyInfo> determinePropertyInfo(Class<T> objectClass, ResultSet rs) {
         // double check map - note this could be called with a Query were we never have that in here
         if (propertyInfoMap.containsKey(objectClass)) {
@@ -169,6 +172,7 @@ final class MetaData {
             if (objectClass.getAnnotation(NotTable.class) == null) {
                 propertyInfoMap.put(objectClass, columns);
             }
+
             return columns;
 
         } catch (SQLException e) {
@@ -358,7 +362,7 @@ final class MetaData {
             return propertyMap.get(objectClass);
         }
 
-        Map<String, PropertyInfo> propertyNames = new HashMap<>(32);
+        Map<String, PropertyInfo> propertyInfos = new HashMap<>(32);
 
         List<Field> fields = new ArrayList<>(32);
 
@@ -417,27 +421,21 @@ final class MetaData {
             }
 
             propertyInfo.readOnly = propertyInfo.setter == null;
-            propertyNames.put(propertyName.toLowerCase(), propertyInfo);
+            propertyInfos.put(propertyName.toLowerCase(), propertyInfo);
         }
 
         // Remove any properties found with the NotColumn annotation
         // http://stackoverflow.com/questions/2026104/hashmap-keyset-foreach-and-remove
-        Iterator<Map.Entry<String, PropertyInfo>> it = propertyNames.entrySet().iterator();
+        Iterator<Map.Entry<String, PropertyInfo>> it = propertyInfos.entrySet().iterator();
         while (it.hasNext()) {
             Map.Entry<String, PropertyInfo> entry = it.next();
             PropertyInfo info = entry.getValue();
             if (info.getAnnotation(NotColumn.class) != null) {
-
-                if (!Util.isRecord(objectClass)) {
-                    it.remove();
-                } else {
-                    log.warn("@NotColumn is not applicable for records. Ignoring. Please remove this annotation from " + info.propertyName + " to prevent these warnings in the future.");
-                }
-
+                it.remove();
             }
         }
 
-        Collection<PropertyInfo> properties = Collections.unmodifiableCollection(propertyNames.values());
+        Collection<PropertyInfo> properties = Collections.unmodifiableCollection(propertyInfos.values());
         propertyMap.put(objectClass, properties);
         return properties;
     }
@@ -672,6 +670,9 @@ final class MetaData {
         String ed = connectionType.getKeywordEndDelimiter();
 
         List<String> primaryKeys = getPrimaryKeys(objectClass, connection);
+        if (primaryKeys.size() == 0) {
+            throw new PersismException("Could not determine WHERE clause for " + objectClass.getName() + ". No primary key(s) detected.");
+        }
 
         sb.append(" WHERE ");
 

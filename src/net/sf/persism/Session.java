@@ -34,7 +34,18 @@ public final class Session implements AutoCloseable {
      */
     public Session(Connection connection) throws PersismException {
         this.connection = connection;
-        init(connection);
+        init(connection, null);
+    }
+
+    /**
+     * Constructor for Session where you want to specify the Session Key.
+     * @param connection db connection
+     * @param sessionKey Unique string to represent the connection URL if it is not available on the Connection metadata.
+     * @throws PersismException if something goes wrong
+     */
+    public Session(Connection connection, String sessionKey) throws PersismException {
+        this.connection = connection;
+        init(connection, sessionKey);
     }
 
     /**
@@ -51,10 +62,10 @@ public final class Session implements AutoCloseable {
         }
     }
 
-    private void init(Connection connection) {
+    private void init(Connection connection, String sessionKey) {
         // place any DB specific properties here.
         try {
-            metaData = MetaData.getInstance(connection);
+            metaData = MetaData.getInstance(connection, sessionKey);
         } catch (SQLException e) {
             throw new PersismException(e.getMessage(), e);
         }
@@ -513,6 +524,9 @@ public final class Session implements AutoCloseable {
                 // TODO Here we could test parameters!
                 exec(result, ssql + " WHERE " + sql, parameters.toArray());
             } else {
+
+                checkStoredProcOrSQL(objectClass, sql);
+
                 // we don't check parameter types here? Nope - we don't know anything at this point.
                 exec(result, sql.toString(), parameters.toArray());
             }
@@ -554,11 +568,11 @@ public final class Session implements AutoCloseable {
         boolean readPrimitive = Types.getType(objectClass) != null;
         if (readPrimitive) {
             // For unit tests
-            throw new PersismException("Cannot read a primitive type object with simple fetch. Use the fetch method passing the class, sql and parameters instead.");
+            throw new PersismException("Cannot read a primitive type object with this method.");
         }
 
         if (isRecord(objectClass)) {
-            throw new PersismException("Cannot read a Record type object with simple fetch. Use the fetch method passing the class, sql and parameters instead.");
+            throw new PersismException("Cannot read a Record type object with this method.");
         }
 
         List<String> primaryKeys = metaData.getPrimaryKeys(objectClass, connection);
@@ -657,6 +671,9 @@ public final class Session implements AutoCloseable {
                 // TODO Here we could test parameters!
                 exec(result, ssql + " WHERE " + sql, parameters.toArray());
             } else {
+
+                checkStoredProcOrSQL(objectClass, sql);
+
                 // we don't check parameter types here? Nope - we don't know anything at this point.
                 exec(result, sql.toString(), parameters.toArray());
             }
@@ -679,6 +696,19 @@ public final class Session implements AutoCloseable {
             throw new PersismException(e.getMessage(), e);
         } finally {
             Util.cleanup(result.st, result.rs);
+        }
+    }
+
+    private <T> void checkStoredProcOrSQL(Class<T> objectClass, SQL sql) {
+        boolean startsWithSelect = sql.toString().toLowerCase().startsWith("select ");
+        if (sql.storedProc) {
+            if (startsWithSelect) {
+                log.warnNoDuplicates("fetch: " + objectClass + " It seems you're using the sql() method with a stored procedure. You might prefer to use the proc() method instead for better 'Find Usages'");
+            }
+        } else {
+            if (!startsWithSelect) {
+                log.warnNoDuplicates("fetch: " + objectClass + " It seems you're using the proc() method with an SQL query. You might prefer to use the sql() method instead for better 'Find Usages'");
+            }
         }
     }
 

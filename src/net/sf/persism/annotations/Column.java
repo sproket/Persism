@@ -60,7 +60,4 @@ public @interface Column {
      */
     boolean hasDefault() default false;
 
-    // TODO MAYBE annotate for a column that can optionally appear in the query. The test would be when checking for missing properties. It's less strict than @NotColum which means to complete ignore.
-    boolean optional() default false;
-
 }

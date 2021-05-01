@@ -11,6 +11,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.sql.*;
 import java.time.*;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.Date;
 
@@ -49,7 +50,7 @@ public final class TestH2 extends BaseTest {
 
         createTables();
 
-        session = new Session(con);
+        session = new Session(con, "H2!");
 
         Instant x = new Date().toInstant();
 
@@ -290,42 +291,90 @@ public final class TestH2 extends BaseTest {
         if (UtilsForTests.isTableInDatabase("RecordTest1", con)) {
             executeCommand("DROP TABLE RecordTest1", con);
         }
-
-        // UUID id, String name, int something, double total
-        executeCommand("CREATE TABLE RecordTest1 ( " +
-                " ID binary(16) NOT NULL PRIMARY KEY," +
-                " NAME varchar(10) NOT NULL, " +
-                " Something int NOT NULL, " +
-                " Total NUMERIC(7,3) NOT NULL " +
-                ") ", con);
+        sql = "CREATE TABLE RecordTest1 ( " +
+                "ID binary(16), " +
+                "NAME VARCHAR(20), " +
+                "QTY INT, " +
+                "PRICE REAL " +
+                ") ";
+        executeCommand(sql, con);
 
         if (UtilsForTests.isTableInDatabase("RecordTest2", con)) {
             executeCommand("DROP TABLE RecordTest2", con);
         }
+        sql = "CREATE TABLE RecordTest2 ( " +
+                "ID IDENTITY PRIMARY KEY, " +
+                "DESCRIPTION VARCHAR(20), " +
+                "QTY INT, " +
+                "PRICE REAL, " +
+                "CREATED_ON DATETIME default current_timestamp" +
+                ") ";
+        executeCommand(sql, con);
+    }
 
-        // int id, int something, double total
-        executeCommand("CREATE TABLE RecordTest2 ( " +
-                " ID IDENTITY PRIMARY KEY, " +
-                " CreatedOn DATETIME default current_timestamp, " +
-                " Something int NOT NULL, " +
-                " Total NUMERIC(7,3) NOT NULL " +
-                ") ", con);
+    public void testRecord1() {
+        UUID id = UUID.randomUUID();
+        RecordTest1 rt1 = new RecordTest1(id, "test 1", 10, 4.23f, 0.0d);
+
+        session.insert(rt1);
+
+        // Any fetch or query should fail - see RecordTest1 has a bad constructor
+        boolean fail = false;
+        try {
+            session.fetch(RecordTest1.class, params((Object) Convertor.asBytes(id)));
+        } catch (PersismException e) {
+            fail = true;
+//            log.error(e.getMessage(), e);
+            assertTrue("msg should start with 'readRecord: Could instantiate the constructor for: class net.sf.persism.dao.records.RecordTest1'",
+                    e.getMessage().startsWith("readRecord: Could instantiate the constructor for: class net.sf.persism.dao.records.RecordTest1"));
+        }
+        assertTrue(fail);
+
+        fail = false;
+        try {
+            session.fetch(rt1);
+        } catch (PersismException e) {
+            fail = true;
+            //log.error(e.getMessage(), e);
+            assertEquals("s/b 'Cannot read a Record type object with this method.'", "Cannot read a Record type object with this method.", e.getMessage());
+        }
+        assertTrue(fail);
 
     }
 
+    public void testRecord2() {
+        RecordTest2 rt2 = new RecordTest2(1, "test 1", 10, 3.99, LocalDateTime.now());
+        log.info(rt2);
+        session.insert(rt2);
+        log.info(rt2.total());
+
+        RecordTest2 rt22 = session.fetch(RecordTest2.class, sql("select CrEATED_ON, PRiCE, QtY, DESCrIPTION, iD FROM RecordTest2 where ID = ?"), params(1));
+        log.info(rt22);
+        assertNotNull(rt22);
+        log.info(rt22.total());
+
+        RecordTest2 rt23 = new RecordTest2(2, "test 2", 1, 0.05d);
+        session.insert(rt23);
+        log.info(rt23);
+
+        // THis cannot be fetched without the Created_ON column
+        boolean fail = false;
+        try {
+            rt23 = session.fetch(RecordTest2.class, sql("select PRiCE, QtY, DESCrIPTION, iD FROM RecordTest2 where ID = ?"), params(2));
+
+        }catch (PersismException e) {
+            fail = true;
+            assertEquals("s/b 'readRecord: Could not find column in the SQL query for class: class net.sf.persism.dao.records.RecordTest2. Missing column: CREATED_ON'",
+                    "readRecord: Could not find column in the SQL query for class: class net.sf.persism.dao.records.RecordTest2. Missing column: CREATED_ON",
+                    e.getMessage());
+        }
+
+        assertTrue(fail);
+    }
+
+
     public void testRecords() {
-
-        UUID id = UUID.randomUUID();
-
-        RecordTest1 rt1 = new RecordTest1(id, "test 1", 100, 25.434);
-        session.insert(rt1);
-
-        RecordTest1 x = session.fetch(RecordTest1.class, sql("select * from RecordTest1"), none());
-        log.warn(x);
-
-        RecordTest1 z = session.fetch(RecordTest1.class, sql("select Total, Something, Name, ID from RecordTest1"), none());
-        log.warn(z);
-        RecordTest2 rt2 = new RecordTest2(0, 100, 25.434);
+        RecordTest2 rt2 = new RecordTest2(0, "desc2" , 100, 25.434f);
         log.info(rt2);
 
         Result<RecordTest2> result = session.insert(rt2);
@@ -343,8 +392,8 @@ public final class TestH2 extends BaseTest {
 
         } catch (PersismException e) {
             fail = true;
-            assertEquals("s/b 'Cannot read a Record type object with simple fetch. Use the fetch method passing the class, sql and parameters instead.'",
-                    "Cannot read a Record type object with simple fetch. Use the fetch method passing the class, sql and parameters instead.",
+            assertEquals("s/b 'Cannot read a Record type object with this method.'",
+                    "Cannot read a Record type object with this method.",
                     e.getMessage());
         }
         assertTrue(fail);
@@ -681,7 +730,7 @@ public final class TestH2 extends BaseTest {
         assertTrue("TIME s/b > 0 - we should have time:", cal.get(Calendar.HOUR_OF_DAY) + cal.get(Calendar.MINUTE) + cal.get(Calendar.SECOND) > 0);
 
         List<SavedGame> savedGames = session.query(SavedGame.class, params(1));
-log.info("ALL SAVED GAMES " + savedGames.size() + " " + savedGames.get(0).getName() + " id: " + savedGames.get(0).getId());
+        log.info("ALL SAVED GAMES " + savedGames.size() + " " + savedGames.get(0).getName() + " id: " + savedGames.get(0).getId());
         saveGame = session.fetch(SavedGame.class, sql("select * from SavedGames"), none());
         assertNotNull(saveGame);
         log.info("SAVED GOLD: " + saveGame.getGold());
@@ -698,7 +747,6 @@ log.info("ALL SAVED GAMES " + savedGames.size() + " " + savedGames.get(0).getNam
         log.warn(sg);
 //        sg = session.fetch(SavedGame.class, proc("spSearchSilver"), params(199));
     }
-
 
 
     @Override

@@ -2,6 +2,7 @@ package net.sf.persism;
 
 import net.sf.persism.annotations.NotTable;
 
+import java.beans.ConstructorProperties;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -40,7 +41,25 @@ final class Reader {
             properties = metaData.getQueryColumnsPropertyInfo(objectClass, rs);
         }
 
-        verifyColumnMappings(objectClass, properties);
+        // Test if all properties have column mapping and throw PersismException if not
+        // This block verifies that the object is fully initialized.
+        // Any properties not marked by NotColumn should have been set (or if they have a getter only)
+        // If not throw a PersismException
+        Collection<PropertyInfo> allProperties = MetaData.getPropertyInfo(objectClass);
+        if (properties.values().size() < allProperties.size()) {
+            Set<PropertyInfo> missing = new HashSet<>(allProperties.size());
+            missing.addAll(allProperties);
+            missing.removeAll(properties.values());
+
+            StringBuilder sb = new StringBuilder();
+            String sep = "";
+            for (PropertyInfo prop : missing) {
+                sb.append(sep).append(prop.propertyName);
+                sep = ",";
+            }
+
+            throw new PersismException("Object " + objectClass + " was not properly initialized. Some properties not initialized in the queried columns (" + sb + ").");
+        }
 
         ResultSetMetaData rsmd = rs.getMetaData();
         int columnCount = rsmd.getColumnCount();
@@ -61,6 +80,7 @@ final class Reader {
                 if (value != null) {
                     try {
                         if (columnProperty.readOnly) {
+                            // set the value on the field directly
                             columnProperty.field.setAccessible(true);
                             columnProperty.field.set(object, value);
                             columnProperty.field.setAccessible(false);
@@ -75,27 +95,33 @@ final class Reader {
             }
         }
 
-        // This is doing a similar check to above verifyColumnMappings but on the ResultSet itself.
+        // This is doing a similar check to above but on the ResultSet itself.
         // This tests for when a user writes their own SQL and forgets a column.
         if (foundColumns.size() < properties.keySet().size()) {
+
             Set<String> missing = new HashSet<>(columnCount);
             missing.addAll(properties.keySet());
-            foundColumns.forEach(missing::remove);
+            missing.removeAll(foundColumns);
 
+            // todo maybe strict mode off logs warn? Should we do this if this is Query vs Table?
             throw new PersismException("Object " + objectClass + " was not properly initialized. Some properties not initialized by the queried columns: " + foundColumns + " Missing:" + missing);
         }
 
         if (object instanceof Persistable) {
             // Save this object initial state to later detect changed properties
-            ((Persistable<?>) object).saveReadState();
+            ((Persistable) object).saveReadState();
         }
 
         return (T) object;
     }
 
-    <T> T readRecord(Class<?> objectClass, ResultSet rs) throws SQLException, IOException, NoSuchMethodException, IllegalAccessException, InvocationTargetException, InstantiationException {
+    <T> T readRecord(Class<T> objectClass, ResultSet rs) throws SQLException, IOException {
+        // resultset may not have columns in the proper order
+        // resultset may not have all columns
+        // step 1 - get column order based on which properties are found
+        // read
         // Note: We can't use this method to read Objects without default constructors using the Record styled conventions
-        //       since Java 8 does not have the constructor parameter names. (we could if -parameters is used)
+        //       since Java 8 does not have the constructor parameter names.
 
         Map<String, PropertyInfo> propertiesByColumn;
         if (objectClass.getAnnotation(NotTable.class) == null) {
@@ -103,69 +129,19 @@ final class Reader {
         } else {
             propertiesByColumn = metaData.getQueryColumnsPropertyInfo(objectClass, rs);
         }
-        verifyColumnMappings(objectClass, propertiesByColumn);
 
-        ResultSetMetaData rsmd = rs.getMetaData();
-
-        List<String> missing = new ArrayList<>();
-        // http://stackoverflow.com/questions/2026104/hashmap-keyset-foreach-and-remove
-        // Remove any properties WHERE COLUMN NOT found
-        // REASON: There could be a Record Constructor with fewer parameters than it's main constructor
-        // So we use the specific list to find a specific constructor.
-        // If we don't find a constructor then there's some mismatch.
-        var it = propertiesByColumn.keySet().iterator();
-        while (it.hasNext()) {
-            var key = it.next();
-            boolean found = false;
-            for (int j = 1; j <= rsmd.getColumnCount(); j++) {
-                if (rsmd.getColumnLabel(j).equalsIgnoreCase(key)) {
-                    found = true;
-                    break;
-                }
-            }
-            if (!found) {
-                log.warn("readRecord: Column " + key + " not found in Columns.");
-                missing.add(key + " = " + propertiesByColumn.get(key).propertyName);
-                it.remove();
-            }
-        }
-
-        // TODO ALL THIS IS CALLED once PER ROW. Can we optimize? Clearly....
-
+        // TODO ALL THIS IS CALLED once PER ROW. Can we optimize? We could cache.
         List<String> propertyNames = propertiesByColumn.values().stream().
                 map(PropertyInfo::propertyName).
                 collect(Collectors.toList());
 
         Constructor<?> selectedConstructor = findConstructor(objectClass, propertyNames);
-        if (selectedConstructor == null) {
-            List<String> allProperties = MetaData.getPropertyInfo(objectClass).stream().
-                    map(PropertyInfo::propertyName).
-                    sorted().
-                    collect(Collectors.toList());
-
-
-            StringBuilder sb = new StringBuilder();
-
-            sb.append("readRecord: Could not find an appropriate Record constructor for class: ").append(objectClass);
-            if (missing.size() > 0) {
-                sb.append(" Missing: ").append(missing);
-            }
-            sb.append(" Properties: ").append(allProperties);
-
-            List<String> columns = new ArrayList<>();
-            for (int j = 1; j <= rsmd.getColumnCount(); j++) {
-                columns.add(rsmd.getColumnLabel(j));
-            }
-            sb.append(" COLUMNS: ").append(columns);
-
-            throw new PersismException(sb.toString());
-        }
 
         // now read resultset by property order
         Map<String, PropertyInfo> propertyInfoByConstructorOrder = new LinkedHashMap<>(selectedConstructor.getParameterCount());
-        for (Parameter param : selectedConstructor.getParameters()) {
+        for (String paramName : propertyNames) {
             for (String col : propertiesByColumn.keySet()) {
-                if (param.getName().equals(propertiesByColumn.get(col).field.getName())) {
+                if (paramName.equals(propertiesByColumn.get(col).field.getName())) {
                     propertyInfoByConstructorOrder.put(col, propertiesByColumn.get(col));
                 }
             }
@@ -173,81 +149,95 @@ final class Reader {
 
         // now read by this order
         List<Object> constructorParams = new ArrayList<>(12);
+        List<Class<?>> constructorTypes = new ArrayList<>(12);
 
-        Map<String, Integer> ordinals = new HashMap<>(rsmd.getColumnCount());
+        ResultSetMetaData rsmd = rs.getMetaData();
+        Map<String, Integer> ordinals = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
         for (int j = 1; j <= rsmd.getColumnCount(); j++) {
             ordinals.put(rsmd.getColumnLabel(j), j);
         }
         for (String col : propertyInfoByConstructorOrder.keySet()) {
-
-            Class<?> fieldType = propertyInfoByConstructorOrder.get(col).field.getType();
             if (ordinals.containsKey(col)) {
-                Object value = readColumn(rs, ordinals.get(col), fieldType);
-                if (value == null && fieldType.isPrimitive()) {
+                Field field = propertyInfoByConstructorOrder.get(col).field;
+                Object value = readColumn(rs, ordinals.get(col), field.getType());
+                if (value == null && field.getType().isPrimitive()) {
                     // Set null primitives to their default, otherwise the constructor will not be found
-                    value = Types.getDefaultValue(fieldType);
+                    value = Types.getDefaultValue(field.getType());
                 }
-                constructorParams.add(value);
-            } else {
-                log.warn("COL? " + col);
-            }
-            // or add constructorParams.add(value); NULL?
 
+                constructorParams.add(value);
+                constructorTypes.add(propertyInfoByConstructorOrder.get(col).field.getType());
+            } else {
+                throw new PersismException("readRecord: Could not find column in the SQL query for class: " + objectClass + ". Missing column: " + col);
+            }
         }
-        return (T) selectedConstructor.newInstance(constructorParams.toArray());
+
+        try {
+            // Select the constructor to double check we have the correct one
+            // This would be a double check on the types rather than just the names
+            Constructor<?> constructor = objectClass.getConstructor(constructorTypes.toArray(new Class<?>[0]));
+            //noinspection unchecked
+            return (T) constructor.newInstance(constructorParams.toArray());
+
+        } catch (Exception e) {
+            throw new PersismException("readRecord: Could instantiate the constructor for: " + objectClass + " params: " + constructorParams + "(" + constructorTypes + ")", e);
+        }
     }
 
-    private Constructor<?> findConstructor(Class<?> objectClass, List<String> propertyNames) {
+    // https://stackoverflow.com/questions/67126109/is-there-a-way-to-recognise-a-java-16-records-canonical-constructor-via-reflect
+    // Can't be used with Java 8
+//    private static <T> Constructor<T> getCanonicalConstructor(Class<T> recordClass)
+//            throws NoSuchMethodException, SecurityException {
+//        Class<?>[] componentTypes = Arrays.stream(recordClass.getRecordComponents())
+//                .map(RecordComponent::getType)
+//                .toArray(Class<?>[]::new);
+//        return recordClass.getDeclaredConstructor(componentTypes);
+//    }
 
-        // todo we only want the primary canonical constructor for a record but it is possible to make constructors with less params which we can ignore BUT ALSO ONES WITH EXTRA UNUSED PARAMS! See CustomerOrderGarbage
-        // SO get constructors OR DECLARED CONSTRUCTORS?  By Param count order desc
-        // loop down and make sure each param has a field.
-        // AND THAT FIELD IS NO STATIC SINCE THAT FUCKING WOULD BE ALLOWED!
-        // objectClass.getRecordComponents() ?
-        // NO FORGET IT. Go with the canonical constructor only
-        Constructor<?>[] constructors = objectClass.getConstructors(); // just public ones.
-        // Constructor<?>[] Xconstructors = objectClass.getDeclaredConstructors(); // we don't need any private or other constructors
+    private Constructor<?> findConstructor(Class<?> objectClass, List<String> propertyNames) {
+        Constructor<?>[] constructors = objectClass.getConstructors();
         Constructor<?> selectedConstructor = null;
 
-        for (Constructor<?> con : constructors) {
-            //con.
-            log.debug("constructor: %s", con + " " + Arrays.asList(con.getParameters()) );
-            // Maps into a list if parameter names and uses listEqualsIgnoreOrder to compare
-            List<String> parameterNames = Arrays.stream(con.getParameters()).
+        for (Constructor<?> constructor : constructors) {
+
+            // Check with canonical or maybe -parameters
+            List<String> parameterNames = Arrays.stream(constructor.getParameters()).
                     map(Parameter::getName).collect(Collectors.toList());
 
             if (listEqualsIgnoreOrder(propertyNames, parameterNames)) {
-                selectedConstructor = con;
+                // re-arrange the propertyNames to match parameterNames
+                propertyNames.clear();
+                propertyNames.addAll(parameterNames);
+                selectedConstructor = constructor;
                 break;
             }
+
+            // Check with ConstructorProperties
+            ConstructorProperties constructorProperties = constructor.getAnnotation(ConstructorProperties.class);
+            if (constructorProperties != null) {
+                parameterNames = Arrays.asList(constructorProperties.value());
+                if (listEqualsIgnoreOrder(propertyNames, parameterNames)) {
+                    // re-arrange the propertyNames to match parameterNames
+                    propertyNames.clear();
+                    propertyNames.addAll(parameterNames);
+                    selectedConstructor = constructor;
+                    break;
+                }
+            }
         }
+
         log.debug("findConstructor: %s", selectedConstructor);
+        if (selectedConstructor == null) {
+            throw new PersismException("findConstructor: Could not find a constructor for class: " + objectClass + " properties: " + propertyNames);
+        }
         return selectedConstructor;
     }
 
-    private void verifyColumnMappings(Class<?> objectClass, Map<String, PropertyInfo> properties) {
-        // Test if all properties have column mapping and throw PersismException if not
-        // This block verifies that the object is fully initialized.
-        // Any properties not marked by NotColumn should have been set (or if they have a getter only?????) ????
-        // If not throw a PersismException
-        Collection<PropertyInfo> allProperties = MetaData.getPropertyInfo(objectClass);
-        if (properties.values().size() < allProperties.size()) {
-            Set<PropertyInfo> missing = new HashSet<>(allProperties.size());
-            missing.addAll(allProperties);
-            missing.removeAll(properties.values());
-
-            StringBuilder sb = new StringBuilder();
-            String sep = "";
-            for (PropertyInfo prop : missing) {
-                sb.append(sep).append(prop.propertyName);
-                sep = ",";
-            }
-
-            throw new PersismException("Object " + objectClass + " was not properly initialized. Some properties not initialized in the queried columns (" + sb + ").");
-        }
+    // https://stackoverflow.com/questions/1075656/simple-way-to-find-if-two-different-lists-contain-exactly-the-same-elements
+    private static <T> boolean listEqualsIgnoreOrder(List<T> list1, List<T> list2) {
+        return new HashSet<>(list1).equals(new HashSet<>(list2));
     }
 
-    // TODO readColumn you could pass the ResultSetMetaData or ColumnType & ColumnLabel here too if you want...
     <T> T readColumn(ResultSet rs, int column, Class<?> returnType) throws SQLException, IOException {
         ResultSetMetaData rsmd = rs.getMetaData();
         int sqlColumnType = rsmd.getColumnType(column);
@@ -397,10 +387,5 @@ final class Reader {
         }
 
         return (T) value;
-    }
-
-    // https://stackoverflow.com/questions/1075656/simple-way-to-find-if-two-different-lists-contain-exactly-the-same-elements
-    private static <T> boolean listEqualsIgnoreOrder(List<T> list1, List<T> list2) {
-        return new HashSet<>(list1).equals(new HashSet<>(list2));
     }
 }

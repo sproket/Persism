@@ -93,5 +93,13 @@ public class TestUtil extends TestCase {
         System.out.println(count / 1);
         System.out.println(count / 2);
         System.out.println(count / 3);
+
+        float x = 1.0f;
+        double y = 2.0d;
+        int z = 3;
+
+        System.out.println((int)x);
+        System.out.println((int)y);
+        System.out.println((int)z);
     }
 }

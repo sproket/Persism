@@ -20,6 +20,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.*;
 
 import static net.sf.persism.Parameters.params;
+import static net.sf.persism.SQL.proc;
 import static net.sf.persism.SQL.sql;
 import static net.sf.persism.UtilsForTests.*;
 
@@ -33,7 +34,7 @@ public class TestMSSQL extends BaseTest {
 
 
         // LIST SYSTEM PROPERTIES
-        System.getProperties().list(System.out);
+        // System.getProperties().list(System.out);
 
         if (BaseTest.mssqlmode) {
             connectionType = ConnectionTypes.MSSQL;
@@ -647,7 +648,7 @@ public class TestMSSQL extends BaseTest {
         procedure.setDescription(null);
         session.update(procedure);
         session.fetch(procedure);
-        log.warn("NULL? " + procedure.getDescription());
+        log.info("NULL? " + procedure.getDescription());
 
 
         assertTrue("proc1 should have an id? ", proc1.getExamCodeNo() > 0);
@@ -814,10 +815,10 @@ public class TestMSSQL extends BaseTest {
 
         session.fetch(order);
 
-        List<CustomerOrder> list = session.query(CustomerOrder.class, sql("[spCustomerOrders](?)"), params("123"));
+        List<CustomerOrder> list = session.query(CustomerOrder.class, proc("[spCustomerOrders](?)"), params("123"));
         log.info(list);
         // Both forms should work - the 1st is a cleaner way but this should be supported
-        list = session.query(CustomerOrder.class, sql("{call [spCustomerOrders](?) }"), params("123"));
+        list = session.query(CustomerOrder.class, proc("{call [spCustomerOrders](?) }"), params("123"));
         log.info(list);
 
         // query orders by date
