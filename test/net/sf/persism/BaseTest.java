@@ -2,8 +2,6 @@ package net.sf.persism;
 
 import junit.framework.TestCase;
 import net.sf.persism.dao.*;
-import net.sf.persism.dao.records.CustomerOrderRec;
-import net.sf.persism.dao.records.InvoiceRec;
 
 import java.lang.reflect.InvocationTargetException;
 import java.math.BigDecimal;
@@ -235,24 +233,6 @@ public abstract class BaseTest extends TestCase {
                 assertFalse("order OTHER s/b NOT paid", customerOrder.isPaid());
             }
         }
-
-        List<CustomerOrderRec> resultsRec = session.query(CustomerOrderRec.class, sql);
-        log.info(results);
-        assertEquals("size should be 4", 4, results.size());
-
-        // partial
-        // "paid", "description", "customerId", "companyName", "orderId", "datePaid"
-        sb = new StringBuilder();
-        sb.append("SELECT c.Customer_ID, c.Company_Name, o.ID Order_ID, o.Name AS Description, o.Date_Paid, o.PAID ");
-        sb.append(" FROM Orders o");
-        sb.append(" JOIN Customers c ON o.Customer_ID = c.Customer_ID");
-
-        sql = sb.toString();
-        log.info(sql);
-
-        resultsRec = session.query(CustomerOrderRec.class, sql);
-        log.info(resultsRec);
-        assertEquals("size should be 4", 4, resultsRec.size());
     }
 
     private void setupDataForQuery() throws SQLException {
@@ -773,90 +753,29 @@ public abstract class BaseTest extends TestCase {
         invoice.setCustomerId("MOO");
         invoice.setPrice(10.5f);
         invoice.setQuantity(10);
-        invoice.setDiscount(0);
+        invoice.setTotal(new BigDecimal(invoice.getPrice() * invoice.getQuantity()));
+        invoice.setPaid(true);
         invoice.setActualPrice(new BigDecimal("10.23"));
-        invoice.setPaid(false);
 
-        assertNull("org invoice s/b null", invoice.getInvoiceId());
-        assertNull("Created s/b null ", invoice.getCreated()); // note no setter
+        session.insert(invoice);
 
-        Result<Invoice> res1 = session.insert(invoice);
-        assertTrue("Invoice ID > 0", res1.dataObject().getInvoiceId() > 0);
-        assertNotNull("Created s/b not null", res1.dataObject().getCreated()); // note no setter
-
-
-        InvoiceRec invoiceRec = new InvoiceRec("MOO", 10.5f, 10, 0, new BigDecimal("10.23"), false);
-
-        assertNull("org invoice s/b null", invoiceRec.invoiceId());
-        assertNull("Created s/b null", invoiceRec.created()); // note no setter
-
-        Result<InvoiceRec> result = session.insert(invoiceRec);
-        assertTrue("rows s/b > 0", result.rows() > 0);
-        assertTrue("Invoice ID > 0", result.dataObject().invoiceId() > 0);
-        assertNotNull("Created s/b not null", result.dataObject().created()); // note no setter
+        assertTrue("Invoice ID > 0", invoice.getInvoiceId() > 0);
+        assertNotNull("Created s/b not null", invoice.getCreated()); // note no setter
+        assertNotNull("what about junk1? ", invoice.getJunk1());
 
         List<Invoice> invoices = session.query(Invoice.class, "select * from Invoices where CUSTOMER_ID=?", "MOO");
         log.info(invoices);
-        assertEquals("invoices s/b 2", 2, invoices.size()); // 2 now we add 1 via record and 1 via class
+        assertEquals("invoices s/b 1", 1, invoices.size());
 
-        invoiceRec = new InvoiceRec(invoices.get(0));
+        invoice = invoices.get(0);
 
-        log.info(invoiceRec);
+        log.info(invoice);
 
-        assertEquals("customer s/b MOO", "MOO", invoiceRec.customerId());
-        assertEquals("invoice # s/b 1", 1, invoiceRec.invoiceId().intValue());
-        assertEquals("price s/b 10.5", 10.5f, invoiceRec.price());
-        assertEquals("qty s/b 10", 10, invoiceRec.quantity());
-        assertFalse("paid s/b false", invoiceRec.paid());
+        assertEquals("customer s/b MOO", "MOO", invoice.getCustomerId());
+        assertEquals("invoice # s/b 1", 1, invoice.getInvoiceId().intValue());
+        assertEquals("price s/b 10.5", 10.5f, invoice.getPrice());
+        assertEquals("qty s/b 10", 10, invoice.getQuantity());
 
-        NumberFormat nf = NumberFormat.getInstance();
-
-        assertEquals("totals/b 105.00", nf.format(105.0f), nf.format(invoiceRec.total()));
-
-        InvoiceRec updatedInvoice = new InvoiceRec(invoiceRec.invoiceId(), invoiceRec.customerId(), invoiceRec.price(), invoiceRec.quantity() + 20, invoiceRec.discount(), invoiceRec.actualPrice(), invoiceRec.created(), true);
-        session.update(updatedInvoice);
-
-        invoices = session.query(Invoice.class, "select * from Invoices where CUSTOMER_ID=? ORDER BY Invoice_ID", "MOO");
-        log.info(invoices);
-        assertEquals("invoices s/b 1", 2, invoices.size());
-        updatedInvoice = new InvoiceRec(invoices.get(0));
-        assertEquals("qty should now be 30", 30, updatedInvoice.quantity());
-        assertTrue("paid s/b true", updatedInvoice.paid());
-
-
-        /*
-                " Invoice_ID IDENTITY PRIMARY KEY, " +
-                " Customer_ID varchar(10) NOT NULL, " +
-                " Paid BIT NOT NULL, " +
-                " Price NUMERIC(7,3) NOT NULL, " +
-                " ActualPrice NUMERIC(7,3) NOT NULL, " +
-                " Status INT DEFAULT 1, " +
-                " Created DateTime default current_timestamp, " + // make read-only in Invoice Object
-                " Quantity NUMERIC(10) NOT NULL, " +
-                " Discount NUMERIC(10,3) NOT NULL " +
-         */
-
-        // Select with various cases
-        List<InvoiceRec> list;
-        String sql;
-        sql = "select iNvoice_iD, cUsTomer_id, paid, pRice, ActualPrice, Status, Created, Quantity, Discount from Invoices where CUSTOMER_ID=? ORDER BY Invoice_ID";
-        list = session.query(InvoiceRec.class, sql, "MOO");
-        assertTrue("list should be ok", list.size() > 0);
-
-        boolean fail = false;
-
-        try {
-            // missing ActualPrice
-            session.query(InvoiceRec.class, "select iNvoice_iD, cUsTomer_id, paid, pRice, Status, Created, Quantity, Discount from Invoices where CUSTOMER_ID=? ORDER BY Invoice_ID", "MOO");
-        } catch (PersismException e) {
-            assertTrue("s/b 'readRecord: Could not find column in the SQL query for class: class net.sf.persism.dao.records.InvoiceRec. Missing column: ACTUALPRICE'",
-                    e.getMessage().startsWith("readRecord: Could not find column in the SQL query for class: class net.sf.persism.dao.records.InvoiceRec. Missing column:"));
-            fail = true;
-        }
-        assertTrue(fail);
-
-        // Random Order - should be fine
-        session.query(InvoiceRec.class, "select cUsTomer_id, paid, pRice, iNvoice_iD,  Status, Created, ActualPrice, Quantity, Discount from Invoices where CUSTOMER_ID=? ORDER BY Invoice_ID", "MOO");
     }
 
 

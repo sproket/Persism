@@ -78,14 +78,17 @@ final class MetaData {
         populateTableList(con);
     }
 
-    static synchronized MetaData getInstance(Connection con) throws SQLException {
+    static synchronized MetaData getInstance(Connection con, String sessionKey) throws SQLException {
 
-        String url = con.getMetaData().getURL();
-        if (metaData.get(url) == null) {
-            metaData.put(url, new MetaData(con));
+        if (sessionKey == null) {
+            sessionKey = con.getMetaData().getURL();
         }
-        log.debug("MetaData getting instance %s", url);
-        return metaData.get(url);
+
+        if (metaData.get(sessionKey) == null) {
+            metaData.put(sessionKey, new MetaData(con));
+        }
+        log.debug("MetaData getting instance %s", sessionKey);
+        return metaData.get(sessionKey);
     }
 
     // Should only be called IF the map does not contain the column meta information yet.

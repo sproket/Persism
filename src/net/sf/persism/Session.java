@@ -27,12 +27,24 @@ public final class Session implements AutoCloseable {
     private Convertor convertor;
 
     /**
+     * Default constructor for a Session object
      * @param connection db connection
      * @throws PersismException if something goes wrong
      */
     public Session(Connection connection) throws PersismException {
         this.connection = connection;
-        init(connection);
+        init(connection, null);
+    }
+
+    /**
+     * Constructor for Session where you want to specify the Session Key.
+     * @param connection db connection
+     * @param sessionKey Unique string to represent the connection URL if it is not available on the Connection metadata.
+     * @throws PersismException if something goes wrong
+     */
+    public Session(Connection connection, String sessionKey) throws PersismException {
+        this.connection = connection;
+        init(connection, sessionKey);
     }
 
     /**
@@ -49,10 +61,10 @@ public final class Session implements AutoCloseable {
         }
     }
 
-    private void init(Connection connection) {
+    private void init(Connection connection, String sessionKey) {
         // place any DB specific properties here.
         try {
-            metaData = MetaData.getInstance(connection);
+            metaData = MetaData.getInstance(connection, sessionKey);
         } catch (SQLException e) {
             throw new PersismException(e.getMessage(), e);
         }
@@ -181,7 +193,7 @@ public final class Session implements AutoCloseable {
 
     /**
      * Inserts the data object in the database refreshing with autoinc and other defaults that may exist.
-     *
+     * @param <T> Type of the inserted object
      * @param object the data object to insert.
      * @return usually 1 to indicate rows changed via JDBC.
      * @throws PersismException When planet of the apes starts happening.
@@ -628,7 +640,7 @@ public final class Session implements AutoCloseable {
 
     void setParameters(PreparedStatement st, Object[] parameters) throws SQLException {
         if (log.isDebugEnabled()) {
-            log.debug("setParameters PARAMS: %s", Arrays.asList(parameters));
+            log.debug("PARAMS: %s", Arrays.asList(parameters));
         }
 
         int n = 1;

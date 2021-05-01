@@ -45,7 +45,7 @@ public final class TestDerby extends BaseTest {
 
         createTables();
 
-        session = new Session(con);
+        session = new Session(con, "Derby");
 
     }
 
