@@ -92,7 +92,7 @@ add the query string as a key to the Column/Property Info objects? Duplicating b
 DONE SQL enum to Java enum? PostgreSQL, MySQL and H2. TODO Possible with MSSQL with CHECK constraints
 
 DONE @NotTable classes should allow getters only and we can set values through fields instead. (even normal table should allow this for read only columns)
-TODO Add support for Records
+DONE Add support for Records
 
 MAVEN:
 https://www.youtube.com/watch?v=bxP9IuJbcDQ
@@ -116,7 +116,7 @@ TODO https://stackoverflow.com/questions/1736630/sql-constraint-minvalue-maxvalu
 
 DONE test overflowing all number types - should throw various runtime exceptions if they occur
 
-TODO See about deprecating Column autoIncrement - I think all supported drivers detect this and even if you set it - why would it work? We won't get anything with getGeneratedKeys!
+DONE See about deprecating Column autoIncrement - I think all supported drivers detect this and even if you set it - why would it work? We won't get anything with getGeneratedKeys!
 
 TODO Sample Oracle DB https://docs.oracle.com/cd/E11882_01/doc.112/e26211/loe.htm
 
@@ -124,9 +124,25 @@ DONE Session autocommit false? https://www.reddit.com/r/java/comments/lvya1x/per
 
 DONE POM still gets log4j logback and slf4j - FFS
 
-// todo org.apache.logging.log4j s/b log4j2 - no support for log4j1 but test BRIDGE 1.x
+// DONE org.apache.logging.log4j s/b log4j2 - no support for log4j1 but test BRIDGE 1.x
 // If existing components use Log4j 1.x and you want to have this logging routed to Log4j 2, then remove any log4j 1.x dependencies and add the following.
 // http://logging.apache.org/log4j/2.x/maven-artifacts.html
 
 
 TODO ORACLE INSERT with Generated UDDI https://www.techrepublic.com/article/oracle-tip-how-to-use-default-values-with-database-columns/
+
+**Should we have @Optional for colulumn?** NO
+Scenario:
+
+I have a table where I may not want to select a column AND I have an associated
+Record constructor. WHY WOULD I WANT TO DO THIS? I would have to ignore for insert
+and update then.
+
+
+
+DOCKER AND VBOX? BACK EVERYTHING UP FIRST.
+https://www.tcg.com/blog/yes-you-can-run-docker-and-virtualbox-on-windows-10-home/
+
+
+FFS
+https://stackoverflow.com/questions/36427868/failed-to-execute-goal-org-apache-maven-pluginsmaven-surefire-plugin2-12test

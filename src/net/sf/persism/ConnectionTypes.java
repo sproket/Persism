@@ -24,6 +24,8 @@ enum ConnectionTypes {
 
     UCanAccess(null, "[", "]"),
 
+    Informix(null, "", ""),
+
     Other(null, "", "")
     ;
 
@@ -84,6 +86,11 @@ enum ConnectionTypes {
 
         if (connectionUrl.startsWith("jdbc:ucanaccess")) {
             return UCanAccess;
+        }
+
+        // TODO Informix empty URL needs to at least start with this....
+        if (connectionUrl.startsWith("jdbc:informix")) {
+            return Informix;
         }
 
         return Other;
