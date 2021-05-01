@@ -15,6 +15,8 @@ import java.time.*;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 
+import static java.lang.System.out;
+
 /**
  * Comments for BaseTest go here.
  *
@@ -780,28 +782,47 @@ public abstract class BaseTest extends TestCase {
 
 
     public void testGetDbMetaData() throws SQLException {
-        if (true) {
-            return;
-        }
+//        if (true) {
+//            return;
+//        }
         DatabaseMetaData dmd = con.getMetaData();
         log.info("GetDbMetaData for " + dmd.getDatabaseProductName());
 
+        log.info("PROCEDURES?");
         ResultSet result = dmd.getProcedures(null, "%", "%");
         for (int i = 1; i <= result.getMetaData().getColumnCount(); i++) {
-            System.out.println(i + " - " + result.getMetaData().getColumnLabel(i));
+            out.println(i + " - " + result.getMetaData().getColumnLabel(i));
         }
 
-        System.out.println("Catalog\tSchema\tName");
+
+        out.println("Catalog\tSchema\tName");
         while (result.next()) {
-            System.out.println(result.getString("PROCEDURE_CAT") +
-                    " - " + result.getString("PROCEDURE_SCHEM") +
-                    " - " + result.getString("PROCEDURE_NAME"));
+            out.println("cat: " + result.getString("PROCEDURE_CAT") +
+                    " schem: " + result.getString("PROCEDURE_SCHEM") +
+                    " name: " + result.getString("PROCEDURE_NAME"));
         }
 
-        String[] tableTypes = {"TABLE"};
+        log.info("VIEWS!");
+        String[] tableTypes = {"VIEW"};
 
         ResultSetMetaData rsmd;
         ResultSet rs;
+        // get attributes
+        //rs = dmd.getAttributes("", "", "", "");
+        List<String> views = new ArrayList<>(32);
+        rs = dmd.getTables(null, session.getMetaData().getConnectionType().getSchemaPattern(), null, tableTypes);
+        rsmd = rs.getMetaData();
+        while (rs.next()) {
+            for (int i = 1; i <= rsmd.getColumnCount(); i++) {
+                log.info(rsmd.getColumnName(i) + " = " + rs.getObject(i));
+            }
+            views.add(rs.getString("TABLE_NAME"));
+            log.info("----------");
+        }
+        log.info("*************************** VIEWS!");
+
+        tableTypes[0] = "TABLE";
+
         // get attributes
         //rs = dmd.getAttributes("", "", "", "");
         List<String> tables = new ArrayList<>(32);
