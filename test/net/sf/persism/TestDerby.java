@@ -45,7 +45,8 @@ public final class TestDerby extends BaseTest {
 
         createTables();
 
-        session = new Session(con, "Derby");
+        session = new Session(con, "jdbc:derby/TESTING");
+        // session = new Session(con);
 
     }
 
