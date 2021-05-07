@@ -146,3 +146,5 @@ https://www.tcg.com/blog/yes-you-can-run-docker-and-virtualbox-on-windows-10-hom
 
 FFS
 https://stackoverflow.com/questions/36427868/failed-to-execute-goal-org-apache-maven-pluginsmaven-surefire-plugin2-12test
+
+TODO https://maxdb.sap.com/
