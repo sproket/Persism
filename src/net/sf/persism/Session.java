@@ -41,6 +41,21 @@ public final class Session implements AutoCloseable {
      * Constructor for Session where you want to specify the Session Key.
      * @param connection db connection
      * @param sessionKey Unique string to represent the connection URL if it is not available on the Connection metadata.
+     *                   This string should start with the jdbc url string to indicate the connection type.
+     *<pre>
+     *                  jdbc:h2 = h2
+     *                  jdbc:sqlserver = MS SQL
+     *                  jdbc:oracle = Oracle
+     *                  jdbc:sqlite = SQLite
+     *                  jdbc:derby = Derby
+     *                  jdbc:mysql = MySQL/MariaDB
+     *                  jdbc:postgresql = PostgreSQL
+     *                  jdbc:firebirdsql = Firebird (Jaybird)
+     *                  jdbc:hsqldb = HSQLDB
+     *                  jdbc:ucanaccess = MS Access
+     *                  jdbc:informix = Informix
+     *
+     </pre>
      * @throws PersismException if something goes wrong
      */
     public Session(Connection connection, String sessionKey) throws PersismException {

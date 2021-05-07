@@ -15,6 +15,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.*;
+import java.util.stream.Collectors;
 
 import static net.sf.persism.Parameters.params;
 import static net.sf.persism.SQL.where;
@@ -48,7 +49,7 @@ public final class TestDerby extends BaseTest {
 
         createTables();
 
-        session = new Session(con);
+        session = new Session(con, "jdbc:derby/TESTING");
 
     }
 
@@ -244,7 +245,7 @@ public final class TestDerby extends BaseTest {
             ;
             order.setCustomerId("123");
             order.setName("name");
-            order.setCreated(LocalDate.now());
+            order.setCreated(LocalDate.ofEpochDay(378));
             order.setDatePaid(LocalDateTime.now());
             order.setPaid(true);
 
@@ -277,6 +278,10 @@ public final class TestDerby extends BaseTest {
                 assertNotNull("type should not be null", columnInfo.columnType);
             }
 
+            //List<Order> orders = session.query(Order.class, where("Customer_ID = ?").orderBy("DATE_PAID"), params("123"));
+            List<Order> orders = session.query(Order.class, where("Customer_ID = ? ORDER BY DATE_PAID"), params("123")).
+                    stream().sorted(Comparator.comparing(Order::getCreated)).collect(Collectors.toList());
+            log.warn(orders);
 
         } catch (SQLException e) {
             log.error(e.getMessage(), e);

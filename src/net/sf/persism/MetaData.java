@@ -68,11 +68,11 @@ final class MetaData {
     // for non alpha-numeric characters in column names. We'll just use a static set.
     private static final String EXTRA_NAME_CHARACTERS = "`~!@#$%^&*()-+=/|\\{}[]:;'\".,<>*";
 
-    private MetaData(Connection con) throws SQLException {
+    private MetaData(Connection con, String sessionKey) throws SQLException {
 
-        log.debug("MetaData CREATING instance [%s] ", toString());
+        log.debug("MetaData CREATING instance [%s] ", sessionKey);
 
-        connectionType = ConnectionTypes.get(con.getMetaData().getURL());
+        connectionType = ConnectionTypes.get(sessionKey);
         if (connectionType == ConnectionTypes.Other) {
             log.warn("Unknown connection type. Please contact Persism to add support for " + con.getMetaData().getDatabaseProductName());
         }
@@ -86,7 +86,7 @@ final class MetaData {
         }
 
         if (metaData.get(sessionKey) == null) {
-            metaData.put(sessionKey, new MetaData(con));
+            metaData.put(sessionKey, new MetaData(con, sessionKey));
         }
         log.debug("MetaData getting instance %s", sessionKey);
         return metaData.get(sessionKey);
