@@ -50,7 +50,7 @@ public final class TestH2 extends BaseTest {
 
         createTables();
 
-        session = new Session(con, "H2!");
+        session = new Session(con, "jdbc:h2/H2!");
 
         Instant x = new Date().toInstant();
 
@@ -170,13 +170,13 @@ public final class TestH2 extends BaseTest {
 
         commands.add("CREATE TABLE TABLEMULTIPRIMARY ( " +
                 " OrderID INT NOT NULL, " +
-                " ProductID INT NOT NULL, " +
+                " ProductID VARCHAR(10) NOT NULL, " +
                 " UnitPrice DECIMAL NOT NULL, " +
                 " Quantity SMALLINT NOT NULL, " +
                 " Discount REAL NOT NULL " +
                 ") ");
 
-        commands.add("ALTER TABLE TABLEMULTIPRIMARY ADD PRIMARY KEY (OrderID, ProductID)");
+        commands.add("ALTER TABLE TABLEMULTIPRIMARY ADD PRIMARY KEY (ProductID, OrderID)");
 
 //?
         commands.add("CREATE TABLE SavedGames ( " +
@@ -312,93 +312,6 @@ public final class TestH2 extends BaseTest {
         executeCommand(sql, con);
     }
 
-    public void testRecord1() {
-        UUID id = UUID.randomUUID();
-        RecordTest1 rt1 = new RecordTest1(id, "test 1", 10, 4.23f, 0.0d);
-
-        session.insert(rt1);
-
-        // Any fetch or query should fail - see RecordTest1 has a bad constructor
-        boolean fail = false;
-        try {
-            session.fetch(RecordTest1.class, params((Object) Convertor.asBytes(id)));
-        } catch (PersismException e) {
-            fail = true;
-//            log.error(e.getMessage(), e);
-            assertTrue("msg should start with 'readRecord: Could instantiate the constructor for: class net.sf.persism.dao.records.RecordTest1'",
-                    e.getMessage().startsWith("readRecord: Could instantiate the constructor for: class net.sf.persism.dao.records.RecordTest1"));
-        }
-        assertTrue(fail);
-
-        fail = false;
-        try {
-            session.fetch(rt1);
-        } catch (PersismException e) {
-            fail = true;
-            //log.error(e.getMessage(), e);
-            assertEquals("s/b 'Cannot read a Record type object with this method.'", "Cannot read a Record type object with this method.", e.getMessage());
-        }
-        assertTrue(fail);
-
-    }
-
-    public void testRecord2() {
-        RecordTest2 rt2 = new RecordTest2(1, "test 1", 10, 3.99, LocalDateTime.now());
-        log.info(rt2);
-        session.insert(rt2);
-        log.info(rt2.total());
-
-        RecordTest2 rt22 = session.fetch(RecordTest2.class, sql("select CrEATED_ON, PRiCE, QtY, DESCrIPTION, iD FROM RecordTest2 where ID = ?"), params(1));
-        log.info(rt22);
-        assertNotNull(rt22);
-        log.info(rt22.total());
-
-        RecordTest2 rt23 = new RecordTest2(2, "test 2", 1, 0.05d);
-        session.insert(rt23);
-        log.info(rt23);
-
-        // THis cannot be fetched without the Created_ON column
-        boolean fail = false;
-        try {
-            rt23 = session.fetch(RecordTest2.class, sql("select PRiCE, QtY, DESCrIPTION, iD FROM RecordTest2 where ID = ?"), params(2));
-
-        }catch (PersismException e) {
-            fail = true;
-            assertEquals("s/b 'readRecord: Could not find column in the SQL query for class: class net.sf.persism.dao.records.RecordTest2. Missing column: CREATED_ON'",
-                    "readRecord: Could not find column in the SQL query for class: class net.sf.persism.dao.records.RecordTest2. Missing column: CREATED_ON",
-                    e.getMessage());
-        }
-
-        assertTrue(fail);
-    }
-
-
-    public void testRecords() {
-        RecordTest2 rt2 = new RecordTest2(0, "desc2" , 100, 25.434f);
-        log.info(rt2);
-
-        Result<RecordTest2> result = session.insert(rt2);
-        assertEquals("id should still be 0", 0, rt2.id());
-        assertNull("should have null createdOn", rt2.createdOn());
-        log.info(rt2);
-
-        assertEquals("rows s/b 1", 1, result.rows());
-        assertEquals("Object ID s/b 1", 1, result.dataObject().id());
-        assertNotNull("should have createdOn ", result.dataObject().createdOn());
-        log.info("after: " + result.dataObject());
-        boolean fail = false;
-        try {
-            session.fetch(rt2);
-
-        } catch (PersismException e) {
-            fail = true;
-            assertEquals("s/b 'Cannot read a Record type object with this method.'",
-                    "Cannot read a Record type object with this method.",
-                    e.getMessage());
-        }
-        assertTrue(fail);
-
-    }
 
     public void testByteData() {
         ByteData bd = new ByteData();
@@ -578,10 +491,9 @@ public final class TestH2 extends BaseTest {
 
     public void testDatabaseMetaData() {
 
-        Statement st = null;
         java.sql.ResultSet rs = null;
 
-        DatabaseMetaData dmd = null;
+        DatabaseMetaData dmd;
         try {
             dmd = con.getMetaData();
 
@@ -594,7 +506,7 @@ public final class TestH2 extends BaseTest {
                     log.info(x.getClass());
                 }
 
-                Map<String, Object> map = new HashMap<String, Object>(29);
+                Map<String, Object> map = new HashMap<>(29);
 
                 ResultSetMetaData rsMetaData = rs.getMetaData();
                 for (int i = 1; i <= rsMetaData.getColumnCount(); i++) {
@@ -605,14 +517,14 @@ public final class TestH2 extends BaseTest {
 
 
         } catch (SQLException e) {
-            Util.cleanup(st, rs);
+            Util.cleanup(null, rs);
         }
     }
 
     public void testMultiPrimary() {
         TableMultiPrimary mp = new TableMultiPrimary();
         mp.setOrderId(1);
-        mp.setProductId(1);
+        mp.setProductId("3");
         mp.setUnitPrice(10.23);
         mp.setQuantity((short) 256);
         mp.setDiscount(0);
@@ -626,7 +538,7 @@ public final class TestH2 extends BaseTest {
 
         TableMultiPrimary mp2 = new TableMultiPrimary();
         mp2.setOrderId(1);
-        mp2.setProductId(2);
+        mp2.setProductId("2");
         mp2.setUnitPrice(9.99);
         mp2.setQuantity((short) 30);
         mp2.setDiscount(0);
@@ -652,14 +564,14 @@ public final class TestH2 extends BaseTest {
         boolean nullInsertFail = false;
         try {
             mp = new TableMultiPrimary();
-            session.insert(mp);
-            session.insert(mp);
-            session.insert(mp);
+            mp.setOrderId(-1);
+            mp.setProductId("x");
             session.insert(mp);
             session.insert(mp);
 
         } catch (Exception e) {
-            log.info(e.getMessage());
+            log.error(e.getMessage(), e);
+            // Fail by double insert same primary keys
             assertTrue("message starts with 'Unique index or primary key violation'",
                     e.getMessage().startsWith("Unique index or primary key violation"));
             nullInsertFail = true;
@@ -702,7 +614,7 @@ public final class TestH2 extends BaseTest {
 
     }
 
-    public void testVariousTypesLikeClobAndBlob() throws SQLException, IOException {
+    public void testVariousTypesLikeClobAndBlob() throws IOException {
         // note Data is read as a CLOB
         SavedGame saveGame = new SavedGame();
         saveGame.setName("BLAH");
@@ -710,7 +622,7 @@ public final class TestH2 extends BaseTest {
         saveGame.setData("HJ LHLH H H                     ';lk ;lk ';l k                                K HLHLHH LH LH LH LHLHLHH LH H H H LH HHLGHLJHGHGFHGFGJFDGHFDHFDGJFDKGHDGJFDD KHGD KHG DKHDTG HKG DFGHK  GLJHG LJHG LJH GLJ");
         saveGame.setGold(100.23f);
         saveGame.setSilver(200);
-        saveGame.setCopper(100l);
+        saveGame.setCopper(100L);
         saveGame.setWhatTimeIsIt(new Time(System.currentTimeMillis()));
 
         File file = new File("c:/windows/explorer.exe");

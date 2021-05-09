@@ -553,6 +553,28 @@ public class TestMSSQL extends BaseTest {
 
         executeCommand(sql, con);
 
+        if (UtilsForTests.isTableInDatabase("RecordTest1", con)) {
+            executeCommand("DROP TABLE RecordTest1", con);
+        }
+        sql = "CREATE TABLE RecordTest1 ( " +
+                "ID [uniqueidentifier] NOT NULL, " +
+                "NAME VARCHAR(20), " +
+                "QTY INT, " +
+                "PRICE REAL " +
+                ") ";
+        executeCommand(sql, con);
+
+        if (UtilsForTests.isTableInDatabase("RecordTest2", con)) {
+            executeCommand("DROP TABLE RecordTest2", con);
+        }
+        sql = "CREATE TABLE RecordTest2 ( " +
+                "ID [int] IDENTITY(1,1) NOT NULL, " +
+                "DESCRIPTION VARCHAR(20), " +
+                "QTY INT, " +
+                "PRICE REAL, " +
+                "CREATED_ON DATETIME default current_timestamp" +
+                ") ";
+        executeCommand(sql, con);
 
     }
 

@@ -243,6 +243,29 @@ public class TestPostgreSQL extends BaseTest {
                 " DateAndTime TIMESTAMP) ";
 
         executeCommand(sql, con);
+        if (UtilsForTests.isTableInDatabase("RecordTest1", con)) {
+            executeCommand("DROP TABLE RecordTest1", con);
+        }
+
+        sql = "CREATE TABLE RecordTest1 ( " +
+                "ID uuid, " +
+                "NAME VARCHAR(20), " +
+                "QTY INT, " +
+                "PRICE DECIMAL(20) " +
+                ") ";
+        executeCommand(sql, con);
+
+        if (UtilsForTests.isTableInDatabase("RecordTest2", con)) {
+            executeCommand("DROP TABLE RecordTest2", con);
+        }
+        sql = "CREATE TABLE RecordTest2 ( " +
+                "ID SERIAL PRIMARY KEY, " +
+                "DESCRIPTION VARCHAR(20), " +
+                "QTY INT, " +
+                "PRICE DECIMAL(20), " +
+                "CREATED_ON TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL" +
+                ") ";
+        executeCommand(sql, con);
 
     }
 

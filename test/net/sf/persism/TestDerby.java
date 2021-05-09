@@ -206,6 +206,30 @@ public final class TestDerby extends BaseTest {
                 " DateAndTime TIMESTAMP) ";
 
         executeCommand(sql, con);
+
+        if (UtilsForTests.isTableInDatabase("RecordTest1", con)) {
+            executeCommand("DROP TABLE RecordTest1", con);
+        }
+        sql = "CREATE TABLE RecordTest1 ( " +
+                "ID CHAR(16) FOR BIT DATA NOT NULL, " + // PRIMARY KEY
+                "NAME VARCHAR(20), " +
+                "QTY INT, " +
+                "PRICE REAL " +
+                ") ";
+        executeCommand(sql, con);
+
+        if (UtilsForTests.isTableInDatabase("RecordTest2", con)) {
+            executeCommand("DROP TABLE RecordTest2", con);
+        }
+        sql = "CREATE TABLE RecordTest2 ( " +
+                "ID INTEGER NOT NULL GENERATED ALWAYS AS IDENTITY (START WITH 1, INCREMENT BY 1), " +
+                "DESCRIPTION VARCHAR(20), " +
+                "QTY INT, " +
+                "PRICE REAL, " +
+                "CREATED_ON TIMESTAMP DEFAULT CURRENT_TIMESTAMP" +
+                ") ";
+        executeCommand(sql, con);
+
     }
 
     public void testTypes() {

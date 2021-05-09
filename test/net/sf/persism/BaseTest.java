@@ -4,6 +4,8 @@ import junit.framework.TestCase;
 import net.sf.persism.dao.*;
 import net.sf.persism.dao.records.CustomerOrderRec;
 import net.sf.persism.dao.records.CustomerOrderGarbage;
+import net.sf.persism.dao.records.RecordTest1;
+import net.sf.persism.dao.records.RecordTest2;
 
 import java.lang.reflect.InvocationTargetException;
 import java.math.BigDecimal;
@@ -346,9 +348,7 @@ public abstract class BaseTest extends TestCase {
             log.error(e.getMessage());
             assertTrue("startswith",
                     e.getMessage().startsWith("findConstructor: Could not find a constructor for class: class net.sf.persism.dao.records.CustomerOrderGarbage"));
-            // todo older message was more informative. findConstructor should have some way to privide more info on what's wrong.
-//            assertTrue("startswith",
-//                    e.getMessage().startsWith("Object class net.sf.persism.dao.records.CustomerOrderGarbage was not properly initialized."));
+            // todo older message was more informative. findConstructor should have some way to provide more info on what's wrong.
             failed = true;
         }
 
@@ -933,6 +933,127 @@ public abstract class BaseTest extends TestCase {
         NumberFormat nf = NumberFormat.getInstance();
 
         assertEquals("totals/b 105.00", nf.format(105.0f), invoice.getTotal().toString());
+    }
+
+    // RecordTest1 is invalid so it should fail on query and fetch
+    public void testRecord1() {
+        UUID id = UUID.randomUUID();
+        RecordTest1 rt1 = new RecordTest1(id, "test 1", 10, 4.23f, 0.0d);
+
+        session.insert(rt1);
+
+        Object paramValue = id;
+        switch (session.getMetaData().getConnectionType()) {
+
+            case MSSQL:
+            case JTDS:
+            case UCanAccess: // todo verify
+            case Informix: // don't really know yet.
+            case SQLite:
+            case Firebird:
+            case PostgreSQL:
+                paramValue = id;
+                break;
+
+            case MySQL:
+            case Oracle:
+            case Other:
+            case Derby:
+            case HSQLDB:
+            case H2:
+                paramValue = Convertor.asBytes(id);
+                break;
+        }
+
+        // Any fetch or query should fail - see RecordTest1 has a bad constructor
+        boolean fail = false;
+        try {
+            log.warn("paramValue: " + paramValue);
+            //session.fetch(RecordTest1.class, params((Object) Convertor.asBytes(id)));
+            session.fetch(RecordTest1.class, params(paramValue));
+        } catch (PersismException e) {
+            fail = true;
+            log.warn(e.getMessage(), e);
+            assertTrue("msg should start with 'readRecord: Could instantiate the constructor for: class net.sf.persism.dao.records.RecordTest1'",
+                    e.getMessage().startsWith("readRecord: Could instantiate the constructor for: class net.sf.persism.dao.records.RecordTest1"));
+        }
+        assertTrue(fail);
+
+        fail = false;
+        try {
+            session.fetch(rt1);
+        } catch (PersismException e) {
+            fail = true;
+            //log.error(e.getMessage(), e);
+            assertEquals("s/b 'Cannot read a Record type object with this method.'", "Cannot read a Record type object with this method.", e.getMessage());
+        }
+        assertTrue(fail);
+
+    }
+
+    public void testRecord2() {
+        RecordTest2 rt2 = new RecordTest2(0, "test 1", 10, 3.99, LocalDateTime.now());
+        log.info(rt2);
+        Result<RecordTest2> result = session.insert(rt2);
+        log.info("before: " + rt2);
+        log.info("after : " + result.dataObject());
+
+        log.info(rt2.total());
+
+        log.info("testRecord2 ALL? \n" + session.query(RecordTest2.class));
+
+        RecordTest2 rt22 = session.fetch(RecordTest2.class, sql("select CrEATED_ON, PRiCE, QtY, DESCrIPTION, iD FROM RecordTest2 where ID = ?"), params(1));
+        log.info(rt22);
+        assertNotNull(rt22);
+        log.info(rt22.total());
+
+        RecordTest2 rt23 = new RecordTest2(2, "test 2", 1, 0.05d);
+        session.insert(rt23);
+        log.info(rt23);
+
+        // THis cannot be fetched without the Created_ON column
+        boolean fail = false;
+        try {
+            rt23 = session.fetch(RecordTest2.class, sql("select PRiCE, QtY, DESCrIPTION, iD FROM RecordTest2 where ID = ?"), params(2));
+
+            log.info(rt23);
+
+        } catch (PersismException e) {
+            fail = true;
+            assertEquals("s/b 'readRecord: could not find column in the sql query for class: class net.sf.persism.dao.records.recordTest2. Missing column: CREATED_ON'".toLowerCase(),
+                    "readRecord: could not find column in the sql query for class: class net.sf.persism.dao.records.recordTest2. Missing column: CREATED_ON".toLowerCase(),
+                    e.getMessage().toLowerCase());
+        }
+
+        assertTrue(fail);
+    }
+
+
+    public void testRecords() {
+        RecordTest2 rt2 = new RecordTest2(0, "desc2", 100, 25.434f);
+        log.info(rt2);
+
+        Result<RecordTest2> result = session.insert(rt2);
+        assertEquals("id should still be 0", 0, rt2.id());
+        assertNull("should have null createdOn", rt2.createdOn());
+        log.info(rt2);
+
+        assertEquals("rows s/b 1", 1, result.rows());
+        assertEquals("Object ID s/b 1", 1, result.dataObject().id());
+        assertNotNull("should have createdOn ", result.dataObject().createdOn());
+        log.info("after: " + result.dataObject());
+        boolean fail = false;
+        try {
+            session.fetch(rt2);
+
+        } catch (PersismException e) {
+            fail = true;
+            assertEquals("s/b 'Cannot read a Record type object with this method.'",
+                    "Cannot read a Record type object with this method.",
+                    e.getMessage());
+        }
+        assertTrue(fail);
+
     }
 
 

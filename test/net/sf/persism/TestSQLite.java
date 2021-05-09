@@ -224,6 +224,28 @@ public final class TestSQLite extends BaseTest {
         executeCommand(sql, con);
 
 
+        if (UtilsForTests.isTableInDatabase("RecordTest1", con)) {
+            executeCommand("DROP TABLE RecordTest1", con);
+        }
+        sql = "CREATE TABLE RecordTest1 ( " +
+                "ID VARCHAR(36), " +
+                "NAME VARCHAR(20), " +
+                "QTY INT, " +
+                "PRICE REAL " +
+                ") ";
+        executeCommand(sql, con);
+
+        if (UtilsForTests.isTableInDatabase("RecordTest2", con)) {
+            executeCommand("DROP TABLE RecordTest2", con);
+        }
+        sql = "CREATE TABLE RecordTest2 ( " +
+                "ID INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT UNIQUE, " +
+                "DESCRIPTION VARCHAR(20), " +
+                "QTY INT, " +
+                "PRICE REAL, " +
+                "CREATED_ON DATETIME default current_timestamp" +
+                ") ";
+        executeCommand(sql, con);
     }
 
     public void testOrders() throws Exception {
@@ -606,5 +628,15 @@ public final class TestSQLite extends BaseTest {
     @Override
     public void testAllDates() {
         super.testAllDates();
+    }
+
+    @Override
+    public void testRecord1() {
+        super.testRecord1();
+    }
+
+    @Override
+    public void testRecord2() {
+        super.testRecord2();
     }
 }

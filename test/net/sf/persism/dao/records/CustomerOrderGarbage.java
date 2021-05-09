@@ -6,14 +6,14 @@ import net.sf.persism.annotations.NotTable;
 
 import java.sql.Time;
 
-// No support for extra constructors
+// Some support for extra constructors (using  @ConstructorProperties)
 // See this. Word from the TOP. ;)
 // https://stackoverflow.com/questions/67038058/record-cannot-get-parameter-names-from-constructors/67048729
 
 // used for failing
 @NotTable
 public record CustomerOrderGarbage(String customerId,
-                                    @NotColumn String junk, // java: annotation type not applicable to this kind of declaration THIS ONLY FAILS IF I HAVE A COMPACT CONSTRUCTOR? WTF!
+                                    @NotColumn String junk, // java: annotation type not applicable to this kind of declaration - no fail in Java 16.
                                     @NotColumn int missing,
                                     @NotColumn Time whatTimeIsIt) {
 
@@ -24,7 +24,7 @@ public record CustomerOrderGarbage(String customerId,
     public CustomerOrderGarbage {
     }
 
-    // WTF ASS?
+    // WTF extra - statics ignored...
     public CustomerOrderGarbage(String customerId, String junk, int missing, Time whatTimeIsIt, int extraFieldShouldBeIgnoredBecauseStatic) {
         this(customerId, junk, missing, whatTimeIsIt);
         this.extraFieldShouldBeIgnoredBecauseStatic = extraFieldShouldBeIgnoredBecauseStatic;

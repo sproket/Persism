@@ -11,7 +11,7 @@ import java.util.Date;
 
 public final class TableMultiPrimary {
     private int orderId;
-    private int productId;
+    private String productId;
     private double unitPrice;
     private short quantity;
     private float discount;
@@ -24,11 +24,11 @@ public final class TableMultiPrimary {
         this.orderId = orderId;
     }
 
-    public int getProductId() {
+    public String getProductId() {
         return productId;
     }
 
-    public void setProductId(int productId) {
+    public void setProductId(String productId) {
         this.productId = productId;
     }
 

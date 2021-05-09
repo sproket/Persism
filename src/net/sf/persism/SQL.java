@@ -47,6 +47,9 @@ public final class SQL {
         return sql;
     }
 
+//    public SQL orderBy(String orderBy) {
+//        return new SQL(this.sql + " ORDER BY " + orderBy);
+//    }
 
     @Override
     public String toString() {

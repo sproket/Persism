@@ -187,6 +187,28 @@ public class TestMySQL extends BaseTest {
 
         executeCommand(sql, con);
 
+        if (UtilsForTests.isTableInDatabase("RecordTest1", con)) {
+            executeCommand("DROP TABLE RecordTest1", con);
+        }
+        sql = "CREATE TABLE RecordTest1 ( " +
+                "ID binary(16) NOT NULL, PRIMARY KEY(ID), " +
+                "NAME VARCHAR(20), " +
+                "QTY INT, " +
+                "PRICE DECIMAL(10) " +
+                ") ";
+        executeCommand(sql, con);
+
+        if (UtilsForTests.isTableInDatabase("RecordTest2", con)) {
+            executeCommand("DROP TABLE RecordTest2", con);
+        }
+        sql = "CREATE TABLE RecordTest2 ( " +
+                "ID INT NOT NULL AUTO_INCREMENT, PRIMARY KEY(ID), " +
+                "DESCRIPTION VARCHAR(20), " +
+                "QTY INT, " +
+                "PRICE DECIMAL(10), " +
+                "CREATED_ON TIMESTAMP DEFAULT CURRENT_TIMESTAMP" +
+                ") ";
+        executeCommand(sql, con);
 
     }
 
