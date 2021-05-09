@@ -7,7 +7,7 @@ If you are using Maven:
 <dependency>
     <groupId>io.github.sproket</groupId>
     <artifactId>persism</artifactId>
-    <version>1.0.2</version>
+    <version>1.1.0</version>
 </dependency>
 ```
 
@@ -383,7 +383,7 @@ customer.setOrders(orders);
 
 | Java Type(s) | SQL Type(s)       | Notes |
 | :-------------    | :----------:                  | :----------: |
-|  boolean | BIT, INT, SHORT, BYTE, NUMBER, CHAR(1)| Oracle doesn't have a bit so it reads number types as BigDecimal or Char(1) - 1 or '1' for true |
+|  boolean | BIT, TINYINT, SHORT, BYTE, NUMBER, CHAR(1)| Oracle doesn't have a bit so it reads number types as BigDecimal or Char(1) - 1 or '1' for true |
 |  byte  | TINYINT| **NOT** recommended. MSSQL sees TINYINT as 0-255 and doesn't fit in Java's signed byte - Use Short instead.|
 |  short, int, long     | SMALLINT, TINYINT, INT, BIGINT, LONG, AUTOINCREMENT  | Any whole number maps fine but you may see downcast warnings |
 |  float, double, BigDecimal    | NUMBER, REAL, FLOAT, DOUBLE  | Any floating point type maps fine  but you may see downcast warnings |
@@ -558,13 +558,14 @@ Here's an example logback configuration for logging with Persism:
 
 [Cookbook: Implementing Persistable interface](cookbook-persistable.md)
 
+[Support for Java Records Java 16 - NEW!](records.md)
+
 ## Known Issues
 
 - No support for newer Timezone related date types yet
 - No support for XML/JSON types  
-- Boolean type columns using "Is" style names will require annotations (FIXED) 
 - Generated primary keys only work with Autoincrement types. UUID/String types with generated 
-  defaults do not return into the inserted object as primary keys.
+  defaults do not return into the inserted object as primary keys (except PostgreSQL).
 - Singular/plural table name guessing does not work with words like Tax - Taxes, Fax - Faxes
 
 ## Special Thanks

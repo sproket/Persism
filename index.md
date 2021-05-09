@@ -41,6 +41,8 @@ at runtime - SLF4J, LOG4J or JUL.
 
 [Cookbook: Implementing Persistable interface](cookbook-persistable.md)
 
+[All about Records](records.md)
+
 Supported Databases
 
 ![MSSQL](img/mssql.png) ![MySQL](img/mysql.png) ![JTDS](img/jtds.png) ![Derby](img/derby.png) ![Firebird](img/firebird.png) ![H2](img/h2.png) ![HQSLDB](img/hsqldb.jpg) ![Oracle](img/oracle.png) ![PostgreSQL](img/postgresql.png) ![SQLite](img/sqlite.png) ![UCanAccess](img/ucanaccess.png)
