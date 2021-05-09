@@ -442,7 +442,7 @@ Current scope:     <a href="../../index.html">all classes</a>
 <i class="no-highlight">341</i>&nbsp;    /*
 <i class="no-highlight">342</i>&nbsp;     * Used by convert for convenience - common possible parsing
 <i class="no-highlight">343</i>&nbsp;     */
-<i class="no-highlight">344</i>&nbsp;    static Date tryParseDate(Object value, Class targetType, String columnName, DateFormat df) throws PersismException {
+<i class="no-highlight">344</i>&nbsp;    static Date tryParseDate(Object value, Class&lt;?&gt; targetType, String columnName, DateFormat df) throws PersismException {
 <i class="no-highlight">345</i>&nbsp;        try {
 <b class="fc"><i class="no-highlight">346</i>&nbsp;            return df.parse(&quot;&quot; + value);</b>
 <b class="nc"><i class="no-highlight">347</i>&nbsp;        } catch (ParseException e) {</b>
@@ -451,7 +451,7 @@ Current scope:     <a href="../../index.html">all classes</a>
 <i class="no-highlight">350</i>&nbsp;        }
 <i class="no-highlight">351</i>&nbsp;    }
 <i class="no-highlight">352</i>&nbsp;
-<i class="no-highlight">353</i>&nbsp;    Timestamp tryParseTimestamp(Object value, Class targetType, String columnName) throws PersismException {
+<i class="no-highlight">353</i>&nbsp;    Timestamp tryParseTimestamp(Object value, Class&lt;?&gt; targetType, String columnName) throws PersismException {
 <i class="no-highlight">354</i>&nbsp;        try {
 <b class="fc"><i class="no-highlight">355</i>&nbsp;            return Timestamp.valueOf(&quot;&quot; + value);</b>
 <b class="fc"><i class="no-highlight">356</i>&nbsp;        } catch (IllegalArgumentException e) {</b>
@@ -504,7 +504,7 @@ Current scope:     <a href="../../index.html">all classes</a>
 
 <div class="footer">
     
-    <div style="float:right;">generated on 2021-04-20 05:23</div>
+    <div style="float:right;">generated on 2021-05-09 09:45</div>
 </div>
 </body>
 </html>

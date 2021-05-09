@@ -4,7 +4,7 @@
 <!DOCTYPE html>
 <html id="htmlId">
 <head>
-  <title>Coverage Report > Persistable</title>
+  <title>Coverage Report > Util</title>
   <style type="text/css">
     @import "../../css/coverage.css";
     @import "../../css/highlight-idea.css";
@@ -20,14 +20,50 @@ Current scope:     <a href="../../index.html">all classes</a>
     <a href="../index.html">net.sf.persism</a>
 </div>
 
-<h1>Coverage Summary for Class: Persistable (net.sf.persism)</h1>
+<h1>Coverage Summary for Class: Util (net.sf.persism)</h1>
 
 <table class="coverageStats">
 <tr>
   <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
 </tr>
 <tr>
-  <td class="name">Persistable</td>
+  <td class="name">Util</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (1/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    88.9%
+  </span>
+  <span class="absValue">
+    (8/9)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    76.9%
+  </span>
+  <span class="absValue">
+    (40/52)
+  </span>
+</td>
 </tr>
 
 </table>
@@ -39,34 +75,123 @@ Current scope:     <a href="../../index.html">all classes</a>
 <pre>
 <div class="sourceCode" id="sourceCode"><i class="no-highlight">1</i>&nbsp;package net.sf.persism;
 <i class="no-highlight">2</i>&nbsp;
-<i class="no-highlight">3</i>&nbsp;/**
-<i class="no-highlight">4</i>&nbsp; * Indicates that Persism should keep track of changed columns in order to only include those columns in the SQL UPDATE statement.
-<i class="no-highlight">5</i>&nbsp; * You can use this interface in situations where you can&#39;t or don&#39;t want your data objects to inherit PersistableObject.
-<i class="no-highlight">6</i>&nbsp; *
-<i class="no-highlight">7</i>&nbsp; * @author Dan Howard
-<i class="no-highlight">8</i>&nbsp; * @see PersistableObject PersistableObject for implementation.
-<i class="no-highlight">9</i>&nbsp; * @since 10/8/11 9:51 AM
-<i class="no-highlight">10</i>&nbsp; */
-<i class="no-highlight">11</i>&nbsp;public interface Persistable&lt;T&gt; extends Cloneable {
+<i class="no-highlight">3</i>&nbsp;import java.io.IOException;
+<i class="no-highlight">4</i>&nbsp;import java.io.InputStream;
+<i class="no-highlight">5</i>&nbsp;import java.math.BigDecimal;
+<i class="no-highlight">6</i>&nbsp;import java.net.URL;
+<i class="no-highlight">7</i>&nbsp;import java.nio.ByteBuffer;
+<i class="no-highlight">8</i>&nbsp;import java.sql.*;
+<i class="no-highlight">9</i>&nbsp;import java.sql.ResultSet;
+<i class="no-highlight">10</i>&nbsp;import java.util.*;
+<i class="no-highlight">11</i>&nbsp;import java.util.Date;
 <i class="no-highlight">12</i>&nbsp;
-<i class="no-highlight">13</i>&nbsp;
-<i class="no-highlight">14</i>&nbsp;    /**
-<i class="no-highlight">15</i>&nbsp;     * Saves the current state of the data object to later detect changes for SQL UPDATE statements.
-<i class="no-highlight">16</i>&nbsp;     * Persism calls this method internally, you usually don&#39;t have to call this method yourself.
-<i class="no-highlight">17</i>&nbsp;     *
-<i class="no-highlight">18</i>&nbsp;     * @throws PersismException If an SQL or other exception occurs.
-<i class="no-highlight">19</i>&nbsp;     * @see PersistableObject for example implementation
-<i class="no-highlight">20</i>&nbsp;     */
-<i class="no-highlight">21</i>&nbsp;    void saveReadState() throws PersismException;
+<i class="no-highlight">13</i>&nbsp;/**
+<i class="no-highlight">14</i>&nbsp; * Comments for Util go here.
+<i class="no-highlight">15</i>&nbsp; *
+<i class="no-highlight">16</i>&nbsp; * @author Dan Howard
+<i class="no-highlight">17</i>&nbsp; * @since 4/1/12 6:48 AM
+<i class="no-highlight">18</i>&nbsp; */
+<i class="no-highlight">19</i>&nbsp;final class Util {
+<i class="no-highlight">20</i>&nbsp;
+<b class="fc"><i class="no-highlight">21</i>&nbsp;    private static final Log log = Log.getLogger(Util.class);</b>
 <i class="no-highlight">22</i>&nbsp;
-<i class="no-highlight">23</i>&nbsp;    /**
-<i class="no-highlight">24</i>&nbsp;     * Getter (but not a Getter) for the data object in it&#39;s original state. The state at the time it was read from the database.
-<i class="no-highlight">25</i>&nbsp;     *
-<i class="no-highlight">26</i>&nbsp;     * @return The data object in it&#39;s original state.
-<i class="no-highlight">27</i>&nbsp;     * @see PersistableObject for example implementation
-<i class="no-highlight">28</i>&nbsp;     */
-<i class="no-highlight">29</i>&nbsp;    T readOriginalValue();
-<i class="no-highlight">30</i>&nbsp;}
+<b class="nc"><i class="no-highlight">23</i>&nbsp;    private Util() {</b>
+<b class="nc"><i class="no-highlight">24</i>&nbsp;    }</b>
+<i class="no-highlight">25</i>&nbsp;
+<i class="no-highlight">26</i>&nbsp;
+<i class="no-highlight">27</i>&nbsp;    static void rollback(Connection con) {
+<i class="no-highlight">28</i>&nbsp;        try {
+<b class="fc"><i class="no-highlight">29</i>&nbsp;            if (con != null &amp;&amp; !con.getAutoCommit()) {</b>
+<b class="fc"><i class="no-highlight">30</i>&nbsp;                con.rollback();</b>
+<i class="no-highlight">31</i>&nbsp;            }
+<b class="nc"><i class="no-highlight">32</i>&nbsp;        } catch (SQLException e1) {</b>
+<b class="nc"><i class="no-highlight">33</i>&nbsp;            log.error(e1.getMessage(), e1);</b>
+<b class="fc"><i class="no-highlight">34</i>&nbsp;        }</b>
+<i class="no-highlight">35</i>&nbsp;
+<b class="fc"><i class="no-highlight">36</i>&nbsp;    }</b>
+<i class="no-highlight">37</i>&nbsp;
+<i class="no-highlight">38</i>&nbsp;    static void cleanup(Statement st, ResultSet rs) {
+<i class="no-highlight">39</i>&nbsp;        try {
+<b class="fc"><i class="no-highlight">40</i>&nbsp;            if (rs != null) {</b>
+<b class="fc"><i class="no-highlight">41</i>&nbsp;                rs.close();</b>
+<i class="no-highlight">42</i>&nbsp;            }
+<b class="nc"><i class="no-highlight">43</i>&nbsp;        } catch (SQLException e) {</b>
+<b class="nc"><i class="no-highlight">44</i>&nbsp;            log.error(e.getMessage(), e);</b>
+<b class="fc"><i class="no-highlight">45</i>&nbsp;        }</b>
+<i class="no-highlight">46</i>&nbsp;        try {
+<b class="fc"><i class="no-highlight">47</i>&nbsp;            if (st != null) {</b>
+<b class="fc"><i class="no-highlight">48</i>&nbsp;                st.close();</b>
+<i class="no-highlight">49</i>&nbsp;            }
+<b class="nc"><i class="no-highlight">50</i>&nbsp;        } catch (SQLException e) {</b>
+<b class="nc"><i class="no-highlight">51</i>&nbsp;            log.error(e.getMessage(), e);</b>
+<b class="fc"><i class="no-highlight">52</i>&nbsp;        }</b>
+<b class="fc"><i class="no-highlight">53</i>&nbsp;    }</b>
+<i class="no-highlight">54</i>&nbsp;
+<i class="no-highlight">55</i>&nbsp;    static void cleanup(ResultSet rs) {
+<i class="no-highlight">56</i>&nbsp;        try {
+<b class="fc"><i class="no-highlight">57</i>&nbsp;            if (rs != null) {</b>
+<b class="fc"><i class="no-highlight">58</i>&nbsp;                rs.close();</b>
+<i class="no-highlight">59</i>&nbsp;            }
+<b class="nc"><i class="no-highlight">60</i>&nbsp;        } catch (SQLException e) {</b>
+<b class="nc"><i class="no-highlight">61</i>&nbsp;            log.error(e.getMessage(), e);</b>
+<b class="fc"><i class="no-highlight">62</i>&nbsp;        }</b>
+<b class="fc"><i class="no-highlight">63</i>&nbsp;    }</b>
+<i class="no-highlight">64</i>&nbsp;
+<i class="no-highlight">65</i>&nbsp;    public static boolean containsColumn(ResultSet rs, String column) {
+<i class="no-highlight">66</i>&nbsp;        try {
+<b class="fc"><i class="no-highlight">67</i>&nbsp;            rs.findColumn(column);</b>
+<b class="fc"><i class="no-highlight">68</i>&nbsp;            return true;</b>
+<b class="nc"><i class="no-highlight">69</i>&nbsp;        } catch (SQLException sqlex) {</b>
+<i class="no-highlight">70</i>&nbsp;        }
+<b class="nc"><i class="no-highlight">71</i>&nbsp;        return false;</b>
+<i class="no-highlight">72</i>&nbsp;    }
+<i class="no-highlight">73</i>&nbsp;
+<i class="no-highlight">74</i>&nbsp;    public static String camelToTitleCase(String text) {
+<b class="fc"><i class="no-highlight">75</i>&nbsp;        StringBuilder sb = new StringBuilder();</b>
+<i class="no-highlight">76</i>&nbsp;
+<b class="fc"><i class="no-highlight">77</i>&nbsp;        for (int i = 0; i &lt; text.length(); i++) {</b>
+<b class="fc"><i class="no-highlight">78</i>&nbsp;            char c = text.charAt(i);</b>
+<b class="fc"><i class="no-highlight">79</i>&nbsp;            if (i == 0) {</b>
+<b class="fc"><i class="no-highlight">80</i>&nbsp;                sb.append(c);</b>
+<i class="no-highlight">81</i>&nbsp;            } else {
+<b class="fc"><i class="no-highlight">82</i>&nbsp;                if (Character.isUpperCase(c)) {</b>
+<b class="fc"><i class="no-highlight">83</i>&nbsp;                    sb.append(&quot; &quot;);</b>
+<i class="no-highlight">84</i>&nbsp;                }
+<b class="fc"><i class="no-highlight">85</i>&nbsp;                sb.append(c);</b>
+<i class="no-highlight">86</i>&nbsp;            }
+<i class="no-highlight">87</i>&nbsp;        }
+<b class="fc"><i class="no-highlight">88</i>&nbsp;        return sb.toString();</b>
+<i class="no-highlight">89</i>&nbsp;    }
+<i class="no-highlight">90</i>&nbsp;
+<i class="no-highlight">91</i>&nbsp;    public static String replaceAll(String text, char from, char to) {
+<b class="fc"><i class="no-highlight">92</i>&nbsp;        StringBuilder sb = new StringBuilder();</b>
+<i class="no-highlight">93</i>&nbsp;
+<b class="fc"><i class="no-highlight">94</i>&nbsp;        for (int i = 0; i &lt; text.length(); i++) {</b>
+<b class="fc"><i class="no-highlight">95</i>&nbsp;            char c = text.charAt(i);</b>
+<b class="fc"><i class="no-highlight">96</i>&nbsp;            if (c == from) {</b>
+<b class="fc"><i class="no-highlight">97</i>&nbsp;                sb.append(to);</b>
+<i class="no-highlight">98</i>&nbsp;            } else {
+<b class="fc"><i class="no-highlight">99</i>&nbsp;                sb.append(c);</b>
+<i class="no-highlight">100</i>&nbsp;            }
+<i class="no-highlight">101</i>&nbsp;        }
+<b class="fc"><i class="no-highlight">102</i>&nbsp;        return sb.toString();</b>
+<i class="no-highlight">103</i>&nbsp;    }
+<i class="no-highlight">104</i>&nbsp;
+<i class="no-highlight">105</i>&nbsp;    public static &lt;T&gt; boolean isRecord(Class&lt;T&gt; objectClass) {
+<i class="no-highlight">106</i>&nbsp;        // Java 8 test for isRecord since class.isRecord doesn&#39;t exist in Java 8
+<b class="fc"><i class="no-highlight">107</i>&nbsp;        Class&lt;?&gt; sup = objectClass.getSuperclass();</b>
+<b class="fc"><i class="no-highlight">108</i>&nbsp;        while (!sup.equals(Object.class) ) {</b>
+<b class="fc"><i class="no-highlight">109</i>&nbsp;            if (&quot;java.lang.Record&quot;.equals(sup.getName())) {</b>
+<b class="fc"><i class="no-highlight">110</i>&nbsp;                return true;</b>
+<i class="no-highlight">111</i>&nbsp;            }
+<b class="fc"><i class="no-highlight">112</i>&nbsp;            sup = sup.getSuperclass();</b>
+<i class="no-highlight">113</i>&nbsp;        }
+<b class="fc"><i class="no-highlight">114</i>&nbsp;        return false;</b>
+<i class="no-highlight">115</i>&nbsp;    }
+<i class="no-highlight">116</i>&nbsp;
+<i class="no-highlight">117</i>&nbsp;
+<i class="no-highlight">118</i>&nbsp;
+<i class="no-highlight">119</i>&nbsp;}
 </div>
 </pre>
 </div>
@@ -93,7 +218,7 @@ Current scope:     <a href="../../index.html">all classes</a>
 
 <div class="footer">
     
-    <div style="float:right;">generated on 2021-04-20 05:23</div>
+    <div style="float:right;">generated on 2021-05-09 09:45</div>
 </div>
 </body>
 </html>

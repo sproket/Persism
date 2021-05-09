@@ -4,7 +4,7 @@
 <!DOCTYPE html>
 <html id="htmlId">
 <head>
-  <title>Coverage Report > Types</title>
+  <title>Coverage Report > Session</title>
   <style type="text/css">
     @import "../../css/coverage.css";
     @import "../../css/highlight-idea.css";
@@ -20,15 +20,12 @@ Current scope:     <a href="../../index.html">all classes</a>
     <a href="../index.html">net.sf.persism</a>
 </div>
 
-<h1>Coverage Summary for Class: Types (net.sf.persism)</h1>
+<h1>Coverage Summary for Class: Session (net.sf.persism)</h1>
 
 <table class="coverageStats">
+
 <tr>
   <th class="name">Class</th>
-<th class="coverageStat 
-">
-  Class, %
-</th>
 <th class="coverageStat 
 ">
   Method, %
@@ -39,7 +36,26 @@ Current scope:     <a href="../../index.html">all classes</a>
 </th>
 </tr>
 <tr>
-  <td class="name">Types</td>
+  <td class="name">Session</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (19/19)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    92.4%
+  </span>
+  <span class="absValue">
+    (329/356)
+  </span>
+</td>
+</tr>
+  <tr>
+    <td class="name">Session$1</td>
 <td class="coverageStat">
   <span class="percent">
     100%
@@ -53,19 +69,29 @@ Current scope:     <a href="../../index.html">all classes</a>
     100%
   </span>
   <span class="absValue">
-    (8/8)
+    (1/1)
+  </span>
+</td>
+  </tr>
+<tr>
+  <td class="name"><strong>Total</strong></td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (20/20)
   </span>
 </td>
 <td class="coverageStat">
   <span class="percent">
-    98.9%
+    92.4%
   </span>
   <span class="absValue">
-    (88/89)
+    (330/357)
   </span>
 </td>
 </tr>
-
 </table>
 
 <br/>
@@ -75,191 +101,802 @@ Current scope:     <a href="../../index.html">all classes</a>
 <pre>
 <div class="sourceCode" id="sourceCode"><i class="no-highlight">1</i>&nbsp;package net.sf.persism;
 <i class="no-highlight">2</i>&nbsp;
-<i class="no-highlight">3</i>&nbsp;import java.math.BigDecimal;
-<i class="no-highlight">4</i>&nbsp;import java.math.BigInteger;
-<i class="no-highlight">5</i>&nbsp;import java.sql.Blob;
-<i class="no-highlight">6</i>&nbsp;import java.sql.Clob;
-<i class="no-highlight">7</i>&nbsp;import java.sql.Time;
-<i class="no-highlight">8</i>&nbsp;import java.sql.Timestamp;
-<i class="no-highlight">9</i>&nbsp;import java.time.LocalTime;
-<i class="no-highlight">10</i>&nbsp;import java.util.UUID;
+<i class="no-highlight">3</i>&nbsp;import net.sf.persism.annotations.NotTable;
+<i class="no-highlight">4</i>&nbsp;
+<i class="no-highlight">5</i>&nbsp;import java.lang.reflect.Method;
+<i class="no-highlight">6</i>&nbsp;import java.math.BigDecimal;
+<i class="no-highlight">7</i>&nbsp;import java.sql.*;
+<i class="no-highlight">8</i>&nbsp;import java.util.*;
+<i class="no-highlight">9</i>&nbsp;
+<i class="no-highlight">10</i>&nbsp;import static net.sf.persism.Util.isRecord;
 <i class="no-highlight">11</i>&nbsp;
 <i class="no-highlight">12</i>&nbsp;/**
-<i class="no-highlight">13</i>&nbsp; * Type mapper used for fast switch statements
+<i class="no-highlight">13</i>&nbsp; * Performs various read and write operations in the database.
 <i class="no-highlight">14</i>&nbsp; *
 <i class="no-highlight">15</i>&nbsp; * @author Dan Howard
-<i class="no-highlight">16</i>&nbsp; * @since 10/8/11 5:36 PM
+<i class="no-highlight">16</i>&nbsp; * @since 1/8/2021
 <i class="no-highlight">17</i>&nbsp; */
-<b class="fc"><i class="no-highlight">18</i>&nbsp;enum Types {</b>
+<b class="fc"><i class="no-highlight">18</i>&nbsp;public final class Session implements AutoCloseable {</b>
 <i class="no-highlight">19</i>&nbsp;
-<b class="fc"><i class="no-highlight">20</i>&nbsp;    booleanType(boolean.class),</b>
-<b class="fc"><i class="no-highlight">21</i>&nbsp;    BooleanType(Boolean.class),</b>
-<b class="fc"><i class="no-highlight">22</i>&nbsp;    byteType(byte.class),</b>
-<b class="fc"><i class="no-highlight">23</i>&nbsp;    ByteType(Byte.class),</b>
-<b class="fc"><i class="no-highlight">24</i>&nbsp;    shortType(short.class),</b>
-<b class="fc"><i class="no-highlight">25</i>&nbsp;    ShortType(Short.class),</b>
-<b class="fc"><i class="no-highlight">26</i>&nbsp;    integerType(int.class),</b>
-<b class="fc"><i class="no-highlight">27</i>&nbsp;    IntegerType(Integer.class),</b>
-<b class="fc"><i class="no-highlight">28</i>&nbsp;    longType(long.class),</b>
-<b class="fc"><i class="no-highlight">29</i>&nbsp;    LongType(Long.class),</b>
-<b class="fc"><i class="no-highlight">30</i>&nbsp;    floatType(float.class),</b>
-<b class="fc"><i class="no-highlight">31</i>&nbsp;    FloatType(Float.class),</b>
-<b class="fc"><i class="no-highlight">32</i>&nbsp;    doubleType(double.class),</b>
-<b class="fc"><i class="no-highlight">33</i>&nbsp;    DoubleType(Double.class),</b>
-<b class="fc"><i class="no-highlight">34</i>&nbsp;    BigDecimalType(BigDecimal.class),</b>
-<b class="fc"><i class="no-highlight">35</i>&nbsp;    BigIntegerType(BigInteger.class),</b>
-<b class="fc"><i class="no-highlight">36</i>&nbsp;    StringType(String.class),</b>
-<b class="fc"><i class="no-highlight">37</i>&nbsp;    characterType(char.class),</b>
-<b class="fc"><i class="no-highlight">38</i>&nbsp;    CharacterType(Character.class),</b>
-<b class="fc"><i class="no-highlight">39</i>&nbsp;    UtilDateType(java.util.Date.class),</b>
-<b class="fc"><i class="no-highlight">40</i>&nbsp;    SQLDateType(java.sql.Date.class),</b>
-<b class="fc"><i class="no-highlight">41</i>&nbsp;    TimeType(Time.class),</b>
-<b class="fc"><i class="no-highlight">42</i>&nbsp;    LocalTimeType(LocalTime.class),</b>
-<b class="fc"><i class="no-highlight">43</i>&nbsp;    TimestampType(Timestamp.class),</b>
-<b class="fc"><i class="no-highlight">44</i>&nbsp;    LocalDateType(java.time.LocalDate.class),</b>
-<b class="fc"><i class="no-highlight">45</i>&nbsp;    LocalDateTimeType(java.time.LocalDateTime.class),</b>
-<b class="fc"><i class="no-highlight">46</i>&nbsp;    InstantType(java.time.Instant.class),</b>
-<b class="fc"><i class="no-highlight">47</i>&nbsp;    OffsetDateTimeType(java.time.OffsetDateTime.class),</b>
-<b class="fc"><i class="no-highlight">48</i>&nbsp;    ZonedDateTimeType(java.time.ZonedDateTime.class),</b>
-<b class="fc"><i class="no-highlight">49</i>&nbsp;    byteArrayType(byte[].class),</b>
-<b class="fc"><i class="no-highlight">50</i>&nbsp;    ByteArrayType(Byte[].class),</b>
-<b class="fc"><i class="no-highlight">51</i>&nbsp;    ClobType(Clob.class),</b>
-<b class="fc"><i class="no-highlight">52</i>&nbsp;    BlobType(Blob.class),</b>
-<b class="fc"><i class="no-highlight">53</i>&nbsp;    EnumType(Enum.class),</b>
-<b class="fc"><i class="no-highlight">54</i>&nbsp;    UUIDType(UUID.class),</b>
-<b class="fc"><i class="no-highlight">55</i>&nbsp;    ObjectType(Object.class);</b>
-<i class="no-highlight">56</i>&nbsp;
-<b class="fc"><i class="no-highlight">57</i>&nbsp;    private static final Log log = Log.getLogger(Types.class);</b>
-<i class="no-highlight">58</i>&nbsp;
-<i class="no-highlight">59</i>&nbsp;    private Class&lt;?&gt; type;
-<i class="no-highlight">60</i>&nbsp;
-<b class="fc"><i class="no-highlight">61</i>&nbsp;    &lt;T&gt; Types(Class&lt;T&gt; type) {</b>
-<b class="fc"><i class="no-highlight">62</i>&nbsp;        init(type);</b>
+<b class="fc"><i class="no-highlight">20</i>&nbsp;    private static final Log log = Log.getLogger(Session.class);</b>
+<i class="no-highlight">21</i>&nbsp;
+<i class="no-highlight">22</i>&nbsp;    private Connection connection;
+<i class="no-highlight">23</i>&nbsp;
+<i class="no-highlight">24</i>&nbsp;    private MetaData metaData;
+<i class="no-highlight">25</i>&nbsp;
+<i class="no-highlight">26</i>&nbsp;    private Reader reader;
+<i class="no-highlight">27</i>&nbsp;    private Convertor convertor;
+<i class="no-highlight">28</i>&nbsp;
+<i class="no-highlight">29</i>&nbsp;    /**
+<i class="no-highlight">30</i>&nbsp;     * Default constructor for a Session object
+<i class="no-highlight">31</i>&nbsp;     * @param connection db connection
+<i class="no-highlight">32</i>&nbsp;     * @throws PersismException if something goes wrong
+<i class="no-highlight">33</i>&nbsp;     */
+<b class="fc"><i class="no-highlight">34</i>&nbsp;    public Session(Connection connection) throws PersismException {</b>
+<b class="fc"><i class="no-highlight">35</i>&nbsp;        this.connection = connection;</b>
+<b class="fc"><i class="no-highlight">36</i>&nbsp;        init(connection, null);</b>
+<b class="fc"><i class="no-highlight">37</i>&nbsp;    }</b>
+<i class="no-highlight">38</i>&nbsp;
+<i class="no-highlight">39</i>&nbsp;    /**
+<i class="no-highlight">40</i>&nbsp;     * Constructor for Session where you want to specify the Session Key.
+<i class="no-highlight">41</i>&nbsp;     * @param connection db connection
+<i class="no-highlight">42</i>&nbsp;     * @param sessionKey Unique string to represent the connection URL if it is not available on the Connection metadata.
+<i class="no-highlight">43</i>&nbsp;     *                   This string should start with the jdbc url string to indicate the connection type.
+<i class="no-highlight">44</i>&nbsp;     *&lt;pre&gt;
+<i class="no-highlight">45</i>&nbsp;     *                  jdbc:h2 = h2
+<i class="no-highlight">46</i>&nbsp;     *                  jdbc:sqlserver = MS SQL
+<i class="no-highlight">47</i>&nbsp;     *                  jdbc:oracle = Oracle
+<i class="no-highlight">48</i>&nbsp;     *                  jdbc:sqlite = SQLite
+<i class="no-highlight">49</i>&nbsp;     *                  jdbc:derby = Derby
+<i class="no-highlight">50</i>&nbsp;     *                  jdbc:mysql = MySQL/MariaDB
+<i class="no-highlight">51</i>&nbsp;     *                  jdbc:postgresql = PostgreSQL
+<i class="no-highlight">52</i>&nbsp;     *                  jdbc:firebirdsql = Firebird (Jaybird)
+<i class="no-highlight">53</i>&nbsp;     *                  jdbc:hsqldb = HSQLDB
+<i class="no-highlight">54</i>&nbsp;     *                  jdbc:ucanaccess = MS Access
+<i class="no-highlight">55</i>&nbsp;     *                  jdbc:informix = Informix
+<i class="no-highlight">56</i>&nbsp;     *
+<i class="no-highlight">57</i>&nbsp;     &lt;/pre&gt;
+<i class="no-highlight">58</i>&nbsp;     * @throws PersismException if something goes wrong
+<i class="no-highlight">59</i>&nbsp;     */
+<b class="fc"><i class="no-highlight">60</i>&nbsp;    public Session(Connection connection, String sessionKey) throws PersismException {</b>
+<b class="fc"><i class="no-highlight">61</i>&nbsp;        this.connection = connection;</b>
+<b class="fc"><i class="no-highlight">62</i>&nbsp;        init(connection, sessionKey);</b>
 <b class="fc"><i class="no-highlight">63</i>&nbsp;    }</b>
 <i class="no-highlight">64</i>&nbsp;
-<i class="no-highlight">65</i>&nbsp;    private &lt;T&gt; void init(Class&lt;T&gt; type) {
-<b class="fc"><i class="no-highlight">66</i>&nbsp;        this.type = type;</b>
-<b class="fc"><i class="no-highlight">67</i>&nbsp;    }</b>
-<i class="no-highlight">68</i>&nbsp;
-<i class="no-highlight">69</i>&nbsp;    public static &lt;T&gt; Types getType(Class&lt;T&gt; type) {
-<b class="fc"><i class="no-highlight">70</i>&nbsp;        if (type.isEnum()) {</b>
-<b class="fc"><i class="no-highlight">71</i>&nbsp;            return EnumType;</b>
-<i class="no-highlight">72</i>&nbsp;        }
-<i class="no-highlight">73</i>&nbsp;
-<b class="fc"><i class="no-highlight">74</i>&nbsp;        for (Types t : values()) {</b>
-<b class="fc"><i class="no-highlight">75</i>&nbsp;            if (t.type.equals(type)) {</b>
-<b class="fc"><i class="no-highlight">76</i>&nbsp;                return t;</b>
-<i class="no-highlight">77</i>&nbsp;            }
-<i class="no-highlight">78</i>&nbsp;        }
-<b class="fc"><i class="no-highlight">79</i>&nbsp;        return null;</b>
-<i class="no-highlight">80</i>&nbsp;    }
-<i class="no-highlight">81</i>&nbsp;
-<i class="no-highlight">82</i>&nbsp;    public static Types convert(int sqlType) {
-<b class="fc"><i class="no-highlight">83</i>&nbsp;        Types result = null;</b>
-<i class="no-highlight">84</i>&nbsp;
-<b class="fc"><i class="no-highlight">85</i>&nbsp;        switch (sqlType) {</b>
-<i class="no-highlight">86</i>&nbsp;            case java.sql.Types.CHAR:
-<i class="no-highlight">87</i>&nbsp;            case java.sql.Types.NCHAR:
-<i class="no-highlight">88</i>&nbsp;            case java.sql.Types.VARCHAR:
-<i class="no-highlight">89</i>&nbsp;            case java.sql.Types.NVARCHAR:
-<i class="no-highlight">90</i>&nbsp;            case java.sql.Types.LONGVARCHAR:
-<i class="no-highlight">91</i>&nbsp;            case java.sql.Types.LONGNVARCHAR:
-<b class="fc"><i class="no-highlight">92</i>&nbsp;                result = StringType;</b>
-<b class="fc"><i class="no-highlight">93</i>&nbsp;                break;</b>
-<i class="no-highlight">94</i>&nbsp;
-<i class="no-highlight">95</i>&nbsp;            case java.sql.Types.NUMERIC:
-<i class="no-highlight">96</i>&nbsp;            case java.sql.Types.DECIMAL:
-<b class="fc"><i class="no-highlight">97</i>&nbsp;                result = BigDecimalType;</b>
-<b class="fc"><i class="no-highlight">98</i>&nbsp;                break;</b>
-<i class="no-highlight">99</i>&nbsp;
-<i class="no-highlight">100</i>&nbsp;            case java.sql.Types.BIT:
-<i class="no-highlight">101</i>&nbsp;            case java.sql.Types.BOOLEAN:
-<b class="fc"><i class="no-highlight">102</i>&nbsp;                result = BooleanType;</b>
-<b class="fc"><i class="no-highlight">103</i>&nbsp;                break;</b>
-<i class="no-highlight">104</i>&nbsp;
-<i class="no-highlight">105</i>&nbsp;            case java.sql.Types.TINYINT:
-<b class="fc"><i class="no-highlight">106</i>&nbsp;                result = ByteType;</b>
-<b class="fc"><i class="no-highlight">107</i>&nbsp;                break;</b>
-<i class="no-highlight">108</i>&nbsp;
-<i class="no-highlight">109</i>&nbsp;            case java.sql.Types.SMALLINT:
-<b class="fc"><i class="no-highlight">110</i>&nbsp;                result = ShortType;</b>
-<b class="fc"><i class="no-highlight">111</i>&nbsp;                break;</b>
-<i class="no-highlight">112</i>&nbsp;
-<i class="no-highlight">113</i>&nbsp;            case java.sql.Types.INTEGER:
-<b class="fc"><i class="no-highlight">114</i>&nbsp;                result = IntegerType;</b>
-<b class="fc"><i class="no-highlight">115</i>&nbsp;                break;</b>
-<i class="no-highlight">116</i>&nbsp;
-<i class="no-highlight">117</i>&nbsp;            case java.sql.Types.BIGINT:
-<b class="fc"><i class="no-highlight">118</i>&nbsp;                result = LongType;</b>
-<b class="fc"><i class="no-highlight">119</i>&nbsp;                break;</b>
-<i class="no-highlight">120</i>&nbsp;
-<i class="no-highlight">121</i>&nbsp;            case java.sql.Types.FLOAT:
-<b class="fc"><i class="no-highlight">122</i>&nbsp;                result = FloatType;</b>
-<b class="fc"><i class="no-highlight">123</i>&nbsp;                break;</b>
-<i class="no-highlight">124</i>&nbsp;
-<i class="no-highlight">125</i>&nbsp;            case java.sql.Types.DOUBLE:
-<i class="no-highlight">126</i>&nbsp;            case java.sql.Types.REAL:
-<b class="fc"><i class="no-highlight">127</i>&nbsp;                result = DoubleType;</b>
-<b class="fc"><i class="no-highlight">128</i>&nbsp;                break;</b>
-<i class="no-highlight">129</i>&nbsp;
-<i class="no-highlight">130</i>&nbsp;            case java.sql.Types.BINARY:
-<i class="no-highlight">131</i>&nbsp;            case java.sql.Types.VARBINARY:
-<b class="fc"><i class="no-highlight">132</i>&nbsp;                result = ByteArrayType;</b>
-<b class="fc"><i class="no-highlight">133</i>&nbsp;                break;</b>
-<i class="no-highlight">134</i>&nbsp;
-<i class="no-highlight">135</i>&nbsp;            case java.sql.Types.LONGVARBINARY:
-<i class="no-highlight">136</i>&nbsp;            case java.sql.Types.BLOB:
-<b class="fc"><i class="no-highlight">137</i>&nbsp;                result = BlobType;</b>
-<b class="fc"><i class="no-highlight">138</i>&nbsp;                break;</b>
-<i class="no-highlight">139</i>&nbsp;
-<i class="no-highlight">140</i>&nbsp;            case java.sql.Types.DATE:
-<b class="fc"><i class="no-highlight">141</i>&nbsp;                result = SQLDateType;</b>
-<b class="fc"><i class="no-highlight">142</i>&nbsp;                break;</b>
+<i class="no-highlight">65</i>&nbsp;    /**
+<i class="no-highlight">66</i>&nbsp;     * Close the connection
+<i class="no-highlight">67</i>&nbsp;     */
+<i class="no-highlight">68</i>&nbsp;    @Override
+<i class="no-highlight">69</i>&nbsp;    public void close() {
+<b class="fc"><i class="no-highlight">70</i>&nbsp;        if (connection != null) {</b>
+<i class="no-highlight">71</i>&nbsp;            try {
+<b class="fc"><i class="no-highlight">72</i>&nbsp;                connection.close();</b>
+<b class="nc"><i class="no-highlight">73</i>&nbsp;            } catch (SQLException e) {</b>
+<b class="nc"><i class="no-highlight">74</i>&nbsp;                log.warn(e.getMessage(), e);</b>
+<b class="fc"><i class="no-highlight">75</i>&nbsp;            }</b>
+<i class="no-highlight">76</i>&nbsp;        }
+<b class="fc"><i class="no-highlight">77</i>&nbsp;    }</b>
+<i class="no-highlight">78</i>&nbsp;
+<i class="no-highlight">79</i>&nbsp;    private void init(Connection connection, String sessionKey) {
+<i class="no-highlight">80</i>&nbsp;        // place any DB specific properties here.
+<i class="no-highlight">81</i>&nbsp;        try {
+<b class="fc"><i class="no-highlight">82</i>&nbsp;            metaData = MetaData.getInstance(connection, sessionKey);</b>
+<b class="nc"><i class="no-highlight">83</i>&nbsp;        } catch (SQLException e) {</b>
+<b class="nc"><i class="no-highlight">84</i>&nbsp;            throw new PersismException(e.getMessage(), e);</b>
+<b class="fc"><i class="no-highlight">85</i>&nbsp;        }</b>
+<i class="no-highlight">86</i>&nbsp;
+<b class="fc"><i class="no-highlight">87</i>&nbsp;        convertor = new Convertor();</b>
+<b class="fc"><i class="no-highlight">88</i>&nbsp;        reader = new Reader(this);</b>
+<b class="fc"><i class="no-highlight">89</i>&nbsp;    }</b>
+<i class="no-highlight">90</i>&nbsp;
+<i class="no-highlight">91</i>&nbsp;    /**
+<i class="no-highlight">92</i>&nbsp;     * Function block of database operations to group together in one transaction.
+<i class="no-highlight">93</i>&nbsp;     * This method will set autocommit to false then execute the function, commit and set autocommit back to true.
+<i class="no-highlight">94</i>&nbsp;     * &lt;pre&gt;{@code
+<i class="no-highlight">95</i>&nbsp;     * session.withTransaction(() -&gt; {
+<i class="no-highlight">96</i>&nbsp;     *     Contact contact = getContactFromSomewhere();
+<i class="no-highlight">97</i>&nbsp;     *
+<i class="no-highlight">98</i>&nbsp;     *     contact.setIdentity(randomUUID);
+<i class="no-highlight">99</i>&nbsp;     *     session.insert(contact);
+<i class="no-highlight">100</i>&nbsp;     *
+<i class="no-highlight">101</i>&nbsp;     *     contact.setContactName(&quot;Wilma Flintstone&quot;);
+<i class="no-highlight">102</i>&nbsp;     *
+<i class="no-highlight">103</i>&nbsp;     *     session.update(contact);
+<i class="no-highlight">104</i>&nbsp;     *     session.fetch(contact);
+<i class="no-highlight">105</i>&nbsp;     * });
+<i class="no-highlight">106</i>&nbsp;     * }&lt;/pre&gt;
+<i class="no-highlight">107</i>&nbsp;     *
+<i class="no-highlight">108</i>&nbsp;     * @param transactionBlock Block of operations expected to run as a single transaction.
+<i class="no-highlight">109</i>&nbsp;     * @throws PersismException in case of SQLException where the transaction is rolled back.
+<i class="no-highlight">110</i>&nbsp;     */
+<i class="no-highlight">111</i>&nbsp;    public void withTransaction(Runnable transactionBlock) {
+<i class="no-highlight">112</i>&nbsp;        try {
+<b class="fc"><i class="no-highlight">113</i>&nbsp;            connection.setAutoCommit(false);</b>
+<b class="fc"><i class="no-highlight">114</i>&nbsp;            transactionBlock.run();</b>
+<b class="fc"><i class="no-highlight">115</i>&nbsp;            connection.commit();</b>
+<b class="fc"><i class="no-highlight">116</i>&nbsp;        } catch (Exception e) {</b>
+<b class="fc"><i class="no-highlight">117</i>&nbsp;            Util.rollback(connection);</b>
+<b class="fc"><i class="no-highlight">118</i>&nbsp;            throw new PersismException(e.getMessage(), e);</b>
+<i class="no-highlight">119</i>&nbsp;        } finally {
+<b class="fc"><i class="no-highlight">120</i>&nbsp;            try {</b>
+<b class="fc"><i class="no-highlight">121</i>&nbsp;                connection.setAutoCommit(true);</b>
+<b class="nc"><i class="no-highlight">122</i>&nbsp;            } catch (SQLException e) {</b>
+<b class="nc"><i class="no-highlight">123</i>&nbsp;                log.warn(e.getMessage());</b>
+<b class="fc"><i class="no-highlight">124</i>&nbsp;            }</b>
+<b class="fc"><i class="no-highlight">125</i>&nbsp;        }</b>
+<b class="fc"><i class="no-highlight">126</i>&nbsp;    }</b>
+<i class="no-highlight">127</i>&nbsp;
+<i class="no-highlight">128</i>&nbsp;    /**
+<i class="no-highlight">129</i>&nbsp;     * Updates the data object in the database.
+<i class="no-highlight">130</i>&nbsp;     *
+<i class="no-highlight">131</i>&nbsp;     * @param object data object to update.
+<i class="no-highlight">132</i>&nbsp;     * @return usually 1 to indicate rows changed via JDBC.
+<i class="no-highlight">133</i>&nbsp;     * @throws PersismException Indicating the upcoming robot uprising.
+<i class="no-highlight">134</i>&nbsp;     */
+<i class="no-highlight">135</i>&nbsp;    public int update(Object object) throws PersismException {
+<b class="fc"><i class="no-highlight">136</i>&nbsp;        List&lt;String&gt; primaryKeys = metaData.getPrimaryKeys(object.getClass(), connection);</b>
+<b class="fc"><i class="no-highlight">137</i>&nbsp;        if (primaryKeys.size() == 0) {</b>
+<b class="fc"><i class="no-highlight">138</i>&nbsp;            throw new PersismException(&quot;Cannot perform UPDATE - &quot; + metaData.getTableName(object.getClass()) + &quot; has no primary keys.&quot;);</b>
+<i class="no-highlight">139</i>&nbsp;        }
+<i class="no-highlight">140</i>&nbsp;
+<b class="fc"><i class="no-highlight">141</i>&nbsp;        PreparedStatement st = null;</b>
+<i class="no-highlight">142</i>&nbsp;        try {
 <i class="no-highlight">143</i>&nbsp;
-<i class="no-highlight">144</i>&nbsp;            case java.sql.Types.TIME:
-<b class="fc"><i class="no-highlight">145</i>&nbsp;                result = TimeType;</b>
-<b class="fc"><i class="no-highlight">146</i>&nbsp;                break;</b>
-<i class="no-highlight">147</i>&nbsp;
-<i class="no-highlight">148</i>&nbsp;            case java.sql.Types.TIMESTAMP:
-<b class="fc"><i class="no-highlight">149</i>&nbsp;                result = TimestampType;</b>
-<b class="fc"><i class="no-highlight">150</i>&nbsp;                break;</b>
+<b class="fc"><i class="no-highlight">144</i>&nbsp;            String updateStatement = null;</b>
+<i class="no-highlight">145</i>&nbsp;            try {
+<b class="fc"><i class="no-highlight">146</i>&nbsp;                updateStatement = metaData.getUpdateStatement(object, connection);</b>
+<b class="fc"><i class="no-highlight">147</i>&nbsp;            } catch (NoChangesDetectedForUpdateException e) {</b>
+<b class="fc"><i class="no-highlight">148</i>&nbsp;                log.info(&quot;No properties changed. No update required for Object: &quot; + object + &quot; class: &quot; + object.getClass().getName());</b>
+<b class="fc"><i class="no-highlight">149</i>&nbsp;                return 0;</b>
+<b class="fc"><i class="no-highlight">150</i>&nbsp;            }</b>
 <i class="no-highlight">151</i>&nbsp;
-<i class="no-highlight">152</i>&nbsp;            case java.sql.Types.CLOB:
-<i class="no-highlight">153</i>&nbsp;            case java.sql.Types.NCLOB:
-<b class="fc"><i class="no-highlight">154</i>&nbsp;                result = ClobType;</b>
-<b class="fc"><i class="no-highlight">155</i>&nbsp;                break;</b>
-<i class="no-highlight">156</i>&nbsp;
-<i class="no-highlight">157</i>&nbsp;            case java.sql.Types.OTHER:
-<b class="fc"><i class="no-highlight">158</i>&nbsp;                result = ObjectType;</b>
-<i class="no-highlight">159</i>&nbsp;        }
-<i class="no-highlight">160</i>&nbsp;
-<b class="fc"><i class="no-highlight">161</i>&nbsp;        if (result == null) {</b>
-<i class="no-highlight">162</i>&nbsp;            // Need this for converter
-<i class="no-highlight">163</i>&nbsp;            // https://stackoverflow.com/questions/36405320/using-the-datetimeoffset-datatype-with-jtds
-<b class="fc"><i class="no-highlight">164</i>&nbsp;            if (sqlType == -155) {</b>
-<i class="no-highlight">165</i>&nbsp;                // MSSQL type for DateTimeOffset
-<b class="fc"><i class="no-highlight">166</i>&nbsp;                result = TimestampType;</b>
-<i class="no-highlight">167</i>&nbsp;            } else {
-<b class="nc"><i class="no-highlight">168</i>&nbsp;                log.warn(&quot;SQL TYPE: &quot; + sqlType + &quot; not found &quot;, new Throwable());</b>
-<i class="no-highlight">169</i>&nbsp;            }
-<i class="no-highlight">170</i>&nbsp;        }
-<i class="no-highlight">171</i>&nbsp;
-<b class="fc"><i class="no-highlight">172</i>&nbsp;        return result;</b>
-<i class="no-highlight">173</i>&nbsp;    }
-<i class="no-highlight">174</i>&nbsp;
-<i class="no-highlight">175</i>&nbsp;    public Class&lt;?&gt; getJavaType() {
-<b class="fc"><i class="no-highlight">176</i>&nbsp;        return type;</b>
-<i class="no-highlight">177</i>&nbsp;    }
-<i class="no-highlight">178</i>&nbsp;
-<i class="no-highlight">179</i>&nbsp;    public boolean isEligibleForAutoinc() {
-<i class="no-highlight">180</i>&nbsp;        // Oracle returns BigDecimalType for INT
-<i class="no-highlight">181</i>&nbsp;        // PUBS has SmallInt -&gt; short
-<b class="fc"><i class="no-highlight">182</i>&nbsp;        return this == IntegerType || this == integerType || this == LongType || this == longType</b>
-<i class="no-highlight">183</i>&nbsp;                || this == ShortType || this == shortType || this == BigDecimalType || this == BigIntegerType;
-<i class="no-highlight">184</i>&nbsp;    }
-<i class="no-highlight">185</i>&nbsp;}
-<i class="no-highlight">186</i>&nbsp;
-<i class="no-highlight">187</i>&nbsp;
+<b class="fc"><i class="no-highlight">152</i>&nbsp;            st = connection.prepareStatement(updateStatement);</b>
+<i class="no-highlight">153</i>&nbsp;
+<i class="no-highlight">154</i>&nbsp;            // These keys should always be in sorted order.
+<b class="fc"><i class="no-highlight">155</i>&nbsp;            Map&lt;String, PropertyInfo&gt; allProperties = metaData.getTableColumnsPropertyInfo(object.getClass(), connection);</b>
+<i class="no-highlight">156</i>&nbsp;            Map&lt;String, PropertyInfo&gt; changedProperties;
+<b class="fc"><i class="no-highlight">157</i>&nbsp;            if (object instanceof Persistable) {</b>
+<b class="fc"><i class="no-highlight">158</i>&nbsp;                changedProperties = metaData.getChangedProperties((Persistable) object, connection);</b>
+<i class="no-highlight">159</i>&nbsp;            } else {
+<b class="fc"><i class="no-highlight">160</i>&nbsp;                changedProperties = allProperties;</b>
+<i class="no-highlight">161</i>&nbsp;            }
+<i class="no-highlight">162</i>&nbsp;
+<b class="fc"><i class="no-highlight">163</i>&nbsp;            List&lt;Object&gt; params = new ArrayList&lt;&gt;(primaryKeys.size());</b>
+<b class="fc"><i class="no-highlight">164</i>&nbsp;            List&lt;ColumnInfo&gt; columnInfos = new ArrayList&lt;&gt;(primaryKeys.size());</b>
+<i class="no-highlight">165</i>&nbsp;
+<b class="fc"><i class="no-highlight">166</i>&nbsp;            Map&lt;String, ColumnInfo&gt; columns = metaData.getColumns(object.getClass(), connection);</b>
+<i class="no-highlight">167</i>&nbsp;
+<b class="fc"><i class="no-highlight">168</i>&nbsp;            for (String column : changedProperties.keySet()) {</b>
+<b class="fc"><i class="no-highlight">169</i>&nbsp;                ColumnInfo columnInfo = columns.get(column);</b>
+<i class="no-highlight">170</i>&nbsp;
+<b class="fc"><i class="no-highlight">171</i>&nbsp;                if (primaryKeys.contains(column)) {</b>
+<b class="fc"><i class="no-highlight">172</i>&nbsp;                    log.info(&quot;Session update: skipping column &quot; + column);</b>
+<i class="no-highlight">173</i>&nbsp;                } else {
+<b class="fc"><i class="no-highlight">174</i>&nbsp;                    Object value = allProperties.get(column).getter.invoke(object);</b>
+<b class="fc"><i class="no-highlight">175</i>&nbsp;                    params.add(value);</b>
+<b class="fc"><i class="no-highlight">176</i>&nbsp;                    columnInfos.add(columnInfo);</b>
+<i class="no-highlight">177</i>&nbsp;                }
+<b class="fc"><i class="no-highlight">178</i>&nbsp;            }</b>
+<i class="no-highlight">179</i>&nbsp;
+<b class="fc"><i class="no-highlight">180</i>&nbsp;            for (String column : primaryKeys) {</b>
+<b class="fc"><i class="no-highlight">181</i>&nbsp;                params.add(allProperties.get(column).getter.invoke(object));</b>
+<b class="fc"><i class="no-highlight">182</i>&nbsp;                columnInfos.add(metaData.getColumns(object.getClass(), connection).get(column));</b>
+<b class="fc"><i class="no-highlight">183</i>&nbsp;            }</b>
+<b class="fc"><i class="no-highlight">184</i>&nbsp;            assert params.size() == columnInfos.size();</b>
+<b class="fc"><i class="no-highlight">185</i>&nbsp;            for (int j = 0; j &lt; params.size(); j++) {</b>
+<b class="fc"><i class="no-highlight">186</i>&nbsp;                if (params.get(j) != null) {</b>
+<b class="fc"><i class="no-highlight">187</i>&nbsp;                    params.set(j, convertor.convert(params.get(j), columnInfos.get(j).columnType.getJavaType(), columnInfos.get(j).columnName));</b>
+<i class="no-highlight">188</i>&nbsp;                }
+<i class="no-highlight">189</i>&nbsp;            }
+<b class="fc"><i class="no-highlight">190</i>&nbsp;            setParameters(st, params.toArray());</b>
+<b class="fc"><i class="no-highlight">191</i>&nbsp;            int ret = st.executeUpdate();</b>
+<i class="no-highlight">192</i>&nbsp;
+<b class="fc"><i class="no-highlight">193</i>&nbsp;            if (object instanceof Persistable) {</b>
+<i class="no-highlight">194</i>&nbsp;                // Save this object state to later detect changed properties
+<b class="fc"><i class="no-highlight">195</i>&nbsp;                ((Persistable) object).saveReadState();</b>
+<i class="no-highlight">196</i>&nbsp;            }
+<i class="no-highlight">197</i>&nbsp;
+<b class="fc"><i class="no-highlight">198</i>&nbsp;            return ret;</b>
+<i class="no-highlight">199</i>&nbsp;
+<b class="fc"><i class="no-highlight">200</i>&nbsp;        } catch (Exception e) {</b>
+<b class="fc"><i class="no-highlight">201</i>&nbsp;            Util.rollback(connection);</b>
+<b class="fc"><i class="no-highlight">202</i>&nbsp;            throw new PersismException(e.getMessage(), e);</b>
+<i class="no-highlight">203</i>&nbsp;
+<i class="no-highlight">204</i>&nbsp;        } finally {
+<b class="fc"><i class="no-highlight">205</i>&nbsp;            Util.cleanup(st, null);</b>
+<b class="fc"><i class="no-highlight">206</i>&nbsp;        }</b>
+<i class="no-highlight">207</i>&nbsp;    }
+<i class="no-highlight">208</i>&nbsp;
+<i class="no-highlight">209</i>&nbsp;    /**
+<i class="no-highlight">210</i>&nbsp;     * Inserts the data object in the database refreshing with autoinc and other defaults that may exist.
+<i class="no-highlight">211</i>&nbsp;     *
+<i class="no-highlight">212</i>&nbsp;     * @param object the data object to insert.
+<i class="no-highlight">213</i>&nbsp;     * @param &lt;T&gt;    Type of the returning data object in Result.
+<i class="no-highlight">214</i>&nbsp;     * @return Result object containing rows changed (usually 1 to indicate rows changed via JDBC) and the data object itself which may have been changed by auto-inc or column defaults.
+<i class="no-highlight">215</i>&nbsp;     * @throws PersismException When planet of the apes starts happening.
+<i class="no-highlight">216</i>&nbsp;     */
+<i class="no-highlight">217</i>&nbsp;    public &lt;T&gt; Result&lt;T&gt; insert(Object object) throws PersismException {
+<b class="fc"><i class="no-highlight">218</i>&nbsp;        String insertStatement = metaData.getInsertStatement(object, connection);</b>
+<i class="no-highlight">219</i>&nbsp;
+<b class="fc"><i class="no-highlight">220</i>&nbsp;        PreparedStatement st = null;</b>
+<b class="fc"><i class="no-highlight">221</i>&nbsp;        ResultSet rs = null;</b>
+<i class="no-highlight">222</i>&nbsp;
+<i class="no-highlight">223</i>&nbsp;        try {
+<i class="no-highlight">224</i>&nbsp;            // These keys should always be in sorted order.
+<b class="fc"><i class="no-highlight">225</i>&nbsp;            Map&lt;String, PropertyInfo&gt; properties = metaData.getTableColumnsPropertyInfo(object.getClass(), connection);</b>
+<b class="fc"><i class="no-highlight">226</i>&nbsp;            Map&lt;String, ColumnInfo&gt; columns = metaData.getColumns(object.getClass(), connection);</b>
+<i class="no-highlight">227</i>&nbsp;
+<b class="fc"><i class="no-highlight">228</i>&nbsp;            List&lt;String&gt; generatedKeys = new ArrayList&lt;&gt;(1);</b>
+<b class="fc"><i class="no-highlight">229</i>&nbsp;            for (ColumnInfo column : columns.values()) {</b>
+<b class="fc"><i class="no-highlight">230</i>&nbsp;                if (column.autoIncrement) {</b>
+<b class="fc"><i class="no-highlight">231</i>&nbsp;                    generatedKeys.add(column.columnName);</b>
+<b class="fc"><i class="no-highlight">232</i>&nbsp;                } else if (metaData.getConnectionType() == ConnectionTypes.PostgreSQL &amp;&amp; column.primary &amp;&amp; column.hasDefault) {</b>
+<b class="fc"><i class="no-highlight">233</i>&nbsp;                    generatedKeys.add(column.columnName);</b>
+<i class="no-highlight">234</i>&nbsp;                }
+<b class="fc"><i class="no-highlight">235</i>&nbsp;            }</b>
+<i class="no-highlight">236</i>&nbsp;
+<b class="fc"><i class="no-highlight">237</i>&nbsp;            if (generatedKeys.size() &gt; 0) {</b>
+<b class="fc"><i class="no-highlight">238</i>&nbsp;                String[] keyArray = generatedKeys.toArray(new String[0]);</b>
+<b class="fc"><i class="no-highlight">239</i>&nbsp;                st = connection.prepareStatement(insertStatement, keyArray);</b>
+<b class="fc"><i class="no-highlight">240</i>&nbsp;            } else {</b>
+<b class="fc"><i class="no-highlight">241</i>&nbsp;                st = connection.prepareStatement(insertStatement);</b>
+<i class="no-highlight">242</i>&nbsp;            }
+<i class="no-highlight">243</i>&nbsp;
+<b class="fc"><i class="no-highlight">244</i>&nbsp;            boolean refreshAfterInsert = false;</b>
+<i class="no-highlight">245</i>&nbsp;
+<b class="fc"><i class="no-highlight">246</i>&nbsp;            List&lt;Object&gt; params = new ArrayList&lt;&gt;(columns.size());</b>
+<b class="fc"><i class="no-highlight">247</i>&nbsp;            List&lt;ColumnInfo&gt; columnInfos = new ArrayList&lt;&gt;(columns.size());</b>
+<i class="no-highlight">248</i>&nbsp;
+<b class="fc"><i class="no-highlight">249</i>&nbsp;            for (ColumnInfo columnInfo : columns.values()) {</b>
+<i class="no-highlight">250</i>&nbsp;
+<b class="fc"><i class="no-highlight">251</i>&nbsp;                PropertyInfo propertyInfo = properties.get(columnInfo.columnName);</b>
+<b class="fc"><i class="no-highlight">252</i>&nbsp;                if (propertyInfo.getter == null) {</b>
+<b class="nc"><i class="no-highlight">253</i>&nbsp;                    throw new PersismException(String.format(&quot;Class %s has no getter for property %s&quot;, object.getClass(), propertyInfo.propertyName));</b>
+<i class="no-highlight">254</i>&nbsp;                }
+<b class="fc"><i class="no-highlight">255</i>&nbsp;                if (!columnInfo.autoIncrement) {</b>
+<i class="no-highlight">256</i>&nbsp;
+<b class="fc"><i class="no-highlight">257</i>&nbsp;                    if (columnInfo.hasDefault) {</b>
+<i class="no-highlight">258</i>&nbsp;                        // Do not include if this column has a default and no value has been
+<i class="no-highlight">259</i>&nbsp;                        // set on it&#39;s associated property.
+<b class="fc"><i class="no-highlight">260</i>&nbsp;                        if (propertyInfo.getter.getReturnType().isPrimitive()) {</b>
+<b class="fc"><i class="no-highlight">261</i>&nbsp;                            log.warnNoDuplicates(&quot;Property &quot; + propertyInfo.propertyName + &quot; for column &quot; + columnInfo.columnName + &quot; for class &quot; + object.getClass() +</b>
+<i class="no-highlight">262</i>&nbsp;                                    &quot; should be an Object type to properly detect NULL for defaults (change it from the primitive type to its Boxed version).&quot;);
+<i class="no-highlight">263</i>&nbsp;                        }
+<i class="no-highlight">264</i>&nbsp;
+<b class="fc"><i class="no-highlight">265</i>&nbsp;                        if (propertyInfo.getter.invoke(object) == null) {</b>
+<i class="no-highlight">266</i>&nbsp;
+<b class="fc"><i class="no-highlight">267</i>&nbsp;                            if (columnInfo.primary) {</b>
+<i class="no-highlight">268</i>&nbsp;                                // This is supported with PostgreSQL but otherwise throw this an exception
+<b class="fc"><i class="no-highlight">269</i>&nbsp;                                if (!(metaData.getConnectionType() == ConnectionTypes.PostgreSQL)) {</b>
+<b class="fc"><i class="no-highlight">270</i>&nbsp;                                    throw new PersismException(&quot;Non-auto inc generated primary keys are not supported. Please assign your primary key value before performing an insert.&quot;);</b>
+<i class="no-highlight">271</i>&nbsp;                                }
+<i class="no-highlight">272</i>&nbsp;                            }
+<i class="no-highlight">273</i>&nbsp;
+<b class="fc"><i class="no-highlight">274</i>&nbsp;                            refreshAfterInsert = true;</b>
+<b class="fc"><i class="no-highlight">275</i>&nbsp;                            continue;</b>
+<i class="no-highlight">276</i>&nbsp;                        }
+<i class="no-highlight">277</i>&nbsp;                    }
+<i class="no-highlight">278</i>&nbsp;
+<b class="fc"><i class="no-highlight">279</i>&nbsp;                    Object value = propertyInfo.getter.invoke(object);</b>
+<i class="no-highlight">280</i>&nbsp;
+<b class="fc"><i class="no-highlight">281</i>&nbsp;                    params.add(value);</b>
+<b class="fc"><i class="no-highlight">282</i>&nbsp;                    columnInfos.add(columnInfo);</b>
+<i class="no-highlight">283</i>&nbsp;                }
+<b class="fc"><i class="no-highlight">284</i>&nbsp;            }</b>
+<i class="no-highlight">285</i>&nbsp;
+<i class="no-highlight">286</i>&nbsp;            // https://forums.oracle.com/forums/thread.jspa?threadID=879222
+<i class="no-highlight">287</i>&nbsp;            // http://download.oracle.com/javase/1.4.2/docs/guide/jdbc/getstart/statement.html
+<i class="no-highlight">288</i>&nbsp;            //int ret = st.executeUpdate(insertStatement, Statement.RETURN_GENERATED_KEYS);
+<b class="fc"><i class="no-highlight">289</i>&nbsp;            assert params.size() == columnInfos.size();</b>
+<b class="fc"><i class="no-highlight">290</i>&nbsp;            for (int j = 0; j &lt; params.size(); j++) {</b>
+<b class="fc"><i class="no-highlight">291</i>&nbsp;                if (params.get(j) != null) {</b>
+<b class="fc"><i class="no-highlight">292</i>&nbsp;                    params.set(j, convertor.convert(params.get(j), columnInfos.get(j).columnType.getJavaType(), columnInfos.get(j).columnName));</b>
+<i class="no-highlight">293</i>&nbsp;                }
+<i class="no-highlight">294</i>&nbsp;            }
+<i class="no-highlight">295</i>&nbsp;
+<b class="fc"><i class="no-highlight">296</i>&nbsp;            setParameters(st, params.toArray());</b>
+<b class="fc"><i class="no-highlight">297</i>&nbsp;            st.execute();</b>
+<b class="fc"><i class="no-highlight">298</i>&nbsp;            int ret = st.getUpdateCount();</b>
+<i class="no-highlight">299</i>&nbsp;
+<b class="fc"><i class="no-highlight">300</i>&nbsp;            log.debug(&quot;insert return count after insert: %s&quot;, ret);</b>
+<i class="no-highlight">301</i>&nbsp;
+<b class="fc"><i class="no-highlight">302</i>&nbsp;            List&lt;Object&gt; primaryKeyValues = new ArrayList&lt;&gt;();</b>
+<b class="fc"><i class="no-highlight">303</i>&nbsp;            if (generatedKeys.size() &gt; 0) {</b>
+<b class="fc"><i class="no-highlight">304</i>&nbsp;                rs = st.getGeneratedKeys();</b>
+<i class="no-highlight">305</i>&nbsp;                PropertyInfo propertyInfo;
+<b class="fc"><i class="no-highlight">306</i>&nbsp;                for (String column : generatedKeys) {</b>
+<b class="fc"><i class="no-highlight">307</i>&nbsp;                    if (rs.next()) {</b>
+<i class="no-highlight">308</i>&nbsp;
+<b class="fc"><i class="no-highlight">309</i>&nbsp;                        propertyInfo = properties.get(column);</b>
+<i class="no-highlight">310</i>&nbsp;
+<b class="fc"><i class="no-highlight">311</i>&nbsp;                        Method setter = propertyInfo.setter;</b>
+<i class="no-highlight">312</i>&nbsp;                        Object value;
+<b class="fc"><i class="no-highlight">313</i>&nbsp;                        if (setter != null) {</b>
+<b class="fc"><i class="no-highlight">314</i>&nbsp;                            value = getTypedValueReturnedFromGeneratedKeys(setter.getParameterTypes()[0], rs);</b>
+<b class="fc"><i class="no-highlight">315</i>&nbsp;                            setter.invoke(object, value);</b>
+<i class="no-highlight">316</i>&nbsp;                        } else {
+<i class="no-highlight">317</i>&nbsp;                            // Set read-only property by field ONLY FOR NON-RECORDS.
+<b class="fc"><i class="no-highlight">318</i>&nbsp;                            value = getTypedValueReturnedFromGeneratedKeys(propertyInfo.field.getType(), rs);</b>
+<b class="fc"><i class="no-highlight">319</i>&nbsp;                            if (!isRecord(object.getClass())) {</b>
+<b class="nc"><i class="no-highlight">320</i>&nbsp;                                propertyInfo.field.setAccessible(true);</b>
+<b class="nc"><i class="no-highlight">321</i>&nbsp;                                propertyInfo.field.set(object, value);</b>
+<b class="nc"><i class="no-highlight">322</i>&nbsp;                                propertyInfo.field.setAccessible(false);</b>
+<b class="nc"><i class="no-highlight">323</i>&nbsp;                                log.debug(&quot;insert %s generated %s&quot;, column, value);</b>
+<i class="no-highlight">324</i>&nbsp;                            }
+<i class="no-highlight">325</i>&nbsp;                        }
+<i class="no-highlight">326</i>&nbsp;
+<b class="fc"><i class="no-highlight">327</i>&nbsp;                        primaryKeyValues.add(value);</b>
+<i class="no-highlight">328</i>&nbsp;                    }
+<b class="fc"><i class="no-highlight">329</i>&nbsp;                }</b>
+<i class="no-highlight">330</i>&nbsp;            }
+<i class="no-highlight">331</i>&nbsp;
+<i class="no-highlight">332</i>&nbsp;            // If it&#39;s a record we can&#39;t assign the autoinc so we need a refresh
+<b class="fc"><i class="no-highlight">333</i>&nbsp;            if (generatedKeys.size() &gt; 0 &amp;&amp; isRecord(object.getClass())) {</b>
+<b class="fc"><i class="no-highlight">334</i>&nbsp;                refreshAfterInsert = true;</b>
+<i class="no-highlight">335</i>&nbsp;            }
+<i class="no-highlight">336</i>&nbsp;
+<b class="fc"><i class="no-highlight">337</i>&nbsp;            if (refreshAfterInsert) {</b>
+<i class="no-highlight">338</i>&nbsp;                // Read the full object back to update any properties which had defaults
+<b class="fc"><i class="no-highlight">339</i>&nbsp;                if (isRecord(object.getClass())) {</b>
+<i class="no-highlight">340</i>&nbsp;                    //SQL sql = new SQL(metaData.getDefaultSelectStatement(object.getClass(), connection));
+<i class="no-highlight">341</i>&nbsp;                    //object = fetch(object.getClass(), sql, params(primaryKeyValues.toArray()));
+<b class="fc"><i class="no-highlight">342</i>&nbsp;                    object = fetch(object.getClass(), metaData.getSelectStatement(object, connection), primaryKeyValues.toArray());</b>
+<i class="no-highlight">343</i>&nbsp;                } else {
+<b class="fc"><i class="no-highlight">344</i>&nbsp;                    fetch(object);</b>
+<i class="no-highlight">345</i>&nbsp;                }
+<i class="no-highlight">346</i>&nbsp;            }
+<i class="no-highlight">347</i>&nbsp;
+<b class="fc"><i class="no-highlight">348</i>&nbsp;            if (object instanceof Persistable) {</b>
+<i class="no-highlight">349</i>&nbsp;                // Save this object new state to later detect changed properties
+<b class="fc"><i class="no-highlight">350</i>&nbsp;                ((Persistable&lt;?&gt;) object).saveReadState();</b>
+<i class="no-highlight">351</i>&nbsp;            }
+<i class="no-highlight">352</i>&nbsp;
+<i class="no-highlight">353</i>&nbsp;            //noinspection unchecked
+<b class="fc"><i class="no-highlight">354</i>&nbsp;            return new Result&lt;&gt;(ret, (T) object);</b>
+<b class="fc"><i class="no-highlight">355</i>&nbsp;        } catch (Exception e) {</b>
+<b class="fc"><i class="no-highlight">356</i>&nbsp;            Util.rollback(connection);</b>
+<b class="fc"><i class="no-highlight">357</i>&nbsp;            throw new PersismException(e.getMessage(), e);</b>
+<i class="no-highlight">358</i>&nbsp;        } finally {
+<b class="fc"><i class="no-highlight">359</i>&nbsp;            Util.cleanup(st, rs);</b>
+<b class="fc"><i class="no-highlight">360</i>&nbsp;        }</b>
+<i class="no-highlight">361</i>&nbsp;    }
+<i class="no-highlight">362</i>&nbsp;
+<i class="no-highlight">363</i>&nbsp;
+<i class="no-highlight">364</i>&nbsp;    /**
+<i class="no-highlight">365</i>&nbsp;     * Deletes the data object object from the database.
+<i class="no-highlight">366</i>&nbsp;     *
+<i class="no-highlight">367</i>&nbsp;     * @param object data object to delete
+<i class="no-highlight">368</i>&nbsp;     * @return usually 1 to indicate rows changed via JDBC.
+<i class="no-highlight">369</i>&nbsp;     * @throws PersismException Perhaps when asteroid 1999 RQ36 hits us?
+<i class="no-highlight">370</i>&nbsp;     */
+<i class="no-highlight">371</i>&nbsp;    public int delete(Object object) throws PersismException {
+<i class="no-highlight">372</i>&nbsp;
+<b class="fc"><i class="no-highlight">373</i>&nbsp;        List&lt;String&gt; primaryKeys = metaData.getPrimaryKeys(object.getClass(), connection);</b>
+<b class="fc"><i class="no-highlight">374</i>&nbsp;        if (primaryKeys.size() == 0) {</b>
+<b class="fc"><i class="no-highlight">375</i>&nbsp;            throw new PersismException(&quot;Cannot perform DELETE - &quot; + metaData.getTableName(object.getClass()) + &quot; has no primary keys.&quot;);</b>
+<i class="no-highlight">376</i>&nbsp;        }
+<i class="no-highlight">377</i>&nbsp;
+<b class="fc"><i class="no-highlight">378</i>&nbsp;        PreparedStatement st = null;</b>
+<i class="no-highlight">379</i>&nbsp;        try {
+<b class="fc"><i class="no-highlight">380</i>&nbsp;            String deleteStatement = metaData.getDeleteStatement(object, connection);</b>
+<b class="fc"><i class="no-highlight">381</i>&nbsp;            st = connection.prepareStatement(deleteStatement);</b>
+<i class="no-highlight">382</i>&nbsp;
+<i class="no-highlight">383</i>&nbsp;            // These keys should always be in sorted order.
+<b class="fc"><i class="no-highlight">384</i>&nbsp;            Map&lt;String, PropertyInfo&gt; columns = metaData.getTableColumnsPropertyInfo(object.getClass(), connection);</b>
+<i class="no-highlight">385</i>&nbsp;
+<b class="fc"><i class="no-highlight">386</i>&nbsp;            List&lt;Object&gt; params = new ArrayList&lt;&gt;(primaryKeys.size());</b>
+<b class="fc"><i class="no-highlight">387</i>&nbsp;            List&lt;ColumnInfo&gt; columnInfos = new ArrayList&lt;&gt;(primaryKeys.size());</b>
+<b class="fc"><i class="no-highlight">388</i>&nbsp;            for (String column : primaryKeys) {</b>
+<b class="fc"><i class="no-highlight">389</i>&nbsp;                params.add(columns.get(column).getter.invoke(object));</b>
+<b class="fc"><i class="no-highlight">390</i>&nbsp;                columnInfos.add(metaData.getColumns(object.getClass(), connection).get(column));</b>
+<b class="fc"><i class="no-highlight">391</i>&nbsp;            }</b>
+<i class="no-highlight">392</i>&nbsp;
+<b class="fc"><i class="no-highlight">393</i>&nbsp;            for (int j = 0; j &lt; params.size(); j++) {</b>
+<b class="fc"><i class="no-highlight">394</i>&nbsp;                if (params.get(j) != null) {</b>
+<b class="fc"><i class="no-highlight">395</i>&nbsp;                    params.set(j, convertor.convert(params.get(j), columnInfos.get(j).columnType.getJavaType(), columnInfos.get(j).columnName));</b>
+<i class="no-highlight">396</i>&nbsp;                }
+<i class="no-highlight">397</i>&nbsp;            }
+<b class="fc"><i class="no-highlight">398</i>&nbsp;            setParameters(st, params.toArray());</b>
+<b class="fc"><i class="no-highlight">399</i>&nbsp;            int ret = st.executeUpdate();</b>
+<b class="fc"><i class="no-highlight">400</i>&nbsp;            return ret;</b>
+<i class="no-highlight">401</i>&nbsp;
+<b class="nc"><i class="no-highlight">402</i>&nbsp;        } catch (Exception e) {</b>
+<b class="nc"><i class="no-highlight">403</i>&nbsp;            Util.rollback(connection);</b>
+<b class="nc"><i class="no-highlight">404</i>&nbsp;            throw new PersismException(e.getMessage(), e);</b>
+<i class="no-highlight">405</i>&nbsp;
+<i class="no-highlight">406</i>&nbsp;        } finally {
+<b class="fc"><i class="no-highlight">407</i>&nbsp;            Util.cleanup(st, null);</b>
+<b class="nc"><i class="no-highlight">408</i>&nbsp;        }</b>
+<i class="no-highlight">409</i>&nbsp;    }
+<i class="no-highlight">410</i>&nbsp;
+<i class="no-highlight">411</i>&nbsp;    // For unit tests only for now.
+<i class="no-highlight">412</i>&nbsp;    boolean execute(String sql, Object... parameters) {
+<i class="no-highlight">413</i>&nbsp;
+<b class="fc"><i class="no-highlight">414</i>&nbsp;        log.debug(&quot;execute: %s params: %s&quot;, sql, Arrays.asList(parameters));</b>
+<i class="no-highlight">415</i>&nbsp;
+<b class="fc"><i class="no-highlight">416</i>&nbsp;        Statement st = null;</b>
+<i class="no-highlight">417</i>&nbsp;        try {
+<i class="no-highlight">418</i>&nbsp;
+<b class="fc"><i class="no-highlight">419</i>&nbsp;            if (parameters.length == 0) {</b>
+<b class="fc"><i class="no-highlight">420</i>&nbsp;                st = connection.createStatement();</b>
+<b class="fc"><i class="no-highlight">421</i>&nbsp;                return st.execute(sql);</b>
+<i class="no-highlight">422</i>&nbsp;            } else {
+<b class="fc"><i class="no-highlight">423</i>&nbsp;                st = connection.prepareStatement(sql);</b>
+<b class="fc"><i class="no-highlight">424</i>&nbsp;                PreparedStatement pst = (PreparedStatement) st;</b>
+<b class="fc"><i class="no-highlight">425</i>&nbsp;                setParameters(pst, parameters);</b>
+<b class="fc"><i class="no-highlight">426</i>&nbsp;                return pst.execute();</b>
+<i class="no-highlight">427</i>&nbsp;            }
+<i class="no-highlight">428</i>&nbsp;
+<b class="nc"><i class="no-highlight">429</i>&nbsp;        } catch (Exception e) {</b>
+<b class="nc"><i class="no-highlight">430</i>&nbsp;            Util.rollback(connection);</b>
+<b class="nc"><i class="no-highlight">431</i>&nbsp;            throw new PersismException(e.getMessage(), e);</b>
+<i class="no-highlight">432</i>&nbsp;        } finally {
+<b class="fc"><i class="no-highlight">433</i>&nbsp;            Util.cleanup(st, null);</b>
+<b class="nc"><i class="no-highlight">434</i>&nbsp;        }</b>
+<i class="no-highlight">435</i>&nbsp;    }
+<i class="no-highlight">436</i>&nbsp;
+<i class="no-highlight">437</i>&nbsp;    /**
+<i class="no-highlight">438</i>&nbsp;     * Query for a list of objects of the specified class using the specified SQL query and parameters.
+<i class="no-highlight">439</i>&nbsp;     * The type of the list can be Data Objects or native Java Objects or primitives.
+<i class="no-highlight">440</i>&nbsp;     *
+<i class="no-highlight">441</i>&nbsp;     * @param objectClass class of objects to return.
+<i class="no-highlight">442</i>&nbsp;     * @param sql         query string to execute.
+<i class="no-highlight">443</i>&nbsp;     * @param parameters  parameters to the query.
+<i class="no-highlight">444</i>&nbsp;     * @param &lt;T&gt;         Return type
+<i class="no-highlight">445</i>&nbsp;     * @return a list of objects of the specified class using the specified SQL query and parameters.
+<i class="no-highlight">446</i>&nbsp;     * @throws PersismException If something goes wrong you get a big stack trace.
+<i class="no-highlight">447</i>&nbsp;     */
+<i class="no-highlight">448</i>&nbsp;    public &lt;T&gt; List&lt;T&gt; query(Class&lt;T&gt; objectClass, String sql, Object... parameters) throws PersismException {
+<b class="fc"><i class="no-highlight">449</i>&nbsp;        List&lt;T&gt; list = new ArrayList&lt;T&gt;(32);</b>
+<i class="no-highlight">450</i>&nbsp;
+<b class="fc"><i class="no-highlight">451</i>&nbsp;        JDBCResult result = new JDBCResult();</b>
+<i class="no-highlight">452</i>&nbsp;
+<i class="no-highlight">453</i>&nbsp;        // If we know this type it means it&#39;s a primitive type. Not a DAO so we use a different rule to read those
+<b class="fc"><i class="no-highlight">454</i>&nbsp;        boolean isPOJO = Types.getType(objectClass) == null;</b>
+<b class="fc"><i class="no-highlight">455</i>&nbsp;        boolean isRecord = isPOJO &amp;&amp; isRecord(objectClass);</b>
+<i class="no-highlight">456</i>&nbsp;
+<b class="fc"><i class="no-highlight">457</i>&nbsp;        if (isPOJO &amp;&amp; objectClass.getAnnotation(NotTable.class) == null) {</b>
+<i class="no-highlight">458</i>&nbsp;            // Make sure columns are initialized if this is a table.
+<b class="fc"><i class="no-highlight">459</i>&nbsp;            metaData.getTableColumnsPropertyInfo(objectClass, connection);</b>
+<i class="no-highlight">460</i>&nbsp;        }
+<i class="no-highlight">461</i>&nbsp;
+<i class="no-highlight">462</i>&nbsp;        try {
+<i class="no-highlight">463</i>&nbsp;            // we don&#39;t check parameter types here? Nope - we don&#39;t know anything at this point.
+<b class="fc"><i class="no-highlight">464</i>&nbsp;            exec(result, sql, parameters);</b>
+<i class="no-highlight">465</i>&nbsp;
+<b class="fc"><i class="no-highlight">466</i>&nbsp;            while (result.rs.next()) {</b>
+<b class="fc"><i class="no-highlight">467</i>&nbsp;                if (isRecord) {</b>
+<b class="fc"><i class="no-highlight">468</i>&nbsp;                    list.add(reader.readRecord(objectClass, result.rs));</b>
+<b class="fc"><i class="no-highlight">469</i>&nbsp;                } else if (isPOJO) {</b>
+<b class="fc"><i class="no-highlight">470</i>&nbsp;                    T t = objectClass.getDeclaredConstructor().newInstance();</b>
+<b class="fc"><i class="no-highlight">471</i>&nbsp;                    list.add(reader.readObject(t, result.rs));</b>
+<b class="fc"><i class="no-highlight">472</i>&nbsp;                } else {</b>
+<b class="fc"><i class="no-highlight">473</i>&nbsp;                    list.add(reader.readColumn(result.rs, 1, objectClass));</b>
+<i class="no-highlight">474</i>&nbsp;                }
+<i class="no-highlight">475</i>&nbsp;            }
+<i class="no-highlight">476</i>&nbsp;
+<b class="fc"><i class="no-highlight">477</i>&nbsp;        } catch (Exception e) {</b>
+<b class="fc"><i class="no-highlight">478</i>&nbsp;            Util.rollback(connection);</b>
+<b class="fc"><i class="no-highlight">479</i>&nbsp;            throw new PersismException(e.getMessage(), e);</b>
+<i class="no-highlight">480</i>&nbsp;        } finally {
+<b class="fc"><i class="no-highlight">481</i>&nbsp;            Util.cleanup(result.st, result.rs);</b>
+<b class="fc"><i class="no-highlight">482</i>&nbsp;        }</b>
+<i class="no-highlight">483</i>&nbsp;
+<b class="fc"><i class="no-highlight">484</i>&nbsp;        return list;</b>
+<i class="no-highlight">485</i>&nbsp;
+<i class="no-highlight">486</i>&nbsp;    }
+<i class="no-highlight">487</i>&nbsp;
+<i class="no-highlight">488</i>&nbsp;    /**
+<i class="no-highlight">489</i>&nbsp;     * Fetch an object from the database by it&#39;s primary key(s).
+<i class="no-highlight">490</i>&nbsp;     * You should instantiate the object and set the primary key properties before calling this method.
+<i class="no-highlight">491</i>&nbsp;     *
+<i class="no-highlight">492</i>&nbsp;     * @param object Data object to read from the database.
+<i class="no-highlight">493</i>&nbsp;     * @return true if the object was found by the primary key.
+<i class="no-highlight">494</i>&nbsp;     * @throws PersismException if something goes wrong.
+<i class="no-highlight">495</i>&nbsp;     */
+<i class="no-highlight">496</i>&nbsp;    public boolean fetch(Object object) throws PersismException {
+<b class="fc"><i class="no-highlight">497</i>&nbsp;        Class&lt;?&gt; objectClass = object.getClass();</b>
+<i class="no-highlight">498</i>&nbsp;
+<i class="no-highlight">499</i>&nbsp;        // If we know this type it means it&#39;s a primitive type. This method cannot be used for primitives
+<b class="fc"><i class="no-highlight">500</i>&nbsp;        boolean readPrimitive = Types.getType(objectClass) != null;</b>
+<b class="fc"><i class="no-highlight">501</i>&nbsp;        if (readPrimitive) {</b>
+<i class="no-highlight">502</i>&nbsp;            // For unit tests
+<b class="fc"><i class="no-highlight">503</i>&nbsp;            throw new PersismException(&quot;Cannot read a primitive type object with this method.&quot;);</b>
+<i class="no-highlight">504</i>&nbsp;        }
+<i class="no-highlight">505</i>&nbsp;
+<b class="fc"><i class="no-highlight">506</i>&nbsp;        if (isRecord(objectClass)) {</b>
+<b class="fc"><i class="no-highlight">507</i>&nbsp;            throw new PersismException(&quot;Cannot read a Record type object with this method.&quot;);</b>
+<i class="no-highlight">508</i>&nbsp;        }
+<i class="no-highlight">509</i>&nbsp;
+<b class="fc"><i class="no-highlight">510</i>&nbsp;        List&lt;String&gt; primaryKeys = metaData.getPrimaryKeys(objectClass, connection);</b>
+<b class="fc"><i class="no-highlight">511</i>&nbsp;        if (primaryKeys.size() == 0) {</b>
+<b class="fc"><i class="no-highlight">512</i>&nbsp;            throw new PersismException(&quot;Cannot perform FETCH - &quot; + metaData.getTableName(objectClass) + &quot; has no primary keys.&quot;);</b>
+<i class="no-highlight">513</i>&nbsp;        }
+<i class="no-highlight">514</i>&nbsp;
+<b class="fc"><i class="no-highlight">515</i>&nbsp;        Map&lt;String, PropertyInfo&gt; properties = metaData.getTableColumnsPropertyInfo(object.getClass(), connection);</b>
+<b class="fc"><i class="no-highlight">516</i>&nbsp;        List&lt;Object&gt; params = new ArrayList&lt;&gt;(primaryKeys.size());</b>
+<b class="fc"><i class="no-highlight">517</i>&nbsp;        List&lt;ColumnInfo&gt; columnInfos = new ArrayList&lt;&gt;(primaryKeys.size());</b>
+<b class="fc"><i class="no-highlight">518</i>&nbsp;        Map&lt;String, ColumnInfo&gt; cols = metaData.getColumns(objectClass, connection);</b>
+<b class="fc"><i class="no-highlight">519</i>&nbsp;        JDBCResult result = new JDBCResult();</b>
+<i class="no-highlight">520</i>&nbsp;        try {
+<b class="fc"><i class="no-highlight">521</i>&nbsp;            for (String column : primaryKeys) {</b>
+<b class="fc"><i class="no-highlight">522</i>&nbsp;                PropertyInfo propertyInfo = properties.get(column);</b>
+<b class="fc"><i class="no-highlight">523</i>&nbsp;                params.add(propertyInfo.getter.invoke(object));</b>
+<b class="fc"><i class="no-highlight">524</i>&nbsp;                columnInfos.add(cols.get(column));</b>
+<b class="fc"><i class="no-highlight">525</i>&nbsp;            }</b>
+<b class="fc"><i class="no-highlight">526</i>&nbsp;            assert params.size() == columnInfos.size();</b>
+<i class="no-highlight">527</i>&nbsp;
+<b class="fc"><i class="no-highlight">528</i>&nbsp;            String sql = metaData.getSelectStatement(object, connection);</b>
+<b class="fc"><i class="no-highlight">529</i>&nbsp;            log.debug(&quot;FETCH %s PARAMS: %s&quot;, sql, params);</b>
+<b class="fc"><i class="no-highlight">530</i>&nbsp;            for (int j = 0; j &lt; params.size(); j++) {</b>
+<b class="fc"><i class="no-highlight">531</i>&nbsp;                if (params.get(j) != null) {</b>
+<b class="fc"><i class="no-highlight">532</i>&nbsp;                    params.set(j, convertor.convert(params.get(j), columnInfos.get(j).columnType.getJavaType(), columnInfos.get(j).columnName));</b>
+<i class="no-highlight">533</i>&nbsp;                }
+<i class="no-highlight">534</i>&nbsp;            }
+<b class="fc"><i class="no-highlight">535</i>&nbsp;            exec(result, sql, params.toArray());</b>
+<i class="no-highlight">536</i>&nbsp;
+<b class="fc"><i class="no-highlight">537</i>&nbsp;            if (result.rs.next()) {</b>
+<b class="fc"><i class="no-highlight">538</i>&nbsp;                reader.readObject(object, result.rs);</b>
+<b class="fc"><i class="no-highlight">539</i>&nbsp;                return true;</b>
+<i class="no-highlight">540</i>&nbsp;            }
+<b class="fc"><i class="no-highlight">541</i>&nbsp;            return false;</b>
+<i class="no-highlight">542</i>&nbsp;
+<b class="fc"><i class="no-highlight">543</i>&nbsp;        } catch (Exception e) {</b>
+<b class="fc"><i class="no-highlight">544</i>&nbsp;            Util.rollback(connection);</b>
+<b class="fc"><i class="no-highlight">545</i>&nbsp;            throw new PersismException(e.getMessage(), e);</b>
+<i class="no-highlight">546</i>&nbsp;        } finally {
+<b class="fc"><i class="no-highlight">547</i>&nbsp;            Util.cleanup(result.st, result.rs);</b>
+<b class="fc"><i class="no-highlight">548</i>&nbsp;        }</b>
+<i class="no-highlight">549</i>&nbsp;    }
+<i class="no-highlight">550</i>&nbsp;
+<i class="no-highlight">551</i>&nbsp;    /**
+<i class="no-highlight">552</i>&nbsp;     * Fetch an object of the specified type from the database. The type can be a Data Object or a native Java Object or primitive.
+<i class="no-highlight">553</i>&nbsp;     *
+<i class="no-highlight">554</i>&nbsp;     * @param objectClass Type of returned value
+<i class="no-highlight">555</i>&nbsp;     * @param sql         query - this would usually be a select OR a select of a single column if the type is a primitive.
+<i class="no-highlight">556</i>&nbsp;     *                    If this is a primitive type then this method will only look at the 1st column in the result.
+<i class="no-highlight">557</i>&nbsp;     * @param parameters  parameters to the query.
+<i class="no-highlight">558</i>&nbsp;     * @param &lt;T&gt;         Return type
+<i class="no-highlight">559</i>&nbsp;     * @return value read from the database of type T or null if not found
+<i class="no-highlight">560</i>&nbsp;     * @throws PersismException Well, this is a runtime exception so actually it could be anything really.
+<i class="no-highlight">561</i>&nbsp;     */
+<i class="no-highlight">562</i>&nbsp;    public &lt;T&gt; T fetch(Class&lt;T&gt; objectClass, String sql, Object... parameters) throws PersismException {
+<i class="no-highlight">563</i>&nbsp;        // If we know this type it means it&#39;s a primitive type. Not a DAO so we use a different rule to read those
+<b class="fc"><i class="no-highlight">564</i>&nbsp;        boolean isPOJO = Types.getType(objectClass) == null;</b>
+<b class="fc"><i class="no-highlight">565</i>&nbsp;        boolean isRecord = isPOJO &amp;&amp; isRecord(objectClass);</b>
+<i class="no-highlight">566</i>&nbsp;
+<b class="fc"><i class="no-highlight">567</i>&nbsp;        JDBCResult result = new JDBCResult();</b>
+<i class="no-highlight">568</i>&nbsp;        try {
+<i class="no-highlight">569</i>&nbsp;
+<b class="fc"><i class="no-highlight">570</i>&nbsp;            exec(result, sql, parameters);</b>
+<i class="no-highlight">571</i>&nbsp;
+<b class="fc"><i class="no-highlight">572</i>&nbsp;            if (result.rs.next()) {</b>
+<b class="fc"><i class="no-highlight">573</i>&nbsp;                if (isRecord) {</b>
+<b class="fc"><i class="no-highlight">574</i>&nbsp;                    return reader.readRecord(objectClass, result.rs);</b>
+<b class="fc"><i class="no-highlight">575</i>&nbsp;                } else if (isPOJO) {</b>
+<b class="fc"><i class="no-highlight">576</i>&nbsp;                    T t = objectClass.getDeclaredConstructor().newInstance();</b>
+<b class="fc"><i class="no-highlight">577</i>&nbsp;                    return reader.readObject(t, result.rs);</b>
+<i class="no-highlight">578</i>&nbsp;                } else {
+<b class="fc"><i class="no-highlight">579</i>&nbsp;                    return reader.readColumn(result.rs, 1, objectClass);</b>
+<i class="no-highlight">580</i>&nbsp;                }
+<i class="no-highlight">581</i>&nbsp;            }
+<i class="no-highlight">582</i>&nbsp;
+<b class="fc"><i class="no-highlight">583</i>&nbsp;            return null;</b>
+<i class="no-highlight">584</i>&nbsp;
+<b class="fc"><i class="no-highlight">585</i>&nbsp;        } catch (Exception e) {</b>
+<b class="fc"><i class="no-highlight">586</i>&nbsp;            Util.rollback(connection);</b>
+<b class="fc"><i class="no-highlight">587</i>&nbsp;            throw new PersismException(e.getMessage(), e);</b>
+<i class="no-highlight">588</i>&nbsp;        } finally {
+<b class="fc"><i class="no-highlight">589</i>&nbsp;            Util.cleanup(result.st, result.rs);</b>
+<b class="fc"><i class="no-highlight">590</i>&nbsp;        }</b>
+<i class="no-highlight">591</i>&nbsp;    }
+<i class="no-highlight">592</i>&nbsp;
+<i class="no-highlight">593</i>&nbsp;    MetaData getMetaData() {
+<b class="fc"><i class="no-highlight">594</i>&nbsp;        return metaData;</b>
+<i class="no-highlight">595</i>&nbsp;    }
+<i class="no-highlight">596</i>&nbsp;
+<i class="no-highlight">597</i>&nbsp;    Convertor getConvertor() {
+<b class="fc"><i class="no-highlight">598</i>&nbsp;        return convertor;</b>
+<i class="no-highlight">599</i>&nbsp;    }
+<i class="no-highlight">600</i>&nbsp;
+<i class="no-highlight">601</i>&nbsp;    Connection getConnection() {
+<b class="fc"><i class="no-highlight">602</i>&nbsp;        return connection;</b>
+<i class="no-highlight">603</i>&nbsp;    }
+<i class="no-highlight">604</i>&nbsp;    /*
+<i class="no-highlight">605</i>&nbsp;    Private methods
+<i class="no-highlight">606</i>&nbsp;     */
+<i class="no-highlight">607</i>&nbsp;
+<i class="no-highlight">608</i>&nbsp;    private JDBCResult exec(JDBCResult result, String sql, Object... parameters) throws SQLException {
+<b class="fc"><i class="no-highlight">609</i>&nbsp;        if (sql.toLowerCase().startsWith(&quot;select &quot;)) {</b>
+<b class="fc"><i class="no-highlight">610</i>&nbsp;            result.st = connection.prepareStatement(sql);</b>
+<i class="no-highlight">611</i>&nbsp;
+<b class="fc"><i class="no-highlight">612</i>&nbsp;            PreparedStatement pst = (PreparedStatement) result.st;</b>
+<b class="fc"><i class="no-highlight">613</i>&nbsp;            setParameters(pst, parameters);</b>
+<b class="fc"><i class="no-highlight">614</i>&nbsp;            result.rs = pst.executeQuery();</b>
+<b class="fc"><i class="no-highlight">615</i>&nbsp;        } else {</b>
+<b class="fc"><i class="no-highlight">616</i>&nbsp;            if (!sql.toLowerCase().startsWith(&quot;{call&quot;)) {</b>
+<b class="fc"><i class="no-highlight">617</i>&nbsp;                sql = &quot;{call &quot; + sql + &quot;} &quot;;</b>
+<i class="no-highlight">618</i>&nbsp;            }
+<b class="fc"><i class="no-highlight">619</i>&nbsp;            result.st = connection.prepareCall(sql);</b>
+<i class="no-highlight">620</i>&nbsp;
+<b class="fc"><i class="no-highlight">621</i>&nbsp;            CallableStatement cst = (CallableStatement) result.st;</b>
+<b class="fc"><i class="no-highlight">622</i>&nbsp;            setParameters(cst, parameters);</b>
+<b class="fc"><i class="no-highlight">623</i>&nbsp;            result.rs = cst.executeQuery();</b>
+<i class="no-highlight">624</i>&nbsp;        }
+<b class="fc"><i class="no-highlight">625</i>&nbsp;        return result;</b>
+<i class="no-highlight">626</i>&nbsp;    }
+<i class="no-highlight">627</i>&nbsp;
+<i class="no-highlight">628</i>&nbsp;
+<i class="no-highlight">629</i>&nbsp;    private &lt;T&gt; T getTypedValueReturnedFromGeneratedKeys(Class&lt;T&gt; objectClass, ResultSet rs) throws SQLException {
+<i class="no-highlight">630</i>&nbsp;
+<b class="fc"><i class="no-highlight">631</i>&nbsp;        Object value = null;</b>
+<b class="fc"><i class="no-highlight">632</i>&nbsp;        Types type = Types.getType(objectClass);</b>
+<i class="no-highlight">633</i>&nbsp;
+<b class="fc"><i class="no-highlight">634</i>&nbsp;        if (type == null) {</b>
+<b class="nc"><i class="no-highlight">635</i>&nbsp;            log.warn(&quot;Unhandled type &quot; + objectClass);</b>
+<b class="nc"><i class="no-highlight">636</i>&nbsp;            return (T) rs.getObject(1);</b>
+<i class="no-highlight">637</i>&nbsp;        }
+<i class="no-highlight">638</i>&nbsp;
+<b class="fc"><i class="no-highlight">639</i>&nbsp;        switch (type) {</b>
+<i class="no-highlight">640</i>&nbsp;
+<i class="no-highlight">641</i>&nbsp;            case integerType:
+<i class="no-highlight">642</i>&nbsp;            case IntegerType:
+<b class="fc"><i class="no-highlight">643</i>&nbsp;                value = rs.getInt(1);</b>
+<b class="fc"><i class="no-highlight">644</i>&nbsp;                break;</b>
+<i class="no-highlight">645</i>&nbsp;
+<i class="no-highlight">646</i>&nbsp;            case longType:
+<i class="no-highlight">647</i>&nbsp;            case LongType:
+<b class="fc"><i class="no-highlight">648</i>&nbsp;                value = rs.getLong(1);</b>
+<b class="fc"><i class="no-highlight">649</i>&nbsp;                break;</b>
+<i class="no-highlight">650</i>&nbsp;
+<i class="no-highlight">651</i>&nbsp;            default:
+<b class="fc"><i class="no-highlight">652</i>&nbsp;                value = rs.getObject(1);</b>
+<i class="no-highlight">653</i>&nbsp;        }
+<b class="fc"><i class="no-highlight">654</i>&nbsp;        return (T) value;</b>
+<i class="no-highlight">655</i>&nbsp;    }
+<i class="no-highlight">656</i>&nbsp;
+<i class="no-highlight">657</i>&nbsp;    void setParameters(PreparedStatement st, Object[] parameters) throws SQLException {
+<b class="fc"><i class="no-highlight">658</i>&nbsp;        if (log.isDebugEnabled()) {</b>
+<b class="nc"><i class="no-highlight">659</i>&nbsp;            log.debug(&quot;PARAMS: %s&quot;, Arrays.asList(parameters));</b>
+<i class="no-highlight">660</i>&nbsp;        }
+<i class="no-highlight">661</i>&nbsp;
+<b class="fc"><i class="no-highlight">662</i>&nbsp;        int n = 1;</b>
+<b class="fc"><i class="no-highlight">663</i>&nbsp;        for (Object param : parameters) {</b>
+<i class="no-highlight">664</i>&nbsp;
+<b class="fc"><i class="no-highlight">665</i>&nbsp;            if (param != null) {</b>
+<i class="no-highlight">666</i>&nbsp;
+<b class="fc"><i class="no-highlight">667</i>&nbsp;                Types type = Types.getType(param.getClass());</b>
+<b class="fc"><i class="no-highlight">668</i>&nbsp;                if (type == null) {</b>
+<b class="fc"><i class="no-highlight">669</i>&nbsp;                    log.warn(&quot;setParameters: Unknown type: &quot; + param.getClass());</b>
+<b class="fc"><i class="no-highlight">670</i>&nbsp;                    type = Types.ObjectType;</b>
+<i class="no-highlight">671</i>&nbsp;                }
+<i class="no-highlight">672</i>&nbsp;
+<b class="fc"><i class="no-highlight">673</i>&nbsp;                switch (type) {</b>
+<i class="no-highlight">674</i>&nbsp;
+<i class="no-highlight">675</i>&nbsp;                    case booleanType:
+<i class="no-highlight">676</i>&nbsp;                    case BooleanType:
+<b class="fc"><i class="no-highlight">677</i>&nbsp;                        st.setBoolean(n, (Boolean) param);</b>
+<b class="fc"><i class="no-highlight">678</i>&nbsp;                        break;</b>
+<i class="no-highlight">679</i>&nbsp;
+<i class="no-highlight">680</i>&nbsp;                    case byteType:
+<i class="no-highlight">681</i>&nbsp;                    case ByteType:
+<b class="fc"><i class="no-highlight">682</i>&nbsp;                        st.setByte(n, (Byte) param);</b>
+<b class="fc"><i class="no-highlight">683</i>&nbsp;                        break;</b>
+<i class="no-highlight">684</i>&nbsp;
+<i class="no-highlight">685</i>&nbsp;                    case shortType:
+<i class="no-highlight">686</i>&nbsp;                    case ShortType:
+<b class="fc"><i class="no-highlight">687</i>&nbsp;                        st.setShort(n, (Short) param);</b>
+<b class="fc"><i class="no-highlight">688</i>&nbsp;                        break;</b>
+<i class="no-highlight">689</i>&nbsp;
+<i class="no-highlight">690</i>&nbsp;                    case integerType:
+<i class="no-highlight">691</i>&nbsp;                    case IntegerType:
+<b class="fc"><i class="no-highlight">692</i>&nbsp;                        st.setInt(n, (Integer) param);</b>
+<b class="fc"><i class="no-highlight">693</i>&nbsp;                        break;</b>
+<i class="no-highlight">694</i>&nbsp;
+<i class="no-highlight">695</i>&nbsp;                    case longType:
+<i class="no-highlight">696</i>&nbsp;                    case LongType:
+<b class="fc"><i class="no-highlight">697</i>&nbsp;                        st.setLong(n, (Long) param);</b>
+<b class="fc"><i class="no-highlight">698</i>&nbsp;                        break;</b>
+<i class="no-highlight">699</i>&nbsp;
+<i class="no-highlight">700</i>&nbsp;                    case floatType:
+<i class="no-highlight">701</i>&nbsp;                    case FloatType:
+<b class="fc"><i class="no-highlight">702</i>&nbsp;                        st.setFloat(n, (Float) param);</b>
+<b class="fc"><i class="no-highlight">703</i>&nbsp;                        break;</b>
+<i class="no-highlight">704</i>&nbsp;
+<i class="no-highlight">705</i>&nbsp;                    case doubleType:
+<i class="no-highlight">706</i>&nbsp;                    case DoubleType:
+<b class="fc"><i class="no-highlight">707</i>&nbsp;                        st.setDouble(n, (Double) param);</b>
+<b class="fc"><i class="no-highlight">708</i>&nbsp;                        break;</b>
+<i class="no-highlight">709</i>&nbsp;
+<i class="no-highlight">710</i>&nbsp;                    case BigDecimalType:
+<b class="fc"><i class="no-highlight">711</i>&nbsp;                        st.setBigDecimal(n, (BigDecimal) param);</b>
+<b class="fc"><i class="no-highlight">712</i>&nbsp;                        break;</b>
+<i class="no-highlight">713</i>&nbsp;
+<i class="no-highlight">714</i>&nbsp;                    case BigIntegerType:
+<b class="fc"><i class="no-highlight">715</i>&nbsp;                        st.setString(n, &quot;&quot; + param);</b>
+<b class="fc"><i class="no-highlight">716</i>&nbsp;                        break;</b>
+<i class="no-highlight">717</i>&nbsp;
+<i class="no-highlight">718</i>&nbsp;                    case StringType:
+<b class="fc"><i class="no-highlight">719</i>&nbsp;                        st.setString(n, (String) param);</b>
+<b class="fc"><i class="no-highlight">720</i>&nbsp;                        break;</b>
+<i class="no-highlight">721</i>&nbsp;
+<i class="no-highlight">722</i>&nbsp;                    case characterType:
+<i class="no-highlight">723</i>&nbsp;                    case CharacterType:
+<b class="fc"><i class="no-highlight">724</i>&nbsp;                        st.setObject(n, &quot;&quot; + param);</b>
+<b class="fc"><i class="no-highlight">725</i>&nbsp;                        break;</b>
+<i class="no-highlight">726</i>&nbsp;
+<i class="no-highlight">727</i>&nbsp;                    case SQLDateType:
+<b class="fc"><i class="no-highlight">728</i>&nbsp;                        st.setDate(n, (java.sql.Date) param);</b>
+<b class="fc"><i class="no-highlight">729</i>&nbsp;                        break;</b>
+<i class="no-highlight">730</i>&nbsp;
+<i class="no-highlight">731</i>&nbsp;                    case TimeType:
+<b class="fc"><i class="no-highlight">732</i>&nbsp;                        st.setTime(n, (Time) param);</b>
+<b class="fc"><i class="no-highlight">733</i>&nbsp;                        break;</b>
+<i class="no-highlight">734</i>&nbsp;
+<i class="no-highlight">735</i>&nbsp;                    case TimestampType:
+<b class="fc"><i class="no-highlight">736</i>&nbsp;                        st.setTimestamp(n, (Timestamp) param);</b>
+<b class="fc"><i class="no-highlight">737</i>&nbsp;                        break;</b>
+<i class="no-highlight">738</i>&nbsp;
+<i class="no-highlight">739</i>&nbsp;                    // THESE are converted to Timestamp (or Time) by convert method.
+<i class="no-highlight">740</i>&nbsp;                    case LocalTimeType:
+<i class="no-highlight">741</i>&nbsp;                    case LocalDateType:
+<i class="no-highlight">742</i>&nbsp;                    case LocalDateTimeType:
+<b class="nc"><i class="no-highlight">743</i>&nbsp;                        log.warn(type + &quot; why would this occur in setParameters?&quot;, new Throwable());</b>
+<b class="nc"><i class="no-highlight">744</i>&nbsp;                        break;</b>
+<i class="no-highlight">745</i>&nbsp;
+<i class="no-highlight">746</i>&nbsp;                    case OffsetDateTimeType:
+<i class="no-highlight">747</i>&nbsp;                    case ZonedDateTimeType:
+<i class="no-highlight">748</i>&nbsp;                    case InstantType:
+<i class="no-highlight">749</i>&nbsp;                        // todo ZonedDateTime, OffsetDateTimeType and MAYBE Instant
+<b class="nc"><i class="no-highlight">750</i>&nbsp;                        break;</b>
+<i class="no-highlight">751</i>&nbsp;
+<i class="no-highlight">752</i>&nbsp;                    case byteArrayType:
+<i class="no-highlight">753</i>&nbsp;                    case ByteArrayType:
+<i class="no-highlight">754</i>&nbsp;                        // Blob maps to byte array
+<b class="fc"><i class="no-highlight">755</i>&nbsp;                        st.setBytes(n, (byte[]) param);</b>
+<b class="fc"><i class="no-highlight">756</i>&nbsp;                        break;</b>
+<i class="no-highlight">757</i>&nbsp;
+<i class="no-highlight">758</i>&nbsp;                    case ClobType:
+<i class="no-highlight">759</i>&nbsp;                    case BlobType:
+<i class="no-highlight">760</i>&nbsp;                        // Clob is converted to String Blob is converted to byte array
+<i class="no-highlight">761</i>&nbsp;                        // So this should not occur.
+<b class="nc"><i class="no-highlight">762</i>&nbsp;                        log.warn(type + &quot; why would this occur in setParameters?&quot;, new Throwable());</b>
+<b class="nc"><i class="no-highlight">763</i>&nbsp;                        break;</b>
+<i class="no-highlight">764</i>&nbsp;
+<i class="no-highlight">765</i>&nbsp;                    case EnumType:
+<b class="fc"><i class="no-highlight">766</i>&nbsp;                        if (metaData.getConnectionType() == ConnectionTypes.PostgreSQL) {</b>
+<b class="fc"><i class="no-highlight">767</i>&nbsp;                            st.setObject(n, param.toString(), java.sql.Types.OTHER);</b>
+<i class="no-highlight">768</i>&nbsp;                        } else {
+<b class="fc"><i class="no-highlight">769</i>&nbsp;                            st.setString(n, param.toString());</b>
+<i class="no-highlight">770</i>&nbsp;                        }
+<b class="fc"><i class="no-highlight">771</i>&nbsp;                        break;</b>
+<i class="no-highlight">772</i>&nbsp;
+<i class="no-highlight">773</i>&nbsp;                    case UUIDType:
+<b class="fc"><i class="no-highlight">774</i>&nbsp;                        if (metaData.getConnectionType() == ConnectionTypes.PostgreSQL) {</b>
+<i class="no-highlight">775</i>&nbsp;                            // PostgreSQL does work with setObject but not setString unless you set the connection property stringtype=unspecified
+<b class="fc"><i class="no-highlight">776</i>&nbsp;                            st.setObject(n, param);</b>
+<i class="no-highlight">777</i>&nbsp;                        } else {
+<b class="fc"><i class="no-highlight">778</i>&nbsp;                            st.setString(n, param.toString());</b>
+<i class="no-highlight">779</i>&nbsp;                        }
+<b class="fc"><i class="no-highlight">780</i>&nbsp;                        break;</b>
+<i class="no-highlight">781</i>&nbsp;
+<i class="no-highlight">782</i>&nbsp;                    default:
+<i class="no-highlight">783</i>&nbsp;                        // Usually SQLite with util.date - setObject works
+<i class="no-highlight">784</i>&nbsp;                        // Also if it&#39;s a custom non-standard type.
+<b class="fc"><i class="no-highlight">785</i>&nbsp;                        log.info(&quot;setParameters using setObject on parameter: &quot; + n + &quot; for &quot; + param.getClass());</b>
+<b class="fc"><i class="no-highlight">786</i>&nbsp;                        st.setObject(n, param);</b>
+<i class="no-highlight">787</i>&nbsp;                }
+<i class="no-highlight">788</i>&nbsp;
+<b class="fc"><i class="no-highlight">789</i>&nbsp;            } else {</b>
+<i class="no-highlight">790</i>&nbsp;                // param is null
+<b class="fc"><i class="no-highlight">791</i>&nbsp;                st.setObject(n, param);</b>
+<i class="no-highlight">792</i>&nbsp;            }
+<i class="no-highlight">793</i>&nbsp;
+<b class="fc"><i class="no-highlight">794</i>&nbsp;            n++;</b>
+<i class="no-highlight">795</i>&nbsp;        }
+<b class="fc"><i class="no-highlight">796</i>&nbsp;    }</b>
+<i class="no-highlight">797</i>&nbsp;
+<i class="no-highlight">798</i>&nbsp;}
 </div>
 </pre>
 </div>
@@ -286,7 +923,7 @@ Current scope:     <a href="../../index.html">all classes</a>
 
 <div class="footer">
     
-    <div style="float:right;">generated on 2021-04-20 05:23</div>
+    <div style="float:right;">generated on 2021-05-09 09:45</div>
 </div>
 </body>
 </html>
