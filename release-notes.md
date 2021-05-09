@@ -1,5 +1,19 @@
 ## Release Notes
 
+### 1.1.0
+
+* Added support for Records! (Java 16)
+* Added preliminary support for Informix (looking for help to set up a vbox vm)
+* Fixed UPDATE statement using columns in alphabetical order (All Persism generated SQL should be in column order)
+* Fixed support for MSAccess with UCanAccess jdbc driver in Java 16
+* Fixed issue with Queries cached with missing columns
+* Fixed @Table name case sensitivity
+* Added warnings if Persism doesn't have results when querying for DatabaseMetaData
+
+### Breaking changes
+
+* Insert now returns a typed Result object containing the rows changed and modified data object for cases when you insert a Record and there are defaults or autoincs to assign.
+
 ### 1.0.3
 
 * Added support for MSAccess with UCanAccess jdbc driver (seems to be broken under Java 16 right now #13)

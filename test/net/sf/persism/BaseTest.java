@@ -464,7 +464,9 @@ public abstract class BaseTest extends TestCase {
                 Contact contactForTest = getContactForTest();
                 contactForTest.setIdentity(randomUUID);
                 session.insert(contactForTest);
+                contactForTest.setAddress1("123 Somewhere");
                 contactForTest.setContactName("HELLO?!");
+                contactForTest.setNotes("notes?");
                 session.update(contactForTest);
                 session.fetch(contactForTest);
 
