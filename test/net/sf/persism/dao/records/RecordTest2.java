@@ -17,6 +17,6 @@ public record RecordTest2(int id, String description, int qty, double price, Loc
 
     @ConstructorProperties({"id", "description", "qty", "price"})
     public RecordTest2(int id, String description, int qty, double price) {
-        this(id, description, qty, price, LocalDateTime.now());
+        this(id, description, qty, price, null);
     }
 }

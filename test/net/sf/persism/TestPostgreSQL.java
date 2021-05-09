@@ -158,7 +158,7 @@ public class TestPostgreSQL extends BaseTest {
                 " Status INT, " +
                 " Created TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL, " + // make read-only in Invoice Object
                 " Price NUMERIC(7,3) NOT NULL, " +
-                " ACTUALPRICE NUMERIC(7,3) NOT NULL, " +
+                " ActualPrice NUMERIC(7,3) NOT NULL, " +
                 " Quantity INT NOT NULL, " +
                 //" Total NUMERIC(10,3) NOT NULL, " +
                 " Discount NUMERIC(10,3) NOT NULL " +
@@ -241,6 +241,29 @@ public class TestPostgreSQL extends BaseTest {
                 " DateAndTime TIMESTAMP) ";
 
         executeCommand(sql, con);
+        if (UtilsForTests.isTableInDatabase("RecordTest1", con)) {
+            executeCommand("DROP TABLE RecordTest1", con);
+        }
+
+        sql = "CREATE TABLE RecordTest1 ( " +
+                "ID uuid, " +
+                "NAME VARCHAR(20), " +
+                "QTY INT, " +
+                "PRICE DECIMAL(20) " +
+                ") ";
+        executeCommand(sql, con);
+
+        if (UtilsForTests.isTableInDatabase("RecordTest2", con)) {
+            executeCommand("DROP TABLE RecordTest2", con);
+        }
+        sql = "CREATE TABLE RecordTest2 ( " +
+                "ID SERIAL PRIMARY KEY, " +
+                "DESCRIPTION VARCHAR(20), " +
+                "QTY INT, " +
+                "PRICE DECIMAL(20), " +
+                "CREATED_ON TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL" +
+                ") ";
+        executeCommand(sql, con);
 
     }
 
@@ -271,7 +294,7 @@ public class TestPostgreSQL extends BaseTest {
         // this was a test to see if I could prepare a statement and return all columns. Nope.....
 
         // ensure metadata is there
-        log.info(session.query(Contact.class, "select * from Contacts"));
+        log.info(session.query(Contact.class, sql("select * from Contacts")));
 
         String insertStatement = "INSERT INTO Contacts (FirstName, LastName, Type, Status) VALUES ( ?, ?, ?, ? ) ";
 

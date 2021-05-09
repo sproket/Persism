@@ -126,7 +126,7 @@ public final class TestSQLite extends BaseTest {
                 ") ");
 
 
-        if (UtilsForTests.isTableInDatabase("Invoices", con)) {
+        if (isTableInDatabase("Invoices", con)) {
             commands.add("DROP TABLE Invoices");
         }
 
@@ -135,7 +135,7 @@ public final class TestSQLite extends BaseTest {
                 " Customer_ID varchar(10) NOT NULL, " +
                 " Paid BIT NOT NULL, " +
                 " Price REAL NOT NULL, " +
-                " ACTUALPRICE REAL NOT NULL, " +
+                " ActualPrice REAL NOT NULL, " +
                 " Status INT DEFAULT 1, " +
                 " Created DateTime default (datetime('now','localtime')), " + // make read-only in Invoice Object
                 " Quantity INTEGER NOT NULL, " +
@@ -195,7 +195,7 @@ public final class TestSQLite extends BaseTest {
                 ") ";
         executeCommand(sql, con);
 
-        if (UtilsForTests.isTableInDatabase("DateTestLocalTypes", con)) {
+        if (isTableInDatabase("DateTestLocalTypes", con)) {
             executeCommand("DROP TABLE DateTestLocalTypes", con);
         }
 
@@ -208,7 +208,7 @@ public final class TestSQLite extends BaseTest {
 
         executeCommand(sql, con);
 
-        if (UtilsForTests.isTableInDatabase("DateTestSQLTypes", con)) {
+        if (isTableInDatabase("DateTestSQLTypes", con)) {
             executeCommand("DROP TABLE DateTestSQLTypes", con);
         }
 
@@ -223,6 +223,28 @@ public final class TestSQLite extends BaseTest {
         executeCommand(sql, con);
 
 
+        if (isTableInDatabase("RecordTest1", con)) {
+            executeCommand("DROP TABLE RecordTest1", con);
+        }
+        sql = "CREATE TABLE RecordTest1 ( " +
+                "ID VARCHAR(36), " +
+                "NAME VARCHAR(20), " +
+                "QTY INT, " +
+                "PRICE REAL " +
+                ") ";
+        executeCommand(sql, con);
+
+        if (isTableInDatabase("RecordTest2", con)) {
+            executeCommand("DROP TABLE RecordTest2", con);
+        }
+        sql = "CREATE TABLE RecordTest2 ( " +
+                "ID INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT UNIQUE, " +
+                "DESCRIPTION VARCHAR(20), " +
+                "QTY INT, " +
+                "PRICE REAL, " +
+                "CREATED_ON DATETIME default current_timestamp" +
+                ") ";
+        executeCommand(sql, con);
     }
 
     public void testOrders() throws Exception {
@@ -250,7 +272,7 @@ public final class TestSQLite extends BaseTest {
         order.setName("PHHHH");
         session.insert(order);
 
-        List<Order> list = session.query(Order.class, "SELECT * FROM Orders ORDER BY ID");
+        List<Order> list = session.query(Order.class, sql("SELECT * FROM Orders ORDER BY ID"));
         assertEquals("list size s/b 4", 4, list.size());
         log.info("ORDERS\n" + list);
 
@@ -316,7 +338,7 @@ public final class TestSQLite extends BaseTest {
 
         assertTrue("duplicate key should fail", dupFail);
 
-        List<Customer> list = session.query(Customer.class, "select * from customers");
+        List<Customer> list = session.query(Customer.class, sql("select * from customers"));
 
         assertEquals("list should have 1 customer", 1, list.size());
 
@@ -324,7 +346,7 @@ public final class TestSQLite extends BaseTest {
 
         boolean notInitialized = false;
         try {
-            list = session.query(Customer.class, "select Customer_ID from Customers");
+            list = session.query(Customer.class, sql("select Customer_ID from Customers"));
         } catch (PersismException e) {
             log.info(e.getMessage());
             assertTrue("exception should be Customer was not properly initialized", e.getMessage().startsWith("Object class net.sf.persism.dao.Customer was not properly initialized."));
@@ -345,7 +367,7 @@ public final class TestSQLite extends BaseTest {
 
         session.delete(customer);
 
-        list = session.query(Customer.class, "select * from customers");
+        list = session.query(Customer.class, sql("select * from customers"));
 
         assertEquals("list should have 0 customers", 0, list.size());
 
@@ -531,7 +553,7 @@ public final class TestSQLite extends BaseTest {
         // This should work OK
         session.insert(junk);
 
-        log.info(session.query(TableNoPrimary.class, "SELECT * FROM TableNoPrimary"));
+        log.info(session.query(TableNoPrimary.class, sql("SELECT * FROM TableNoPrimary")));
 
         boolean shouldFail = false;
 
@@ -605,5 +627,15 @@ public final class TestSQLite extends BaseTest {
     @Override
     public void testAllDates() {
         super.testAllDates();
+    }
+
+    @Override
+    public void testRecord1() {
+        super.testRecord1();
+    }
+
+    @Override
+    public void testRecord2() {
+        super.testRecord2();
     }
 }

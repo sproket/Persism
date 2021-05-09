@@ -3,6 +3,7 @@ package net.sf.persism.dao;
 import net.sf.persism.PersistableObject;
 
 import java.sql.Time;
+import java.util.Arrays;
 import java.util.Date;
 
 /**
@@ -98,5 +99,20 @@ public final class SavedGame extends PersistableObject<SavedGame> {
 
     public void setCopper(long copper) {
         this.copper = copper;
+    }
+
+    @Override
+    public String toString() {
+        return "\nSavedGame{" +
+                "id='" + id + '\'' +
+                ", name='" + name + '\'' +
+                ", someDateAndTime=" + someDateAndTime +
+                ", data='" + data + '\'' +
+                ", gold=" + gold +
+                ", silver=" + silver +
+                ", copper=" + copper +
+                ", somethingBig=" + Arrays.toString(somethingBig) +
+                ", whatTimeIsIt=" + whatTimeIsIt +
+                '}';
     }
 }

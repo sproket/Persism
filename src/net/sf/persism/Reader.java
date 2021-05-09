@@ -68,7 +68,7 @@ final class Reader {
         for (int j = 1; j <= columnCount; j++) {
 
             String columnName = rsmd.getColumnLabel(j);
-            PropertyInfo columnProperty = properties.get(columnName);
+            PropertyInfo columnProperty = getPropertyInfo(columnName, properties); //properties.get(columnName);
 
             if (columnProperty != null) {
                 Class<?> returnType = columnProperty.getter.getReturnType();
@@ -388,4 +388,15 @@ final class Reader {
 
         return (T) value;
     }
+
+    // Poor man's case insensitive linked hash map ;)
+    private PropertyInfo getPropertyInfo(String col, Map<String, PropertyInfo> properties) {
+        for (String key : properties.keySet()) {
+            if (key.equalsIgnoreCase(col)) {
+                return properties.get(key);
+            }
+        }
+        return null;
+    }
+
 }

@@ -13,21 +13,17 @@ import java.time.LocalDateTime;
  */
 public class Invoice {
 
-    // todo Constructor String customerId, float price, int quantity, double discount, BigDecimal actualPrice, boolean paid
     private Integer invoiceId;
     private String customerId;
     private float price;
-    private BigDecimal actualPrice;
     private int quantity;
     private double discount;
+    private BigDecimal actualPrice;
 
     @NotColumn
     private String junk1;
 
     private LocalDateTime created;
-
-    @NotColumn
-    private BigDecimal total;
     private boolean paid;
 
     // Used as a primitive to test for warning about using primitives on columns with defaults
@@ -65,12 +61,9 @@ public class Invoice {
         this.quantity = quantity;
     }
 
+    @NotColumn
     public BigDecimal getTotal() {
-        return total;
-    }
-
-    public void setTotal(BigDecimal total) {
-        this.total = total;
+        return new BigDecimal(price * quantity);
     }
 
     public double getDiscount() {
@@ -124,11 +117,12 @@ public class Invoice {
                 ", price=" + price +
                 ", quantity=" + quantity +
                 ", discount=" + discount +
+                ", actualPrice=" + actualPrice +
                 ", junk1='" + junk1 + '\'' +
                 ", created=" + created +
-                ", total=" + total +
+                ", total=" + getTotal() +
                 ", paid=" + paid +
                 ", status=" + status +
-                '}';
+                "}\n";
     }
 }

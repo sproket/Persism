@@ -2,15 +2,16 @@ package net.sf.persism;
 
 import net.sf.persism.categories.LocalDB;
 import net.sf.persism.dao.*;
+import net.sf.persism.dao.records.RecordTest1;
+import net.sf.persism.dao.records.RecordTest2;
 import org.junit.experimental.categories.Category;
 
 import java.io.File;
 import java.io.IOException;
-import java.math.BigDecimal;
 import java.nio.file.Files;
 import java.sql.*;
-import java.text.NumberFormat;
 import java.time.*;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.Date;
 
@@ -45,7 +46,7 @@ public final class TestH2 extends BaseTest {
 
         createTables();
 
-        session = new Session(con);
+        session = new Session(con, "jdbc:h2/H2!");
 
         Instant x = new Date().toInstant();
 
@@ -76,12 +77,11 @@ public final class TestH2 extends BaseTest {
         // Fails with some DBs unless you convert yourself.
         List<Contact> contacts = session.query(Contact.class, sql, (Object) Convertor.asBytes(contact.getIdentity()));
         log.info(contacts);
-
     }
 
     @Override
     protected void createTables() throws SQLException {
-        List<String> commands = new ArrayList<String>(12);
+        List<String> commands = new ArrayList<>(12);
         String sql;
         if (UtilsForTests.isTableInDatabase("Orders", con)) {
             sql = "DROP TABLE Orders";
@@ -135,13 +135,12 @@ public final class TestH2 extends BaseTest {
                 " Customer_ID varchar(10) NOT NULL, " +
                 " Paid BIT NOT NULL, " +
                 " Price NUMERIC(7,3) NOT NULL, " +
-                " ACTUALPRICE NUMERIC(7,3) NOT NULL, " +
+                " ActualPrice NUMERIC(7,3) NOT NULL, " +
                 " Status INT DEFAULT 1, " +
                 " Created DateTime default current_timestamp, " + // make read-only in Invoice Object
                 " Quantity NUMERIC(10) NOT NULL, " +
                 " Discount NUMERIC(10,3) NOT NULL " +
                 ") ");
-
 
         if (UtilsForTests.isTableInDatabase("TABLEMULTIPRIMARY", con)) {
             commands.add("DROP TABLE TABLEMULTIPRIMARY");
@@ -153,13 +152,13 @@ public final class TestH2 extends BaseTest {
 
         commands.add("CREATE TABLE TABLEMULTIPRIMARY ( " +
                 " OrderID INT NOT NULL, " +
-                " ProductID INT NOT NULL, " +
+                " ProductID VARCHAR(10) NOT NULL, " +
                 " UnitPrice DECIMAL NOT NULL, " +
                 " Quantity SMALLINT NOT NULL, " +
                 " Discount REAL NOT NULL " +
                 ") ");
 
-        commands.add("ALTER TABLE TABLEMULTIPRIMARY ADD PRIMARY KEY (OrderID, ProductID)");
+        commands.add("ALTER TABLE TABLEMULTIPRIMARY ADD PRIMARY KEY (ProductID, OrderID)");
 
 //?
         commands.add("CREATE TABLE SavedGames ( " +
@@ -270,7 +269,31 @@ public final class TestH2 extends BaseTest {
                 "BYTE1 INT, " +
                 "BYTE2 INT ) ";
         executeCommand(sql, con);
+
+        if (UtilsForTests.isTableInDatabase("RecordTest1", con)) {
+            executeCommand("DROP TABLE RecordTest1", con);
+        }
+        sql = "CREATE TABLE RecordTest1 ( " +
+                "ID binary(16), " +
+                "NAME VARCHAR(20), " +
+                "QTY INT, " +
+                "PRICE REAL " +
+                ") ";
+        executeCommand(sql, con);
+
+        if (UtilsForTests.isTableInDatabase("RecordTest2", con)) {
+            executeCommand("DROP TABLE RecordTest2", con);
+        }
+        sql = "CREATE TABLE RecordTest2 ( " +
+                "ID IDENTITY PRIMARY KEY, " +
+                "DESCRIPTION VARCHAR(20), " +
+                "QTY INT, " +
+                "PRICE REAL, " +
+                "CREATED_ON DATETIME default current_timestamp" +
+                ") ";
+        executeCommand(sql, con);
     }
+
 
     public void testByteData() {
         ByteData bd = new ByteData();
@@ -393,7 +416,6 @@ public final class TestH2 extends BaseTest {
             customer.setContactName("FRED");
             session.insert(customer);
 
-
             session.fetch(customer);
 
             // look at meta data columsn
@@ -448,10 +470,9 @@ public final class TestH2 extends BaseTest {
 
     public void testDatabaseMetaData() {
 
-        Statement st = null;
         java.sql.ResultSet rs = null;
 
-        DatabaseMetaData dmd = null;
+        DatabaseMetaData dmd;
         try {
             dmd = con.getMetaData();
 
@@ -464,7 +485,7 @@ public final class TestH2 extends BaseTest {
                     log.info(x.getClass());
                 }
 
-                Map<String, Object> map = new HashMap<String, Object>(29);
+                Map<String, Object> map = new HashMap<>(29);
 
                 ResultSetMetaData rsMetaData = rs.getMetaData();
                 for (int i = 1; i <= rsMetaData.getColumnCount(); i++) {
@@ -475,47 +496,60 @@ public final class TestH2 extends BaseTest {
 
 
         } catch (SQLException e) {
-            Util.cleanup(st, rs);
+            Util.cleanup(null, rs);
         }
     }
 
     public void testMultiPrimary() {
-        TableMultiPrimary tmp = new TableMultiPrimary();
-        tmp.setOrderId(1);
-        tmp.setProductId(1);
-        tmp.setUnitPrice(10.23);
-        tmp.setQuantity((short) 256);
-        tmp.setDiscount(0);
-        session.insert(tmp);
-        log.info(tmp);
+        TableMultiPrimary mp = new TableMultiPrimary();
+        mp.setOrderId(1);
+        mp.setProductId("3");
+        mp.setUnitPrice(10.23);
+        mp.setQuantity((short) 256);
+        mp.setDiscount(0);
+        session.insert(mp);
 
-        tmp.setDiscount(0.25f);
+        log.info(mp);
 
-        session.update(tmp);
+        mp.setDiscount(0.25f);
 
-        List<TableMultiPrimary> list = session.query(TableMultiPrimary.class, "SELECT * FROM TableMultiPrimary");
+        session.update(mp);
+
+        TableMultiPrimary mp2 = new TableMultiPrimary();
+        mp2.setOrderId(1);
+        mp2.setProductId("2");
+        mp2.setUnitPrice(9.99);
+        mp2.setQuantity((short) 30);
+        mp2.setDiscount(0);
+        session.insert(mp2);
+
+        log.info(mp2);
+
+        List<TableMultiPrimary> list = session.query(TableMultiPrimary.class, "SELECT * FROM TableMultiPrimary WHERE OrderID IN (1,2,3) AND ProductID IN (1,2,3)");
         log.info(list);
 
-        session.fetch(tmp);
-        session.delete(tmp);
+        session.fetch(mp);
+        session.delete(mp);
 
         boolean nullInsertFail = false;
         try {
-            tmp = new TableMultiPrimary();
-            session.insert(tmp);
-            session.insert(tmp);
-            session.insert(tmp);
-            session.insert(tmp);
-            session.insert(tmp);
+            mp = new TableMultiPrimary();
+            mp.setOrderId(-1);
+            mp.setProductId("x");
+            session.insert(mp);
+            session.insert(mp);
 
         } catch (Exception e) {
-            log.info(e.getMessage());
+            log.error(e.getMessage(), e);
+            // Fail by double insert same primary keys
             assertTrue("message starts with 'Unique index or primary key violation'",
                     e.getMessage().startsWith("Unique index or primary key violation"));
             nullInsertFail = true;
         }
 
         assertTrue("nullInsertFail s/b true", nullInsertFail);
+
+        //session.query(TableMultiPrimary.class, PrimaryKey.keys(1,1));
     }
 
     public void testColumnDef() {
@@ -550,7 +584,7 @@ public final class TestH2 extends BaseTest {
 
     }
 
-    public void testVariousTypesLikeClobAndBlob() throws SQLException, IOException {
+    public void testVariousTypesLikeClobAndBlob() throws IOException {
         // note Data is read as a CLOB
         SavedGame saveGame = new SavedGame();
         saveGame.setName("BLAH");
@@ -558,7 +592,7 @@ public final class TestH2 extends BaseTest {
         saveGame.setData("HJ LHLH H H                     ';lk ;lk ';l k                                K HLHLHH LH LH LH LHLHLHH LH H H H LH HHLGHLJHGHGFHGFGJFDGHFDHFDGJFDKGHDGJFDD KHGD KHG DKHDTG HKG DFGHK  GLJHG LJHG LJH GLJ");
         saveGame.setGold(100.23f);
         saveGame.setSilver(200);
-        saveGame.setCopper(100l);
+        saveGame.setCopper(100L);
         saveGame.setWhatTimeIsIt(new Time(System.currentTimeMillis()));
 
         File file = new File("c:/windows/explorer.exe");
@@ -577,6 +611,8 @@ public final class TestH2 extends BaseTest {
         log.info(" ETC>>> " + returnedSavedGame.getWhatTimeIsIt());
         assertTrue("TIME s/b > 0 - we should have time:", cal.get(Calendar.HOUR_OF_DAY) + cal.get(Calendar.MINUTE) + cal.get(Calendar.SECOND) > 0);
 
+        List<SavedGame> savedGames = session.query(SavedGame.class,"SELECT * FROM SAVEDGAMES WHERE ID = ?", "1");
+        log.info("ALL SAVED GAMES " + savedGames.size() + " " + savedGames.get(0).getName() + " id: " + savedGames.get(0).getId());
         saveGame = session.fetch(SavedGame.class, "select * from SavedGames");
         assertNotNull(saveGame);
         log.info("SAVED GOLD: " + saveGame.getGold());
@@ -587,6 +623,11 @@ public final class TestH2 extends BaseTest {
         saveGame.setSomethingBig(null);
         session.update(saveGame);
         session.fetch(saveGame);
+
+        // todo add asserts - fetch by name=BLAH as well
+        SavedGame sg = session.fetch(SavedGame.class, "select * from SavedGames WHERE Silver > ?", 199);
+        log.warn(sg);
+//        sg = session.fetch(SavedGame.class, proc("spSearchSilver"), params(199));
     }
 
 

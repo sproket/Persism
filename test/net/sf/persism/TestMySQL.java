@@ -103,7 +103,7 @@ public class TestMySQL extends BaseTest {
         executeCommands(commands, con);
 
         if (UtilsForTests.isTableInDatabase("Invoices", con)) {
-            executeCommand("DROP TABLE Invoices",con);
+            executeCommand("DROP TABLE Invoices", con);
         }
 
         String sql = "CREATE TABLE Invoices ( " +
@@ -111,7 +111,7 @@ public class TestMySQL extends BaseTest {
                 " Customer_ID varchar(10) NOT NULL, " +
                 " Paid BIT NOT NULL, " +
                 " Price NUMERIC(7,3) NOT NULL, " +
-                " ACTUALPRICE NUMERIC(7,3) NOT NULL, " +
+                " ActualPrice NUMERIC(7,3) NOT NULL, " +
                 " Status INT DEFAULT 1, " +
                 " Created TIMESTAMP DEFAULT CURRENT_TIMESTAMP, " + // make read-only in Invoice Object
                 " Quantity NUMERIC(10) NOT NULL, " +
@@ -183,6 +183,28 @@ public class TestMySQL extends BaseTest {
 
         executeCommand(sql, con);
 
+        if (UtilsForTests.isTableInDatabase("RecordTest1", con)) {
+            executeCommand("DROP TABLE RecordTest1", con);
+        }
+        sql = "CREATE TABLE RecordTest1 ( " +
+                "ID binary(16) NOT NULL, PRIMARY KEY(ID), " +
+                "NAME VARCHAR(20), " +
+                "QTY INT, " +
+                "PRICE DECIMAL(10) " +
+                ") ";
+        executeCommand(sql, con);
+
+        if (UtilsForTests.isTableInDatabase("RecordTest2", con)) {
+            executeCommand("DROP TABLE RecordTest2", con);
+        }
+        sql = "CREATE TABLE RecordTest2 ( " +
+                "ID INT NOT NULL AUTO_INCREMENT, PRIMARY KEY(ID), " +
+                "DESCRIPTION VARCHAR(20), " +
+                "QTY INT, " +
+                "PRICE DECIMAL(10), " +
+                "CREATED_ON TIMESTAMP DEFAULT CURRENT_TIMESTAMP" +
+                ") ";
+        executeCommand(sql, con);
 
     }
 
@@ -196,15 +218,15 @@ public class TestMySQL extends BaseTest {
 
         session.insert(customer);
 
-        List<Customer> customers = session.query(Customer.class, "SELECT * FROM Customers");
+        List<Customer> customers = session.query(Customer.class, sql("SELECT * FROM Customers"));
         log.info(customers);
 
-        String result = session.fetch(String.class, "select `Contact_Name` from Customers where Customer_ID = ?", 123);
+        String result = session.fetch(String.class, sql("select `Contact_Name` from Customers where Customer_ID = ?"), params(123));
         log.info(result);
         assertEquals("should be Fred", "Fred", result);
 
-        int count = session.fetch(int.class, "select count(*) from Customers where Region = ?", Regions.East);
-        assertEquals("should be 1", 1, count);
+        Integer count = session.fetch(Integer.class, sql("select count(*) from Customers where Region = ?"), params(Regions.East));
+        assertEquals("should be 1", "1", "" + count);
         log.info("count " + count);
 
     }

@@ -208,9 +208,10 @@ public final class Session implements AutoCloseable {
 
     /**
      * Inserts the data object in the database refreshing with autoinc and other defaults that may exist.
-     * @param <T> Type of the inserted object
+     *
      * @param object the data object to insert.
-     * @return usually 1 to indicate rows changed via JDBC.
+     * @param <T>    Type of the returning data object in Result.
+     * @return Result object containing rows changed (usually 1 to indicate rows changed via JDBC) and the data object itself which may have been changed by auto-inc or column defaults.
      * @throws PersismException When planet of the apes starts happening.
      */
     public <T> Result<T> insert(Object object) throws PersismException {

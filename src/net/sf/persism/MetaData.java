@@ -10,6 +10,7 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.sql.*;
+import java.text.MessageFormat;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -107,7 +108,7 @@ final class MetaData {
         try {
             st = connection.createStatement();
             // gives us real column names with case.
-            String sql = new StringBuilder().append("SELECT * FROM ").append(sd).append(tableName).append(ed).append(" WHERE 1=0").toString();
+            String sql = MessageFormat.format("SELECT * FROM {0}{1}{2} WHERE 1=0", sd, tableName, ed); // todo this is repeated - put the string in a static final
             if (log.isDebugEnabled()) {
                 log.debug("determineColumns: %s", sql);
             }
@@ -132,7 +133,8 @@ final class MetaData {
             Collection<PropertyInfo> properties = getPropertyInfo(objectClass);
 
             int columnCount = rsmd.getColumnCount();
-            Map<String, PropertyInfo> columns = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
+            //Map<String, PropertyInfo> columns = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
+            Map<String, PropertyInfo> columns = new LinkedHashMap<>(columnCount);
             for (int j = 1; j <= columnCount; j++) {
                 String realColumnName = rsmd.getColumnLabel(j);
                 String columnName = realColumnName.toLowerCase().replace("_", "").replace(" ", "");
@@ -382,9 +384,9 @@ final class MetaData {
             if (Modifier.isStatic(field.getModifiers())) {
                 continue;
             }
-            log.debug("Field Name: %s", field.getName());
+//            log.debug("Field Name: %s", field.getName());
             String propertyName = field.getName();
-            log.debug("Property Name: *%s* ", propertyName);
+//            log.debug("Property Name: *%s* ", propertyName);
 
             PropertyInfo propertyInfo = new PropertyInfo();
             propertyInfo.propertyName = propertyName;
@@ -396,7 +398,7 @@ final class MetaData {
 
             for (Method method : methods) {
                 String propertyNameToTest = field.getName().substring(0, 1).toUpperCase() + field.getName().substring(1);
-                log.debug("property name for testing %s", propertyNameToTest);
+                // log.debug("property name for testing %s", propertyNameToTest);
                 if (propertyNameToTest.startsWith("Is") && propertyNameToTest.length() > 2 && Character.isUpperCase(propertyNameToTest.charAt(2))) {
                     propertyNameToTest = propertyName.substring(2);
                 }
@@ -404,7 +406,7 @@ final class MetaData {
                 String[] candidates = {"set" + propertyNameToTest, "get" + propertyNameToTest, "is" + propertyNameToTest, field.getName()};
 
                 if (Arrays.asList(candidates).contains(method.getName())) {
-                    log.debug("  METHOD: %s", method.getName());
+                    //log.debug("  METHOD: %s", method.getName());
 
                     annotations = method.getAnnotations();
                     for (Annotation annotation : annotations) {
@@ -476,7 +478,7 @@ final class MetaData {
     String getUpdateStatement(Object object, Connection connection) throws PersismException, NoChangesDetectedForUpdateException {
 
         if (object instanceof Persistable) {
-            Map<String, PropertyInfo> changes = getChangedProperties((Persistable) object, connection);
+            Map<String, PropertyInfo> changes = getChangedProperties((Persistable<?>) object, connection);
             if (changes.size() == 0) {
                 throw new NoChangesDetectedForUpdateException();
             }
@@ -549,8 +551,13 @@ final class MetaData {
 
             Map<String, ColumnInfo> columns = getColumns(object.getClass(), connection);
             Map<String, PropertyInfo> properties = getTableColumnsPropertyInfo(object.getClass(), connection);
-            StringBuilder sb = new StringBuilder();
-            sb.append("INSERT INTO ").append(sd).append(tableName).append(ed).append(" (");
+
+            StringBuilder sbi = new StringBuilder();
+            sbi.append("INSERT INTO ").append(sd).append(tableName).append(ed).append(" (");
+
+            StringBuilder sbp = new StringBuilder();
+            sbp.append(") VALUES (");
+
             String sep = "";
             boolean saveInMap = true;
 
@@ -568,31 +575,17 @@ final class MetaData {
                         }
 
                     }
-                    sb.append(sep).append(sd).append(column.columnName).append(ed);
+
+                    sbi.append(sep).append(sd).append(column.columnName).append(ed);
+                    sbp.append(sep).append("?");
                     sep = ", ";
                 }
             }
-            sb.append(") VALUES (");
-            sep = "";
-            for (ColumnInfo column : columns.values()) {
-                if (!column.autoIncrement) {
 
-                    if (column.hasDefault) {
-                        // Do not include if this column has a default and no value has been
-                        // set on it's associated property.
-                        if (properties.get(column.columnName).getter.invoke(object) == null) {
-                            continue;
-                        }
-                    }
-
-                    sb.append(sep).append(" ? ");
-                    sep = ", ";
-                }
-            }
-            sb.append(") ");
+            sbi.append(sbp).append(") ");
 
             String insertStatement;
-            insertStatement = sb.toString();
+            insertStatement = sbi.toString();
 
             if (log.isDebugEnabled()) {
                 log.debug("determineInsertStatement for %s is %s", object.getClass(), insertStatement);
@@ -733,10 +726,10 @@ final class MetaData {
         return sb.toString();
     }
 
-    Map<String, PropertyInfo> getChangedProperties(Persistable persistable, Connection connection) throws PersismException {
+    Map<String, PropertyInfo> getChangedProperties(Persistable<?> persistable, Connection connection) throws PersismException {
 
         try {
-            Persistable original = (Persistable) persistable.readOriginalValue();
+            Persistable<?> original = (Persistable<?>) persistable.readOriginalValue();
 
             Map<String, PropertyInfo> columns = getTableColumnsPropertyInfo(persistable.getClass(), connection);
 

@@ -15,6 +15,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * Comments for TestDerby go here.
@@ -46,7 +47,6 @@ public final class TestDerby extends BaseTest {
         createTables();
 
         session = new Session(con, "jdbc:derby/TESTING");
-        // session = new Session(con);
 
     }
 
@@ -120,7 +120,7 @@ public final class TestDerby extends BaseTest {
                 " Created TIMESTAMP DEFAULT CURRENT_TIMESTAMP, " + // make read-only in Invoice Object
                 " Status INT DEFAULT 1, " +
                 " Price NUMERIC(7,3) NOT NULL, " +
-                " ACTUALPRICE NUMERIC(7,3) NOT NULL, " +
+                " ActualPrice NUMERIC(7,3) NOT NULL, " +
                 " Quantity INT NOT NULL, " +
 //                " Total NUMERIC(10,3) NOT NULL, " +
                 " Discount NUMERIC(10,3) NOT NULL " +
@@ -203,6 +203,30 @@ public final class TestDerby extends BaseTest {
                 " DateAndTime TIMESTAMP) ";
 
         executeCommand(sql, con);
+
+        if (UtilsForTests.isTableInDatabase("RecordTest1", con)) {
+            executeCommand("DROP TABLE RecordTest1", con);
+        }
+        sql = "CREATE TABLE RecordTest1 ( " +
+                "ID CHAR(16) FOR BIT DATA NOT NULL, " + // PRIMARY KEY
+                "NAME VARCHAR(20), " +
+                "QTY INT, " +
+                "PRICE REAL " +
+                ") ";
+        executeCommand(sql, con);
+
+        if (UtilsForTests.isTableInDatabase("RecordTest2", con)) {
+            executeCommand("DROP TABLE RecordTest2", con);
+        }
+        sql = "CREATE TABLE RecordTest2 ( " +
+                "ID INTEGER NOT NULL GENERATED ALWAYS AS IDENTITY (START WITH 1, INCREMENT BY 1), " +
+                "DESCRIPTION VARCHAR(20), " +
+                "QTY INT, " +
+                "PRICE REAL, " +
+                "CREATED_ON TIMESTAMP DEFAULT CURRENT_TIMESTAMP" +
+                ") ";
+        executeCommand(sql, con);
+
     }
 
     public void testTypes() {
@@ -242,7 +266,7 @@ public final class TestDerby extends BaseTest {
             ;
             order.setCustomerId("123");
             order.setName("name");
-            order.setCreated(LocalDate.now());
+            order.setCreated(LocalDate.ofEpochDay(378));
             order.setDatePaid(LocalDateTime.now());
             order.setPaid(true);
 
@@ -275,6 +299,9 @@ public final class TestDerby extends BaseTest {
                 assertNotNull("type should not be null", columnInfo.columnType);
             }
 
+            List<Order> orders = session.query(Order.class, "SELECT * FROM Orders WHERE Customer_ID = ? ORDER BY DATE_PAID", "123").
+                    stream().sorted(Comparator.comparing(Order::getCreated)).collect(Collectors.toList());
+            log.warn(orders);
 
         } catch (SQLException e) {
             log.error(e.getMessage(), e);
@@ -288,5 +315,7 @@ public final class TestDerby extends BaseTest {
     @Override
     public void testAllDates() {
         super.testAllDates();
+
+        session.query(Contact.class, "SELECT * FROM CONTACTS WHERE LastName = ?","fred");
     }
 }
