@@ -38,7 +38,7 @@ if (session.fetch(customer)) {
 // Supports basic types
 String result = session.fetch(String.class, "select Name from Customers where ID = ?", 10);
 
-// Enums are supported 
+// Fetch a count as an int - Enums are supported 
 int count = session.fetch(int.class, "select count(*) from Customers where Region = ?", Region.West);
 
 // Insert - get autoinc
@@ -58,7 +58,7 @@ sesion.update(customer); // Update Customer
 ## Simple
 
 The API for Persism is small. Mostly you just need a Connection and a Persism Session object, and you're good to go.
-Your POJOs can have optional annotations for table amd column names and can optionally implement a Persistable interface
+Your POJOs can have optional annotations for table and column names and can optionally implement a Persistable interface
 for where you need to track changes to properties for UPDATE statements.
 
 ## Auto-Discovery
