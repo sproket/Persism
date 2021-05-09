@@ -9,6 +9,8 @@
 * Fixed issue with Queries cached with missing columns
 * Fixed @Table name case sensitivity
 * Added warnings if Persism doesn't have results when querying for DatabaseMetaData
+* Added new constructor for Session to supply a fake URL for situations where the Connection metadata url returns null
+
 
 ### Breaking changes
 
