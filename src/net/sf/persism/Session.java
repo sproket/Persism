@@ -161,7 +161,7 @@ public final class Session implements AutoCloseable {
             }
 
             List<Object> params = new ArrayList<>(primaryKeys.size());
-            List<ColumnInfo> columnInfos = new ArrayList<>(primaryKeys.size());
+            List<ColumnInfo> columnInfos = new ArrayList<>(changedProperties.size());
 
             Map<String, ColumnInfo> columns = metaData.getColumns(object.getClass(), connection);
 
@@ -384,7 +384,7 @@ public final class Session implements AutoCloseable {
             Map<String, PropertyInfo> columns = metaData.getTableColumnsPropertyInfo(object.getClass(), connection);
 
             List<Object> params = new ArrayList<>(primaryKeys.size());
-            List<ColumnInfo> columnInfos = new ArrayList<>(primaryKeys.size());
+            List<ColumnInfo> columnInfos = new ArrayList<>(columns.size());
             for (String column : primaryKeys) {
                 params.add(columns.get(column).getter.invoke(object));
                 columnInfos.add(metaData.getColumns(object.getClass(), connection).get(column));
@@ -514,7 +514,7 @@ public final class Session implements AutoCloseable {
 
         Map<String, PropertyInfo> properties = metaData.getTableColumnsPropertyInfo(object.getClass(), connection);
         List<Object> params = new ArrayList<>(primaryKeys.size());
-        List<ColumnInfo> columnInfos = new ArrayList<>(primaryKeys.size());
+        List<ColumnInfo> columnInfos = new ArrayList<>(properties.size());
         Map<String, ColumnInfo> cols = metaData.getColumns(objectClass, connection);
         JDBCResult result = new JDBCResult();
         try {
