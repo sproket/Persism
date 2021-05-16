@@ -454,6 +454,13 @@
         </dependency>
 
         <dependency>
+            <groupId>com.ibm.informix</groupId>
+            <artifactId>informix-jdbc-complete</artifactId>
+            <version>4.50.4.1</version>
+            <scope>test</scope>
+        </dependency>
+
+        <dependency>
             <groupId>com.toddfast.typeconverter</groupId>
             <artifactId>typeconverter</artifactId>
             <version>1.0</version>

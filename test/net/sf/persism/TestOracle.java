@@ -17,7 +17,6 @@ import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.sql.*;
 import java.text.SimpleDateFormat;
-import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -579,6 +578,11 @@ end;
     @Override
     public void testAllDates() {
         super.testAllDates();
+    }
+
+    @Override
+    public void testQueryResult() throws Exception {
+        super.testQueryResult();
     }
 
     @Override

@@ -2,8 +2,6 @@ package net.sf.persism;
 
 import net.sf.persism.categories.LocalDB;
 import net.sf.persism.dao.*;
-import net.sf.persism.dao.records.RecordTest1;
-import net.sf.persism.dao.records.RecordTest2;
 import org.junit.experimental.categories.Category;
 
 import java.io.File;
@@ -11,7 +9,6 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.sql.*;
 import java.time.*;
-import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.Date;
 

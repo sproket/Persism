@@ -1,13 +1,13 @@
 package net.sf.persism;
 
 /**
- * Simple wrapper for SQL String. Mainly to allow for overloads to fetch methods. Stupid ... feature!
+ * Simple wrapper for SQL String. Mainly to allow for overloads to fetch methods.
  */
 public final class SQL {
 
     private final String sql;
 
-    boolean whereOnly; // flags this as WHERE only - we add the SELECT part.
+    boolean addSQL; // flags this as WHERE only - we add the SELECT part.
     boolean storedProc; // not sure I'll need this
     boolean knownSQL; // not sure I'll need this
 
@@ -42,13 +42,23 @@ public final class SQL {
      * @return new SQL object
      */
     public static SQL where(String where) {
-        SQL sql = new SQL(where);
-        sql.whereOnly = true;
+        SQL sql = new SQL(" WHERE " + where);
+        sql.addSQL = true;
         return sql;
     }
 
-//    public SQL orderBy(String orderBy) {
-//        return new SQL(this.sql + " ORDER BY " + orderBy);
+//// kinda useless
+//    public static SQL orderBy(String orderBy) {
+//        SQL sql = new SQL(" ORDER BY " + orderBy);
+//        sql.addSQL = true;
+//        return sql;
+//    }
+//
+//    // stupid
+//    public SQL OrderBy(String orderBy) {
+//        SQL sql = new SQL(" ORDER BY " + orderBy);
+//        sql.addSQL = true;
+//        return sql;
 //    }
 
     @Override

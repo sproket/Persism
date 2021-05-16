@@ -12,4 +12,6 @@ import java.sql.Statement;
 final class JDBCResult {
     Statement st = null;
     ResultSet rs = null;
+
+    static final JDBCResult DEFAULT = new JDBCResult();
 }

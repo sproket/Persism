@@ -262,6 +262,25 @@ public abstract class BaseTest extends TestCase {
                 assertFalse("order OTHER s/b NOT paid", customerOrder.isPaid());
             }
         }
+
+        Customer customer = new Customer();
+        customer.setCustomerId("1234");
+        customer.setContactName("Fred");
+        customer.setCompanyName("Slate Quarry");
+        customer.setRegion(Regions.East);
+        customer.setStatus('1');
+        customer.setAddress("123 Sesame Street");
+
+        session.insert(customer);
+
+        // test primitives
+        String result = session.fetch(String.class, sql("select Contact_Name from Customers where Customer_ID = ?"), keys("1234"));
+        log.info(result);
+        assertEquals("should be Fred", "Fred", result);
+
+        Integer count = session.fetch(Integer.class, sql("select count(*) from Customers where Region = ?"), params(Regions.East));
+        log.info("count " + count);
+        assertEquals("should be 1", "1", "" + count);
     }
 
     public void testSelectMultipleByPrimaryKey() throws SQLException {
@@ -429,6 +448,7 @@ public abstract class BaseTest extends TestCase {
         order.setCreated(LocalDate.now());
         session.insert(order);
 
+        log.info("done");
     }
 
 
@@ -568,7 +588,7 @@ public abstract class BaseTest extends TestCase {
         contact.setDivision("Y");
         assertEquals("0 update?", 0, session.update(contact));
 
-        List<Contact> contacts = session.query(Contact.class, sql("SELECT * FROM Contacts"));
+        List<Contact> contacts = session.query(Contact.class);
         log.info(contacts);
         assertEquals("should have 1? ", 1, contacts.size());
 
@@ -658,6 +678,21 @@ public abstract class BaseTest extends TestCase {
         session.insert(contact);
         session.fetch(contact);
 
+        // https://stackoverflow.com/questions/45305283/parsing-sql-query-in-java
+
+        // test where and keys - this at least does conversions for UUID so they don't have to manually do it.
+        // As long as they use keys() rather than params()
+        String columnName = session.getMetaData().getPrimaryKeys(Contact.class, con).get(0);
+        String where = session.getMetaData().getConnectionType().getKeywordStartDelimiter() +
+                columnName +
+                session.getMetaData().getConnectionType().getKeywordEndDelimiter() +
+                "=?";
+        // testing that this should not fail.
+        List<Contact> results = session.query(Contact.class, where(where), keys(identity));
+        log.info(results);
+
+        Contact result = session.fetch(Contact.class, where(where), keys(identity));
+        log.info(result);
     }
 
     static LocalDateTime ldt = LocalDateTime.parse("1998-02-17 10:23:43.567", formatter);
@@ -915,8 +950,9 @@ public abstract class BaseTest extends TestCase {
         assertTrue("Invoice ID > 0", invoice.getInvoiceId() > 0);
         assertNotNull("Created s/b not null", invoice.getCreated()); // note no setter
 
+// todo add test select columns in reverse order or similar
 
-        List<Invoice> invoices = session.query(Invoice.class, sql("select * from Invoices where CUSTOMER_ID=?"), params("MOO"));
+        List<Invoice> invoices = session.query(Invoice.class, where("CUSTOMER_ID=? ORDER BY CUSTOMER_ID"), params("MOO"));
         log.info(invoices);
         assertEquals("invoices s/b 1", 1, invoices.size());
 

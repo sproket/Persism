@@ -1,9 +1,8 @@
 package net.sf.persism;
 
-import com.healthmarketscience.jackcess.complex.Attachment;
 import junit.framework.TestCase;
 import net.sf.persism.dao.access.Contact;
-//import net.ucanaccess.complex.Attachment;
+import net.ucanaccess.complex.Attachment;
 
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
@@ -14,13 +13,12 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.sql.*;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 import java.util.Properties;
-
-import static net.sf.persism.SQL.sql;
 
 public class TestMSAccess extends TestCase {
 
@@ -59,9 +57,8 @@ public class TestMSAccess extends TestCase {
     public void testContact() throws SQLException, IOException {
         // test Contacts.accddb should contain 1 row ID 1 with 2 attachments
         // Note Access fails with multiple test methods - so any other testing put here.
-
         if (true) {
-            return; // all brokem by new fucked up version. Prior version broken with Java 16
+            return;
         }
 
         Contact contact;
@@ -82,12 +79,9 @@ public class TestMSAccess extends TestCase {
         log.info("created on  " + contact.getCreated());
         assertNotNull("created date defaulted?", contact.getCreated());
 
-        List<Contact> list = session.query(Contact.class, sql("select * from Contacts"));
+        List<Contact> list = session.query(Contact.class);
         log.info(list);
         assertEquals("should be 2", 2, list.size());
-
-        List<Contact> list2 = session.query(Contact.class);
-        log.info(list2);
 
         contact.setEmailAddress("x@Z.com");
         session.update(contact);
@@ -102,29 +96,27 @@ public class TestMSAccess extends TestCase {
         log.info("attachments? " + attachments.length);
         for (int j = 0; j < attachments.length; j++) {
             Attachment attachment = attachments[j];
-            //attachment. WTF totally different
-//            log.info("url:  " + attachment.getUrl());
-//            log.info("type: " + attachment.getType());
-//            log.info("name: " + attachment.getName());
-//            log.info("time: " + attachment.getTimeStamp());
+            log.info("url:  " + attachment.getUrl());
+            log.info("type: " + attachment.getType());
+            log.info("name: " + attachment.getName());
+            log.info("time: " + attachment.getTimeStamp());
         }
         assertEquals("attachmens s/b/2", contact.getAttachments().length, 2);
 
         // add to the array?
         // attachments = contact.getAttachments();
         List<Attachment> attachmentList = new ArrayList<>(Arrays.asList(attachments));
-//        Attachment attachment = new Attachment(null, "test", "png", null, new Date(System.currentTimeMillis()), 0);
+        Attachment attachment = new Attachment(null, "test", "png", null, LocalDateTime.now(), 0);
 
-
-//        BufferedImage img = ImageIO.read(getClass().getResourceAsStream("/logo1.png"));
-//        ByteArrayOutputStream baos = new ByteArrayOutputStream();
-//        ImageIO.write(img, "png", baos);
-//        baos.flush();
-//        byte[] bytes = baos.toByteArray();
-//        baos.close();
-//        attachment.setData(bytes);
-//        attachmentList.add(attachment);
-//        contact.setAttachments(attachmentList.toArray(ATTACHMENTS));
+        BufferedImage img = ImageIO.read(getClass().getResourceAsStream("/logo1.png"));
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        ImageIO.write(img, "png", baos);
+        baos.flush();
+        byte[] bytes = baos.toByteArray();
+        baos.close();
+        attachment.setData(bytes);
+        attachmentList.add(attachment);
+        contact.setAttachments(attachmentList.toArray(ATTACHMENTS));
 
         assertEquals(contact.getJobTitle(), "Software Developer");
         contact.setJobTitle("Software Bug Creator!");

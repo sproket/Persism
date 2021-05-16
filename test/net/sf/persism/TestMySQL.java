@@ -1,13 +1,9 @@
 package net.sf.persism;
 
 import net.sf.persism.categories.ExternalDB;
-import net.sf.persism.categories.TestContainerDB;
 import net.sf.persism.dao.Customer;
 import net.sf.persism.dao.Regions;
-import org.junit.ClassRule;
-import org.junit.Rule;
 import org.junit.experimental.categories.Category;
-import org.testcontainers.containers.MySQLContainer;
 
 import java.sql.*;
 import java.util.ArrayList;
@@ -213,6 +209,7 @@ public class TestMySQL extends BaseTest {
     }
 
     public void testSomething() {
+        // move to base class
         Customer customer = new Customer();
         customer.setCustomerId("123");
         customer.setContactName("Fred");

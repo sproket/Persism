@@ -8,19 +8,15 @@ package net.sf.persism;
 
 import junit.framework.TestCase;
 import net.sf.persism.categories.ExternalDB;
-import net.sf.persism.categories.TestContainerDB;
 import net.sf.persism.dao.pubs.Author;
 import net.sf.persism.dao.pubs.JobType;
 import net.sf.persism.dao.pubs.PublisherInfo;
 import org.junit.AfterClass;
-import org.junit.ClassRule;
 import org.junit.experimental.categories.Category;
-import org.testcontainers.containers.MSSQLServerContainer;
 
 
 import java.sql.Connection;
 import java.sql.DriverManager;
-import java.sql.SQLException;
 import java.util.*;
 
 import static net.sf.persism.SQL.sql;

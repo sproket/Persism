@@ -8,7 +8,6 @@ import java.sql.*;
 import java.util.*;
 
 import static net.sf.persism.Parameters.*;
-import static net.sf.persism.SQL.sql;
 import static net.sf.persism.Util.isRecord;
 
 /**
@@ -39,6 +38,7 @@ public final class Session implements AutoCloseable {
 
     /**
      * Constructor for Session where you want to specify the Session Key.
+     *
      * @param connection db connection
      * @param sessionKey Unique string to represent the connection URL if it is not available on the Connection metadata.
      *                   This string should start with the jdbc url string to indicate the connection type.
@@ -55,7 +55,7 @@ public final class Session implements AutoCloseable {
      *                  jdbc:ucanaccess = MS Access
      *                  jdbc:informix = Informix
      *
-     </pre>
+     *</pre>
      * @throws PersismException if something goes wrong
      */
     public Session(Connection connection, String sessionKey) throws PersismException {
@@ -350,6 +350,7 @@ public final class Session implements AutoCloseable {
                 ((Persistable<?>) object).saveReadState();
             }
 
+            //noinspection unchecked
             return new Result<>(ret, (T) object);
         } catch (Exception e) {
             Util.rollback(connection);
@@ -434,6 +435,18 @@ public final class Session implements AutoCloseable {
     }
 
     /**
+     * @param objectClass
+     * @param sql
+     * @param parameters
+     * @param <T>
+     * @return
+     * @deprecated
+     */
+    public <T> List<T> query(Class<T> objectClass, String sql, Object... parameters) {
+        return query(objectClass, new SQL(sql), new Parameters(parameters));
+    }
+
+    /**
      * Query to return all results.
      *
      * @param objectClass Type of returned value
@@ -473,14 +486,14 @@ public final class Session implements AutoCloseable {
         if (parameters.size() == 0) {
             // Get the SELECT without any WHERE clause
             sql = metaData.getSelectStatement(objectClass, connection);
-            return query(objectClass, sql(sql), none());
+            return query(objectClass, SQL.sql(sql), none());
         }
 
         List<String> primaryKeys = metaData.getPrimaryKeys(objectClass, connection);
 
         if (parameters.size() == primaryKeys.size()) {
             // single select
-            return query(objectClass, sql(sql), parameters);
+            return query(objectClass, SQL.sql(sql), parameters);
         }
 
         String sd = metaData.getConnectionType().getKeywordStartDelimiter();
@@ -503,7 +516,7 @@ public final class Session implements AutoCloseable {
             andSep = " AND ";
         }
         sql = sb.toString();
-        return query(objectClass, sql(sql), parameters);
+        return query(objectClass, SQL.sql(sql), parameters);
     }
 
     /**
@@ -529,23 +542,9 @@ public final class Session implements AutoCloseable {
             metaData.getTableColumnsPropertyInfo(objectClass, connection);
         }
 
-        JDBCResult result = new JDBCResult();
+        JDBCResult result = JDBCResult.DEFAULT;
         try {
-            if (log.isDebugEnabled()) {
-                log.debug("query: %s params: %s", sql, parameters);
-            }
-            if (sql.whereOnly) {
-                String ssql = metaData.getSelectStatement(objectClass, connection);
-                // TODO Here we could test parameters!
-                exec(result, ssql + " WHERE " + sql, parameters.toArray());
-            } else {
-
-                checkStoredProcOrSQL(objectClass, sql);
-
-                // we don't check parameter types here? Nope - we don't know anything at this point.
-                exec(result, sql.toString(), parameters.toArray());
-            }
-
+            result = executeQuery(objectClass, sql, parameters, isPOJO);
             while (result.rs.next()) {
                 if (isRecord) {
                     list.add(reader.readRecord(objectClass, result.rs));
@@ -633,6 +632,18 @@ public final class Session implements AutoCloseable {
     }
 
     /**
+     * @param objectClass
+     * @param sql
+     * @param parameters
+     * @param <T>
+     * @return
+     * @deprecated
+     */
+    public <T> T fetch(Class<T> objectClass, String sql, Object... parameters) {
+        return fetch(objectClass, new SQL(sql), new Parameters(parameters));
+    }
+
+    /**
      * Fetch object by primary key(s)
      *
      * @param objectClass Type to return
@@ -674,25 +685,9 @@ public final class Session implements AutoCloseable {
         boolean isPOJO = Types.getType(objectClass) == null;
         boolean isRecord = isPOJO && isRecord(objectClass);
 
-        JDBCResult result = new JDBCResult();
+        JDBCResult result = JDBCResult.DEFAULT;
         try {
-
-            if (log.isDebugEnabled()) {
-                log.debug("fetch: %s params: %s", sql, parameters);
-            }
-
-            if (sql.whereOnly) {
-                String ssql = metaData.getSelectStatement(objectClass, connection);
-                // TODO Here we could test parameters!
-                exec(result, ssql + " WHERE " + sql, parameters.toArray());
-            } else {
-
-                checkStoredProcOrSQL(objectClass, sql);
-
-                // we don't check parameter types here? Nope - we don't know anything at this point.
-                exec(result, sql.toString(), parameters.toArray());
-            }
-
+            result = executeQuery(objectClass, sql, parameters, isPOJO);
             if (result.rs.next()) {
                 if (isRecord) {
                     return reader.readRecord(objectClass, result.rs);
@@ -712,6 +707,44 @@ public final class Session implements AutoCloseable {
         } finally {
             Util.cleanup(result.st, result.rs);
         }
+    }
+
+    private JDBCResult executeQuery(Class<?> objectClass, SQL sql, Parameters parameters, boolean isPOJO) throws SQLException {
+        JDBCResult result = new JDBCResult();
+
+        if (isPOJO && parameters.areKeys) {
+            // convert parameters - usually it's the UUID type that may need a conversion to byte[16]
+            List<String> keys = metaData.getPrimaryKeys(objectClass, connection);
+            if (keys.size() == 1) {
+                Map<String, ColumnInfo> columns = metaData.getColumns(objectClass, connection);
+                String key = keys.get(0);
+                ColumnInfo columnInfo = columns.get(key);
+                for (int j = 0; j < parameters.size(); j++) {
+                    if (parameters.get(j) != null) {
+                        parameters.set(j, convertor.convert(parameters.get(j), columnInfo.columnType.getJavaType(), columnInfo.columnName));
+                    }
+                }
+            }
+        }
+
+        if (sql.addSQL) {
+            String select = metaData.getSelectStatement(objectClass, connection);
+            if (log.isDebugEnabled()) {
+                log.debug("fetch: %s params: %s", select + " " + sql, parameters);
+            }
+            exec(result, select + " " + sql, parameters.toArray());
+        } else {
+
+            if (log.isDebugEnabled()) {
+                log.debug("fetch: %s params: %s", sql, parameters);
+            }
+
+            checkStoredProcOrSQL(objectClass, sql);
+
+            // we don't check parameter types here? Nope - we don't know anything at this point.
+            exec(result, sql.toString(), parameters.toArray());
+        }
+        return result;
     }
 
     private <T> void checkStoredProcOrSQL(Class<T> objectClass, SQL sql) {

@@ -11,7 +11,6 @@ import net.sf.persism.categories.ExternalDB;
 import net.sf.persism.dao.*;
 import org.junit.experimental.categories.Category;
 
-import javax.net.ssl.SSLParameters;
 import java.math.BigDecimal;
 import java.sql.*;
 import java.sql.Date;
@@ -20,8 +19,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.*;
 
 import static net.sf.persism.Parameters.params;
-import static net.sf.persism.SQL.proc;
-import static net.sf.persism.SQL.sql;
+import static net.sf.persism.SQL.*;
 import static net.sf.persism.UtilsForTests.*;
 
 @Category(ExternalDB.class)
@@ -847,10 +845,10 @@ public class TestMSSQL extends BaseTest {
         //DateFormat df = new SimpleDateFormat("MM/dd/yyyy");
         //DateTimeFormatter df = DateTimeFormatter.ISO_DATE;
 
-        List<Order> orders = session.query(Order.class, sql("select * from Orders where CONVERT(varchar, created, 112) = ?"), params(order.getCreated().format(DateTimeFormatter.ISO_LOCAL_DATE)));
+        List<Order> orders = session.query(Order.class, where("CONVERT(varchar, created, 112) = ?"), params(order.getCreated().format(DateTimeFormatter.ISO_LOCAL_DATE)));
         log.info("ORDERS?  " + orders);
 
-        orders = session.query(Order.class, sql("select * from Orders where created = ?"), params(order.getCreated().format(DateTimeFormatter.ISO_LOCAL_DATE)));
+        orders = session.query(Order.class, where("created = ?"), params(order.getCreated().format(DateTimeFormatter.ISO_LOCAL_DATE)));
         log.info("ORDERS AGAIN?  " + orders);
     }
 

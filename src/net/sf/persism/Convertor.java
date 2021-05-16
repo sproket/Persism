@@ -37,7 +37,7 @@ final class Convertor {
 
             case booleanType:
             case BooleanType:
-                log.debug("BooleanType");
+//                log.debug("BooleanType");
                 break;
 
             case byteType:
@@ -47,7 +47,7 @@ final class Convertor {
 
             case shortType:
             case ShortType:
-                log.debug(valueType);
+//                log.debug(valueType);
                 break;
 
             case integerType:
@@ -105,7 +105,7 @@ final class Convertor {
 
             case floatType:
             case FloatType:
-                log.debug("FloatType");
+//                log.debug("FloatType");
                 break;
 
             case doubleType:
@@ -212,9 +212,9 @@ final class Convertor {
                     returnValue = UUID.fromString("" + value);
 
                 } else if (targetType.equals(Boolean.class) || targetType.equals(boolean.class)) {
-                    // String to Boolean - true or 1 - otherwise false (or null)
-                    String bval = "" + value;
-                    returnValue = bval.equalsIgnoreCase("true") || bval.equals("1");
+                    // String to Boolean - T or 1 - otherwise false (or null)
+                    String bval = ("" + value).toUpperCase();
+                    returnValue = bval.startsWith("T") || bval.startsWith("1");
 
                 } else if (targetType.equals(Time.class)) {
                     // MSSQL works, JTDS returns Varchar in format below with varying decimal numbers
@@ -243,21 +243,21 @@ final class Convertor {
 
             case characterType:
             case CharacterType:
-                log.debug("CharacterType");
+//                log.debug("CharacterType");
                 break;
 
             case LocalDateType:
-                log.debug("LocalDateType");
+//                log.debug("LocalDateType");
                 returnValue = java.sql.Date.valueOf((LocalDate) value);
                 break;
 
             case LocalDateTimeType:
-                log.debug("LocalDateTimeType");
+//                log.debug("LocalDateTimeType");
                 returnValue = Timestamp.valueOf((LocalDateTime) value);
                 break;
 
             case LocalTimeType:
-                log.debug("LocalTimeType");
+//                log.debug("LocalTimeType");
                 returnValue = Time.valueOf((LocalTime) value);
                 break;
 
@@ -293,7 +293,7 @@ final class Convertor {
                 break;
 
             case TimeType:
-                log.debug("TimeType");
+//                log.debug("TimeType");
                 if (targetType.equals(LocalTime.class)) {
                     returnValue = LocalTime.parse("" + value);
                 }
@@ -307,7 +307,7 @@ final class Convertor {
 
             case byteArrayType:
             case ByteArrayType:
-                log.debug("ByteArrayType");
+//                log.debug("ByteArrayType");
                 if (targetType.equals(UUID.class)) {
                     returnValue = asUuid((byte[]) value);
                 }
@@ -327,14 +327,14 @@ final class Convertor {
                 break;
 
             case UUIDType:
-                log.debug("UUIDType");
+//                log.debug("UUIDType");
                 if (targetType.equals(Blob.class) || targetType.equals(byte[].class) || targetType.equals(Byte[].class)) {
                     returnValue = asBytes((UUID) value);
                 }
                 break;
 
             case ObjectType:
-                log.debug("ObjectType");
+//                log.debug("ObjectType");
                 break;
         }
         return returnValue;

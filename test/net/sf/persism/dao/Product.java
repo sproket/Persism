@@ -26,6 +26,7 @@ package net.sf.persism.dao;
 
 import java.util.UUID;
 
+
 // TODO WTF happens in this case? desciption in the main constructor?
 public record Product(int id, String desciption, double cost, UUID junk) {
 

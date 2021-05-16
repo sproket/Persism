@@ -2,11 +2,7 @@ package net.sf.persism;
 
 import junit.framework.TestCase;
 import net.sf.persism.categories.ExternalDB;
-import net.sf.persism.categories.LocalDB;
-import net.sf.persism.categories.TestContainerDB;
 import net.sf.persism.dao.northwind.*;
-import org.junit.ClassRule;
-import org.testcontainers.containers.MSSQLServerContainer;
 
 import javax.imageio.ImageIO;
 import java.io.File;
@@ -14,7 +10,6 @@ import java.sql.*;
 import java.text.DecimalFormat;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Properties;
 
