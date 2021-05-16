@@ -387,6 +387,13 @@
         </dependency>
 
         <dependency>
+            <groupId>com.ibm.informix</groupId>
+            <artifactId>informix-jdbc-complete</artifactId>
+            <version>4.50.4.1</version>
+            <scope>test</scope>
+        </dependency>
+
+        <dependency>
             <groupId>net.sf.ucanaccess</groupId>
             <artifactId>ucanaccess</artifactId>
             <version>4.0.4</version>

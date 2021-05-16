@@ -258,20 +258,6 @@ public abstract class BaseTest extends TestCase {
         }
     }
 
-//    public void testSelectMultipleByPrimaryKey() throws SQLException {
-//        queryDataSetup();
-//        List<Order> orders = session.query(Order.class, "select * from Orders");
-//        log.info(orders);
-//
-//        assertEquals("should be 4 ", 4, orders.size());
-//
-//        orders = session.query(Order.class, params(1, 4));
-//
-//        log.info(orders);
-//
-//        assertEquals("should be 2 ", 2, orders.size());
-//    }
-
     public void testQueryResultRecord() throws Exception {
         String sql;
         StringBuilder sb;

@@ -210,9 +210,9 @@ final class Convertor {
                     returnValue = UUID.fromString("" + value);
 
                 } else if (targetType.equals(Boolean.class) || targetType.equals(boolean.class)) {
-                    // String to Boolean - true or 1 - otherwise false (or null)
-                    String bval = "" + value;
-                    returnValue = bval.equalsIgnoreCase("true") || bval.equals("1");
+                    // String to Boolean - T or 1 - otherwise false (or null)
+                    String bval = ("" + value).toUpperCase();
+                    returnValue = bval.startsWith("T") || bval.startsWith("1");
 
                 } else if (targetType.equals(Time.class)) {
                     // MSSQL works, JTDS returns Varchar in format below with varying decimal numbers
