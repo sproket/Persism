@@ -31,6 +31,26 @@ final class PropertyInfo {
         return propertyName;
     }
 
+    Method getter() {
+        return getter;
+    }
+
+    Method setter() {
+        return setter;
+    }
+
+    Field field() {
+        return field;
+    }
+
+    boolean readOnly() {
+        return readOnly;
+    }
+
+    Map<Class<? extends Annotation>, Annotation> annotations() {
+        return annotations;
+    }
+
     @Override
     public String toString() {
         return "PropertyInfo{" +

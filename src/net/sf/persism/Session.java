@@ -336,8 +336,6 @@ public final class Session implements AutoCloseable {
             if (refreshAfterInsert) {
                 // Read the full object back to update any properties which had defaults
                 if (isRecord(object.getClass())) {
-                    //SQL sql = new SQL(metaData.getDefaultSelectStatement(object.getClass(), connection));
-                    //object = fetch(object.getClass(), sql, params(primaryKeyValues.toArray()));
                     object = fetch(object.getClass(), metaData.getSelectStatement(object, connection), primaryKeyValues.toArray());
                 } else {
                     fetch(object);
@@ -447,8 +445,6 @@ public final class Session implements AutoCloseable {
     public <T> List<T> query(Class<T> objectClass, String sql, Object... parameters) throws PersismException {
         List<T> list = new ArrayList<T>(32);
 
-        JDBCResult result = new JDBCResult();
-
         // If we know this type it means it's a primitive type. Not a DAO so we use a different rule to read those
         boolean isPOJO = Types.getType(objectClass) == null;
         boolean isRecord = isPOJO && isRecord(objectClass);
@@ -458,6 +454,7 @@ public final class Session implements AutoCloseable {
             metaData.getTableColumnsPropertyInfo(objectClass, connection);
         }
 
+        JDBCResult result = new JDBCResult();
         try {
             // we don't check parameter types here? Nope - we don't know anything at this point.
             exec(result, sql, parameters);
@@ -515,7 +512,7 @@ public final class Session implements AutoCloseable {
         List<Object> params = new ArrayList<>(primaryKeys.size());
         List<ColumnInfo> columnInfos = new ArrayList<>(properties.size());
         Map<String, ColumnInfo> cols = metaData.getColumns(objectClass, connection);
-        JDBCResult result = new JDBCResult();
+        JDBCResult JDBCResult = new JDBCResult();
         try {
             for (String column : primaryKeys) {
                 PropertyInfo propertyInfo = properties.get(column);
@@ -531,10 +528,10 @@ public final class Session implements AutoCloseable {
                     params.set(j, convertor.convert(params.get(j), columnInfos.get(j).columnType.getJavaType(), columnInfos.get(j).columnName));
                 }
             }
-            exec(result, sql, params.toArray());
+            exec(JDBCResult, sql, params.toArray());
 
-            if (result.rs.next()) {
-                reader.readObject(object, result.rs);
+            if (JDBCResult.rs.next()) {
+                reader.readObject(object, JDBCResult.rs);
                 return true;
             }
             return false;
@@ -543,7 +540,7 @@ public final class Session implements AutoCloseable {
             Util.rollback(connection);
             throw new PersismException(e.getMessage(), e);
         } finally {
-            Util.cleanup(result.st, result.rs);
+            Util.cleanup(JDBCResult.st, JDBCResult.rs);
         }
     }
 
@@ -655,7 +652,7 @@ public final class Session implements AutoCloseable {
 
     void setParameters(PreparedStatement st, Object[] parameters) throws SQLException {
         if (log.isDebugEnabled()) {
-            log.debug("PARAMS: %s", Arrays.asList(parameters));
+            log.debug("setParameters PARAMS: %s", Arrays.asList(parameters));
         }
 
         int n = 1;

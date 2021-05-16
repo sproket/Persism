@@ -31,7 +31,7 @@
     <logger name="net" level="ERROR"/>
 
     <!-- ERROR, WARN, INFO, DEBUG, OFF -->
-    <logger name="jdbc.sqlonly" level="OFF"/>
+    <logger name="jdbc.sqlonly" level="DEBUG"/>
     <logger name="jdbc.audit" level="OFF"/>
     <logger name="jdbc.sqltiming" level="OFF"/>
     <logger name="jdbc.connection" level="OFF"/>

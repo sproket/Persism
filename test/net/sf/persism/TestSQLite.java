@@ -119,7 +119,7 @@ public final class TestSQLite extends BaseTest {
                 " Phone VARCHAR(30) NULL, " +
                 " STATUS CHAR(1) NULL, " +
                 " Fax VARCHAR(30) NULL, " +
-                " Date_Registered datetime default  (datetime('now','localtime')), " +
+                " Date_Registered datetime default (datetime('now','localtime')), " + // todo or default CURRENT_TIMESTAMP
                 " Date_Of_Last_Order DATE, " +
                 " TestLocalDate datetime, " +
                 " TestLocalDateTIme datetime " +

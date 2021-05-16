@@ -380,18 +380,10 @@
 
         <dependency>
             <groupId>com.ibm.informix</groupId>
-            <artifactId>jdbc</artifactId>
+            <artifactId>informix-jdbc-complete</artifactId>
             <version>4.50.4.1</version>
             <scope>test</scope>
         </dependency>
-
-<!--        <dependency>-->
-<!--            <groupId>com.ibm.informix</groupId>-->
-<!--            <artifactId>informix-jdbc-complete</artifactId>-->
-<!--            <version>4.50.4.1</version>-->
-<!--            <scope>test</scope>-->
-<!--        </dependency>        -->
-
 
         <dependency>
             <groupId>net.sf.ucanaccess</groupId>
