@@ -2,6 +2,7 @@ package net.sf.persism;
 
 import junit.framework.TestCase;
 import net.sf.persism.categories.ExternalDB;
+import net.sf.persism.categories.LocalDB;
 import net.sf.persism.dao.access.Contact;
 import net.ucanaccess.complex.Attachment;
 import org.junit.experimental.categories.Category;
@@ -15,15 +16,13 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.sql.*;
-import java.util.ArrayList;
-import java.util.Arrays;
+import java.util.*;
 import java.util.Date;
-import java.util.List;
-import java.util.Properties;
 
 // Marked as ExternalDB to prevent Maven from running it and failing on file in use
 // on the Files.copy line. WTF. It runs fine with AllTests...
 @Category(ExternalDB.class)
+//@Category(LocalDB.class)
 public class TestMSAccess extends TestCase {
 
     private static final Log log = Log.getLogger(TestMSAccess.class);
@@ -42,7 +41,7 @@ public class TestMSAccess extends TestCase {
 
         String home = UtilsForTests.createHomeFolder("msaccess");
 
-        URI uri = getClass().getResource("/Contacts.accdb").toURI();
+        URI uri = Objects.requireNonNull(getClass().getResource("/Contacts.accdb")).toURI();
 
         Path from = Paths.get(uri);
         Path to = Paths.get(home + "/Contacts.accdb");
@@ -111,7 +110,7 @@ public class TestMSAccess extends TestCase {
         List<Attachment> attachmentList = new ArrayList<>(Arrays.asList(attachments));
         Attachment attachment = new Attachment(null, "test", "png", null, new Date(System.currentTimeMillis()), 0);
 
-        BufferedImage img = ImageIO.read(getClass().getResourceAsStream("/logo1.png"));
+        BufferedImage img = ImageIO.read(Objects.requireNonNull(getClass().getResourceAsStream("/logo1.png")));
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         ImageIO.write(img, "png", baos);
         baos.flush();

@@ -148,3 +148,7 @@ FFS
 https://stackoverflow.com/questions/36427868/failed-to-execute-goal-org-apache-maven-pluginsmaven-surefire-plugin2-12test
 
 TODO https://maxdb.sap.com/
+
+TODO https://gitter.im/ maybe ....
+
+TODO CockroachDB https://www.cdata.com/drivers/cockroachdb/jdbc/ https://www.cockroachlabs.com/get-cockroachdb/

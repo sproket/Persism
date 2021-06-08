@@ -101,7 +101,7 @@ final class Reader {
 
             Set<String> missing = new HashSet<>(columnCount);
             missing.addAll(properties.keySet());
-            missing.removeAll(foundColumns);
+            foundColumns.forEach(missing::remove);
 
             // todo maybe strict mode off logs warn? Should we do this if this is Query vs Table?
             throw new PersismException("Object " + objectClass + " was not properly initialized. Some properties not initialized by the queried columns: " + foundColumns + " Missing:" + missing);

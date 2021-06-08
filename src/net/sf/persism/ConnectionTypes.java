@@ -29,9 +29,9 @@ enum ConnectionTypes {
     Other(null, "", "")
     ;
 
-    private String schemaPattern;
-    private String keywordStartDelimiter;
-    private String keywordEndDelimiter;
+    private final String schemaPattern;
+    private final String keywordStartDelimiter;
+    private final String keywordEndDelimiter;
 
     ConnectionTypes(String schemaPattern, String keywordStartDelimiter, String keywordEndDelimiter) {
         this.schemaPattern = schemaPattern;
