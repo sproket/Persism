@@ -828,7 +828,7 @@ final class MetaData {
                 }
             }
             if (!found) {
-                throw new PersismException("Could not find a Table in the database named " + tableName + ". Check the @Table annotation on " + objectClass.getName());
+                throw new PersismException(Messages.CouldNotFindTableNameInTheDatabase.message(tableName, objectClass.getName()));
             }
 
         } else {
@@ -854,13 +854,15 @@ final class MetaData {
                 }
             }
         }
+        boolean isView = false; // todo Views
         if (guessedTables.size() == 0) {
-            throw new PersismException("Could not determine a table for type: " + objectClass.getName() + " Guesses were: " + guesses);
+            throw new PersismException(Messages.CouldNotDetermineTableOrViewForType.message(isView ? "view" : "table", objectClass.getName(), guesses));
         }
 
         if (guessedTables.size() > 1) {
-            throw new PersismException("Could not determine a table for type: " + objectClass.getName() + " Guesses were: " + guesses + " and we found multiple matching tables: " + guessedTables);
+            throw new PersismException(Messages.CouldNotDetermineTableOrViewForTypeMultipleMatches.message(isView ? "view" : "table", objectClass.getName(), guesses, guessedTables));
         }
+
         return guessedTables.get(0);
     }
 

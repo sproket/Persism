@@ -135,7 +135,7 @@ public final class Session implements AutoCloseable {
     public int update(Object object) throws PersismException {
         List<String> primaryKeys = metaData.getPrimaryKeys(object.getClass(), connection);
         if (primaryKeys.size() == 0) {
-            throw new PersismException("Cannot perform UPDATE - " + metaData.getTableName(object.getClass()) + " has no primary keys.");
+            throw new PersismException(Messages.TableHasNoPrimaryKeys.message("UPDATE", metaData.getTableName(object.getClass())));
         }
 
         PreparedStatement st = null;
@@ -249,7 +249,7 @@ public final class Session implements AutoCloseable {
 
                 PropertyInfo propertyInfo = properties.get(columnInfo.columnName);
                 if (propertyInfo.getter == null) {
-                    throw new PersismException(String.format("Class %s has no getter for property %s", object.getClass(), propertyInfo.propertyName));
+                    throw new PersismException(Messages.ClassHasNoGetterForProperty.message(object.getClass(), propertyInfo.propertyName));
                 }
                 if (!columnInfo.autoIncrement) {
 
@@ -266,7 +266,7 @@ public final class Session implements AutoCloseable {
                             if (columnInfo.primary) {
                                 // This is supported with PostgreSQL but otherwise throw this an exception
                                 if (!(metaData.getConnectionType() == ConnectionTypes.PostgreSQL)) {
-                                    throw new PersismException("Non-auto inc generated primary keys are not supported. Please assign your primary key value before performing an insert.");
+                                    throw new PersismException(Messages.NonAutoIncGeneratedNotSupported.message());
                                 }
                             }
 
@@ -369,7 +369,7 @@ public final class Session implements AutoCloseable {
 
         List<String> primaryKeys = metaData.getPrimaryKeys(object.getClass(), connection);
         if (primaryKeys.size() == 0) {
-            throw new PersismException("Cannot perform DELETE - " + metaData.getTableName(object.getClass()) + " has no primary keys.");
+            throw new PersismException(Messages.TableHasNoPrimaryKeys.message("DELETE", metaData.getTableName(object.getClass())));
         }
 
         PreparedStatement st = null;
@@ -496,16 +496,16 @@ public final class Session implements AutoCloseable {
         boolean readPrimitive = Types.getType(objectClass) != null;
         if (readPrimitive) {
             // For unit tests
-            throw new PersismException("Cannot read a primitive type object with this method.");
+            throw new PersismException(Messages.CannotReadThisType.message("primitive"));
         }
 
         if (isRecord(objectClass)) {
-            throw new PersismException("Cannot read a Record type object with this method.");
+            throw new PersismException(Messages.CannotReadThisType.message("Record"));
         }
 
         List<String> primaryKeys = metaData.getPrimaryKeys(objectClass, connection);
         if (primaryKeys.size() == 0) {
-            throw new PersismException("Cannot perform FETCH - " + metaData.getTableName(objectClass) + " has no primary keys.");
+            throw new PersismException(Messages.TableHasNoPrimaryKeys.message("FETCH", metaData.getTableName(object.getClass())));
         }
 
         Map<String, PropertyInfo> properties = metaData.getTableColumnsPropertyInfo(object.getClass(), connection);

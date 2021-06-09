@@ -232,8 +232,7 @@ final class Convertor {
                     try {
                         returnValue = new BigDecimal("" + value);
                     } catch (NumberFormatException e) {
-                        String msg = "NumberFormatException: Column: " + columnName + " Type of property: " + targetType + " - Type read: " + value.getClass() + " VALUE: " + value;
-                        throw new PersismException(msg, e);
+                        throw new PersismException(Messages.NumberFormatException.message(columnName, targetType, value.getClass(), value), e);
                     }
                 }
 
@@ -345,18 +344,14 @@ final class Convertor {
         try {
             return df.parse("" + value);
         } catch (ParseException e) {
-            String msg = e.getMessage() + ". Column: " + columnName + " Target Conversion: " + targetType + " - Type read: " + value.getClass() + " VALUE: " + value;
-            throw new PersismException(msg, e);
-        }
+            throw new PersismException(Messages.DateFormatException.message(e.getMessage(), columnName, targetType, value.getClass(), value), e);        }
     }
 
     Timestamp tryParseTimestamp(Object value, Class<?> targetType, String columnName) throws PersismException {
         try {
             return Timestamp.valueOf("" + value);
         } catch (IllegalArgumentException e) {
-            String msg = e.getMessage() + ". Column: " + columnName + " Target Conversion: " + targetType + " - Type read: " + value.getClass() + " VALUE: " + value;
-            throw new PersismException(msg, e);
-        }
+            throw new PersismException(Messages.DateFormatException.message(e.getMessage(), columnName, targetType, value.getClass(), value), e);        }
     }
 
     // https://stackoverflow.com/questions/17893609/convert-uuid-to-byte-that-works-when-using-uuid-nameuuidfrombytesb
