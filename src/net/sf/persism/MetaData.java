@@ -74,7 +74,7 @@ final class MetaData {
 
         connectionType = ConnectionTypes.get(sessionKey);
         if (connectionType == ConnectionTypes.Other) {
-            log.warn("Unknown connection type. Please contact Persism to add support for " + con.getMetaData().getDatabaseProductName());
+            log.warn(Messages.UnknownConnectionType.message(con.getMetaData().getDatabaseProductName()));
         }
         populateTableList(con);
     }
@@ -163,7 +163,7 @@ final class MetaData {
                 if (foundProperty != null) {
                     columns.put(realColumnName, foundProperty);
                 } else {
-                    log.warn("Property not found for column: " + realColumnName + " class: " + objectClass);
+                    log.warn(Messages.NoPropertyFoundForColumn.message(realColumnName, objectClass));
                 }
             }
 
@@ -239,7 +239,7 @@ final class MetaData {
                             columnInfo.autoIncrement = true;
                             if (!columnInfo.columnType.isEligibleForAutoinc()) {
                                 // This will probably cause some error or other problem. Notify the user.
-                                log.warn("Column " + columnInfo.columnName + " is annotated as auto-increment but it is not a number type (" + columnInfo.columnType + ").");
+                                log.warn(Messages.ColumnAnnotatedAsAutoIncButNAN.message(columnInfo.columnName, columnInfo.columnType));
                             }
                         }
 
@@ -271,7 +271,7 @@ final class MetaData {
             }
 
             if (primaryKeysCount == 0) {
-                log.warn("DatabaseMetaData could not find primary keys for table " + tableName + ".");
+                log.warn(Messages.DatabaseMetaDataCouldNotFindPrimaryKeys.message(tableName));
             }
 
             /*
@@ -309,7 +309,7 @@ final class MetaData {
             rs.close();
 
             if (columnsCount == 0) {
-                log.warn("DatabaseMetaData could not find columns for table " + tableName + "!");
+                log.warn(Messages.DatabaseMetaDataCouldNotFindColumns.message(tableName));
             }
 
             // FOR Oracle which doesn't set autoinc in metadata even if we have:
@@ -337,7 +337,7 @@ final class MetaData {
                 // update, delete or select (by primary).
                 // They may only want to do read operations with specified queries and in that
                 // context we don't need any primary keys. (same with insert)
-                log.warn("No primary key found for table " + tableName + ". Do not use with update/delete/fetch or add a primary key.");
+                log.warn(Messages.NoPrimaryKeyFoundForTable.message(tableName));
             }
 
             columnInfoMap.put(objectClass, map);
@@ -828,7 +828,7 @@ final class MetaData {
                 }
             }
             if (!found) {
-                throw new PersismException("Could not find a Table in the database named " + tableName + ". Check the @Table annotation on " + objectClass.getName());
+                throw new PersismException(Messages.CouldNotFindTableNameInTheDatabase.message(tableName, objectClass.getName()));
             }
 
         } else {
@@ -854,13 +854,15 @@ final class MetaData {
                 }
             }
         }
+        boolean isView = false; // todo Views
         if (guessedTables.size() == 0) {
-            throw new PersismException("Could not determine a table for type: " + objectClass.getName() + " Guesses were: " + guesses);
+            throw new PersismException(Messages.CouldNotDetermineTableOrViewForType.message(isView ? "view" : "table", objectClass.getName(), guesses));
         }
 
         if (guessedTables.size() > 1) {
-            throw new PersismException("Could not determine a table for type: " + objectClass.getName() + " Guesses were: " + guesses + " and we found multiple matching tables: " + guessedTables);
+            throw new PersismException(Messages.CouldNotDetermineTableOrViewForTypeMultipleMatches.message(isView ? "view" : "table", objectClass.getName(), guesses, guessedTables));
         }
+
         return guessedTables.get(0);
     }
 

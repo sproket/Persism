@@ -28,7 +28,6 @@ public final class Session implements AutoCloseable {
 
     /**
      * Default constructor for a Session object
-     *
      * @param connection db connection
      * @throws PersismException if something goes wrong
      */
@@ -39,24 +38,23 @@ public final class Session implements AutoCloseable {
 
     /**
      * Constructor for Session where you want to specify the Session Key.
-     *
      * @param connection db connection
      * @param sessionKey Unique string to represent the connection URL if it is not available on the Connection metadata.
      *                   This string should start with the jdbc url string to indicate the connection type.
-     *                   <pre>
-     *                                    jdbc:h2 = h2
-     *                                    jdbc:sqlserver = MS SQL
-     *                                    jdbc:oracle = Oracle
-     *                                    jdbc:sqlite = SQLite
-     *                                    jdbc:derby = Derby
-     *                                    jdbc:mysql = MySQL/MariaDB
-     *                                    jdbc:postgresql = PostgreSQL
-     *                                    jdbc:firebirdsql = Firebird (Jaybird)
-     *                                    jdbc:hsqldb = HSQLDB
-     *                                    jdbc:ucanaccess = MS Access
-     *                                    jdbc:informix = Informix
+     *<pre>
+     *                  jdbc:h2 = h2
+     *                  jdbc:sqlserver = MS SQL
+     *                  jdbc:oracle = Oracle
+     *                  jdbc:sqlite = SQLite
+     *                  jdbc:derby = Derby
+     *                  jdbc:mysql = MySQL/MariaDB
+     *                  jdbc:postgresql = PostgreSQL
+     *                  jdbc:firebirdsql = Firebird (Jaybird)
+     *                  jdbc:hsqldb = HSQLDB
+     *                  jdbc:ucanaccess = MS Access
+     *                  jdbc:informix = Informix
      *
-     *                   </pre>
+     </pre>
      * @throws PersismException if something goes wrong
      */
     public Session(Connection connection, String sessionKey) throws PersismException {
@@ -137,7 +135,7 @@ public final class Session implements AutoCloseable {
     public int update(Object object) throws PersismException {
         List<String> primaryKeys = metaData.getPrimaryKeys(object.getClass(), connection);
         if (primaryKeys.size() == 0) {
-            throw new PersismException("Cannot perform UPDATE - " + metaData.getTableName(object.getClass()) + " has no primary keys.");
+            throw new PersismException(Messages.TableHasNoPrimaryKeys.message("UPDATE", metaData.getTableName(object.getClass())));
         }
 
         PreparedStatement st = null;
@@ -210,10 +208,9 @@ public final class Session implements AutoCloseable {
 
     /**
      * Inserts the data object in the database refreshing with autoinc and other defaults that may exist.
-     *
+     * @param <T> Type of the inserted object
      * @param object the data object to insert.
-     * @param <T>    Type of the returning data object in Result.
-     * @return Result object containing rows changed (usually 1 to indicate rows changed via JDBC) and the data object itself which may have been changed by auto-inc or column defaults.
+     * @return usually 1 to indicate rows changed via JDBC.
      * @throws PersismException When planet of the apes starts happening.
      */
     public <T> Result<T> insert(Object object) throws PersismException {
@@ -252,7 +249,7 @@ public final class Session implements AutoCloseable {
 
                 PropertyInfo propertyInfo = properties.get(columnInfo.columnName);
                 if (propertyInfo.getter == null) {
-                    throw new PersismException(String.format("Class %s has no getter for property %s", object.getClass(), propertyInfo.propertyName));
+                    throw new PersismException(Messages.ClassHasNoGetterForProperty.message(object.getClass(), propertyInfo.propertyName));
                 }
                 if (!columnInfo.autoIncrement) {
 
@@ -260,8 +257,7 @@ public final class Session implements AutoCloseable {
                         // Do not include if this column has a default and no value has been
                         // set on it's associated property.
                         if (propertyInfo.getter.getReturnType().isPrimitive()) {
-                            log.warnNoDuplicates("Property " + propertyInfo.propertyName + " for column " + columnInfo.columnName + " for class " + object.getClass() +
-                                    " should be an Object type to properly detect NULL for defaults (change it from the primitive type to its Boxed version).");
+                            log.warnNoDuplicates(Messages.PropertyShouldBeAnObjectType.message(propertyInfo.propertyName, columnInfo.columnName, object.getClass()));
                         }
 
                         if (propertyInfo.getter.invoke(object) == null) {
@@ -269,7 +265,7 @@ public final class Session implements AutoCloseable {
                             if (columnInfo.primary) {
                                 // This is supported with PostgreSQL but otherwise throw this an exception
                                 if (!(metaData.getConnectionType() == ConnectionTypes.PostgreSQL)) {
-                                    throw new PersismException("Non-auto inc generated primary keys are not supported. Please assign your primary key value before performing an insert.");
+                                    throw new PersismException(Messages.NonAutoIncGeneratedNotSupported.message());
                                 }
                             }
 
@@ -372,7 +368,7 @@ public final class Session implements AutoCloseable {
 
         List<String> primaryKeys = metaData.getPrimaryKeys(object.getClass(), connection);
         if (primaryKeys.size() == 0) {
-            throw new PersismException("Cannot perform DELETE - " + metaData.getTableName(object.getClass()) + " has no primary keys.");
+            throw new PersismException(Messages.TableHasNoPrimaryKeys.message("DELETE", metaData.getTableName(object.getClass())));
         }
 
         PreparedStatement st = null;
@@ -499,16 +495,16 @@ public final class Session implements AutoCloseable {
         boolean readPrimitive = Types.getType(objectClass) != null;
         if (readPrimitive) {
             // For unit tests
-            throw new PersismException("Cannot read a primitive type object with this method.");
+            throw new PersismException(Messages.CannotReadThisType.message("primitive"));
         }
 
         if (isRecord(objectClass)) {
-            throw new PersismException("Cannot read a Record type object with this method.");
+            throw new PersismException(Messages.CannotReadThisType.message("Record"));
         }
 
         List<String> primaryKeys = metaData.getPrimaryKeys(objectClass, connection);
         if (primaryKeys.size() == 0) {
-            throw new PersismException("Cannot perform FETCH - " + metaData.getTableName(objectClass) + " has no primary keys.");
+            throw new PersismException(Messages.TableHasNoPrimaryKeys.message("FETCH", metaData.getTableName(object.getClass())));
         }
 
         Map<String, PropertyInfo> properties = metaData.getTableColumnsPropertyInfo(object.getClass(), connection);
@@ -600,7 +596,6 @@ public final class Session implements AutoCloseable {
     Connection getConnection() {
         return connection;
     }
-
     /*
     Private methods
      */
@@ -625,13 +620,14 @@ public final class Session implements AutoCloseable {
         return result;
     }
 
+
     private <T> T getTypedValueReturnedFromGeneratedKeys(Class<T> objectClass, ResultSet rs) throws SQLException {
 
         Object value = null;
         Types type = Types.getType(objectClass);
 
         if (type == null) {
-            log.warn("Unhandled type " + objectClass);
+            log.warn(Messages.UnknownTypeForPrimaryGeneratedKey.message(objectClass));
             return (T) rs.getObject(1);
         }
 
@@ -665,9 +661,11 @@ public final class Session implements AutoCloseable {
 
                 Types type = Types.getType(param.getClass());
                 if (type == null) {
-                    log.warn("setParameters: Unknown type: " + param.getClass());
+                    log.warn(Messages.UnknownTypeInSetParameters.message(param.getClass()));
                     type = Types.ObjectType;
                 }
+
+                Object value; // used for conversions
 
                 switch (type) {
 
@@ -735,16 +733,23 @@ public final class Session implements AutoCloseable {
                         st.setTimestamp(n, (Timestamp) param);
                         break;
 
-                    // THESE are converted to Timestamp (or Time) by convert method.
                     case LocalTimeType:
+                        value = convertor.convert(param, Time.class, "Parameter " + n);
+                        st.setObject(n, value);
+                        break;
+
+                    case UtilDateType:
                     case LocalDateType:
                     case LocalDateTimeType:
-                        log.warn(type + " why would this occur in setParameters?", new Throwable());
+                        value = convertor.convert(param, Timestamp.class, "Parameter " + n);
+                        st.setObject(n, value);
                         break;
 
                     case OffsetDateTimeType:
                     case ZonedDateTimeType:
                     case InstantType:
+                        log.warn(Messages.UnSupportedTypeInSetParameters.message(type));
+                        st.setObject(n, param);
                         // todo ZonedDateTime, OffsetDateTimeType and MAYBE Instant
                         break;
 
@@ -757,8 +762,10 @@ public final class Session implements AutoCloseable {
                     case ClobType:
                     case BlobType:
                         // Clob is converted to String Blob is converted to byte array
-                        // So this should not occur.
-                        log.warn(type + " why would this occur in setParameters?", new Throwable());
+                        // so this should not occur unless they were passed in by the user.
+                        // We are most probably about to fail here.
+                        log.warn(Messages.ParametersDoNotUseClobOrBlob.message(), new Throwable());
+                        st.setObject(n, param);
                         break;
 
                     case EnumType:

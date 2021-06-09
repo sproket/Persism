@@ -103,6 +103,11 @@ public final class TestH2 extends BaseTest {
 
         commands.add(sql);
 
+        // view first
+        if (UtilsForTests.isViewInDatabase("CustomerInvoice", con)) {
+            commands.add("DROP VIEW CustomerInvoice");
+        }
+
         if (UtilsForTests.isTableInDatabase("Customers", con)) {
             commands.add("DROP TABLE Customers");
         }
