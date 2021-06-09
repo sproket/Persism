@@ -9,6 +9,7 @@ package net.sf.persism;
 import junit.framework.TestCase;
 import net.sf.persism.dao.Invoice;
 import net.sf.persism.dao.Postman;
+import org.junit.Test;
 
 import java.util.*;
 
@@ -101,5 +102,24 @@ public class TestUtil extends TestCase {
         System.out.println((int)x);
         System.out.println((int)y);
         System.out.println((int)z);
+    }
+
+    @Test
+    public void testMessages() {
+        String divName, heading1, heading2;
+        divName = "1";
+        heading1 = "h";
+        heading2 = new Date().toString();
+
+        String result = String.format("%-30s %-30s %-30s", divName, heading1, heading2);
+        log.info(result);
+
+        result = String.format("a b c %o %o", 1, 2);
+        log.info(result);
+
+        log.info(Messages.ObjectNotProperlyInitialized.message("Junk", "col, col2m, cop;le"));
+
+        log.warn(Messages.UnknownSQLType.message(1));
+        log.warn(Messages.ConvertorValueTypeNotYetSupported.message(Types.InstantType.getJavaType()));
     }
 }

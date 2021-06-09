@@ -1,6 +1,7 @@
 package net.sf.persism.dao.northwind;
 
 import net.sf.persism.annotations.NotColumn;
+import net.sf.persism.annotations.Table;
 
 import java.sql.Date;
 import java.time.LocalDateTime;

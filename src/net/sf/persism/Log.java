@@ -8,10 +8,8 @@ import net.sf.persism.logging.implementation.Log4j2Logger;
 import net.sf.persism.logging.implementation.Log4jLogger;
 import net.sf.persism.logging.implementation.Slf4jLogger;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
+import java.lang.reflect.Method;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
@@ -58,12 +56,19 @@ final class Log {
                 }
             }
         }
-        assert logger != null;
     }
 
     void warnNoDuplicates(String message) {
-        //noinspection OptionalGetWithoutIsPresent
-        String additional = Arrays.stream(new Throwable().getStackTrace()).skip(2).findFirst().get().toString().trim();
+        String additional = "";
+
+        // This finds the stack element for the user's package name - should be the source of the call to include in the message
+        Optional<StackTraceElement> opt = Arrays.stream(new Throwable().getStackTrace()).
+                filter(e -> !e.getClassName().startsWith("net.sf.persism")).findFirst();
+
+        if (opt.isPresent()) {
+            additional = opt.get().toString().trim();
+        }
+
         String msg = message + " " + additional;
         if (!warnings.contains(msg)) {
             warnings.add(msg);

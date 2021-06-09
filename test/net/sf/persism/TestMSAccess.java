@@ -14,11 +14,7 @@ import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.sql.*;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Date;
-import java.util.List;
-import java.util.Properties;
+import java.util.*;
 
 public class TestMSAccess extends TestCase {
 
@@ -38,7 +34,7 @@ public class TestMSAccess extends TestCase {
 
         String home = UtilsForTests.createHomeFolder("msaccess");
 
-        URI uri = getClass().getResource("/Contacts.accdb").toURI();
+        URI uri = Objects.requireNonNull(getClass().getResource("/Contacts.accdb")).toURI();
 
         Path from = Paths.get(uri);
         Path to = Paths.get(home + "/Contacts.accdb");

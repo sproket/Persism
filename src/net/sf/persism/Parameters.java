@@ -39,6 +39,7 @@ public final class Parameters {
      * @return new Parameters object
      */
     public static Parameters keys(Object... values) {
+        // todo how will this work if you set this on a @NotTable class? We don't know the primary keys. TODO TEST - WE PROBABLY NEED TO FAIL EARLY
         Parameters parameters = new Parameters(values);
         parameters.areKeys = true;
         return parameters;

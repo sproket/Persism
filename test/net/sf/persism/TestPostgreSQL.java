@@ -11,9 +11,12 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.ZoneId;
+import java.time.temporal.ChronoUnit;
 import java.util.*;
 
+import static net.sf.persism.Parameters.params;
 import static net.sf.persism.SQL.sql;
+import static net.sf.persism.SQL.where;
 
 /**
  * Comments for TestPostgreSQL go here.
@@ -276,10 +279,12 @@ public class TestPostgreSQL extends BaseTest {
         customer.setCustomerId("MOO");
         session.delete(customer);
 
+        LocalDate today = LocalDate.now();
+
         customer.setCompanyName("Rock Quarry Ltd");
         customer.setContactName("FRED");
         customer.setStatus('1');
-        customer.setTestLocalDate(LocalDate.now());
+        customer.setTestLocalDate(today);
         customer.setTestLocalDateTime(LocalDateTime.now(ZoneId.systemDefault()));
         session.insert(customer);
         log.info(customer);
@@ -289,10 +294,12 @@ public class TestPostgreSQL extends BaseTest {
         log.info("datetime " + customer.getTestLocalDateTime());
         assertNotNull(customer.getDateRegistered());
 
-        tryInsertReturnall();
+        tryInsertReturnAll();
+
+        session.query(Customer.class, where("testLocalDate between ? AND ?"), params(today.minus(1, ChronoUnit.DAYS), today.plus(1, ChronoUnit.DAYS)));
     }
 
-    private void tryInsertReturnall() throws SQLException {
+    private void tryInsertReturnAll() throws SQLException {
         // this was a test to see if I could prepare a statement and return all columns. Nope.....
 
         // ensure metadata is there

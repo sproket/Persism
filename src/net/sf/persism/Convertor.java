@@ -26,13 +26,13 @@ final class Convertor {
         Types valueType = Types.getType(value.getClass());
 
         if (valueType == null) {
-            log.warn("Conversion: Unknown type: " + value.getClass() + " - no conversion performed.");
+            log.warn(Messages.NoConversionForUnknownType.message(value.getClass()));
             return value;
         }
 
         Object returnValue = value;
 
-        // try to convert or cast the value to the proper type.
+        // try to convert or cast (no cast) the value to the proper type.
         switch (valueType) {
 
             case booleanType:
@@ -42,7 +42,7 @@ final class Convertor {
 
             case byteType:
             case ByteType:
-                log.warnNoDuplicates("COLUMN: " + columnName + ": MSSQL Sees tinyint as 0 - 254 - Others -127 - +127 - no conversion performed - recommend changing it to SMALLINT/Short.");
+                log.warnNoDuplicates(Messages.TinyIntMSSQL.message(columnName));
                 break;
 
             case shortType:
@@ -54,7 +54,7 @@ final class Convertor {
             case IntegerType:
                 // int to bool
                 if (targetType.equals(Boolean.class) || targetType.equals(boolean.class)) {
-                    returnValue = Integer.valueOf("" + value) == 0 ? false : true;
+                    returnValue = Integer.parseInt("" + value) != 0;
 
                 } else if (targetType.equals(Time.class)) {
                     // SQLite when a Time is defined VIA a convert from LocalTime via Time.valueOf (see getContactForTest)
@@ -74,7 +74,7 @@ final class Convertor {
 
             case longType:
             case LongType:
-                long lval = Long.valueOf("" + value);
+                long lval = Long.parseLong("" + value);
                 if (targetType.equals(java.sql.Date.class)) {
                     returnValue = new java.sql.Date(lval);
 
@@ -85,9 +85,7 @@ final class Convertor {
                     returnValue = new Timestamp(lval);
 
                 } else if (targetType.equals(Integer.class) || targetType.equals(int.class)) {
-//                    overflowWarn();
-                    // todo - add more info like class name, property name??
-                    log.warnNoDuplicates("Possible overflow column " + columnName + " - Target type is INT and Value type is LONG");
+                    log.warnNoDuplicates(Messages.PossibleOverflow.message(columnName, "INT", "LONG"));
                     returnValue = Integer.parseInt("" + lval);
 
                 } else if (targetType.equals(LocalDate.class)) {
@@ -116,15 +114,15 @@ final class Convertor {
                     returnValue = new BigDecimal("" + value);
 
                 } else if (targetType.equals(Float.class) || targetType.equals(float.class)) {
-                    log.warnNoDuplicates("Possible overflow column " + columnName + " - Target type is FLOAT and Value type is DOUBLE");
+                    log.warnNoDuplicates(Messages.PossibleOverflow.message(columnName, "FLOAT", "DOUBLE"));
                     returnValue = dbl.floatValue();
 
                 } else if (targetType.equals(Integer.class) || targetType.equals(int.class)) {
-                    log.warnNoDuplicates("Possible overflow column " + columnName + " - Target type is INT and Value type is DOUBLE");
+                    log.warnNoDuplicates(Messages.PossibleOverflow.message(columnName, "INT", "DOUBLE"));
                     returnValue = dbl.intValue();
 
                 } else if (targetType.equals(Long.class) || targetType.equals(long.class)) {
-                    log.warnNoDuplicates("Possible overflow column " + columnName + " - Target type is Long and Value type is DOUBLE");
+                    log.warnNoDuplicates(Messages.PossibleOverflow.message(columnName, "LONG", "DOUBLE"));
                     returnValue = dbl.longValue();
                 }
                 break;
@@ -132,28 +130,28 @@ final class Convertor {
             case BigDecimalType:
                 if (targetType.equals(Float.class) || targetType.equals(float.class)) {
                     returnValue = ((Number) value).floatValue();
-                    log.warnNoDuplicates("Possible overflow column " + columnName + " - Target type is Float and Value type is BigDecimal");
+                    log.warnNoDuplicates(Messages.PossibleOverflow.message(columnName, "FLOAT", "BigDecimal"));
 
                 } else if (targetType.equals(Double.class) || targetType.equals(double.class)) {
                     returnValue = ((Number) value).doubleValue();
-                    log.warnNoDuplicates("Possible overflow column " + columnName + " - Target type is Double and Value type is BigDecimal");
+                    log.warnNoDuplicates(Messages.PossibleOverflow.message(columnName, "DOUBLE", "BigDecimal"));
 
                 } else if (targetType.equals(Long.class) || targetType.equals(long.class)) {
                     returnValue = ((Number) value).longValue();
-                    log.warnNoDuplicates("Possible overflow column " + columnName + " - Target type is Long and Value type is BigDecimal");
+                    log.warnNoDuplicates(Messages.PossibleOverflow.message(columnName, "LONG", "BigDecimal"));
 
                 } else if (targetType.equals(Integer.class) || targetType.equals(int.class)) {
                     returnValue = ((Number) value).intValue();
-                    log.warnNoDuplicates("Possible overflow column " + columnName + " - Target type is Integer and Value type is BigDecimal");
+                    log.warnNoDuplicates(Messages.PossibleOverflow.message(columnName, "INT", "BigDecimal"));
 
                 } else if (targetType.equals(Short.class) || targetType.equals(short.class)) {
                     returnValue = ((Number) value).shortValue();
-                    log.warnNoDuplicates("Possible overflow column " + columnName + " - Target type is Short and Value type is BigDecimal");
+                    log.warnNoDuplicates(Messages.PossibleOverflow.message(columnName, "SHORT", "BigDecimal"));
 
                 } else if (targetType.equals(Boolean.class) || targetType.equals(boolean.class)) {
                     // BigDecimal to Boolean. Oracle (sigh) - Additional for a Char to Boolean as then (see TestOracle for links)
                     returnValue = ((Number) value).intValue() == 1;
-                    log.warnNoDuplicates("Possible overflow column " + columnName + " - Target type is Boolean and Value type is BigDecimal");
+                    log.warnNoDuplicates(Messages.PossibleOverflow.message(columnName, "BOOLEAN", "BigDecimal"));
 
                 } else if (targetType.equals(String.class)) {
                     returnValue = (value).toString();
@@ -234,8 +232,7 @@ final class Convertor {
                     try {
                         returnValue = new BigDecimal("" + value);
                     } catch (NumberFormatException e) {
-                        String msg = "NumberFormatException: Column: " + columnName + " Type of property: " + targetType + " - Type read: " + value.getClass() + " VALUE: " + value;
-                        throw new PersismException(msg, e);
+                        throw new PersismException(Messages.NumberFormatException.message(columnName, targetType, value.getClass(), value), e);
                     }
                 }
 
@@ -302,7 +299,7 @@ final class Convertor {
             case InstantType:
             case OffsetDateTimeType:
             case ZonedDateTimeType:
-                log.warn(valueType + " not yet supported", new Throwable());
+                log.warn(Messages.ConvertorValueTypeNotYetSupported.message(valueType.getJavaType()), new Throwable());
                 break;
 
             case byteArrayType:
@@ -315,7 +312,7 @@ final class Convertor {
 
             case ClobType:
             case BlobType:
-                log.warn("why? Clob is read as String, Blob as byte array - see readColumn method", new Throwable());
+                log.warn(Messages.ConvertorDoNotUseClobOrBlobAsAPropertyType.message(), new Throwable());
                 break;
 
             case EnumType:
@@ -351,8 +348,7 @@ final class Convertor {
         try {
             return df.parse("" + value);
         } catch (ParseException e) {
-            String msg = e.getMessage() + ". Column: " + columnName + " Target Conversion: " + targetType + " - Type read: " + value.getClass() + " VALUE: " + value;
-            throw new PersismException(msg, e);
+            throw new PersismException(Messages.DateFormatException.message(e.getMessage(), columnName, targetType, value.getClass(), value), e);
         }
     }
 
@@ -360,8 +356,7 @@ final class Convertor {
         try {
             return Timestamp.valueOf("" + value);
         } catch (IllegalArgumentException e) {
-            String msg = e.getMessage() + ". Column: " + columnName + " Target Conversion: " + targetType + " - Type read: " + value.getClass() + " VALUE: " + value;
-            throw new PersismException(msg, e);
+            throw new PersismException(Messages.DateFormatException.message(e.getMessage(), columnName, targetType, value.getClass(), value), e);
         }
     }
 

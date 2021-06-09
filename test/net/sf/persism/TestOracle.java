@@ -242,7 +242,7 @@ end;
 
         String sql = "CREATE TABLE Contacts( " +
                 "   identity RAW(16) default sys_guid() NOT NULL PRIMARY KEY, " +  // test binary(16)
-                "   PartnerID VARCHAR(36) NULL, " + // test varchar(36) allow null for test
+                "   Partner_ID RAW(16) NULL, " + // test varchar(36) allow null for test
                 "   Type CHAR(2) NOT NULL, " +
                 "   Firstname VARCHAR(50) NOT NULL, " +
                 "   Lastname VARCHAR(50) NOT NULL, " +

@@ -29,6 +29,7 @@
     <logger name="org" level="ERROR"/>
     <logger name="net.sf.persism" level="INFO"/>
     <logger name="net.sf.persism.Session" level="DEBUG"/>
+<!--    <logger name="net.sf.persism.MetaData" level="DEBUG"/>-->
     <logger name="net" level="ERROR"/>
 
     <!-- ERROR, WARN, INFO, DEBUG, OFF -->

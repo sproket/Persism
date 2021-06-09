@@ -25,6 +25,14 @@ final class Util {
 
     }
 
+    static boolean isNotEmpty(String s) {
+        return !isEmpty(s);
+    }
+
+    static boolean isEmpty(String s) {
+        return s == null || s.trim().length() == 0;
+    }
+
     static void cleanup(Statement st, ResultSet rs) {
         try {
             if (rs != null) {

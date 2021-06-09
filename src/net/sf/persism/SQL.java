@@ -1,13 +1,15 @@
 package net.sf.persism;
 
 /**
- * Simple wrapper for SQL String. Mainly to allow for overloads to fetch methods.
+ * Simple wrapper for SQL String. Mainly to allow for overloads to fetch/query methods.
  */
+// Todo maybe make an interface and have SQLQuery and PropertyQuery to allow property names to be used....
+
 public final class SQL {
 
     private final String sql;
 
-    boolean addSQL; // flags this as WHERE only - we add the SELECT part.
+    boolean whereOnly; // flags this as WHERE only - we add the SELECT part.
     boolean storedProc; // not sure I'll need this
     boolean knownSQL; // not sure I'll need this
 
@@ -42,8 +44,9 @@ public final class SQL {
      * @return new SQL object
      */
     public static SQL where(String where) {
+        // todo property support say :propertyName
         SQL sql = new SQL(" WHERE " + where);
-        sql.addSQL = true;
+        sql.whereOnly = true;
         return sql;
     }
 

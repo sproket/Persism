@@ -1,9 +1,3 @@
-/**
- * Comments for TestPubs go here.
- *
- * @author Dan Howard
- * @since 5/25/12 5:28 PM
- */
 package net.sf.persism;
 
 import junit.framework.TestCase;

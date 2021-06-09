@@ -20,7 +20,7 @@ public final class Contact implements Persistable<Contact> {
     //@Column(primary = true)
     private UUID identity;
 
-    private UUID partnerId;
+    private UUID partnerId; // todo add a 3rd or 4th uuid
     private String type;
     private String firstname;
     private String lastname;

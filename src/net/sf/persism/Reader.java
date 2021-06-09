@@ -58,7 +58,7 @@ final class Reader {
                 sep = ",";
             }
 
-            throw new PersismException("Object " + objectClass + " was not properly initialized. Some properties not initialized in the queried columns (" + sb + ").");
+            throw new PersismException(Messages.ObjectNotProperlyInitialized.message(objectClass, sb));
         }
 
         ResultSetMetaData rsmd = rs.getMetaData();
@@ -68,7 +68,7 @@ final class Reader {
         for (int j = 1; j <= columnCount; j++) {
 
             String columnName = rsmd.getColumnLabel(j);
-            PropertyInfo columnProperty = getPropertyInfo(columnName, properties); //properties.get(columnName);
+            PropertyInfo columnProperty = getPropertyInfo(columnName, properties);
 
             if (columnProperty != null) {
                 Class<?> returnType = columnProperty.getter.getReturnType();
@@ -88,8 +88,7 @@ final class Reader {
                             columnProperty.setter.invoke(object, value);
                         }
                     } catch (IllegalArgumentException e) {
-                        String msg = "Object " + objectClass + ". Column: " + columnName + " Type of property: " + returnType + " - Type read: " + value.getClass() + " VALUE: " + value;
-                        throw new PersismException(msg, e);
+                        throw new PersismException(Messages.IllegalArgumentReadingColumn.message(columnProperty.propertyName, objectClass, columnName, returnType, value.getClass(), value), e);
                     }
                 }
             }
@@ -101,15 +100,14 @@ final class Reader {
 
             Set<String> missing = new HashSet<>(columnCount);
             missing.addAll(properties.keySet());
-            missing.removeAll(foundColumns);
+            foundColumns.forEach(missing::remove);
 
-            // todo maybe strict mode off logs warn? Should we do this if this is Query vs Table?
-            throw new PersismException("Object " + objectClass + " was not properly initialized. Some properties not initialized by the queried columns: " + foundColumns + " Missing:" + missing);
+            throw new PersismException(Messages.ObjectNotProperlyInitializedByQuery.message(objectClass, foundColumns, missing));
         }
 
-        if (object instanceof Persistable) {
+        if (object instanceof Persistable<?> pojo) {
             // Save this object initial state to later detect changed properties
-            ((Persistable) object).saveReadState();
+            pojo.saveReadState();
         }
 
         return (T) object;
@@ -168,7 +166,7 @@ final class Reader {
                 constructorParams.add(value);
                 constructorTypes.add(propertyInfoByConstructorOrder.get(col).field.getType());
             } else {
-                throw new PersismException("readRecord: Could not find column in the SQL query for class: " + objectClass + ". Missing column: " + col);
+                throw new PersismException(Messages.ReadRecordColumnNotFound.message(objectClass, col));
             }
         }
 
@@ -180,7 +178,7 @@ final class Reader {
             return (T) constructor.newInstance(constructorParams.toArray());
 
         } catch (Exception e) {
-            throw new PersismException("readRecord: Could instantiate the constructor for: " + objectClass + " params: " + constructorParams + "(" + constructorTypes + ")", e);
+            throw new PersismException(Messages.ReadRecordCouldNotInstantiate.message(objectClass, constructorParams, constructorTypes));
         }
     }
 
@@ -228,7 +226,7 @@ final class Reader {
 
         log.debug("findConstructor: %s", selectedConstructor);
         if (selectedConstructor == null) {
-            throw new PersismException("findConstructor: Could not find a constructor for class: " + objectClass + " properties: " + propertyNames);
+            throw new PersismException(Messages.CouldNotFindConstructorForRecord.message(objectClass, propertyNames));
         }
         return selectedConstructor;
     }
@@ -377,7 +375,7 @@ final class Reader {
             }
 
         } else {
-            log.warn("Column type not known for SQL type " + sqlColumnType, new Throwable());
+            log.warn(Messages.ColumnTypeNotKnownForSQLType.message(sqlColumnType), new Throwable());
             value = rs.getObject(column);
         }
 

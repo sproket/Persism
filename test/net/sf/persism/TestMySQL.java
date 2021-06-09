@@ -230,6 +230,9 @@ public class TestMySQL extends BaseTest {
         assertEquals("should be 1", "1", "" + count);
         log.info("count " + count);
 
+        session.query(Customer.class, params("123"));
+        session.query(Customer.class, keys("123","456","780"));
+
     }
 
     @Override

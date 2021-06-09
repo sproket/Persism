@@ -151,7 +151,7 @@ public final class TestDerby extends BaseTest {
 
         sql = "CREATE TABLE Contacts(  " +
                 "   \"identity\" CHAR(16) FOR BIT DATA NOT NULL PRIMARY KEY,  " +  // test binary(16)
-                "   PartnerID varchar(36) NOT NULL,  " + // test varchar(36)
+                "   PartnerID CHAR(16) FOR BIT DATA NOT NULL,  " + // test varchar(36)
                 "   Type char(2) NOT NULL,  " +
                 "   Firstname varchar(50) NOT NULL,  " +
                 "   Lastname varchar(50) NOT NULL,  " +
@@ -319,7 +319,6 @@ public final class TestDerby extends BaseTest {
     @Override
     public void testAllDates() {
         super.testAllDates();
-
         session.query(Contact.class, where("LastName = ?"), params("fred"));
     }
 }

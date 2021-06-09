@@ -277,6 +277,9 @@ public final class TestSQLite extends BaseTest {
         assertEquals("list size s/b 4", 4, list.size());
         log.info("ORDERS\n" + list);
 
+        session.query(Order.class, "select * from orders where id in (?,?,?)", 1, 2, 43);
+        session.fetch(Order.class, "select * from orders where id = ?", 2);
+
         order = list.get(0);
         assertNotNull(order);
         assertEquals("name s/b COW", "COW", order.getName());

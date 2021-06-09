@@ -6,6 +6,7 @@ import org.junit.experimental.categories.Category;
 
 import java.io.File;
 import java.io.IOException;
+import java.math.BigDecimal;
 import java.nio.file.Files;
 import java.sql.*;
 import java.time.*;
@@ -62,39 +63,6 @@ public final class TestH2 extends BaseTest {
     }
 
     @Override
-    public void testContactTable() throws SQLException {
-        super.testContactTable();
-        assertTrue(true);
-
-        List<Contact> list2 = session.query(Contact.class);
-        log.info(list2);
-
-
-        Contact contact = getContactForTest();
-        String sql = session.getMetaData().getDefaultSelectStatement(contact.getClass(), con);
-
-        Query<?> ass = new Query<>(contact, session);
-        ass.where("ass").eq("mii");
-
-        Query<?> q = new Query<>(contact, session);
-        q.select("partnerId", "type", "lastName").where("type").eq(10);
-
-        log.error("SQL: " + ass + " -> " + ass.getParameters());
-        log.error("SQL: " + q + " -> " + q.getParameters());
-
-        // this works
-        Contact other = new Contact();
-        other.setIdentity(contact.getIdentity());
-        session.fetch(other);
-
-        // TODO Fails with some DBs unless you convert yourself. the question here is how to allow a user to use the converter
-        byte[] uuid = Convertor.asBytes(contact.getIdentity());
-        List<Contact> contacts = session.query(Contact.class, sql(sql), params((Object) uuid));
-        log.info(contacts);
-
-    }
-
-    @Override
     protected void createTables() throws SQLException {
         List<String> commands = new ArrayList<>(12);
         String sql;
@@ -117,6 +85,11 @@ public final class TestH2 extends BaseTest {
                 ") ";
 
         commands.add(sql);
+
+        // view first
+        if (UtilsForTests.isViewInDatabase("CustomerInvoice", con)) {
+            commands.add("DROP VIEW CustomerInvoice");
+        }
 
         if (UtilsForTests.isTableInDatabase("Customers", con)) {
             commands.add("DROP TABLE Customers");
@@ -157,12 +130,19 @@ public final class TestH2 extends BaseTest {
                 " Discount NUMERIC(10,3) NOT NULL " +
                 ") ");
 
+
+        sql = """
+                CREATE VIEW CustomerInvoice AS
+                    SELECT c.Customer_ID, c.Company_Name, i.Invoice_ID, i.Status, i.Created AS DateCreated, i.PAID, i.Quantity
+                    FROM Invoices i
+                    JOIN Customers c ON i.Customer_ID = c.Customer_ID
+                    WHERE i.Status = 1
+                """;
+        commands.add(sql);
+
+
         if (UtilsForTests.isTableInDatabase("TABLEMULTIPRIMARY", con)) {
             commands.add("DROP TABLE TABLEMULTIPRIMARY");
-        }
-
-        if (UtilsForTests.isTableInDatabase("SavedGames", con)) {
-            commands.add("DROP TABLE SavedGames");
         }
 
         commands.add("CREATE TABLE TABLEMULTIPRIMARY ( " +
@@ -175,7 +155,11 @@ public final class TestH2 extends BaseTest {
 
         commands.add("ALTER TABLE TABLEMULTIPRIMARY ADD PRIMARY KEY (ProductID, OrderID)");
 
-//?
+
+        if (UtilsForTests.isTableInDatabase("SavedGames", con)) {
+            commands.add("DROP TABLE SavedGames");
+        }
+
         commands.add("CREATE TABLE SavedGames ( " +
                 " ID VARCHAR(20) IDENTITY PRIMARY KEY, " +
                 " Name VARCHAR(100), " +
@@ -307,6 +291,32 @@ public final class TestH2 extends BaseTest {
                 "CREATED_ON DATETIME default current_timestamp" +
                 ") ";
         executeCommand(sql, con);
+
+
+    }
+
+    @Override
+    public void testContactTable() throws SQLException {
+        super.testContactTable();
+        assertTrue(true);
+
+        List<Contact> list2 = session.query(Contact.class);
+        log.info(list2);
+
+
+        Contact contact = getContactForTest();
+        String sql = session.getMetaData().getDefaultSelectStatement(contact.getClass(), con);
+
+        // this works
+        Contact other = new Contact();
+        other.setIdentity(contact.getIdentity());
+        session.fetch(other);
+
+        // TODO Fails with some DBs unless you convert yourself. the question here is how to allow a user to use the converter
+        byte[] uuid = Convertor.asBytes(contact.getIdentity());
+        List<Contact> contacts = session.query(Contact.class, sql(sql), params((Object) uuid));
+        log.info(contacts);
+
     }
 
 
@@ -611,7 +621,7 @@ public final class TestH2 extends BaseTest {
 
     }
 
-    public void testVariousTypesLikeClobAndBlob() throws IOException {
+    public void testVariousTypesLikeClobAndBlob() throws Exception {
         // note Data is read as a CLOB
         SavedGame saveGame = new SavedGame();
         saveGame.setName("BLAH");
@@ -622,7 +632,7 @@ public final class TestH2 extends BaseTest {
         saveGame.setCopper(100L);
         saveGame.setWhatTimeIsIt(new Time(System.currentTimeMillis()));
 
-        File file = new File("c:/windows/explorer.exe");
+        File file = new File(getClass().getResource("/logo1.png").toURI());
         saveGame.setSomethingBig(Files.readAllBytes(file.toPath()));
         int size = saveGame.getSomethingBig().length;
         log.info("SIZE?" + saveGame.getSomethingBig().length);
@@ -651,12 +661,121 @@ public final class TestH2 extends BaseTest {
         session.update(saveGame);
         session.fetch(saveGame);
 
-        // todo add asserts - fetch by name=BLAH as well
         SavedGame sg = session.fetch(SavedGame.class, where("Silver > ?"), params(199));
         log.warn(sg);
 //        sg = session.fetch(SavedGame.class, proc("spSearchSilver"), params(199));
     }
 
+    public void testCustomerInvoiceView() {
+        // todo add data and test results
+        Customer customer = new Customer();
+        customer.setCustomerId("ABC");
+        customer.setCompanyName("ABC Inc");
+        session.insert(customer);
+
+        Invoice invoice = new Invoice();
+        invoice.setCustomerId("ABC");
+        invoice.setQuantity(10);
+        invoice.setPrice(10.23f);
+        invoice.setActualPrice(BigDecimal.valueOf(9.99d));
+        invoice.setStatus(1);
+        session.insert(invoice);
+
+        CustomerInvoice customerInvoice = session.fetch(CustomerInvoice.class, where(":companyName = ?"), params("ABC Inc"));
+        List<CustomerInvoice> list = session.query(CustomerInvoice.class);
+        list = session.query(CustomerInvoice.class, where(":companyName = ?"), params("ABC Inc"));
+        list = session.query(CustomerInvoice.class, sql("SELECT * FROM CustomerInvoice"));
+
+        CustomerInvoiceTestView customerInvoiceTestView = session.fetch(CustomerInvoiceTestView.class, where(":companyName = ?"), params("ABC Inc"));
+        List<CustomerInvoiceTestView> list2 = session.query(CustomerInvoiceTestView.class);
+        list2 = session.query(CustomerInvoiceTestView.class, where(":companyName = ?"), params("ABC Inc"));
+        list2 = session.query(CustomerInvoiceTestView.class, sql("SELECT * FROM CustomerInvoice"));
+
+        assertNotNull(customerInvoiceTestView);
+
+        boolean fail = false;
+        try {
+            session.insert(customerInvoiceTestView); // not supported error
+        } catch (PersismException e) {
+            log.info(e.getMessage());
+            assertEquals("s/b Operation not supported for Views.", Messages.OperationNotSupportedForView.message("Insert"), e.getMessage());
+            fail = true;
+        }
+        assertTrue(fail);
+
+        fail = false;
+        try {
+            session.update(customerInvoiceTestView);
+        } catch (PersismException e) {
+            log.info(e.getMessage());
+            assertEquals("s/b Operation not supported for Views.", Messages.OperationNotSupportedForView.message("Update"), e.getMessage());
+            fail = true;
+        }
+        assertTrue(fail);
+
+        fail = false;
+        try {
+            session.delete(customerInvoiceTestView);
+        } catch (PersismException e) {
+            log.info(e.getMessage());
+            assertEquals("s/b Operation not supported for Views.", Messages.OperationNotSupportedForView.message("Delete"), e.getMessage());
+            fail = true;
+        }
+        assertTrue(fail);
+
+        fail = false;
+        try {
+            session.upsert(customerInvoiceTestView);
+        } catch (PersismException e) {
+            log.info(e.getMessage());
+            assertEquals("s/b Operation not supported for Views.", Messages.OperationNotSupportedForView.message("Upsert"), e.getMessage());
+            fail = true;
+        }
+        assertTrue(fail);
+
+        // old call
+        List<CustomerInvoiceResult> results = session.query(CustomerInvoiceResult.class, "SELECT * FROM CustomerInvoice");
+        log.info(results);
+
+        fail = false;
+        try {
+            // should fail with WHERE clause not supported
+            List<CustomerOrder> junk = session.query(CustomerOrder.class, where(":customerId = ?"), params("x"));
+        } catch (PersismException e) {
+            assertEquals("message should be WHERE clause not supported...", Messages.WhereNotSupportedForNotTableQueries.message(), e.getMessage());
+            fail = true;
+        }
+        assertTrue(fail);
+
+        // now lets try query with property names - total fail....
+        // can only work MAYBE with view
+        // select * seems to return SQL itself as col 1?
+        // Customer_ID, Company_Name, Invoice_ID, Status, DateCreated, PAID, Quantity
+        String sql =
+                    """
+                    SELECT * FROM "CUSTOMERINVOICE"
+                """;
+        list = session.query(CustomerInvoice.class, sql(sql), none());
+        sql = """
+                        SELECT Customer_ID, Company_Name, Invoice_ID, Status, DateCreated, PAID, Quantity FROM CUSTOMERINVOICE
+                """;
+        list = session.query(CustomerInvoice.class, sql(sql), none());
+
+        // not supporting property names for general SQL. Not really worth it.
+        sql = """
+                SELECT :customerId, :companyName, :invoiceId, :status, :dateCreated, :paid, :quantity
+                FROM "CUSTOMERINVOICE"
+                """;
+        fail = false;
+        try {
+            list = session.query(CustomerInvoice.class, sql(sql), none());
+        } catch (Exception e) {
+            log.info(e.getMessage());
+            fail = true;
+        }
+        assertTrue(fail); //
+
+    }
 
     @Override
     public void testAllDates() {

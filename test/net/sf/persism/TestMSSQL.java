@@ -835,8 +835,12 @@ public class TestMSSQL extends BaseTest {
 
         session.fetch(order);
 
-        List<CustomerOrder> list = session.query(CustomerOrder.class, proc("[spCustomerOrders](?)"), params("123"));
+        List<CustomerOrder> list;
+        list = session.query(CustomerOrder.class, proc("[spCustomerOrders](?)"), params("123"));
         log.info(list);
+        // Checking for warning
+        list = session.query(CustomerOrder.class, sql("[spCustomerOrders](?)"), params("123"));
+
         // Both forms should work - the 1st is a cleaner way but this should be supported
         list = session.query(CustomerOrder.class, proc("{call [spCustomerOrders](?) }"), params("123"));
         log.info(list);

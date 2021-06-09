@@ -6,9 +6,14 @@ import net.sf.persism.dao.records.CustomerOrderRec;
 import net.sf.persism.dao.records.CustomerOrderGarbage;
 import net.sf.persism.dao.records.RecordTest1;
 import net.sf.persism.dao.records.RecordTest2;
+import net.sourceforge.jtds.jdbc.JtdsConnection;
 
+import javax.sql.rowset.serial.SerialBlob;
+import javax.sql.rowset.serial.SerialClob;
+import java.io.File;
 import java.lang.reflect.InvocationTargetException;
 import java.math.BigDecimal;
+import java.nio.file.Files;
 import java.sql.*;
 import java.sql.Date;
 import java.sql.ResultSet;
@@ -17,6 +22,7 @@ import java.text.NumberFormat;
 import java.text.SimpleDateFormat;
 import java.time.*;
 import java.time.format.DateTimeFormatter;
+import java.time.temporal.ChronoUnit;
 import java.util.*;
 
 import static net.sf.persism.Parameters.*;
@@ -107,11 +113,35 @@ public abstract class BaseTest extends TestCase {
         }
 
         assertEquals("date registration s/b", dateRegistered, df.format(customer2.getDateRegistered()));
+
+        // Try other param types - convert?
+        LocalDate today = LocalDate.now();
+        session.query(Customer.class, where("testLocalDate between ? AND ?"), params(today.minus(1, ChronoUnit.DAYS), today.plus(1, ChronoUnit.DAYS)));
+
+        LocalDateTime dt = LocalDateTime.now();
+        //session.query(Customer.class, where("DATE_OF_LAST_ORDER between ? AND ?"), params(dt.minus(1, ChronoUnit.DAYS), dt.plus(1, ChronoUnit.DAYS)));
+        // todo fails with postgresql check if converter will fix this....
+        session.query(Customer.class, where(":dateOfLastOrder is not null AND :dateOfLastOrder between ? AND ? and :status = ?"), params(dt.minus(1, ChronoUnit.DAYS), dt.plus(1, ChronoUnit.DAYS), 1));
+
+        session.query(Customer.class, where("TestLocalDate between ? AND ?"), params(dt.minus(1, ChronoUnit.DAYS), dt.plus(1, ChronoUnit.DAYS)));
+
+        // MSSQL/JTDS errors with The data types time and datetime are incompatible in the greater than or equal to operator.
+        // add ;sendTimeAsDateTime=false to connection string
+        // https://stackoverflow.com/questions/38954422/the-data-types-time-and-datetime-are-incompatible-in-the-greater-than-or-equal-t
+        // Doesn't work at all with JTDS
+        if (connectionType != ConnectionTypes.JTDS) {
+            LocalTime time = LocalTime.now();
+            session.query(Contact.class,
+                    where(":whatMiteIsIt between ? AND ?"),
+                    params(time.minus(10, ChronoUnit.MINUTES), time));
+        }
     }
 
     public void testStoredProcs() {
         // todo testStoredProcs?
+    }
 
+    public void testParameters() throws Exception {
     }
 
 
@@ -204,13 +234,13 @@ public abstract class BaseTest extends TestCase {
         }
         assertTrue("Should not be able to read fields if there are missing properties", failOnMissingProperties);
 
+        // Make sure all columns are NOT the CASE of the ones in the DB.
         String sql = """
                 SELECT company_NAME, Date_Of_Last_ORDER, contact_title, pHone, rEGion, postal_CODE, FAX, DATE_Registered, 
                 ADDress, CUStomer_id, Contact_name, country, city, STATUS, TestLocalDate, TestLocalDateTime 
                 from Customers
                 """;
 
-        // Make sure all columns are NOT the CASE of the ones in the DB.
         List<Customer> list = session.query(Customer.class, sql(sql), none());
 
         log.info(list);
@@ -218,6 +248,9 @@ public abstract class BaseTest extends TestCase {
 
         Customer c2 = list.get(0);
         assertEquals("region s/b north ", Regions.North, c2.getRegion());
+
+        // test util date as param
+        session.query(Customer.class, where("DATE_REGISTERED = ?"), params(new java.util.Date(customer.getDateRegistered().getTime())));
     }
 
     public void testQueryResult() throws Exception {
@@ -233,11 +266,15 @@ public abstract class BaseTest extends TestCase {
 
 
         List<CustomerOrder> results;
+        boolean fail = false;
+
         try {
             results = session.query(CustomerOrder.class, sql(sql), none());
         } catch (Exception e) {
-            log.warn("SHOULD ERROR HERE NOT ENOUGH COLUMNS " + e.getMessage());
+            fail = true;
+            log.info("SHOULD ERROR HERE NOT ENOUGH COLUMNS " + e.getMessage());
         }
+        assertTrue(fail);
 
         sb = new StringBuilder();
         sb.append("SELECT c.Customer_ID, c.Company_Name, o.ID Order_ID, o.Name AS Description, o.Date_Paid, o.Created AS DateCreated, o.PAID ");
@@ -245,10 +282,23 @@ public abstract class BaseTest extends TestCase {
         sb.append(" JOIN Customers c ON o.Customer_ID = c.Customer_ID");
 
         sql = sb.toString();
+        sql += " WHERE 1 = ?";
         log.info(sql);
 
+        fail = false;
+        try {
+            // this should fail with don't use keys() with a Query
+            results = session.query(CustomerOrder.class, sql(sql), keys(1));
+        } catch (PersismException e) {
+            fail = true;
+            log.info("expected error " + e.getMessage());
+            assertEquals("", e.getMessage(), Messages.PrimaryKeysDontExist.message());
+        }
+
+        assertTrue(fail);
+
         // This should not fail - we will refresh the metadata
-        results = session.query(CustomerOrder.class, sql(sql), none());
+        results = session.query(CustomerOrder.class, sql(sql), params(1));
         log.info(results);
         assertEquals("size should be 4", 4, results.size());
 
@@ -281,6 +331,7 @@ public abstract class BaseTest extends TestCase {
         Integer count = session.fetch(Integer.class, sql("select count(*) from Customers where Region = ?"), params(Regions.East));
         log.info("count " + count);
         assertEquals("should be 1", "1", "" + count);
+
     }
 
     public void testSelectMultipleByPrimaryKey() throws SQLException {
@@ -571,9 +622,10 @@ public abstract class BaseTest extends TestCase {
         log.info("Local Date: " + ldt4 + " INSTANT: " + contact.getTestInstant());
         log.info("Local Date: " + LocalDateTime.now() + " INSTANT: " + Instant.now());
 
-        session.insert(contact);
+        assertEquals("expect 1", 1, session.upsert(contact).rows());
+
         contact.setNotes(null);
-        session.update(contact);
+        assertEquals("expect 1", 1, session.upsert(contact).rows());
 
         Contact contact2 = new Contact();
         contact2.setIdentity(identity);
@@ -583,10 +635,10 @@ public abstract class BaseTest extends TestCase {
         assertEquals(contact2.getPartnerId(), partnerId);
 
         contact.setDivision("Y");
-        assertEquals("1 update?", 1, session.update(contact));
+        assertEquals("1 update?", 1, session.update(contact).rows());
 
         contact.setDivision("Y");
-        assertEquals("0 update?", 0, session.update(contact));
+        assertEquals("0 update?", 0, session.update(contact).rows());
 
         List<Contact> contacts = session.query(Contact.class);
         log.info(contacts);
@@ -638,7 +690,7 @@ public abstract class BaseTest extends TestCase {
                 log.info("contact after insert/update before commit/rollback: " + contactForTest);
 
                 // NOW FAIL the transaction to see that the new contact was not committed
-                session.query(Object.class, sql("select * FROM TABLE THAT DOESN'T EXIST!!!!"));
+                session.query(Object.class, proc("select * FROM TABLE THAT DOESN'T EXIST!!!!"));
             });
         } catch (Exception e) {
             log.info("SHOULD FAIL: " + e);
@@ -681,18 +733,22 @@ public abstract class BaseTest extends TestCase {
         // https://stackoverflow.com/questions/45305283/parsing-sql-query-in-java
 
         // test where and keys - this at least does conversions for UUID so they don't have to manually do it.
-        // As long as they use keys() rather than params()
+        // As long as they use keys() rather than params() todo review
         String columnName = session.getMetaData().getPrimaryKeys(Contact.class, con).get(0);
         String where = session.getMetaData().getConnectionType().getKeywordStartDelimiter() +
                 columnName +
                 session.getMetaData().getConnectionType().getKeywordEndDelimiter() +
                 "=?";
+        log.info("testContactTable " + where);
         // testing that this should not fail.
         List<Contact> results = session.query(Contact.class, where(where), keys(identity));
         log.info(results);
 
         Contact result = session.fetch(Contact.class, where(where), keys(identity));
         log.info(result);
+
+        //todo Try this. should it convert? yes but it doesn't oracle just passes the bad string into the byte array so we don't find a result.
+        assertTrue(session.query(Contact.class, where(":partnerId = ?"), params(contact.getPartnerId())).size() > 0);
     }
 
     static LocalDateTime ldt = LocalDateTime.parse("1998-02-17 10:23:43.567", formatter);
@@ -944,7 +1000,7 @@ public abstract class BaseTest extends TestCase {
         invoice.setPaid(true);
         invoice.setActualPrice(new BigDecimal("10.23"));
 
-        session.insert(invoice);
+        assertEquals("s/b 1", 1, session.upsert(invoice).rows());
 
 
         assertTrue("Invoice ID > 0", invoice.getInvoiceId() > 0);
@@ -1100,17 +1156,19 @@ public abstract class BaseTest extends TestCase {
         DatabaseMetaData dmd = con.getMetaData();
         log.info("GetDbMetaData for " + dmd.getDatabaseProductName());
 
-        ResultSet result = dmd.getProcedures(null, "%", "%");
-        for (int i = 1; i <= result.getMetaData().getColumnCount(); i++) {
-            System.out.println(i + " - " + result.getMetaData().getColumnLabel(i));
-        }
-
-        System.out.println("Catalog\tSchema\tName");
-        while (result.next()) {
-            System.out.println(result.getString("PROCEDURE_CAT") +
-                    " - " + result.getString("PROCEDURE_SCHEM") +
-                    " - " + result.getString("PROCEDURE_NAME"));
-        }
+        System.out.println("PROCS");
+        System.out.println("-----");
+//        ResultSet result = dmd.getProcedures(null, "%", "%");
+//        for (int i = 1; i <= result.getMetaData().getColumnCount(); i++) {
+//            System.out.println(i + " - " + result.getMetaData().getColumnLabel(i));
+//        }
+//
+//        System.out.println("Catalog\tSchema\tName");
+//        while (result.next()) {
+//            System.out.println(result.getString("PROCEDURE_CAT") +
+//                    " - " + result.getString("PROCEDURE_SCHEM") +
+//                    " - " + result.getString("PROCEDURE_NAME"));
+//        }
 
         String[] tableTypes = {"TABLE"};
 
@@ -1123,30 +1181,54 @@ public abstract class BaseTest extends TestCase {
         rsmd = rs.getMetaData();
         while (rs.next()) {
             for (int i = 1; i <= rsmd.getColumnCount(); i++) {
-                log.info(rsmd.getColumnName(i) + " = " + rs.getObject(i));
+                System.out.println(rsmd.getColumnName(i) + " = " + rs.getObject(i));
             }
             tables.add(rs.getString("TABLE_NAME"));
-            log.info("----------");
+            System.out.println("----------");
         }
 
         for (String table : tables) {
-            log.info("Table " + table + " COLUMN INFO");
+            System.out.println("Table " + table + " COLUMN INFO");
             rs = dmd.getColumns(null, session.getMetaData().getConnectionType().getSchemaPattern(), table, null);
             rsmd = rs.getMetaData();
             while (rs.next()) {
                 for (int i = 1; i <= rsmd.getColumnCount(); i++) {
-                    log.info(rsmd.getColumnName(i) + " = " + rs.getObject(i));
+                    System.out.println(rsmd.getColumnName(i) + " = " + rs.getObject(i));
                 }
-                log.info("----------");
+                System.out.println("----------");
             }
 
         }
 
-//        rs = dmd.getColumns("", session.getMetaData().connectionType.getSchemaPattern(), "", "");
-//        rsmd = rs.getMetaData();
-//        for (int i = 1; i<= rsmd.getColumnCount(); i++) {
-//            log.info(rsmd.getColumnName(i) + " = " + rs.getObject(i));
-//        }
+        System.out.println("VIEWS");
+        System.out.println("-----");
+
+        String[] viewType = {"VIEW"};
+
+        // get attributes
+        List<String> views = new ArrayList<>(32);
+        rs = dmd.getTables(null, session.getMetaData().getConnectionType().getSchemaPattern(), null, viewType);
+        rsmd = rs.getMetaData();
+        while (rs.next()) {
+            for (int i = 1; i <= rsmd.getColumnCount(); i++) {
+                System.out.println(rsmd.getColumnName(i) + " = " + rs.getObject(i));
+            }
+            views.add(rs.getString("TABLE_NAME"));
+            System.out.println("----------");
+        }
+
+        for (String view : views) {
+            System.out.println("VIEW " + view + " COLUMN INFO");
+            rs = dmd.getColumns(null, session.getMetaData().getConnectionType().getSchemaPattern(), view, null);
+            rsmd = rs.getMetaData();
+            while (rs.next()) {
+                for (int i = 1; i <= rsmd.getColumnCount(); i++) {
+                    System.out.println(rsmd.getColumnName(i) + " = " + rs.getObject(i));
+                }
+                System.out.println("----------");
+            }
+
+        }
 
     }
 
