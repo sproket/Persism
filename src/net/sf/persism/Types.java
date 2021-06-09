@@ -166,7 +166,7 @@ enum Types {
                 // MSSQL type for DateTimeOffset
                 result = TimestampType;
             } else {
-                log.warn("SQL TYPE: " + sqlType + " not found ", new Throwable());
+                log.warn(Messages.UnknownSQLType.message(sqlType), new Throwable());
             }
         }
 

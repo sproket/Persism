@@ -374,7 +374,7 @@ final class Reader {
             }
 
         } else {
-            log.warn("Column type not known for SQL type " + sqlColumnType, new Throwable());
+            log.warn(Messages.ColumnTypeNotKnownForSQLType.message(sqlColumnType), new Throwable());
             value = rs.getObject(column);
         }
 

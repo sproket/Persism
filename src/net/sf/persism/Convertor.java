@@ -26,7 +26,7 @@ final class Convertor {
         Types valueType = Types.getType(value.getClass());
 
         if (valueType == null) {
-            log.warn("Conversion: Unknown type: " + value.getClass() + " - no conversion performed.");
+            log.warn(Messages.NoConversionForUnknownType.message(value.getClass()));
             return value;
         }
 
@@ -42,7 +42,7 @@ final class Convertor {
 
             case byteType:
             case ByteType:
-                log.warnNoDuplicates("COLUMN: " + columnName + ": MSSQL Sees tinyint as 0 - 254 - Others -127 - +127 - no conversion performed - recommend changing it to SMALLINT/Short.");
+                log.warnNoDuplicates(Messages.TinyIntMSSQL.message(columnName));
                 break;
 
             case shortType:
@@ -85,7 +85,7 @@ final class Convertor {
                     returnValue = new Timestamp(lval);
 
                 } else if (targetType.equals(Integer.class) || targetType.equals(int.class)) {
-                    log.warnNoDuplicates("Possible overflow column " + columnName + " - Target type is INT and Value type is LONG");
+                    log.warnNoDuplicates(Messages.PossibleOverflow.message(columnName, "INT", "LONG"));
                     returnValue = Integer.parseInt("" + lval);
 
                 } else if (targetType.equals(LocalDate.class)) {
@@ -114,15 +114,15 @@ final class Convertor {
                     returnValue = new BigDecimal("" + value);
 
                 } else if (targetType.equals(Float.class) || targetType.equals(float.class)) {
-                    log.warnNoDuplicates("Possible overflow column " + columnName + " - Target type is FLOAT and Value type is DOUBLE");
+                    log.warnNoDuplicates(Messages.PossibleOverflow.message(columnName, "FLOAT", "DOUBLE"));
                     returnValue = dbl.floatValue();
 
                 } else if (targetType.equals(Integer.class) || targetType.equals(int.class)) {
-                    log.warnNoDuplicates("Possible overflow column " + columnName + " - Target type is INT and Value type is DOUBLE");
+                    log.warnNoDuplicates(Messages.PossibleOverflow.message(columnName, "INT", "DOUBLE"));
                     returnValue = dbl.intValue();
 
                 } else if (targetType.equals(Long.class) || targetType.equals(long.class)) {
-                    log.warnNoDuplicates("Possible overflow column " + columnName + " - Target type is Long and Value type is DOUBLE");
+                    log.warnNoDuplicates(Messages.PossibleOverflow.message(columnName, "LONG", "DOUBLE"));
                     returnValue = dbl.longValue();
                 }
                 break;
@@ -130,28 +130,28 @@ final class Convertor {
             case BigDecimalType:
                 if (targetType.equals(Float.class) || targetType.equals(float.class)) {
                     returnValue = ((Number) value).floatValue();
-                    log.warnNoDuplicates("Possible overflow column " + columnName + " - Target type is Float and Value type is BigDecimal");
+                    log.warnNoDuplicates(Messages.PossibleOverflow.message(columnName, "Float", "BigDecimal"));
 
                 } else if (targetType.equals(Double.class) || targetType.equals(double.class)) {
                     returnValue = ((Number) value).doubleValue();
-                    log.warnNoDuplicates("Possible overflow column " + columnName + " - Target type is Double and Value type is BigDecimal");
+                    log.warnNoDuplicates(Messages.PossibleOverflow.message(columnName, "Double", "BigDecimal"));
 
                 } else if (targetType.equals(Long.class) || targetType.equals(long.class)) {
                     returnValue = ((Number) value).longValue();
-                    log.warnNoDuplicates("Possible overflow column " + columnName + " - Target type is Long and Value type is BigDecimal");
+                    log.warnNoDuplicates(Messages.PossibleOverflow.message(columnName, "Long", "BigDecimal"));
 
                 } else if (targetType.equals(Integer.class) || targetType.equals(int.class)) {
                     returnValue = ((Number) value).intValue();
-                    log.warnNoDuplicates("Possible overflow column " + columnName + " - Target type is Integer and Value type is BigDecimal");
+                    log.warnNoDuplicates(Messages.PossibleOverflow.message(columnName, "Integer", "BigDecimal"));
 
                 } else if (targetType.equals(Short.class) || targetType.equals(short.class)) {
                     returnValue = ((Number) value).shortValue();
-                    log.warnNoDuplicates("Possible overflow column " + columnName + " - Target type is Short and Value type is BigDecimal");
+                    log.warnNoDuplicates(Messages.PossibleOverflow.message(columnName, "Short", "BigDecimal"));
 
                 } else if (targetType.equals(Boolean.class) || targetType.equals(boolean.class)) {
                     // BigDecimal to Boolean. Oracle (sigh) - Additional for a Char to Boolean as then (see TestOracle for links)
                     returnValue = ((Number) value).intValue() == 1;
-                    log.warnNoDuplicates("Possible overflow column " + columnName + " - Target type is Boolean and Value type is BigDecimal");
+                    log.warnNoDuplicates(Messages.PossibleOverflow.message(columnName, "Boolean", "BigDecimal"));
 
                 } else if (targetType.equals(String.class)) {
                     returnValue = (value).toString();
@@ -299,7 +299,7 @@ final class Convertor {
             case InstantType:
             case OffsetDateTimeType:
             case ZonedDateTimeType:
-                log.warn(valueType + " not yet supported", new Throwable());
+                log.warn(Messages.ConvertorValueTypeNotYetSupported.message(valueType.getJavaType()), new Throwable());
                 break;
 
             case byteArrayType:
@@ -312,7 +312,7 @@ final class Convertor {
 
             case ClobType:
             case BlobType:
-                log.warn("why? Clob is read as String, Blob as byte array - see readColumn method", new Throwable());
+                log.warn(Messages.ConvertorDoNotUseClobOrBlobAsAPropertyType.message(), new Throwable());
                 break;
 
             case EnumType:

@@ -257,8 +257,7 @@ public final class Session implements AutoCloseable {
                         // Do not include if this column has a default and no value has been
                         // set on it's associated property.
                         if (propertyInfo.getter.getReturnType().isPrimitive()) {
-                            log.warnNoDuplicates("Property " + propertyInfo.propertyName + " for column " + columnInfo.columnName + " for class " + object.getClass() +
-                                    " should be an Object type to properly detect NULL for defaults (change it from the primitive type to its Boxed version).");
+                            log.warnNoDuplicates(Messages.PropertyShouldBeAnObjectType.message(propertyInfo.propertyName, columnInfo.columnName, object.getClass()));
                         }
 
                         if (propertyInfo.getter.invoke(object) == null) {
@@ -628,7 +627,7 @@ public final class Session implements AutoCloseable {
         Types type = Types.getType(objectClass);
 
         if (type == null) {
-            log.warn("Unhandled type " + objectClass);
+            log.warn(Messages.UnknownTypeForPrimaryGeneratedKey.message(objectClass));
             return (T) rs.getObject(1);
         }
 
@@ -662,9 +661,11 @@ public final class Session implements AutoCloseable {
 
                 Types type = Types.getType(param.getClass());
                 if (type == null) {
-                    log.warn("setParameters: Unknown type: " + param.getClass());
+                    log.warn(Messages.UnknownTypeInSetParameters.message(param.getClass()));
                     type = Types.ObjectType;
                 }
+
+                Object value; // used for conversions
 
                 switch (type) {
 
@@ -732,16 +733,23 @@ public final class Session implements AutoCloseable {
                         st.setTimestamp(n, (Timestamp) param);
                         break;
 
-                    // THESE are converted to Timestamp (or Time) by convert method.
                     case LocalTimeType:
+                        value = convertor.convert(param, Time.class, "Parameter " + n);
+                        st.setObject(n, value);
+                        break;
+
+                    case UtilDateType:
                     case LocalDateType:
                     case LocalDateTimeType:
-                        log.warn(type + " why would this occur in setParameters?", new Throwable());
+                        value = convertor.convert(param, Timestamp.class, "Parameter " + n);
+                        st.setObject(n, value);
                         break;
 
                     case OffsetDateTimeType:
                     case ZonedDateTimeType:
                     case InstantType:
+                        log.warn(Messages.UnSupportedTypeInSetParameters.message(type));
+                        st.setObject(n, param);
                         // todo ZonedDateTime, OffsetDateTimeType and MAYBE Instant
                         break;
 
@@ -754,8 +762,10 @@ public final class Session implements AutoCloseable {
                     case ClobType:
                     case BlobType:
                         // Clob is converted to String Blob is converted to byte array
-                        // So this should not occur.
-                        log.warn(type + " why would this occur in setParameters?", new Throwable());
+                        // so this should not occur unless they were passed in by the user.
+                        // We are most probably about to fail here.
+                        log.warn(Messages.ParametersDoNotUseClobOrBlob.message(), new Throwable());
+                        st.setObject(n, param);
                         break;
 
                     case EnumType:
