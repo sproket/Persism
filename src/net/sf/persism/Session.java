@@ -601,7 +601,7 @@ public final class Session implements AutoCloseable {
      */
 
     private JDBCResult exec(JDBCResult result, String sql, Object... parameters) throws SQLException {
-        if (sql.toLowerCase().startsWith("select ")) {
+        if (sql.trim().toLowerCase().startsWith("select ")) {
             result.st = connection.prepareStatement(sql);
 
             PreparedStatement pst = (PreparedStatement) result.st;
