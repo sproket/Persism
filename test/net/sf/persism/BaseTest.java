@@ -6,14 +6,9 @@ import net.sf.persism.dao.records.CustomerOrderRec;
 import net.sf.persism.dao.records.CustomerOrderGarbage;
 import net.sf.persism.dao.records.RecordTest1;
 import net.sf.persism.dao.records.RecordTest2;
-import net.sourceforge.jtds.jdbc.JtdsConnection;
 
-import javax.sql.rowset.serial.SerialBlob;
-import javax.sql.rowset.serial.SerialClob;
-import java.io.File;
 import java.lang.reflect.InvocationTargetException;
 import java.math.BigDecimal;
-import java.nio.file.Files;
 import java.sql.*;
 import java.sql.Date;
 import java.sql.ResultSet;
@@ -1053,7 +1048,7 @@ public abstract class BaseTest extends TestCase {
             case Derby:
             case HSQLDB:
             case H2:
-                paramValue = Convertor.asBytes(id);
+                paramValue = Converter.asBytes(id);
                 break;
         }
 
@@ -1061,7 +1056,7 @@ public abstract class BaseTest extends TestCase {
         boolean fail = false;
         try {
             log.warn("paramValue: " + paramValue);
-            //session.fetch(RecordTest1.class, params((Object) Convertor.asBytes(id)));
+            //session.fetch(RecordTest1.class, params((Object) Converter.asBytes(id)));
             session.fetch(RecordTest1.class, params(paramValue));
         } catch (PersismException e) {
             fail = true;

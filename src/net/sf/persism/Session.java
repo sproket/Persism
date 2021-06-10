@@ -27,7 +27,7 @@ public final class Session implements AutoCloseable {
     private MetaData metaData;
 
     private Reader reader;
-    private Convertor convertor;
+    private Converter converter;
 
     /**
      * @param connection db connection
@@ -87,7 +87,7 @@ public final class Session implements AutoCloseable {
             throw new PersismException(e.getMessage(), e);
         }
 
-        convertor = new Convertor();
+        converter = new Converter();
         reader = new Reader(this);
     }
 
@@ -190,7 +190,7 @@ public final class Session implements AutoCloseable {
             assert params.size() == columnInfos.size();
             for (int j = 0; j < params.size(); j++) {
                 if (params.get(j) != null) {
-                    params.set(j, convertor.convert(params.get(j), columnInfos.get(j).columnType.getJavaType(), columnInfos.get(j).columnName));
+                    params.set(j, converter.convert(params.get(j), columnInfos.get(j).columnType.getJavaType(), columnInfos.get(j).columnName));
                 }
             }
             setParameters(st, params.toArray());
@@ -353,7 +353,7 @@ public final class Session implements AutoCloseable {
             assert params.size() == columnInfos.size();
             for (int j = 0; j < params.size(); j++) {
                 if (params.get(j) != null) {
-                    params.set(j, convertor.convert(params.get(j), columnInfos.get(j).columnType.getJavaType(), columnInfos.get(j).columnName));
+                    params.set(j, converter.convert(params.get(j), columnInfos.get(j).columnType.getJavaType(), columnInfos.get(j).columnName));
                 }
             }
 
@@ -456,7 +456,7 @@ public final class Session implements AutoCloseable {
 
             for (int j = 0; j < params.size(); j++) {
                 if (params.get(j) != null) {
-                    params.set(j, convertor.convert(params.get(j), columnInfos.get(j).columnType.getJavaType(), columnInfos.get(j).columnName));
+                    params.set(j, converter.convert(params.get(j), columnInfos.get(j).columnType.getJavaType(), columnInfos.get(j).columnName));
                 }
             }
             setParameters(st, params.toArray());
@@ -677,7 +677,7 @@ public final class Session implements AutoCloseable {
             log.debug("FETCH %s PARAMS: %s", sql, params);
             for (int j = 0; j < params.size(); j++) {
                 if (params.get(j) != null) {
-                    params.set(j, convertor.convert(params.get(j), columnInfos.get(j).columnType.getJavaType(), columnInfos.get(j).columnName));
+                    params.set(j, converter.convert(params.get(j), columnInfos.get(j).columnType.getJavaType(), columnInfos.get(j).columnName));
                 }
             }
 
@@ -794,7 +794,7 @@ public final class Session implements AutoCloseable {
                 ColumnInfo columnInfo = columns.get(key);
                 for (int j = 0; j < parameters.size(); j++) {
                     if (parameters.get(j) != null) {
-                        parameters.set(j, convertor.convert(parameters.get(j), columnInfo.columnType.getJavaType(), columnInfo.columnName));
+                        parameters.set(j, converter.convert(parameters.get(j), columnInfo.columnType.getJavaType(), columnInfo.columnName));
                     }
                 }
             }
@@ -843,8 +843,8 @@ public final class Session implements AutoCloseable {
         return metaData;
     }
 
-    Convertor getConvertor() {
-        return convertor;
+    Converter getConverter() {
+        return converter;
     }
 
     Connection getConnection() {
@@ -1049,14 +1049,14 @@ public final class Session implements AutoCloseable {
                         break;
 
                     case LocalTimeType:
-                        value = convertor.convert(param, Time.class, "Parameter " + n);
+                        value = converter.convert(param, Time.class, "Parameter " + n);
                         st.setObject(n, value);
                         break;
 
                     case UtilDateType:
                     case LocalDateType:
                     case LocalDateTimeType:
-                        value = convertor.convert(param, Timestamp.class, "Parameter " + n);
+                        value = converter.convert(param, Timestamp.class, "Parameter " + n);
                         st.setObject(n, value);
                         break;
 

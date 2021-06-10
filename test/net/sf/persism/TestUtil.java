@@ -13,9 +13,6 @@ import org.junit.Test;
 
 import java.util.*;
 
-import static net.sf.persism.SQL.*;
-import static net.sf.persism.Parameters.params;
-
 public class TestUtil extends TestCase {
 
     private static final Log log = Log.getLogger(TestUtil.class);
@@ -120,6 +117,6 @@ public class TestUtil extends TestCase {
         log.info(Messages.ObjectNotProperlyInitialized.message("Junk", "col, col2m, cop;le"));
 
         log.warn(Messages.UnknownSQLType.message(1));
-        log.warn(Messages.ConvertorValueTypeNotYetSupported.message(Types.InstantType.getJavaType()));
+        log.warn(Messages.ConverterValueTypeNotYetSupported.message(Types.InstantType.getJavaType()));
     }
 }

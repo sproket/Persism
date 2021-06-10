@@ -5,7 +5,6 @@ import net.sf.persism.dao.*;
 import org.junit.experimental.categories.Category;
 
 import java.io.File;
-import java.io.IOException;
 import java.math.BigDecimal;
 import java.nio.file.Files;
 import java.sql.*;
@@ -313,7 +312,7 @@ public final class TestH2 extends BaseTest {
         session.fetch(other);
 
         // TODO Fails with some DBs unless you convert yourself. the question here is how to allow a user to use the converter
-        byte[] uuid = Convertor.asBytes(contact.getIdentity());
+        byte[] uuid = Converter.asBytes(contact.getIdentity());
         List<Contact> contacts = session.query(Contact.class, sql(sql), params((Object) uuid));
         log.info(contacts);
 

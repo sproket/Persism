@@ -20,12 +20,12 @@ final class Reader {
 
     private Connection connection;
     private MetaData metaData;
-    private Convertor convertor;
+    private Converter converter;
 
     Reader(Session session) {
         this.connection = session.getConnection();
         this.metaData = session.getMetaData();
-        this.convertor = session.getConvertor();
+        this.converter = session.getConverter();
     }
 
     <T> T readObject(Object object, ResultSet rs) throws IllegalAccessException, SQLException, InvocationTargetException, IOException {
@@ -381,7 +381,7 @@ final class Reader {
 
         // If value is null or column type is unknown - no need to try to convert anything.
         if (value != null && columnType != null) {
-            value = convertor.convert(value, returnType, columnName);
+            value = converter.convert(value, returnType, columnName);
         }
 
         return (T) value;
