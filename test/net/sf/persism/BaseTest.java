@@ -993,7 +993,7 @@ public abstract class BaseTest extends TestCase {
             case Derby:
             case HSQLDB:
             case H2:
-                paramValue = Convertor.asBytes(id);
+                paramValue = Converter.asBytes(id);
                 break;
         }
 
@@ -1001,7 +1001,7 @@ public abstract class BaseTest extends TestCase {
         boolean fail = false;
         try {
             log.warn("paramValue: " + paramValue);
-            //session.fetch(RecordTest1.class, params((Object) Convertor.asBytes(id)));
+            //session.fetch(RecordTest1.class, params((Object) Converter.asBytes(id)));
             session.fetch(RecordTest1.class, "select * from RecordTest1 where id = ?", paramValue);
         } catch (PersismException e) {
             fail = true;

@@ -14,9 +14,9 @@ import java.time.LocalTime;
 import java.time.ZoneId;
 import java.util.*;
 
-final class Convertor {
+final class Converter {
 
-    private static final Log log = Log.getLogger(Convertor.class);
+    private static final Log log = Log.getLogger(Converter.class);
 
     // Make a sensible conversion of the value type from the DB and the property type defined
     // on the Data class - or the value type from the property to the statement parameter.
@@ -299,7 +299,7 @@ final class Convertor {
             case InstantType:
             case OffsetDateTimeType:
             case ZonedDateTimeType:
-                log.warn(Messages.ConvertorValueTypeNotYetSupported.message(valueType.getJavaType()), new Throwable());
+                log.warn(Messages.ConverterValueTypeNotYetSupported.message(valueType.getJavaType()), new Throwable());
                 break;
 
             case byteArrayType:
@@ -312,7 +312,7 @@ final class Convertor {
 
             case ClobType:
             case BlobType:
-                log.warn(Messages.ConvertorDoNotUseClobOrBlobAsAPropertyType.message(), new Throwable());
+                log.warn(Messages.ConverterDoNotUseClobOrBlobAsAPropertyType.message(), new Throwable());
                 break;
 
             case EnumType:
