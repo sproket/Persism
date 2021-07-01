@@ -41,9 +41,9 @@ public class Invoice {
         return invoiceId;
     }
 
-    public void setInvoiceId(Integer invoiceId) {
-        this.invoiceId = invoiceId;
-    }
+//    public void setInvoiceId(Integer invoiceId) {
+//        this.invoiceId = invoiceId;
+//    }
 
     public float getPrice() {
         return price;

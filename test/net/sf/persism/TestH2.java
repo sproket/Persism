@@ -11,6 +11,7 @@ import java.sql.*;
 import java.time.*;
 import java.util.*;
 import java.util.Date;
+import static net.sf.persism.UtilsForTests.*;
 
 /**
  * Comments for TestH2 go here.
@@ -35,15 +36,15 @@ public final class TestH2 extends BaseTest {
         props.load(getClass().getResourceAsStream("/h2.properties"));
         Class.forName(props.getProperty("database.driver"));
 
-        String home = UtilsForTests.createHomeFolder("pinfh2");
-        String url = UtilsForTests.replace(props.getProperty("database.url"), "{$home}", home);
+        String home = createHomeFolder("pinfh2");
+        String url = replace(props.getProperty("database.url"), "{$home}", home);
         log.info(url);
 
         con = DriverManager.getConnection(url, "sa", "");
 
         createTables();
 
-        session = new Session(con, "jdbc:h2/H2!");
+        session = new Session(con);
 
         Instant x = new Date().toInstant();
 
@@ -62,12 +63,13 @@ public final class TestH2 extends BaseTest {
         super.testContactTable();
         assertTrue(true);
 
-        Contact contact = getContactForTest();
-        String sql = session.getMetaData().getSelectStatement(contact, con);
+        UUID randomUUID = UUID.randomUUID();
+        Contact contact = getContactForTest(randomUUID);
+        String sql = session.getMetaData().getSelectStatement(contact.getClass(), con);
 
         // this works
-        Contact other = new Contact();
-        other.setIdentity(contact.getIdentity());
+        Contact other = new Contact(randomUUID);
+        //other.setIdentity(contact.getIdentity());
         session.fetch(other);
 
         // todo the question here is how to allow a user to use the converter
@@ -80,7 +82,7 @@ public final class TestH2 extends BaseTest {
     protected void createTables() throws SQLException {
         List<String> commands = new ArrayList<>(12);
         String sql;
-        if (UtilsForTests.isTableInDatabase("Orders", con)) {
+        if (isTableInDatabase("Orders", con)) {
             sql = "DROP TABLE Orders";
             commands.add(sql);
         }
@@ -101,11 +103,11 @@ public final class TestH2 extends BaseTest {
         commands.add(sql);
 
         // view first
-        if (UtilsForTests.isViewInDatabase("CustomerInvoice", con)) {
+        if (isViewInDatabase("CustomerInvoice", con)) {
             commands.add("DROP VIEW CustomerInvoice");
         }
 
-        if (UtilsForTests.isTableInDatabase("Customers", con)) {
+        if (isTableInDatabase("Customers", con)) {
             commands.add("DROP TABLE Customers");
         }
 
@@ -128,7 +130,7 @@ public final class TestH2 extends BaseTest {
                 " TestLocalDateTime datetime NULL" +
                 ") ");
 
-        if (UtilsForTests.isTableInDatabase("Invoices", con)) {
+        if (isTableInDatabase("Invoices", con)) {
             commands.add("DROP TABLE Invoices");
         }
 
@@ -137,18 +139,24 @@ public final class TestH2 extends BaseTest {
                 " Customer_ID varchar(10) NOT NULL, " +
                 " Paid BIT NOT NULL, " +
                 " Price NUMERIC(7,3) NOT NULL, " +
-                " ActualPrice NUMERIC(7,3) NOT NULL, " +
+                " ACTUALPRICE NUMERIC(7,3) NOT NULL, " +
                 " Status INT DEFAULT 1, " +
                 " Created DateTime default current_timestamp, " + // make read-only in Invoice Object
                 " Quantity NUMERIC(10) NOT NULL, " +
                 " Discount NUMERIC(10,3) NOT NULL " +
                 ") ");
 
-        if (UtilsForTests.isTableInDatabase("TABLEMULTIPRIMARY", con)) {
+        sql = "CREATE VIEW CustomerInvoice AS\n" +
+                " SELECT c.Customer_ID, c.Company_Name, i.Invoice_ID, i.Status, i.Created AS DateCreated, i.PAID, i.Quantity\n" +
+                "       FROM Invoices i\n" +
+                "       JOIN Customers c ON i.Customer_ID = c.Customer_ID\n" +
+                "       WHERE i.Status = 1\n";
+        commands.add(sql);
+        if (isTableInDatabase("TABLEMULTIPRIMARY", con)) {
             commands.add("DROP TABLE TABLEMULTIPRIMARY");
         }
 
-        if (UtilsForTests.isTableInDatabase("SavedGames", con)) {
+        if (isTableInDatabase("SavedGames", con)) {
             commands.add("DROP TABLE SavedGames");
         }
 
@@ -176,7 +184,7 @@ public final class TestH2 extends BaseTest {
 
         executeCommands(commands, con);
 
-        if (UtilsForTests.isTableInDatabase("Contacts", con)) {
+        if (isTableInDatabase("Contacts", con)) {
             executeCommand("DROP TABLE Contacts", con);
         }
 
@@ -210,7 +218,7 @@ public final class TestH2 extends BaseTest {
 
         executeCommand(sql, con);
 
-        if (UtilsForTests.isTableInDatabase("DateTest", con)) {
+        if (isTableInDatabase("DateTest", con)) {
             executeCommand("DROP TABLE DateTest", con);
         }
 
@@ -236,7 +244,7 @@ public final class TestH2 extends BaseTest {
 
         executeCommand(sql, con);
 
-        if (UtilsForTests.isTableInDatabase("DateTestLocalTypes", con)) {
+        if (isTableInDatabase("DateTestLocalTypes", con)) {
             executeCommand("DROP TABLE DateTestLocalTypes", con);
         }
 
@@ -249,7 +257,7 @@ public final class TestH2 extends BaseTest {
 
         executeCommand(sql, con);
 
-        if (UtilsForTests.isTableInDatabase("DateTestSQLTypes", con)) {
+        if (isTableInDatabase("DateTestSQLTypes", con)) {
             executeCommand("DROP TABLE DateTestSQLTypes", con);
         }
 
@@ -263,7 +271,7 @@ public final class TestH2 extends BaseTest {
 
         executeCommand(sql, con);
 
-        if (UtilsForTests.isTableInDatabase("ByteData", con)) {
+        if (isTableInDatabase("ByteData", con)) {
             executeCommand("DROP TABLE ByteData", con);
         }
         sql = "CREATE TABLE ByteData ( " +

@@ -16,6 +16,8 @@ import java.time.*;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 
+import static net.sf.persism.UtilsForTests.*;
+
 /**
  * Comments for BaseTest go here.
  *
@@ -79,7 +81,7 @@ public abstract class BaseTest extends TestCase {
 
         customer.setDateOfLastOrder(LocalDateTime.parse("20120528010101", dtf)); // add time to see it removed
         log.info(customer.getDateOfLastOrder());
-        customer.setDateRegistered(new Timestamp(UtilsForTests.getCalendarFromAnsiDateString(dateRegistered).getTimeInMillis()));
+        customer.setDateRegistered(new Timestamp(getCalendarFromAnsiDateString(dateRegistered).getTimeInMillis()));
         log.info(customer.getDateRegistered());
 
         assertEquals("date of last order s/b", "20120528010101", dtf.format(customer.getDateOfLastOrder()));
@@ -477,8 +479,8 @@ public abstract class BaseTest extends TestCase {
             session.fetch(countryString);
         } catch (PersismException e) {
             failed = true;
-            assertEquals("message s/b 'Cannot read a primitive type object with this method.'",
-                    "Cannot read a primitive type object with this method.",
+            assertEquals("message s/b 'Cannot read a primitive type object with this method'",
+                    Messages.CannotReadThisType.message("primitive"),
                     e.getMessage());
         }
         assertTrue("should have thrown the exception", failed);
@@ -495,10 +497,10 @@ public abstract class BaseTest extends TestCase {
     LocalDateTime ldt4 = LocalDateTime.parse("1994-02-17 10:23:43.997", formatter);
     java.util.Date date = Timestamp.valueOf("1992-02-17 10:23:41.107");
 
-    Contact getContactForTest() {
+    Contact getContactForTest(UUID uuid) {
 
-        Contact contact = new Contact();
-        contact.setIdentity(identity);
+        Contact contact = new Contact(uuid);
+        //contact.setIdentity(identity);
         contact.setPartnerId(partnerId);
         contact.setFirstname("Fred");
         contact.setLastname("Flintstone");
@@ -524,9 +526,74 @@ public abstract class BaseTest extends TestCase {
         return contact;
     }
 
+    public void testCustomerInvoiceView() throws Exception {
+        Customer customer = new Customer();
+        customer.setCustomerId("ABC");
+        customer.setCompanyName("ABC Inc");
+        session.insert(customer);
+        Invoice invoice = new Invoice();
+        invoice.setCustomerId("ABC");
+        invoice.setQuantity(10);
+        invoice.setPrice(10.23f);
+        invoice.setActualPrice(BigDecimal.valueOf(9.99d));
+        invoice.setStatus(1);
+        session.insert(invoice);
+        Customer customer1 = session.fetch(Customer.class, "SELECT * FROM Customers WHERE Company_Name = ?", "ABC Inc");
+        assertNotNull(customer1);
+        CustomerInvoice customerInvoice = session.fetch(CustomerInvoice.class, "SELECT * FROM CustomerInvoice WHERE Company_Name = ?", "ABC Inc");
+        assertNotNull(customerInvoice);
+
+        CustomerInvoiceRec customerInvoiceRec =session.fetch(CustomerInvoiceRec.class, "SELECT * FROM CustomerInvoice WHERE Company_Name = ?", "ABC Inc");
+        assertNotNull(customerInvoiceRec);
+
+        CustomerInvoiceTestView customerInvoiceTestView = session.fetch(CustomerInvoiceTestView.class, "SELECT * FROM CustomerInvoice WHERE Company_Name = ?", "ABC Inc");
+        List<CustomerInvoiceTestView> list2 = session.query(CustomerInvoiceTestView.class);
+
+        assertNotNull(customerInvoiceTestView);
+        assertTrue(list2.size() > 0);
+
+        boolean fail = false;
+        try {
+            session.insert(customerInvoiceTestView);
+        } catch (PersismException e) {
+            fail = true;
+            assertEquals("s/b", Messages.OperationNotSupportedForView.message(customerInvoiceTestView.getClass(), "Insert"), e.getMessage());
+        }
+        assertTrue(fail);
+
+        fail = false;
+        try {
+            session.update(customerInvoiceTestView);
+        } catch (PersismException e) {
+            fail = true;
+            assertEquals("s/b", Messages.OperationNotSupportedForView.message(customerInvoiceTestView.getClass(), "Update"), e.getMessage());
+        }
+        assertTrue(fail);
+
+        fail = false;
+        try {
+            session.delete(customerInvoiceTestView);
+        } catch (PersismException e) {
+            fail = true;
+            assertEquals("s/b", Messages.OperationNotSupportedForView.message(customerInvoiceTestView.getClass(),"Delete"), e.getMessage());
+        }
+        assertTrue(fail);
+
+        fail = false;
+        try {
+            // @NotTable Should fail. We can't use no sql specified for these since we don't know what the SQL would be.
+            List<CustomerInvoiceResult> list3 = session.query(CustomerInvoiceResult.class);
+        } catch (PersismException e) {
+            fail = true;
+            assertEquals("s/b",
+                    Messages.OperationNotSupportedForNotTableQuery.message(CustomerInvoiceResult.class, "QUERY"),
+                    e.getMessage());
+        }
+        assertTrue(fail);
+    }
     public void testContactTable() throws SQLException {
 
-        Contact contact = getContactForTest();
+        Contact contact = getContactForTest(identity);
 
         log.info("Local Date: " + ldt4 + " INSTANT: " + contact.getTestInstant());
         log.info("Local Date: " + LocalDateTime.now() + " INSTANT: " + Instant.now());
@@ -535,8 +602,8 @@ public abstract class BaseTest extends TestCase {
         contact.setNotes(null);
         session.update(contact);
 
-        Contact contact2 = new Contact();
-        contact2.setIdentity(identity);
+        Contact contact2 = new Contact(identity);
+        //contact2.setIdentity(identity);
         assertTrue(session.fetch(contact2));
         assertNotNull(contact2.getPartnerId());
         assertEquals(contact2.getIdentity(), identity);
@@ -580,18 +647,20 @@ public abstract class BaseTest extends TestCase {
 
         // test transaction
 
-        contact = getContactForTest();
+        final UUID randomUUID = UUID.randomUUID();
+
+        contact = getContactForTest(randomUUID);
         session.insert(contact);
 
         boolean shouldFail = false;
-
-        final UUID randomUUID = UUID.randomUUID();
         try {
             session.withTransaction(() -> {
-                Contact contactForTest = getContactForTest();
-                contactForTest.setIdentity(randomUUID);
+                Contact contactForTest = getContactForTest(randomUUID);
+                //contactForTest.setIdentity(randomUUID);
                 session.insert(contactForTest);
+                contactForTest.setAddress1("123 Somewhere");
                 contactForTest.setContactName("HELLO?!");
+                contactForTest.setNotes("notes?");
                 session.update(contactForTest);
                 session.fetch(contactForTest);
 
@@ -607,10 +676,12 @@ public abstract class BaseTest extends TestCase {
 
         assertTrue(shouldFail);
 
+        final UUID rand = UUID.randomUUID();
+
         // pass one
         session.withTransaction(() -> {
-            Contact contactForTest = getContactForTest();
-            contactForTest.setIdentity(UUID.randomUUID());
+            Contact contactForTest = getContactForTest(UUID.randomUUID());
+            //contactForTest.setIdentity(UUID.randomUUID());
             session.insert(contactForTest);
             contactForTest.setContactName("HELLO?!@");
             session.update(contactForTest);
@@ -619,15 +690,15 @@ public abstract class BaseTest extends TestCase {
             log.info("contact after insert/update before commit/rollback: " + contactForTest);
         });
 
-        Contact contactForTest = getContactForTest();
-        contactForTest.setIdentity(randomUUID);
+        Contact contactForTest = getContactForTest(rand);
+        //contactForTest.setIdentity(randomUUID);
 
         assertFalse("Should not be found", session.fetch(contactForTest));
 
         // null checks for unset properties.
-        contact = new Contact();
-        UUID rand = UUID.randomUUID();
-        contact.setIdentity(rand);
+        UUID rand2 = UUID.randomUUID();
+        contact = new Contact(rand2);
+//        contact.setIdentity(rand);
         contact.setPartnerId(partnerId);
         contact.setType("X");
         contact.setFirstname("not null");
@@ -785,12 +856,13 @@ public abstract class BaseTest extends TestCase {
     // try some types that might fail if not converted.
     // We might need something if we ever expose the general execute method
     public void XtestExecuteOutsideConvert() throws NoChangesDetectedForUpdateException, SQLException, InvocationTargetException, IllegalAccessException {
-        Contact icontact = getContactForTest();
+        UUID randomUUID = UUID.randomUUID();
+        Contact icontact = getContactForTest(randomUUID);
         session.insert(icontact);
 
         MetaData metaData = session.getMetaData();
 
-        Contact contact = getContactForTest();
+        Contact contact = getContactForTest(randomUUID);
         String updateSQL = metaData.getUpdateStatement(contact, con);
         log.info("UPDATE SQL: " + updateSQL);
 
@@ -1017,7 +1089,8 @@ public abstract class BaseTest extends TestCase {
         } catch (PersismException e) {
             fail = true;
             //log.error(e.getMessage(), e);
-            assertEquals("s/b 'Cannot read a Record type object with this method.'", "Cannot read a Record type object with this method.", e.getMessage());
+            assertEquals("s/b 'Cannot read a Record type object with this method'",
+                    Messages.CannotReadThisType.message("Record"), e.getMessage());
         }
         assertTrue(fail);
 
@@ -1080,8 +1153,8 @@ public abstract class BaseTest extends TestCase {
 
         } catch (PersismException e) {
             fail = true;
-            assertEquals("s/b 'Cannot read a Record type object with this method.'",
-                    "Cannot read a Record type object with this method.",
+            assertEquals("s/b 'Cannot read a Record type object with this method'",
+                    Messages.CannotReadThisType.message("Record"),
                     e.getMessage());
         }
         assertTrue(fail);

@@ -17,6 +17,8 @@ import java.time.LocalTime;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import static net.sf.persism.UtilsForTests.*;
+
 /**
  * Comments for TestDerby go here.
  *
@@ -38,8 +40,8 @@ public final class TestDerby extends BaseTest {
         props.load(getClass().getResourceAsStream("/derby.properties"));
         Class.forName(props.getProperty("database.driver")).newInstance(); // derby needs new instance....
 
-        String home = UtilsForTests.createHomeFolder("pinfderby");
-        String url = UtilsForTests.replace(props.getProperty("database.url"), "{$home}", home);
+        String home = createHomeFolder("pinfderby");
+        String url = replace(props.getProperty("database.url"), "{$home}", home);
         log.info(url);
 
         con = DriverManager.getConnection(url);
@@ -65,7 +67,7 @@ public final class TestDerby extends BaseTest {
     protected void createTables() throws SQLException {
         List<String> commands = new ArrayList<String>(12);
         String sql;
-        if (UtilsForTests.isTableInDatabase("Orders", con)) {
+        if (isTableInDatabase("Orders", con)) {
             sql = "DROP TABLE Orders";
             commands.add(sql);
         }
@@ -85,7 +87,10 @@ public final class TestDerby extends BaseTest {
 
         commands.add(sql);
 
-        if (UtilsForTests.isTableInDatabase("Customers", con)) {
+        if (isViewInDatabase("CustomerInvoice", con)) {
+            commands.add("DROP VIEW CustomerInvoice");
+        }
+        if (isTableInDatabase("Customers", con)) {
             commands.add("DROP TABLE Customers");
         }
 
@@ -108,7 +113,7 @@ public final class TestDerby extends BaseTest {
                 " TestLocalDateTime TIMESTAMP " +
                 ") ");
 
-        if (UtilsForTests.isTableInDatabase("Invoices", con)) {
+        if (isTableInDatabase("Invoices", con)) {
             commands.add("DROP TABLE Invoices");
         }
 
@@ -120,14 +125,20 @@ public final class TestDerby extends BaseTest {
                 " Created TIMESTAMP DEFAULT CURRENT_TIMESTAMP, " + // make read-only in Invoice Object
                 " Status INT DEFAULT 1, " +
                 " Price NUMERIC(7,3) NOT NULL, " +
-                " ActualPrice NUMERIC(7,3) NOT NULL, " +
+                " ACTUALPRICE NUMERIC(7,3) NOT NULL, " +
                 " Quantity INT NOT NULL, " +
 //                " Total NUMERIC(10,3) NOT NULL, " +
                 " Discount NUMERIC(10,3) NOT NULL " +
                 ") ");
 
 
-        if (UtilsForTests.isTableInDatabase("TABLEMULTIPRIMARY", con)) {
+        sql = "CREATE VIEW CustomerInvoice AS\n" +
+                " SELECT c.Customer_ID, c.Company_Name, i.Invoice_ID, i.Status, i.Created AS DateCreated, i.PAID, i.Quantity\n" +
+                "       FROM Invoices i\n" +
+                "       JOIN Customers c ON i.Customer_ID = c.Customer_ID\n" +
+                "       WHERE i.Status = 1\n";
+        commands.add(sql);
+        if (isTableInDatabase("TABLEMULTIPRIMARY", con)) {
             commands.add("DROP TABLE TABLEMULTIPRIMARY");
         }
 
@@ -142,7 +153,7 @@ public final class TestDerby extends BaseTest {
 
         executeCommands(commands, con);
 
-        if (UtilsForTests.isTableInDatabase("Contacts", con)) {
+        if (isTableInDatabase("Contacts", con)) {
             executeCommand("DROP TABLE Contacts", con);
         }
 
@@ -176,7 +187,7 @@ public final class TestDerby extends BaseTest {
 
         executeCommand(sql, con);
 
-        if (UtilsForTests.isTableInDatabase("DateTestLocalTypes", con)) {
+        if (isTableInDatabase("DateTestLocalTypes", con)) {
             executeCommand("DROP TABLE DateTestLocalTypes", con);
         }
 
@@ -190,7 +201,7 @@ public final class TestDerby extends BaseTest {
 
         executeCommand(sql, con);
 
-        if (UtilsForTests.isTableInDatabase("DateTestSQLTypes", con)) {
+        if (isTableInDatabase("DateTestSQLTypes", con)) {
             executeCommand("DROP TABLE DateTestSQLTypes", con);
         }
 

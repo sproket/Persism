@@ -77,6 +77,7 @@ public final class TestSQLite extends BaseTest {
     @Override
     protected void createTables() throws SQLException {
 
+        String sql;
         Statement st = null;
         List<String> commands = new ArrayList<String>(3);
         if (isTableInDatabase("Orders", con)) {
@@ -101,6 +102,9 @@ public final class TestSQLite extends BaseTest {
                 " DATE_SOMETHING datetime NULL" +
                 ") ");
 
+        if (isViewInDatabase("CustomerInvoice", con)) {
+            commands.add("DROP VIEW CustomerInvoice");
+        }
 
         if (isTableInDatabase("Customers", con)) {
             commands.add("DROP TABLE Customers");
@@ -135,13 +139,19 @@ public final class TestSQLite extends BaseTest {
                 " Customer_ID varchar(10) NOT NULL, " +
                 " Paid BIT NOT NULL, " +
                 " Price REAL NOT NULL, " +
-                " ActualPrice REAL NOT NULL, " +
+                " ACTUALPRICE REAL NOT NULL, " +
                 " Status INT DEFAULT 1, " +
                 " Created DateTime default (datetime('now','localtime')), " + // make read-only in Invoice Object
                 " Quantity INTEGER NOT NULL, " +
                 //" Total REAL NOT NULL, " +
                 " Discount REAL NOT NULL " +
                 ") ");
+        sql = "CREATE VIEW CustomerInvoice AS\n" +
+                " SELECT c.Customer_ID, c.Company_Name, i.Invoice_ID AS [INVOICE ID], i.Status, i.Created AS Date_Created, i.PAID, i.Quantity\n" +
+                "       FROM Invoices i\n" +
+                "       JOIN Customers c ON i.Customer_ID = c.Customer_ID\n" +
+                "       WHERE i.Status = 1\n";
+        commands.add(sql);
 
         if (isTableInDatabase("TABLENOPRIMARY", con)) {
             commands.add("DROP TABLE TABLENOPRIMARY");
@@ -165,7 +175,7 @@ public final class TestSQLite extends BaseTest {
             executeCommand("DROP TABLE CONTACTS", con);
         }
 
-        String sql = "CREATE TABLE CONTACTS ( " +
+        sql = "CREATE TABLE CONTACTS ( " +
                 " identity VARCHAR(36) PRIMARY KEY UNIQUE NOT NULL, " +
                 " PartnerID BLOB NOT NULL, " +
                 " Type char(2) NOT NULL, " +
@@ -562,8 +572,8 @@ public final class TestSQLite extends BaseTest {
             session.update(junk);
         } catch (PersismException e) {
             shouldFail = true;
-            assertEquals("Message s/b 'Cannot perform UPDATE - TABLENOPRIMARY has no primary keys.'",
-                    "Cannot perform UPDATE - TABLENOPRIMARY has no primary keys.",
+            assertEquals("Message s/b 'Cannot perform UPDATE - TABLENOPRIMARY has no primary keys'",
+                    Messages.TableHasNoPrimaryKeys.message("UPDATE", "TABLENOPRIMARY"),
                     e.getMessage());
         }
         assertTrue(shouldFail);
@@ -573,8 +583,8 @@ public final class TestSQLite extends BaseTest {
             session.fetch(junk);
         } catch (PersismException e) {
             shouldFail = true;
-            assertEquals("Message s/b 'Cannot perform FETCH - TABLENOPRIMARY has no primary keys.'",
-                    "Cannot perform FETCH - TABLENOPRIMARY has no primary keys.",
+            assertEquals("Message s/b 'Cannot perform FETCH - TABLENOPRIMARY has no primary keys'",
+                    Messages.TableHasNoPrimaryKeys.message("FETCH", "TABLENOPRIMARY"),
                     e.getMessage());
         }
         assertTrue(shouldFail);
@@ -584,8 +594,8 @@ public final class TestSQLite extends BaseTest {
             session.delete(junk);
         } catch (PersismException e) {
             shouldFail = true;
-            assertEquals("Message s/b 'Cannot perform DELETE - TABLENOPRIMARY has no primary keys.'",
-                    "Cannot perform DELETE - TABLENOPRIMARY has no primary keys.",
+            assertEquals("Message s/b 'Cannot perform DELETE - TABLENOPRIMARY has no primary keys'",
+                    Messages.TableHasNoPrimaryKeys.message("DELETE", "TABLENOPRIMARY"),
                     e.getMessage());
         }
         assertTrue(shouldFail);

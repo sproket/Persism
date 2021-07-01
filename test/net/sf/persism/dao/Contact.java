@@ -43,6 +43,13 @@ public final class Contact implements Persistable<Contact> {
     private Time whatTimeIsIt;
     private LocalTime whatMiteIsIt;
 
+    public Contact() {
+    }
+
+    public Contact(UUID identity) {
+        this.identity = identity;
+    }
+
     @NotColumn
     private Instant testInstant;
     @NotColumn
@@ -60,9 +67,10 @@ public final class Contact implements Persistable<Contact> {
         return identity;
     }
 
-    public void setIdentity(UUID identity) {
-        this.identity = identity;
-    }
+    // make primary read-only
+//    public void setIdentity(UUID identity) {
+//        this.identity = identity;
+//    }
 
     public UUID getPartnerId() {
         return partnerId;

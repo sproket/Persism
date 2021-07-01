@@ -9,6 +9,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 
+import static net.sf.persism.UtilsForTests.*;
 @Category(LocalDB.class)
 public final class TestHSQLDB extends BaseTest {
 
@@ -23,8 +24,8 @@ public final class TestHSQLDB extends BaseTest {
         props.load(getClass().getResourceAsStream("/hsqldb.properties"));
         Class.forName(props.getProperty("database.driver"));
 
-        String home = UtilsForTests.createHomeFolder("pinfhsqldb");
-        String url = UtilsForTests.replace(props.getProperty("database.url"), "{$home}", home);
+        String home = createHomeFolder("pinfhsqldb");
+        String url = replace(props.getProperty("database.url"), "{$home}", home);
         log.info(url);
 
         con = DriverManager.getConnection(url, props);
@@ -53,7 +54,7 @@ public final class TestHSQLDB extends BaseTest {
         List<String> commands = new ArrayList<>(12);
         String sql;
 
-        if (UtilsForTests.isTableInDatabase("Orders", con)) {
+        if (isTableInDatabase("Orders", con)) {
             sql = "DROP TABLE Orders";
             commands.add(sql);
             executeCommand(sql, con);
@@ -75,7 +76,10 @@ public final class TestHSQLDB extends BaseTest {
         commands.add(sql);
         executeCommand(sql, con);
 
-        if (UtilsForTests.isTableInDatabase("Customers", con)) {
+        if (isViewInDatabase("CustomerInvoice", con)) {
+            executeCommand("DROP VIEW CustomerInvoice", con);
+        }
+        if (isTableInDatabase("Customers", con)) {
             sql = "DROP TABLE Customers";
             commands.add(sql);
             executeCommand(sql, con);
@@ -103,9 +107,8 @@ public final class TestHSQLDB extends BaseTest {
         commands.add(sql);
         executeCommand(sql, con);
 
-        if (UtilsForTests.isTableInDatabase("Invoices", con)) {
+        if (isTableInDatabase("Invoices", con)) {
             sql = "DROP TABLE Invoices";
-            commands.add(sql);
             executeCommand(sql, con);
         }
 
@@ -114,25 +117,28 @@ public final class TestHSQLDB extends BaseTest {
                 " Customer_ID varchar(10) NOT NULL, " +
                 " Paid BIT NOT NULL, " +
                 " Price NUMERIC(7,3) NOT NULL, " +
-                " ActualPrice NUMERIC(7,3) NOT NULL, " +
+                " ACTUALPRICE NUMERIC(7,3) NOT NULL, " +
                 " Status INT DEFAULT 1, " +
                 " Created TIMESTAMP DEFAULT NOW(), " + // make read-only in Invoice Object
                 " Quantity NUMERIC(10) NOT NULL, " +
                 //" Total NUMERIC(10,3) NOT NULL, " +
                 " Discount NUMERIC(10,3) NOT NULL " +
                 ") ";
-        commands.add(sql);
+        executeCommand(sql, con);
+        sql = "CREATE VIEW CustomerInvoice AS\n" +
+                " SELECT c.Customer_ID, c.Company_Name, i.Invoice_ID, i.Status, i.Created AS DateCreated, i.PAID, i.Quantity\n" +
+                "       FROM Invoices i\n" +
+                "       JOIN Customers c ON i.Customer_ID = c.Customer_ID\n" +
+                "       WHERE i.Status = 1\n";
         executeCommand(sql, con);
 
-        if (UtilsForTests.isTableInDatabase("TABLEMULTIPRIMARY", con)) {
+        if (isTableInDatabase("TABLEMULTIPRIMARY", con)) {
             sql = "DROP TABLE TABLEMULTIPRIMARY";
-            commands.add(sql);
             executeCommand(sql, con);
         }
 
         if (UtilsForTests.isTableInDatabase("SavedGames", con)) {
             sql = "DROP TABLE SavedGames";
-            commands.add(sql);
             executeCommand(sql, con);
         }
 
@@ -143,11 +149,9 @@ public final class TestHSQLDB extends BaseTest {
                 " Quantity TINYINT NOT NULL, " +
                 " Discount REAL NOT NULL " +
                 ") ";
-        commands.add(sql);
         executeCommand(sql, con);
 
         sql = "ALTER TABLE TABLEMULTIPRIMARY ADD PRIMARY KEY (OrderID, ProductID)";
-        commands.add(sql);
         executeCommand(sql, con);
 
 
@@ -161,11 +165,10 @@ public final class TestHSQLDB extends BaseTest {
                 " Data CLOB NULL, " +
                 " WhatTimeIsIt Time NULL, " +
                 " SomethingBig BLOB NULL) ";
-        commands.add(sql);
         executeCommand(sql, con);
 
 
-        if (UtilsForTests.isTableInDatabase("Contacts", con)) {
+        if (isTableInDatabase("Contacts", con)) {
             executeCommand("DROP TABLE Contacts", con);
         }
 
@@ -199,7 +202,7 @@ public final class TestHSQLDB extends BaseTest {
 
         executeCommand(sql, con);
 
-        if (UtilsForTests.isTableInDatabase("DateTest", con)) {
+        if (isTableInDatabase("DateTest", con)) {
             executeCommand("DROP TABLE DateTest", con);
         }
 
@@ -225,7 +228,7 @@ public final class TestHSQLDB extends BaseTest {
 
         executeCommand(sql, con);
 
-        if (UtilsForTests.isTableInDatabase("DateTestLocalTypes", con)) {
+        if (isTableInDatabase("DateTestLocalTypes", con)) {
             executeCommand("DROP TABLE DateTestLocalTypes", con);
         }
 
@@ -238,7 +241,7 @@ public final class TestHSQLDB extends BaseTest {
 
         executeCommand(sql, con);
 
-        if (UtilsForTests.isTableInDatabase("DateTestSQLTypes", con)) {
+        if (isTableInDatabase("DateTestSQLTypes", con)) {
             executeCommand("DROP TABLE DateTestSQLTypes", con);
         }
 

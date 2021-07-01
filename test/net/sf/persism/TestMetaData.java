@@ -15,7 +15,9 @@ import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.util.*;
 
+import static java.lang.System.in;
 import static java.lang.System.out;
+import static net.sf.persism.UtilsForTests.*;
 
 public final class TestMetaData extends TestCase {
 
@@ -32,8 +34,8 @@ public final class TestMetaData extends TestCase {
         props.load(getClass().getResourceAsStream("/derby.properties"));
         Class.forName(props.getProperty("database.driver")).newInstance(); // derby needs new instance....
 
-        String home = UtilsForTests.createHomeFolder("pinfderby");
-        String url = UtilsForTests.replace(props.getProperty("database.url"), "{$home}", home);
+        String home = createHomeFolder("pinfderby");
+        String url = replace(props.getProperty("database.url"), "{$home}", home);
         log.info(url);
 
         con = DriverManager.getConnection(url);
@@ -67,8 +69,8 @@ public final class TestMetaData extends TestCase {
             session.insert(new TestDerby());
         } catch (PersismException e) {
             failed = true;
-            assertEquals("Message s/b 'Could not determine a table for type: net.sf.persism.TestDerby Guesses were: [TestDerby, TestDerbies, Test Derby, Test_Derby, Test Derbies, Test_Derbies] and we found multiple matching tables: [TEST_DERBY, TESTDERBY]'",
-                    "Could not determine a table for type: net.sf.persism.TestDerby Guesses were: [TestDerby, TestDerbies, Test Derby, Test_Derby, Test Derbies, Test_Derbies] and we found multiple matching tables: [TEST_DERBY, TESTDERBY]",
+            assertEquals("Message s/b 'Could not determine a table for type: net.sf.persism.TestDerby Guesses were: [TestDerby, TestDerbies, Test Derby, Test_Derby, Test Derbies, Test_Derbies] and we found multiple matching: [TEST_DERBY, TESTDERBY]'",
+                    "Could not determine a table for type: net.sf.persism.TestDerby Guesses were: [TestDerby, TestDerbies, Test Derby, Test_Derby, Test Derbies, Test_Derbies] and we found multiple matching: [TEST_DERBY, TESTDERBY]",
                     e.getMessage());
         }
         assertTrue(failed);
@@ -145,7 +147,7 @@ public final class TestMetaData extends TestCase {
                         indexList = new LinkedList();
                         paramMap.put(name, indexList);
                     }
-                    indexList.add(new Integer(index));
+                    indexList.add(Integer.valueOf(index));
 
                     index++;
                 }

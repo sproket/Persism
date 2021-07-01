@@ -10,6 +10,7 @@ import java.util.List;
 import java.util.Properties;
 
 import static net.sf.persism.UtilsForTests.isTableInDatabase;
+import static net.sf.persism.UtilsForTests.isViewInDatabase;
 
 // placeholder
 @Category(ExternalDB.class)
@@ -95,6 +96,9 @@ CREATE TABLE sysmaster:informix.orderstest (
 
  */
         executeCommand(sql, con);
+        if (isViewInDatabase("CustomerInvoice", con)) {
+            executeCommand("DROP VIEW CustomerInvoice", con);
+        }
 
         if (isTableInDatabase("Customers", con)) {
             executeCommand("DROP TABLE Customers", con);
@@ -134,6 +138,12 @@ CREATE TABLE sysmaster:informix.orderstest (
                 " Quantity NUMERIC(10) NOT NULL, " +
                 " Discount NUMERIC(10,3) NOT NULL " +
                 ") ", con);
+        sql = "CREATE VIEW CustomerInvoice AS\n" +
+                " SELECT c.Customer_ID, c.Company_Name, i.Invoice_ID, i.Status, i.Created AS DateCreated, i.PAID, i.Quantity\n" +
+                "       FROM Invoices i\n" +
+                "       JOIN Customers c ON i.Customer_ID = c.Customer_ID\n" +
+                "       WHERE i.Status = 1\n";
+        executeCommand(sql, con);
 
         if (isTableInDatabase("TABLEMULTIPRIMARY", con)) {
             executeCommand("DROP TABLE TABLEMULTIPRIMARY", con);

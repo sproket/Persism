@@ -86,6 +86,7 @@ public class TestMSSQL extends BaseTest {
     @Override
     protected void createTables() throws SQLException {
         log.info("createTables");
+        String sql;
         List<String> commands = new ArrayList<String>(3);
 
         if (isTableInDatabase("Orders", con)) {
@@ -108,6 +109,9 @@ public class TestMSSQL extends BaseTest {
                 ") ");
 
         commands.add("ALTER TABLE [dbo].[Orders] ADD  CONSTRAINT [DF_Orders_CREATED]  DEFAULT (getdate()) FOR [CREATED]");
+        if (isViewInDatabase("CustomerInvoice", con)) {
+            commands.add("DROP VIEW CustomerInvoice");
+        }
 
         if (isTableInDatabase("Customers", con)) {
             commands.add("DROP TABLE Customers");
@@ -132,7 +136,7 @@ public class TestMSSQL extends BaseTest {
                 " TestLocalDateTime datetime " +
                 ") ");
 
-        if (UtilsForTests.isTableInDatabase("Invoices", con)) {
+        if (isTableInDatabase("Invoices", con)) {
             commands.add("DROP TABLE Invoices");
         }
 
@@ -141,7 +145,7 @@ public class TestMSSQL extends BaseTest {
                 " Customer_ID varchar(10) NOT NULL, " +
                 " Paid BIT NOT NULL, " +
                 " Price NUMERIC(7,3) NOT NULL, " +
-                " ACTUAL_Price NUMERIC(7,3) NOT NULL, " +
+                " ActualPrice NUMERIC(7,3) NOT NULL, " +
                 " Status INT DEFAULT 1, " +
                 " Created DateTime default current_timestamp, " + // make read-only in Invoice Object
                 " Quantity NUMERIC(10) NOT NULL, " +
@@ -149,7 +153,12 @@ public class TestMSSQL extends BaseTest {
                 " Discount NUMERIC(10,3) NOT NULL " +
                 ") ");
 
-
+        sql = "CREATE VIEW CustomerInvoice AS\n" +
+                " SELECT c.Customer_ID, c.Company_Name, i.Invoice_ID, i.Status, i.Created AS DateCreated, i.PAID, i.Quantity\n" +
+                "       FROM Invoices i\n" +
+                "       JOIN Customers c ON i.Customer_ID = c.Customer_ID\n" +
+                "       WHERE i.Status = 1\n";
+        commands.add(sql);
 
         if (isTableInDatabase("TABLENOPRIMARY", con)) {
             commands.add("DROP TABLE TABLENOPRIMARY");
@@ -175,7 +184,7 @@ public class TestMSSQL extends BaseTest {
             commands.add("DROP TABLE Contacts");
         }
 
-        String sql = "CREATE TABLE [dbo].[Contacts]( " +
+        sql = "CREATE TABLE [dbo].[Contacts]( " +
                 "   [identity] [uniqueidentifier] NOT NULL, " +
                 "   [PartnerID] [uniqueidentifier] NULL, " +
                 "   [Type] [char](2) NOT NULL, " +
@@ -523,7 +532,7 @@ public class TestMSSQL extends BaseTest {
 
 
         // TODO MSSQL has datetime2 datetime etc.. add some extras for that
-        if (UtilsForTests.isTableInDatabase("DateTestLocalTypes", con)) {
+        if (isTableInDatabase("DateTestLocalTypes", con)) {
             executeCommand("DROP TABLE DateTestLocalTypes", con);
         }
 
@@ -536,7 +545,7 @@ public class TestMSSQL extends BaseTest {
 
         executeCommand(sql, con);
 
-        if (UtilsForTests.isTableInDatabase("DateTestSQLTypes", con)) {
+        if (isTableInDatabase("DateTestSQLTypes", con)) {
             executeCommand("DROP TABLE DateTestSQLTypes", con);
         }
 
@@ -607,7 +616,7 @@ public class TestMSSQL extends BaseTest {
         } catch (PersismException e) {
             failed = true;
             assertEquals("message s/b 'Non-auto inc generated primary keys are not supported. Please assign your primary key value before performing an insert.'",
-                    "Non-auto inc generated primary keys are not supported. Please assign your primary key value before performing an insert.",
+                    "Non-auto inc generated primary keys are not supported. Please assign your primary key value before performing an insert",
                     e.getMessage());
         }
         assertTrue(failed);
@@ -762,8 +771,8 @@ public class TestMSSQL extends BaseTest {
 
             log.info(e.getMessage(), e);
 
-            assertEquals("message s/b 'Object class net.sf.persism.dao.Customer. Column: Region Type of property: class net.sf.persism.dao.Regions - Type read: class java.lang.String VALUE: NOTAREGION'",
-                    "Object class net.sf.persism.dao.Customer. Column: Region Type of property: class net.sf.persism.dao.Regions - Type read: class java.lang.String VALUE: NOTAREGION",
+            assertEquals("message s/b " + Messages.IllegalArgumentReadingColumn,
+                    Messages.IllegalArgumentReadingColumn.message("region", Customer.class, "Region", Regions.class, String.class, "NOTAREGION"),
                     e.getMessage());
         }
         assertTrue(failed);
@@ -783,7 +792,6 @@ public class TestMSSQL extends BaseTest {
                 "   -- interfering with SELECT statements.\n" +
                 "   SET NOCOUNT ON;\n" +
                 "\n" +
-                "    -- Insert statements for procedure here\n" +
                 "   SELECT c.Customer_ID, c.Company_Name, o.ID Order_ID, \n" +
                 "      o.Name AS Description, o.Date_Paid, o.Created AS DateCreated, o.PAID \n" +
                 "        FROM ORDERS o\n" +
@@ -905,8 +913,7 @@ public class TestMSSQL extends BaseTest {
 
     public void testAllColumnsMappedException() {
 
-        Contact contact = new Contact();
-        contact.setIdentity(UUID.randomUUID());
+        Contact contact = new Contact(UUID.randomUUID());
         contact.setFirstname("Wilma");
         contact.setLastname("Flintstone");
         contact.setContactName("Fred");
@@ -927,8 +934,7 @@ public class TestMSSQL extends BaseTest {
 
     public void testAdditionalPropertyNotMappedException() {
 
-        Contact contact = new Contact();
-        contact.setIdentity(UUID.randomUUID());
+        Contact contact = new Contact(UUID.randomUUID());
         contact.setFirstname("Wilma");
         contact.setLastname("Flintstone");
         contact.setContactName("Fred");
@@ -941,7 +947,7 @@ public class TestMSSQL extends BaseTest {
         } catch (PersismException e) {
             shouldHaveFailed = true;
             log.info(e.getMessage(), e);
-            assertEquals("message should be ", "Object class net.sf.persism.dao.ContactFail was not properly initialized. Some properties not initialized in the queried columns (fail).", e.getMessage());
+            assertEquals("message should be ", "Object class net.sf.persism.dao.ContactFail was not properly initialized. Some properties not initialized in the queried columns (fail)", e.getMessage());
         }
 
         assertEquals("should have failed", true, shouldHaveFailed);
