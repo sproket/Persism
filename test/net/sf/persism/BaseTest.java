@@ -354,7 +354,7 @@ public abstract class BaseTest extends TestCase {
             session.fetch(countryString);
         } catch (PersismException e) {
             failed = true;
-            assertEquals("message s/b 'Cannot read a primitive type object with this method.'", "Cannot read a primitive type object with this method.", e.getMessage());
+            assertEquals("message s/b 'Cannot read a primitive type object with this method'", "Cannot read a primitive type object with this method", e.getMessage());
         }
         assertTrue("should have thrown the exception", failed);
 
@@ -429,7 +429,7 @@ public abstract class BaseTest extends TestCase {
             session.insert(customerInvoiceTestView);
         } catch (PersismException e) {
             fail = true;
-            assertEquals("s/b", Messages.OperationNotSupportedForView.message("Insert"), e.getMessage());
+            assertEquals("s/b", Messages.OperationNotSupportedForView.message(customerInvoiceTestView.getClass(), "Insert"), e.getMessage());
         }
         assertTrue(fail);
 
@@ -438,7 +438,7 @@ public abstract class BaseTest extends TestCase {
             session.update(customerInvoiceTestView);
         } catch (PersismException e) {
             fail = true;
-            assertEquals("s/b", Messages.OperationNotSupportedForView.message("Update"), e.getMessage());
+            assertEquals("s/b", Messages.OperationNotSupportedForView.message(customerInvoiceTestView.getClass(), "Update"), e.getMessage());
         }
         assertTrue(fail);
 
@@ -447,7 +447,7 @@ public abstract class BaseTest extends TestCase {
             session.delete(customerInvoiceTestView);
         } catch (PersismException e) {
             fail = true;
-            assertEquals("s/b", Messages.OperationNotSupportedForView.message("Delete"), e.getMessage());
+            assertEquals("s/b", Messages.OperationNotSupportedForView.message(customerInvoiceTestView.getClass(), "Delete"), e.getMessage());
         }
         assertTrue(fail);
     }
@@ -602,39 +602,39 @@ public abstract class BaseTest extends TestCase {
         log.info("BEFORE: " + testSQLTypes1);
 
         session.withTransaction(() -> {
-        session.insert(testSQLTypes1);
+            session.insert(testSQLTypes1);
 
-        DateTestSQLTypes testSQLTypes2 = new DateTestSQLTypes();
-        testSQLTypes2.setId(testSQLTypes1.getId());
-        assertTrue(session.fetch(testSQLTypes2));
+            DateTestSQLTypes testSQLTypes2 = new DateTestSQLTypes();
+            testSQLTypes2.setId(testSQLTypes1.getId());
+            assertTrue(session.fetch(testSQLTypes2));
 
-        log.info("AFTER:  " + testSQLTypes2);
+            log.info("AFTER:  " + testSQLTypes2);
 
-        SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm.ss.SSS");
+            SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm.ss.SSS");
 
-        assertEquals("date s/b '1992-02-17'", sdate.toString(), testSQLTypes2.getDateOnly().toString());
-        assertEquals("time s/b '22:23:41'", time.toString(), testSQLTypes2.getTimeOnly().toString());
-        if (connectionType == ConnectionTypes.MySQL) {
-            // MySQL rounds off milliseconds - comes out like 1992-02-17 10:23:41.0
-            String s1 = ts.toString();
-            String s2 = testSQLTypes2.getDateAndTime().toString();
+            assertEquals("date s/b '1992-02-17'", sdate.toString(), testSQLTypes2.getDateOnly().toString());
+            assertEquals("time s/b '22:23:41'", time.toString(), testSQLTypes2.getTimeOnly().toString());
+            if (connectionType == ConnectionTypes.MySQL) {
+                // MySQL rounds off milliseconds - comes out like 1992-02-17 10:23:41.0
+                String s1 = ts.toString();
+                String s2 = testSQLTypes2.getDateAndTime().toString();
 
-            assertEquals("datetime s/b '1992-02-17 22:23:41'", s1.substring(0, s1.indexOf('.')), s2.substring(0, s2.indexOf('.')));
+                assertEquals("datetime s/b '1992-02-17 22:23:41'", s1.substring(0, s1.indexOf('.')), s2.substring(0, s2.indexOf('.')));
 
-            assertEquals("util date s/b '1992-02-17 22:23.41.000'", "1992-02-17 22:23.41.000", df.format(testSQLTypes2.getUtilDateAndTime()));
+                assertEquals("util date s/b '1992-02-17 22:23.41.000'", "1992-02-17 22:23.41.000", df.format(testSQLTypes2.getUtilDateAndTime()));
 
-        } else {
-            assertEquals("datetime s/b '1992-02-17 22:23:41.107'", ts.toString(), testSQLTypes2.getDateAndTime().toString());
-            assertEquals("util date s/b '1992-02-17 22:23.41.107'", "1992-02-17 22:23.41.107", df.format(testSQLTypes2.getUtilDateAndTime()));
-        }
+            } else {
+                assertEquals("datetime s/b '1992-02-17 22:23:41.107'", ts.toString(), testSQLTypes2.getDateAndTime().toString());
+                assertEquals("util date s/b '1992-02-17 22:23.41.107'", "1992-02-17 22:23.41.107", df.format(testSQLTypes2.getUtilDateAndTime()));
+            }
 
 
-        session.update(testSQLTypes2);
+            session.update(testSQLTypes2);
 
-        List<DateTestSQLTypes> list = session.query(DateTestSQLTypes.class, "select * FROM DateTestSQLTypes");
-        log.info(list);
+            List<DateTestSQLTypes> list = session.query(DateTestSQLTypes.class, "select * FROM DateTestSQLTypes");
+            log.info(list);
 
-        assertTrue(session.delete(testSQLTypes1) > 0);
+            assertTrue(session.delete(testSQLTypes1) > 0);
         });
     }
 
@@ -655,58 +655,58 @@ public abstract class BaseTest extends TestCase {
         log.info("BEFORE: " + testLocalTypes1);
 
         session.withTransaction(() -> {
-        session.insert(testLocalTypes1);
+            session.insert(testLocalTypes1);
 
-        DateTestLocalTypes testLocalTypes2 = new DateTestLocalTypes();
-        testLocalTypes2.setId(testLocalTypes1.getId());
-        assertTrue(session.fetch(testLocalTypes2));
+            DateTestLocalTypes testLocalTypes2 = new DateTestLocalTypes();
+            testLocalTypes2.setId(testLocalTypes1.getId());
+            assertTrue(session.fetch(testLocalTypes2));
 
-        log.info("AFTER:  " + testLocalTypes2);
-        String localTime = lt.format(DateTimeFormatter.ISO_TIME);
-        // Remove millis since most of the DBs don't store it anyway
-        if (localTime.indexOf('.') > 0) {
-            localTime = localTime.substring(0, localTime.indexOf('.'));
-        }
-        assertEquals("date s/b '1997-02-17'", ld.format(DateTimeFormatter.ISO_DATE), testLocalTypes2.getDateOnly().format(DateTimeFormatter.ISO_DATE));
-        assertEquals("time s/b '10:23:43'", localTime, testLocalTypes2.getTimeOnly().format(DateTimeFormatter.ISO_TIME));
+            log.info("AFTER:  " + testLocalTypes2);
+            String localTime = lt.format(DateTimeFormatter.ISO_TIME);
+            // Remove millis since most of the DBs don't store it anyway
+            if (localTime.indexOf('.') > 0) {
+                localTime = localTime.substring(0, localTime.indexOf('.'));
+            }
+            assertEquals("date s/b '1997-02-17'", ld.format(DateTimeFormatter.ISO_DATE), testLocalTypes2.getDateOnly().format(DateTimeFormatter.ISO_DATE));
+            assertEquals("time s/b '10:23:43'", localTime, testLocalTypes2.getTimeOnly().format(DateTimeFormatter.ISO_TIME));
 
-        if (connectionType == ConnectionTypes.MySQL) {
-            // MySQL rounds off milliseconds - 1998-02-17T10:23:43.567 comes out like 1998-02-17T10:23:43
-            String s = ldt.format(DateTimeFormatter.ISO_DATE_TIME);
-            assertEquals("datetime s/b '1998-02-17 10:23:43'",
-                    s.substring(0, s.indexOf('.')),
-                    testLocalTypes2.getDateAndTime().format(DateTimeFormatter.ISO_DATE_TIME));
-        } else {
-            assertEquals("datetime s/b '1998-02-17 10:23:43.567'", ldt.format(DateTimeFormatter.ISO_DATE_TIME), testLocalTypes2.getDateAndTime().format(DateTimeFormatter.ISO_DATE_TIME));
-        }
+            if (connectionType == ConnectionTypes.MySQL) {
+                // MySQL rounds off milliseconds - 1998-02-17T10:23:43.567 comes out like 1998-02-17T10:23:43
+                String s = ldt.format(DateTimeFormatter.ISO_DATE_TIME);
+                assertEquals("datetime s/b '1998-02-17 10:23:43'",
+                        s.substring(0, s.indexOf('.')),
+                        testLocalTypes2.getDateAndTime().format(DateTimeFormatter.ISO_DATE_TIME));
+            } else {
+                assertEquals("datetime s/b '1998-02-17 10:23:43.567'", ldt.format(DateTimeFormatter.ISO_DATE_TIME), testLocalTypes2.getDateAndTime().format(DateTimeFormatter.ISO_DATE_TIME));
+            }
 
-        session.update(testLocalTypes2);
+            session.update(testLocalTypes2);
 
-        DateTestLocalTypes testLocalTypes3 = new DateTestLocalTypes();
-        testLocalTypes3.setId(2);
-        testLocalTypes3.setDescription("time later in the day to test awfulness of SQLite");
-        testLocalTypes3.setTimeOnly(lt2);
+            DateTestLocalTypes testLocalTypes3 = new DateTestLocalTypes();
+            testLocalTypes3.setId(2);
+            testLocalTypes3.setDescription("time later in the day to test awfulness of SQLite");
+            testLocalTypes3.setTimeOnly(lt2);
 
-        assertEquals("s/b 1?", 1, session.insert(testLocalTypes3).rows());
+            assertEquals("s/b 1?", 1, session.insert(testLocalTypes3).rows());
 
-        List<DateTestLocalTypes> list = session.query(DateTestLocalTypes.class, "select * FROM DateTestLocalTypes");
-        log.info(list);
-
-
-        DateTestLocalTypes testLocalTypes4 = new DateTestLocalTypes();
-        testLocalTypes4.setId(2);
-        assertTrue(session.fetch(testLocalTypes4));
-
-        localTime = lt2.format(DateTimeFormatter.ISO_TIME);
-        // Remove millis since most of the DBs don't store it anyway
-        if (localTime.indexOf('.') > 0) {
-            localTime = localTime.substring(0, localTime.indexOf('.'));
-        }
-        assertEquals("time s/b " + localTime + " (FROM lt2)", localTime, testLocalTypes4.getTimeOnly().toString());
+            List<DateTestLocalTypes> list = session.query(DateTestLocalTypes.class, "select * FROM DateTestLocalTypes");
+            log.info(list);
 
 
-        assertTrue(session.delete(testLocalTypes1) > 0);
-        assertTrue(session.delete(testLocalTypes3) > 0);
+            DateTestLocalTypes testLocalTypes4 = new DateTestLocalTypes();
+            testLocalTypes4.setId(2);
+            assertTrue(session.fetch(testLocalTypes4));
+
+            localTime = lt2.format(DateTimeFormatter.ISO_TIME);
+            // Remove millis since most of the DBs don't store it anyway
+            if (localTime.indexOf('.') > 0) {
+                localTime = localTime.substring(0, localTime.indexOf('.'));
+            }
+            assertEquals("time s/b " + localTime + " (FROM lt2)", localTime, testLocalTypes4.getTimeOnly().toString());
+
+
+            assertTrue(session.delete(testLocalTypes1) > 0);
+            assertTrue(session.delete(testLocalTypes3) > 0);
         });
     }
 
