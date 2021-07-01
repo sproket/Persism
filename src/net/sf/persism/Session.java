@@ -1,6 +1,7 @@
 package net.sf.persism;
 
 import net.sf.persism.annotations.NotTable;
+import net.sf.persism.annotations.View;
 
 import java.lang.reflect.Method;
 import java.math.BigDecimal;
@@ -28,6 +29,7 @@ public final class Session implements AutoCloseable {
 
     /**
      * Default constructor for a Session object
+     *
      * @param connection db connection
      * @throws PersismException if something goes wrong
      */
@@ -38,23 +40,24 @@ public final class Session implements AutoCloseable {
 
     /**
      * Constructor for Session where you want to specify the Session Key.
+     *
      * @param connection db connection
      * @param sessionKey Unique string to represent the connection URL if it is not available on the Connection metadata.
      *                   This string should start with the jdbc url string to indicate the connection type.
-     *<pre>
-     *                  jdbc:h2 = h2
-     *                  jdbc:sqlserver = MS SQL
-     *                  jdbc:oracle = Oracle
-     *                  jdbc:sqlite = SQLite
-     *                  jdbc:derby = Derby
-     *                  jdbc:mysql = MySQL/MariaDB
-     *                  jdbc:postgresql = PostgreSQL
-     *                  jdbc:firebirdsql = Firebird (Jaybird)
-     *                  jdbc:hsqldb = HSQLDB
-     *                  jdbc:ucanaccess = MS Access
-     *                  jdbc:informix = Informix
+     *                   <pre>
+     *                                                                        jdbc:h2 = h2
+     *                                                                        jdbc:sqlserver = MS SQL
+     *                                                                        jdbc:oracle = Oracle
+     *                                                                        jdbc:sqlite = SQLite
+     *                                                                        jdbc:derby = Derby
+     *                                                                        jdbc:mysql = MySQL/MariaDB
+     *                                                                        jdbc:postgresql = PostgreSQL
+     *                                                                        jdbc:firebirdsql = Firebird (Jaybird)
+     *                                                                        jdbc:hsqldb = HSQLDB
+     *                                                                        jdbc:ucanaccess = MS Access
+     *                                                                        jdbc:informix = Informix
      *
-     </pre>
+     *                                                       </pre>
      * @throws PersismException if something goes wrong
      */
     public Session(Connection connection, String sessionKey) throws PersismException {
@@ -133,6 +136,9 @@ public final class Session implements AutoCloseable {
      * @throws PersismException Indicating the upcoming robot uprising.
      */
     public int update(Object object) throws PersismException {
+
+        checkIfView(object, "Update");
+
         List<String> primaryKeys = metaData.getPrimaryKeys(object.getClass(), connection);
         if (primaryKeys.size() == 0) {
             throw new PersismException(Messages.TableHasNoPrimaryKeys.message("UPDATE", metaData.getTableName(object.getClass())));
@@ -208,12 +214,16 @@ public final class Session implements AutoCloseable {
 
     /**
      * Inserts the data object in the database refreshing with autoinc and other defaults that may exist.
-     * @param <T> Type of the inserted object
+     *
+     * @param <T>    Type of the inserted object
      * @param object the data object to insert.
      * @return usually 1 to indicate rows changed via JDBC.
      * @throws PersismException When planet of the apes starts happening.
      */
     public <T> Result<T> insert(Object object) throws PersismException {
+
+        checkIfView(object, "Insert");
+
         String insertStatement = metaData.getInsertStatement(object, connection);
 
         PreparedStatement st = null;
@@ -335,7 +345,7 @@ public final class Session implements AutoCloseable {
             if (refreshAfterInsert) {
                 // Read the full object back to update any properties which had defaults
                 if (isRecord(object.getClass())) {
-                    object = fetch(object.getClass(), metaData.getSelectStatement(object, connection), primaryKeyValues.toArray());
+                    object = fetch(object.getClass(), metaData.getSelectStatement(object.getClass(), connection), primaryKeyValues.toArray());
                 } else {
                     fetch(object);
                 }
@@ -365,6 +375,8 @@ public final class Session implements AutoCloseable {
      * @throws PersismException Perhaps when asteroid 1999 RQ36 hits us?
      */
     public int delete(Object object) throws PersismException {
+
+        checkIfView(object, "Delete");
 
         List<String> primaryKeys = metaData.getPrimaryKeys(object.getClass(), connection);
         if (primaryKeys.size() == 0) {
@@ -431,6 +443,22 @@ public final class Session implements AutoCloseable {
     }
 
     /**
+     * Query for all rows in a table or view.
+     * @param objectClass class of objects to return.
+     * @param <T>         Return type
+     * @return a list of objects of the specified class
+     * @throws PersismException If something goes wrong you get a big stack trace.
+     */
+    public <T> List<T> query(Class<T> objectClass) throws Exception {
+        if (objectClass.getAnnotation(NotTable.class) != null) {
+            throw new PersismException(Messages.OperationNotSupportedForNotTableQuery.message(objectClass, "QUERY"));
+        }
+        String sql = metaData.getSelectStatement(objectClass, connection);
+        sql = sql.substring(0, sql.indexOf(" WHERE"));
+        return query(objectClass, sql);
+    }
+
+    /**
      * Query for a list of objects of the specified class using the specified SQL query and parameters.
      * The type of the list can be Data Objects or native Java Objects or primitives.
      *
@@ -456,7 +484,7 @@ public final class Session implements AutoCloseable {
         JDBCResult result = new JDBCResult();
         try {
             // we don't check parameter types here? Nope - we don't know anything at this point.
-            exec(result, sql, parameters);
+            executeQuery(result, sql, parameters);
 
             while (result.rs.next()) {
                 if (isRecord) {
@@ -520,14 +548,14 @@ public final class Session implements AutoCloseable {
             }
             assert params.size() == columnInfos.size();
 
-            String sql = metaData.getSelectStatement(object, connection);
+            String sql = metaData.getSelectStatement(objectClass, connection);
             log.debug("FETCH %s PARAMS: %s", sql, params);
             for (int j = 0; j < params.size(); j++) {
                 if (params.get(j) != null) {
                     params.set(j, converter.convert(params.get(j), columnInfos.get(j).columnType.getJavaType(), columnInfos.get(j).columnName));
                 }
             }
-            exec(JDBCResult, sql, params.toArray());
+            executeQuery(JDBCResult, sql, params.toArray());
 
             if (JDBCResult.rs.next()) {
                 reader.readObject(object, JDBCResult.rs);
@@ -562,7 +590,7 @@ public final class Session implements AutoCloseable {
         JDBCResult result = new JDBCResult();
         try {
 
-            exec(result, sql, parameters);
+            executeQuery(result, sql, parameters);
 
             if (result.rs.next()) {
                 if (isRecord) {
@@ -600,26 +628,36 @@ public final class Session implements AutoCloseable {
     Private methods
      */
 
-    private JDBCResult exec(JDBCResult result, String sql, Object... parameters) throws SQLException {
+    private void executeQuery(JDBCResult result, String sql, Object... parameters) throws SQLException {
         if (sql.trim().toLowerCase().startsWith("select ")) {
-            result.st = connection.prepareStatement(sql);
+            if (metaData.getConnectionType() == ConnectionTypes.Firebird) {
+                // https://stackoverflow.com/questions/935511/how-can-i-avoid-resultset-is-closed-exception-in-java
+                result.st = connection.prepareStatement(sql, ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY, ResultSet.HOLD_CURSORS_OVER_COMMIT);
+            } else {
+                result.st = connection.prepareStatement(sql, ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
+            }
 
             PreparedStatement pst = (PreparedStatement) result.st;
             setParameters(pst, parameters);
             result.rs = pst.executeQuery();
         } else {
-            if (!sql.toLowerCase().startsWith("{call")) {
+            if (!sql.trim().toLowerCase().startsWith("{call")) {
                 sql = "{call " + sql + "} ";
             }
-            result.st = connection.prepareCall(sql);
+            // Don't need If Firebird here. Firebird would call a selectable stored proc with SELECT anyway
+            result.st = connection.prepareCall(sql , ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY, ResultSet.HOLD_CURSORS_OVER_COMMIT);
 
             CallableStatement cst = (CallableStatement) result.st;
             setParameters(cst, parameters);
             result.rs = cst.executeQuery();
         }
-        return result;
     }
 
+    private void checkIfView(Object object, String operation) {
+        if (object.getClass().getAnnotation(View.class) != null) {
+            throw new PersismException(Messages.OperationNotSupportedForView.message(object.getClass(), operation));
+        }
+    }
 
     private <T> T getTypedValueReturnedFromGeneratedKeys(Class<T> objectClass, ResultSet rs) throws SQLException {
 

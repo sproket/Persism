@@ -21,6 +21,8 @@ import java.sql.SQLException;
 import java.util.Arrays;
 import java.util.List;
 
+import static net.sf.persism.UtilsForTests.*;
+
 // Does not share common tests - this is just to do some specific tests on SQL with PUBS DB
 @Category(TestContainerDB.class)
 public class TestPubsContainer extends TestPubs {
@@ -60,7 +62,7 @@ public class TestPubsContainer extends TestPubs {
 
     private void createTables() throws SQLException {
         //from https://github.com/Microsoft/sql-server-samples/tree/master/samples/databases/northwind-pubs
-        String sql = UtilsForTests.readFromResource("/sql/PUBS.sql");
+        String sql = readFromResource("/sql/PUBS.sql");
         List<String> commands = Arrays.asList(sql.split("(?i)GO\\r\\n", -1));
         BaseTest.executeCommands(commands, con);
 

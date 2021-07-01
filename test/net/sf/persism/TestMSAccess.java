@@ -19,6 +19,8 @@ import java.sql.*;
 import java.util.*;
 import java.util.Date;
 
+import static net.sf.persism.UtilsForTests.*;
+
 // Marked as ExternalDB to prevent Maven from running it and failing on file in use
 // on the Files.copy line. WTF. It runs fine with AllTests...
 @Category(ExternalDB.class)
@@ -39,7 +41,7 @@ public class TestMSAccess extends TestCase {
         Properties props = new Properties();
         props.load(getClass().getResourceAsStream("/msaccess.properties"));
 
-        String home = UtilsForTests.createHomeFolder("msaccess");
+        String home = createHomeFolder("msaccess");
 
         URI uri = Objects.requireNonNull(getClass().getResource("/Contacts.accdb")).toURI();
 

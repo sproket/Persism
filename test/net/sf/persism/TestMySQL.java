@@ -14,6 +14,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 
+import static net.sf.persism.UtilsForTests.*;
+import static net.sf.persism.UtilsForTests.isViewInDatabase;
+
 /**
  * @author Dan Howard
  * @since 6/4/12 9:52 PM
@@ -59,16 +62,20 @@ public class TestMySQL extends BaseTest {
     @Override
     protected void createTables() throws SQLException {
 
-        List<String> commands = new ArrayList<String>(12);
+        String sql;
 
-        if (UtilsForTests.isTableInDatabase("Customers", con)) {
-            commands.add("DROP TABLE Customers");
-        }
-        if (UtilsForTests.isTableInDatabase("Orders", con)) {
-            commands.add("DROP TABLE Orders");
+        if (isViewInDatabase("CustomerInvoice", con)) {
+            executeCommand("DROP VIEW CustomerInvoice", con);
         }
 
-        commands.add("CREATE TABLE Customers ( " +
+        if (isTableInDatabase("Customers", con)) {
+            executeCommand("DROP TABLE Customers", con);
+        }
+        if (isTableInDatabase("Orders", con)) {
+            executeCommand("DROP TABLE Orders", con);
+        }
+
+        executeCommand("CREATE TABLE Customers ( " +
                 " Customer_ID varchar(10) PRIMARY KEY NOT NULL, " +
                 " Company_Name VARCHAR(30) NULL, " +
                 " Contact_Name VARCHAR(30) NULL, " +
@@ -85,9 +92,9 @@ public class TestMySQL extends BaseTest {
                 " Date_Of_Last_Order DATE NULL, " +
                 " TestLocalDate DATETIME NULL, " +
                 " TestLocalDateTime TIMESTAMP NULL " +
-                ") ");
+                ") ", con);
 
-        commands.add("CREATE TABLE Orders ( " +
+        executeCommand("CREATE TABLE Orders ( " +
                 " ID INT NOT NULL AUTO_INCREMENT, PRIMARY KEY(ID), " +
                 " NAME VARCHAR(30) NULL, " +
                 " PAID BIT NULL, " +
@@ -98,15 +105,13 @@ public class TestMySQL extends BaseTest {
                 " Created TIMESTAMP, " +
                 " Date_Paid DATE NULL, " +
                 " Date_Something DATE NULL" +
-                ") ");
+                ") ", con);
 
-        executeCommands(commands, con);
-
-        if (UtilsForTests.isTableInDatabase("Invoices", con)) {
+        if (isTableInDatabase("Invoices", con)) {
             executeCommand("DROP TABLE Invoices",con);
         }
 
-        String sql = "CREATE TABLE Invoices ( " +
+        sql = "CREATE TABLE Invoices ( " +
                 " Invoice_ID INT NOT NULL AUTO_INCREMENT, PRIMARY KEY(Invoice_ID), " +
                 " Customer_ID varchar(10) NOT NULL, " +
                 " Paid BIT NOT NULL, " +
@@ -120,8 +125,15 @@ public class TestMySQL extends BaseTest {
 
         executeCommand(sql, con);
 
+        sql = "CREATE VIEW CustomerInvoice AS\n" +
+                " SELECT c.Customer_ID, c.Company_Name, i.Invoice_ID, i.Status, i.Created AS DateCreated, i.PAID, i.Quantity\n" +
+                "       FROM Invoices i\n" +
+                "       JOIN Customers c ON i.Customer_ID = c.Customer_ID\n" +
+                "       WHERE i.Status = 1\n";
+        executeCommand(sql, con);
 
-        if (UtilsForTests.isTableInDatabase("Contacts", con)) {
+
+        if (isTableInDatabase("Contacts", con)) {
             executeCommand("DROP TABLE Contacts", con);
         }
 
@@ -156,7 +168,7 @@ public class TestMySQL extends BaseTest {
 
         executeCommand(sql, con);
 
-        if (UtilsForTests.isTableInDatabase("DateTestLocalTypes", con)) {
+        if (isTableInDatabase("DateTestLocalTypes", con)) {
             executeCommand("DROP TABLE DateTestLocalTypes", con);
         }
 
@@ -169,7 +181,7 @@ public class TestMySQL extends BaseTest {
 
         executeCommand(sql, con);
 
-        if (UtilsForTests.isTableInDatabase("DateTestSQLTypes", con)) {
+        if (isTableInDatabase("DateTestSQLTypes", con)) {
             executeCommand("DROP TABLE DateTestSQLTypes", con);
         }
 
@@ -182,7 +194,6 @@ public class TestMySQL extends BaseTest {
                 " DateAndTime DATETIME) ";
 
         executeCommand(sql, con);
-
 
     }
 

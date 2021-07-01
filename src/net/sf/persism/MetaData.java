@@ -1,9 +1,6 @@
 package net.sf.persism;
 
-import net.sf.persism.annotations.Column;
-import net.sf.persism.annotations.NotColumn;
-import net.sf.persism.annotations.NotTable;
-import net.sf.persism.annotations.Table;
+import net.sf.persism.annotations.*;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
@@ -16,6 +13,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import static java.text.MessageFormat.format;
 import static net.sf.persism.Util.*;
+import static net.sf.persism.Util.isNotEmpty;
 
 /**
  * Meta data collected in a map singleton based on connection url
@@ -35,8 +33,8 @@ final class MetaData {
     private Map<Class<?>, Map<String, PropertyInfo>> propertyInfoMap = new ConcurrentHashMap<>(32);
     private Map<Class<?>, Map<String, ColumnInfo>> columnInfoMap = new ConcurrentHashMap<>(32);
 
-    // table name for each class
-    private Map<Class<?>, String> tableMap = new ConcurrentHashMap<>(32);
+    // table or view name for each class
+    private Map<Class<?>, String> tableOrViewMap = new ConcurrentHashMap<>(32);
 
     // SQL for updates/inserts/deletes/selects for each class
     private Map<Class<?>, String> updateStatementsMap = new ConcurrentHashMap<>(32);
@@ -55,6 +53,9 @@ final class MetaData {
 
     // list of tables in the DB
     private Set<String> tableNames = new TreeSet<>(String.CASE_INSENSITIVE_ORDER);
+
+    // list of views in the DB
+    private Set<String> viewNames = new TreeSet<>(String.CASE_INSENSITIVE_ORDER);
 
     // Map of table names + meta data
     // private Map<String, TableInfo> tableInfoMap = new ConcurrentHashMap<String, TableInfo>(32);
@@ -254,24 +255,25 @@ final class MetaData {
             rs.close();
 
             DatabaseMetaData dmd = connection.getMetaData();
+            if (objectClass.getAnnotation(View.class) == null) {
+                // Iterate primary keys and update column infos
+                rs = dmd.getPrimaryKeys(null, connectionType.getSchemaPattern(), tableName);
+                int primaryKeysCount = 0;
+                while (rs.next()) {
+                    ColumnInfo columnInfo = map.get(rs.getString("COLUMN_NAME"));
+                    if (columnInfo != null) {
+                        columnInfo.primary = true;
 
-            // Iterate primary keys and update column infos
-            rs = dmd.getPrimaryKeys(null, connectionType.getSchemaPattern(), tableName);
-            int primaryKeysCount = 0;
-            while (rs.next()) {
-                ColumnInfo columnInfo = map.get(rs.getString("COLUMN_NAME"));
-                if (columnInfo != null) {
-                    columnInfo.primary = true;
-
-                    if (!primaryKeysFound) {
-                        primaryKeysFound = columnInfo.primary;
+                        if (!primaryKeysFound) {
+                            primaryKeysFound = columnInfo.primary;
+                        }
                     }
+                    primaryKeysCount++;
                 }
-                primaryKeysCount++;
-            }
 
-            if (primaryKeysCount == 0) {
-                log.warn(Messages.DatabaseMetaDataCouldNotFindPrimaryKeys.message(tableName));
+                if (primaryKeysCount == 0) {
+                    log.warn(Messages.DatabaseMetaDataCouldNotFindPrimaryKeys.message(tableName));
+                }
             }
 
             /*
@@ -331,7 +333,7 @@ final class MetaData {
                 }
             }
 
-            if (!primaryKeysFound) {
+            if (!primaryKeysFound && objectClass.getAnnotation(View.class) == null) {
                 // Should we fail-fast? Actually no, we should not fail here.
                 // It's very possible the user has a table that they will never
                 // update, delete or select (by primary).
@@ -442,6 +444,7 @@ final class MetaData {
     }
 
     private static final String[] tableTypes = {"TABLE"};
+    private static final String[] viewTypes = {"VIEW"};
 
     // Populates the tables list with table names from the DB.
     // This list is used for discovery of the table name from a class.
@@ -459,6 +462,11 @@ final class MetaData {
             rs = con.getMetaData().getTables(null, connectionType.getSchemaPattern(), null, tableTypes);
             while (rs.next()) {
                 tableNames.add(rs.getString("TABLE_NAME"));
+            }
+
+            rs = con.getMetaData().getTables(null, connectionType.getSchemaPattern(), null, viewTypes);
+            while (rs.next()) {
+                viewNames.add(rs.getString("TABLE_NAME"));
             }
 
         } catch (SQLException e) {
@@ -643,32 +651,32 @@ final class MetaData {
         return deleteStatement;
     }
 
-    String getSelectStatement(Object object, Connection connection) {
-        if (selectStatementsMap.containsKey(object.getClass())) {
-            return selectStatementsMap.get(object.getClass());
+    String getSelectStatement(Class<?> objectClass, Connection connection) {
+        if (selectStatementsMap.containsKey(objectClass)) {
+            return selectStatementsMap.get(objectClass);
         }
-        return determineSelectStatement(object, connection);
+        return determineSelectStatement(objectClass, connection);
     }
 
-    private synchronized String determineSelectStatement(Object object, Connection connection) {
+    private synchronized String determineSelectStatement(Class<?> objectClass, Connection connection) {
 
-        if (selectStatementsMap.containsKey(object.getClass())) {
-            return selectStatementsMap.get(object.getClass());
+        if (selectStatementsMap.containsKey(objectClass)) {
+            return selectStatementsMap.get(objectClass);
         }
 
         String sd = connectionType.getKeywordStartDelimiter();
         String ed = connectionType.getKeywordEndDelimiter();
 
-        String tableName = getTableName(object.getClass(), connection);
+        String tableName = getTableName(objectClass, connection);
 
-        List<String> primaryKeys = getPrimaryKeys(object.getClass(), connection);
+        List<String> primaryKeys = getPrimaryKeys(objectClass, connection);
 
         StringBuilder sb = new StringBuilder();
         sb.append("SELECT ");
 
         String sep = "";
 
-        Map<String, ColumnInfo> columns = getColumns(object.getClass(), connection);
+        Map<String, ColumnInfo> columns = getColumns(objectClass, connection);
         for (String column : columns.keySet()) {
             ColumnInfo columnInfo = columns.get(column);
             sb.append(sep).append(sd).append(columnInfo.columnName).append(ed);
@@ -685,17 +693,15 @@ final class MetaData {
         String selectStatement = sb.toString();
 
         if (log.isDebugEnabled()) {
-            log.debug("determineSelectStatement for %s is %s", object.getClass(), selectStatement);
+            log.debug("determineSelectStatement for %s is %s", objectClass, selectStatement);
         }
 
-        selectStatementsMap.put(object.getClass(), selectStatement);
+        selectStatementsMap.put(objectClass, selectStatement);
 
         return selectStatement;
     }
 
     private String buildUpdateString(Object object, Iterator<String> it, Connection connection) throws PersismException {
-        // todo STUPID UPDATE STATEMENT IS IN ALPHABETICAL ORDER FFS
-
         String tableName = getTableName(object.getClass(), connection);
         String sd = connectionType.getKeywordStartDelimiter();
         String ed = connectionType.getKeywordEndDelimiter();
@@ -786,8 +792,8 @@ final class MetaData {
 
     <T> String getTableName(Class<T> objectClass) {
 
-        if (tableMap.containsKey(objectClass)) {
-            return tableMap.get(objectClass);
+        if (tableOrViewMap.containsKey(objectClass)) {
+            return tableOrViewMap.get(objectClass);
         }
 
         return determineTable(objectClass);
@@ -811,50 +817,63 @@ final class MetaData {
 
     private synchronized <T> String determineTable(Class<T> objectClass) {
 
-        if (tableMap.containsKey(objectClass)) {
-            return tableMap.get(objectClass);
+        if (tableOrViewMap.containsKey(objectClass)) {
+            return tableOrViewMap.get(objectClass);
         }
 
         String tableName;
-        Table annotation = objectClass.getAnnotation(Table.class);
-        if (annotation != null) {
-            tableName = annotation.value();
-            // double check against stored table names to get the actual case of the name
-            boolean found = false;
-            for (String name : tableNames) {
-                if (name.equalsIgnoreCase(tableName)) {
-                    tableName = name;
-                    found = true;
-                }
+        final Table tableAnnotation = objectClass.getAnnotation(Table.class);
+        final View viewAnnotation = objectClass.getAnnotation(View.class);
+
+        if (tableAnnotation != null) {
+            Optional<String> foundTable = tableNames.stream().filter(s -> s.equalsIgnoreCase(tableAnnotation.value())).findFirst();
+            if (foundTable.isPresent()) {
+                // get the actual case of the name
+                tableName = foundTable.get();
+            } else {
+                throw new PersismException(Messages.CouldNotFindTableNameInTheDatabase.message(tableAnnotation.value(), objectClass.getName()));
             }
-            if (!found) {
-                throw new PersismException(Messages.CouldNotFindTableNameInTheDatabase.message(tableName, objectClass.getName()));
+        } else if (viewAnnotation != null && isNotEmpty(viewAnnotation.value())) {
+            Optional<String> foundTable = viewNames.stream().filter(s -> s.equalsIgnoreCase(viewAnnotation.value())).findFirst();
+            if (foundTable.isPresent()) {
+                // get the actual case of the name
+                tableName = foundTable.get();
+            } else {
+                throw new PersismException(Messages.CouldNotFindViewNameInTheDatabase.message(viewAnnotation.value(), objectClass.getName()));
             }
 
         } else {
-            tableName = guessTableName(objectClass);
+            tableName = guessTableOrViewName(objectClass);
         }
-        tableMap.put(objectClass, tableName);
+        tableOrViewMap.put(objectClass, tableName);
         return tableName;
     }
 
     // Returns the table name found in the DB in the same case as in the DB.
     // throws PersismException if we cannot guess any table name for this class.
-    private <T> String guessTableName(Class<T> objectClass) throws PersismException {
+    private <T> String guessTableOrViewName(Class<T> objectClass) throws PersismException {
         Set<String> guesses = new LinkedHashSet<>(6); // guess order is important
         List<String> guessedTables = new ArrayList<String>(6);
 
         String className = objectClass.getSimpleName();
 
+        Set<String> list;
+        boolean isView = false;
+        if (objectClass.getAnnotation(View.class) != null) {
+            list = viewNames;
+            isView = true;
+        } else {
+            list = tableNames;
+        }
+
         addTableGuesses(className, guesses);
-        for (String tableName : tableNames) {
+        for (String tableName : list) {
             for (String guess : guesses) {
                 if (guess.equalsIgnoreCase(tableName)) {
                     guessedTables.add(tableName);
                 }
             }
         }
-        boolean isView = false; // todo Views
         if (guessedTables.size() == 0) {
             throw new PersismException(Messages.CouldNotDetermineTableOrViewForType.message(isView ? "view" : "table", objectClass.getName(), guesses));
         }

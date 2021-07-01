@@ -6,11 +6,14 @@ import org.junit.experimental.categories.Category;
 
 import java.io.File;
 import java.io.IOException;
+import java.math.BigDecimal;
 import java.nio.file.Files;
 import java.sql.*;
 import java.time.*;
 import java.util.*;
 import java.util.Date;
+
+import static net.sf.persism.UtilsForTests.*;
 
 /**
  * Comments for TestH2 go here.
@@ -35,8 +38,8 @@ public final class TestH2 extends BaseTest {
         props.load(getClass().getResourceAsStream("/h2.properties"));
         Class.forName(props.getProperty("database.driver"));
 
-        String home = UtilsForTests.createHomeFolder("pinfh2");
-        String url = UtilsForTests.replace(props.getProperty("database.url"), "{$home}", home);
+        String home = createHomeFolder("pinfh2");
+        String url = replace(props.getProperty("database.url"), "{$home}", home);
         log.info(url);
 
         con = DriverManager.getConnection(url, "sa", "");
@@ -63,7 +66,7 @@ public final class TestH2 extends BaseTest {
         assertTrue(true);
 
         Contact contact = getContactForTest();
-        String sql = session.getMetaData().getSelectStatement(contact, con);
+        String sql = session.getMetaData().getSelectStatement(contact.getClass(), con);
 
         // this works
         Contact other = new Contact();
@@ -79,9 +82,9 @@ public final class TestH2 extends BaseTest {
 
     @Override
     protected void createTables() throws SQLException {
-        List<String> commands = new ArrayList<String>(12);
+        List<String> commands = new ArrayList<>(12);
         String sql;
-        if (UtilsForTests.isTableInDatabase("Orders", con)) {
+        if (isTableInDatabase("Orders", con)) {
             sql = "DROP TABLE Orders";
             commands.add(sql);
         }
@@ -101,7 +104,11 @@ public final class TestH2 extends BaseTest {
 
         commands.add(sql);
 
-        if (UtilsForTests.isTableInDatabase("Customers", con)) {
+        if (isViewInDatabase("CustomerInvoice", con)) {
+            commands.add("DROP VIEW CustomerInvoice");
+        }
+
+        if (isTableInDatabase("Customers", con)) {
             commands.add("DROP TABLE Customers");
         }
 
@@ -124,7 +131,7 @@ public final class TestH2 extends BaseTest {
                 " TestLocalDateTime datetime NULL" +
                 ") ");
 
-        if (UtilsForTests.isTableInDatabase("Invoices", con)) {
+        if (isTableInDatabase("Invoices", con)) {
             commands.add("DROP TABLE Invoices");
         }
 
@@ -141,23 +148,30 @@ public final class TestH2 extends BaseTest {
                 ") ");
 
 
-        if (UtilsForTests.isTableInDatabase("TABLEMULTIPRIMARY", con)) {
+        sql = "CREATE VIEW CustomerInvoice AS\n" +
+                " SELECT c.Customer_ID, c.Company_Name, i.Invoice_ID, i.Status, i.Created AS DateCreated, i.PAID, i.Quantity\n" +
+                "       FROM Invoices i\n" +
+                "       JOIN Customers c ON i.Customer_ID = c.Customer_ID\n" +
+                "       WHERE i.Status = 1\n";
+        commands.add(sql);
+
+        if (isTableInDatabase("TABLEMULTIPRIMARY", con)) {
             commands.add("DROP TABLE TABLEMULTIPRIMARY");
         }
 
-        if (UtilsForTests.isTableInDatabase("SavedGames", con)) {
+        if (isTableInDatabase("SavedGames", con)) {
             commands.add("DROP TABLE SavedGames");
         }
 
         commands.add("CREATE TABLE TABLEMULTIPRIMARY ( " +
                 " OrderID INT NOT NULL, " +
-                " ProductID INT NOT NULL, " +
+                " ProductID VARCHAR(10) NOT NULL, " +
                 " UnitPrice DECIMAL NOT NULL, " +
                 " Quantity SMALLINT NOT NULL, " +
                 " Discount REAL NOT NULL " +
                 ") ");
 
-        commands.add("ALTER TABLE TABLEMULTIPRIMARY ADD PRIMARY KEY (OrderID, ProductID)");
+        commands.add("ALTER TABLE TABLEMULTIPRIMARY ADD PRIMARY KEY (ProductID, OrderID)");
 
 //?
         commands.add("CREATE TABLE SavedGames ( " +
@@ -173,7 +187,7 @@ public final class TestH2 extends BaseTest {
 
         executeCommands(commands, con);
 
-        if (UtilsForTests.isTableInDatabase("Contacts", con)) {
+        if (isTableInDatabase("Contacts", con)) {
             executeCommand("DROP TABLE Contacts", con);
         }
 
@@ -207,7 +221,7 @@ public final class TestH2 extends BaseTest {
 
         executeCommand(sql, con);
 
-        if (UtilsForTests.isTableInDatabase("DateTest", con)) {
+        if (isTableInDatabase("DateTest", con)) {
             executeCommand("DROP TABLE DateTest", con);
         }
 
@@ -233,7 +247,7 @@ public final class TestH2 extends BaseTest {
 
         executeCommand(sql, con);
 
-        if (UtilsForTests.isTableInDatabase("DateTestLocalTypes", con)) {
+        if (isTableInDatabase("DateTestLocalTypes", con)) {
             executeCommand("DROP TABLE DateTestLocalTypes", con);
         }
 
@@ -246,7 +260,7 @@ public final class TestH2 extends BaseTest {
 
         executeCommand(sql, con);
 
-        if (UtilsForTests.isTableInDatabase("DateTestSQLTypes", con)) {
+        if (isTableInDatabase("DateTestSQLTypes", con)) {
             executeCommand("DROP TABLE DateTestSQLTypes", con);
         }
 
@@ -260,7 +274,7 @@ public final class TestH2 extends BaseTest {
 
         executeCommand(sql, con);
 
-        if (UtilsForTests.isTableInDatabase("ByteData", con)) {
+        if (isTableInDatabase("ByteData", con)) {
             executeCommand("DROP TABLE ByteData", con);
         }
         sql = "CREATE TABLE ByteData ( " +
@@ -480,7 +494,7 @@ public final class TestH2 extends BaseTest {
     public void testMultiPrimary() {
         TableMultiPrimary tmp = new TableMultiPrimary();
         tmp.setOrderId(1);
-        tmp.setProductId(1);
+        tmp.setProductId("1");
         tmp.setUnitPrice(10.23);
         tmp.setQuantity((short) 256);
         tmp.setDiscount(0);
@@ -499,13 +513,12 @@ public final class TestH2 extends BaseTest {
 
         boolean nullInsertFail = false;
         try {
-            tmp = new TableMultiPrimary();
-            session.insert(tmp);
-            session.insert(tmp);
-            session.insert(tmp);
-            session.insert(tmp);
-            session.insert(tmp);
 
+            tmp = new TableMultiPrimary();
+            tmp.setOrderId(-1);
+            tmp.setProductId("x");
+            session.insert(tmp);
+            session.insert(tmp);
         } catch (Exception e) {
             log.info(e.getMessage());
             assertTrue("message starts with 'Unique index or primary key violation'",
@@ -526,7 +539,7 @@ public final class TestH2 extends BaseTest {
 
         try {
             st = con.createStatement();
-            if (UtilsForTests.isTableInDatabase("TEST_COLS", con)) {
+            if (isTableInDatabase("TEST_COLS", con)) {
                 st.execute("drop table TEST_COLS");
             }
             st.execute("create table TEST_COLS (a datetime default current_timestamp, b text)");
@@ -546,6 +559,11 @@ public final class TestH2 extends BaseTest {
             Util.cleanup(st, rs);
         }
 
+    }
+
+    @Override
+    public void testCustomerInvoiceView() throws Exception {
+        super.testCustomerInvoiceView();
     }
 
     public void testVariousTypesLikeClobAndBlob() throws SQLException, IOException {

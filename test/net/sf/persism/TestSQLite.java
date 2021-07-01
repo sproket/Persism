@@ -77,6 +77,7 @@ public final class TestSQLite extends BaseTest {
     @Override
     protected void createTables() throws SQLException {
 
+        String sql;
         Statement st = null;
         List<String> commands = new ArrayList<String>(3);
         if (isTableInDatabase("Orders", con)) {
@@ -101,6 +102,9 @@ public final class TestSQLite extends BaseTest {
                 " DATE_SOMETHING datetime NULL" +
                 ") ");
 
+        if (isViewInDatabase("CustomerInvoice", con)) {
+            commands.add("DROP VIEW CustomerInvoice");
+        }
 
         if (isTableInDatabase("Customers", con)) {
             commands.add("DROP TABLE Customers");
@@ -119,14 +123,14 @@ public final class TestSQLite extends BaseTest {
                 " Phone VARCHAR(30) NULL, " +
                 " STATUS CHAR(1) NULL, " +
                 " Fax VARCHAR(30) NULL, " +
-                " Date_Registered datetime default (datetime('now','localtime')), " + // todo or default CURRENT_TIMESTAMP
+                " Date_Registered datetime default  (datetime('now','localtime')), " +
                 " Date_Of_Last_Order DATE, " +
                 " TestLocalDate datetime, " +
                 " TestLocalDateTIme datetime " +
                 ") ");
 
 
-        if (UtilsForTests.isTableInDatabase("Invoices", con)) {
+        if (isTableInDatabase("Invoices", con)) {
             commands.add("DROP TABLE Invoices");
         }
 
@@ -142,6 +146,13 @@ public final class TestSQLite extends BaseTest {
                 //" Total REAL NOT NULL, " +
                 " Discount REAL NOT NULL " +
                 ") ");
+
+        sql = "CREATE VIEW CustomerInvoice AS\n" +
+                " SELECT c.Customer_ID, c.Company_Name, i.Invoice_ID AS [INVOICE ID], i.Status, i.Created AS Date_Created, i.PAID, i.Quantity\n" +
+                "       FROM Invoices i\n" +
+                "       JOIN Customers c ON i.Customer_ID = c.Customer_ID\n" +
+                "       WHERE i.Status = 1\n";
+        commands.add(sql);
 
         if (isTableInDatabase("TABLENOPRIMARY", con)) {
             commands.add("DROP TABLE TABLENOPRIMARY");
@@ -165,7 +176,7 @@ public final class TestSQLite extends BaseTest {
             executeCommand("DROP TABLE CONTACTS", con);
         }
 
-        String sql = "CREATE TABLE CONTACTS ( " +
+        sql = "CREATE TABLE CONTACTS ( " +
                 " identity VARCHAR(36) PRIMARY KEY UNIQUE NOT NULL, " +
                 " PartnerID BLOB NOT NULL, " +
                 " Type char(2) NOT NULL, " +
@@ -195,7 +206,7 @@ public final class TestSQLite extends BaseTest {
                 ") ";
         executeCommand(sql, con);
 
-        if (UtilsForTests.isTableInDatabase("DateTestLocalTypes", con)) {
+        if (isTableInDatabase("DateTestLocalTypes", con)) {
             executeCommand("DROP TABLE DateTestLocalTypes", con);
         }
 
@@ -208,7 +219,7 @@ public final class TestSQLite extends BaseTest {
 
         executeCommand(sql, con);
 
-        if (UtilsForTests.isTableInDatabase("DateTestSQLTypes", con)) {
+        if (isTableInDatabase("DateTestSQLTypes", con)) {
             executeCommand("DROP TABLE DateTestSQLTypes", con);
         }
 

@@ -82,6 +82,8 @@ public class TestMSSQL extends BaseTest {
     @Override
     protected void createTables() throws SQLException {
         log.info("createTables");
+
+        String sql;
         List<String> commands = new ArrayList<String>(3);
 
         if (isTableInDatabase("Orders", con)) {
@@ -104,6 +106,10 @@ public class TestMSSQL extends BaseTest {
                 ") ");
 
         commands.add("ALTER TABLE [dbo].[Orders] ADD  CONSTRAINT [DF_Orders_CREATED]  DEFAULT (getdate()) FOR [CREATED]");
+
+        if (isViewInDatabase("CustomerInvoice", con)) {
+            commands.add("DROP VIEW CustomerInvoice");
+        }
 
         if (isTableInDatabase("Customers", con)) {
             commands.add("DROP TABLE Customers");
@@ -128,7 +134,7 @@ public class TestMSSQL extends BaseTest {
                 " TestLocalDateTime datetime " +
                 ") ");
 
-        if (UtilsForTests.isTableInDatabase("Invoices", con)) {
+        if (isTableInDatabase("Invoices", con)) {
             commands.add("DROP TABLE Invoices");
         }
 
@@ -145,7 +151,12 @@ public class TestMSSQL extends BaseTest {
                 " Discount NUMERIC(10,3) NOT NULL " +
                 ") ");
 
-
+        sql = "CREATE VIEW CustomerInvoice AS\n" +
+                " SELECT c.Customer_ID, c.Company_Name, i.Invoice_ID, i.Status, i.Created AS DateCreated, i.PAID, i.Quantity\n" +
+                "       FROM Invoices i\n" +
+                "       JOIN Customers c ON i.Customer_ID = c.Customer_ID\n" +
+                "       WHERE i.Status = 1\n";
+        commands.add(sql);
 
         if (isTableInDatabase("TABLENOPRIMARY", con)) {
             commands.add("DROP TABLE TABLENOPRIMARY");
@@ -171,7 +182,7 @@ public class TestMSSQL extends BaseTest {
             commands.add("DROP TABLE Contacts");
         }
 
-        String sql = "CREATE TABLE [dbo].[Contacts]( " +
+        sql = "CREATE TABLE [dbo].[Contacts]( " +
                 "   [identity] [uniqueidentifier] NOT NULL, " +
                 "   [PartnerID] [uniqueidentifier] NULL, " +
                 "   [Type] [char](2) NOT NULL, " +
@@ -519,7 +530,7 @@ public class TestMSSQL extends BaseTest {
 
 
         // TODO MSSQL has datetime2 datetime etc.. add some extras for that
-        if (UtilsForTests.isTableInDatabase("DateTestLocalTypes", con)) {
+        if (isTableInDatabase("DateTestLocalTypes", con)) {
             executeCommand("DROP TABLE DateTestLocalTypes", con);
         }
 
@@ -532,7 +543,7 @@ public class TestMSSQL extends BaseTest {
 
         executeCommand(sql, con);
 
-        if (UtilsForTests.isTableInDatabase("DateTestSQLTypes", con)) {
+        if (isTableInDatabase("DateTestSQLTypes", con)) {
             executeCommand("DROP TABLE DateTestSQLTypes", con);
         }
 
@@ -736,8 +747,8 @@ public class TestMSSQL extends BaseTest {
 
             log.info(e.getMessage(), e);
 
-            assertEquals("message s/b 'Object class net.sf.persism.dao.Customer. Column: Region Type of property: class net.sf.persism.dao.Regions - Type read: class java.lang.String VALUE: NOTAREGION'",
-                    "Object class net.sf.persism.dao.Customer. Column: Region Type of property: class net.sf.persism.dao.Regions - Type read: class java.lang.String VALUE: NOTAREGION",
+            assertEquals("message s/b " + Messages.IllegalArgumentReadingColumn,
+                    Messages.IllegalArgumentReadingColumn.message("region", Customer.class, "Region", Regions.class, String.class, "NOTAREGION"),
                     e.getMessage());
         }
         assertTrue(failed);

@@ -154,3 +154,7 @@ TODO https://gitter.im/ maybe ....
 TODO CockroachDB https://www.cdata.com/drivers/cockroachdb/jdbc/ https://www.cockroachlabs.com/get-cockroachdb/
 
 TODO https://ahrefs.com/
+
+https://www.simplelists.com/
+
+TODO ADD JAVADOCS to ANNOTATION CLASSES

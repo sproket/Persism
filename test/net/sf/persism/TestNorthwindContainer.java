@@ -16,6 +16,8 @@ import java.time.ZoneId;
 import java.util.Arrays;
 import java.util.List;
 
+import static net.sf.persism.UtilsForTests.*;
+
 
 /**
  * Does not share common tests - this is just to do some specific tests on SQL with Northwind DB
@@ -62,7 +64,7 @@ public class TestNorthwindContainer extends TestNorthwind {
 
     private void createTables() throws SQLException {
         //from https://github.com/Microsoft/sql-server-samples/tree/master/samples/databases/northwind-pubs
-        String sql = UtilsForTests.readFromResource("/sql/NORTHWIND.sql");
+        String sql = readFromResource("/sql/NORTHWIND.sql");
         List<String> commands = Arrays.asList(sql.split("(?i)GO\\r\\n", -1));
         BaseTest.executeCommands(commands, con);
 

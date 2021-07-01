@@ -89,6 +89,36 @@ public class UtilsForTests {
         return result;
     }
 
+    public static boolean isViewInDatabase(String viewName, Connection con) {
+
+        boolean result = false;
+        ResultSet rs = null;
+        try {
+            DatabaseMetaData dma = con.getMetaData();
+            String[] types = {"VIEW"};
+            rs = dma.getTables(null, null, null, types);
+
+            while (rs.next()) {
+                if (viewName.equalsIgnoreCase(rs.getString("TABLE_NAME"))) {
+                    result = true;
+                    break;
+                }
+            }
+        } catch (SQLException e) {
+            log.error(e.getMessage(), e);
+        } finally {
+            try {
+                if (rs != null) {
+                    rs.close();
+                }
+            } catch (SQLException e) {
+                log.warn(e.getMessage());
+            }
+        }
+
+        return result;
+    }
+
     public static boolean isProcedureInDatabase(String procName, Connection con) {
 
         boolean result = false;

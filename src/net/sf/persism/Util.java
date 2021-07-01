@@ -102,6 +102,15 @@ final class Util {
         return sb.toString();
     }
 
+    static boolean isNotEmpty(String s) {
+        return !isEmpty(s);
+    }
+
+    static boolean isEmpty(String s) {
+        return s == null || s.trim().length() == 0;
+    }
+
+
     public static <T> boolean isRecord(Class<T> objectClass) {
         // Java 8 test for isRecord since class.isRecord doesn't exist in Java 8
         Class<?> sup = objectClass.getSuperclass();

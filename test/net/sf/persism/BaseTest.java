@@ -16,6 +16,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.*;
 
 import static java.lang.System.out;
+import static net.sf.persism.UtilsForTests.*;
 
 /**
  * Comments for BaseTest go here.
@@ -80,7 +81,7 @@ public abstract class BaseTest extends TestCase {
 
         customer.setDateOfLastOrder(LocalDateTime.parse("20120528010101", dtf)); // add time to see it removed
         log.info(customer.getDateOfLastOrder());
-        customer.setDateRegistered(new Timestamp(UtilsForTests.getCalendarFromAnsiDateString(dateRegistered).getTimeInMillis()));
+        customer.setDateRegistered(new Timestamp(getCalendarFromAnsiDateString(dateRegistered).getTimeInMillis()));
         log.info(customer.getDateRegistered());
 
         assertEquals("date of last order s/b", "20120528010101", dtf.format(customer.getDateOfLastOrder()));
@@ -398,6 +399,60 @@ public abstract class BaseTest extends TestCase {
         return contact;
     }
 
+    public void testCustomerInvoiceView() throws Exception {
+        Customer customer = new Customer();
+        customer.setCustomerId("ABC");
+        customer.setCompanyName("ABC Inc");
+        session.insert(customer);
+
+        Invoice invoice = new Invoice();
+        invoice.setCustomerId("ABC");
+        invoice.setQuantity(10);
+        invoice.setPrice(10.23f);
+        invoice.setActualPrice(BigDecimal.valueOf(9.99d));
+        invoice.setStatus(1);
+        session.insert(invoice);
+
+        Customer customer1 = session.fetch(Customer.class, "SELECT * FROM Customers WHERE Company_Name = ?", "ABC Inc");
+        assertNotNull(customer1);
+
+        CustomerInvoice customerInvoice = session.fetch(CustomerInvoice.class, "SELECT * FROM CustomerInvoice WHERE Company_Name = ?", "ABC Inc");
+        assertNotNull(customerInvoice);
+
+        CustomerInvoiceTestView customerInvoiceTestView = session.fetch(CustomerInvoiceTestView.class, "SELECT * FROM CustomerInvoice WHERE Company_Name = ?", "ABC Inc");
+        List<CustomerInvoiceTestView> list2 = session.query(CustomerInvoiceTestView.class);
+        assertNotNull(customerInvoiceTestView);
+        assertTrue(list2.size() > 0);
+
+        boolean fail = false;
+        try {
+            session.insert(customerInvoiceTestView);
+        } catch (PersismException e) {
+            fail = true;
+            assertEquals("s/b", Messages.OperationNotSupportedForView.message("Insert"), e.getMessage());
+        }
+        assertTrue(fail);
+
+        fail = false;
+        try {
+            session.update(customerInvoiceTestView);
+        } catch (PersismException e) {
+            fail = true;
+            assertEquals("s/b", Messages.OperationNotSupportedForView.message("Update"), e.getMessage());
+        }
+        assertTrue(fail);
+
+        fail = false;
+        try {
+            session.delete(customerInvoiceTestView);
+        } catch (PersismException e) {
+            fail = true;
+            assertEquals("s/b", Messages.OperationNotSupportedForView.message("Delete"), e.getMessage());
+        }
+        assertTrue(fail);
+    }
+
+
     public void testContactTable() throws SQLException {
 
         Contact contact = getContactForTest();
@@ -546,6 +601,7 @@ public abstract class BaseTest extends TestCase {
         testSQLTypes1.setUtilDateAndTime(udate);
         log.info("BEFORE: " + testSQLTypes1);
 
+        session.withTransaction(() -> {
         session.insert(testSQLTypes1);
 
         DateTestSQLTypes testSQLTypes2 = new DateTestSQLTypes();
@@ -579,7 +635,7 @@ public abstract class BaseTest extends TestCase {
         log.info(list);
 
         assertTrue(session.delete(testSQLTypes1) > 0);
-
+        });
     }
 
     private void LocalDateTypesTest() {
@@ -598,6 +654,7 @@ public abstract class BaseTest extends TestCase {
 
         log.info("BEFORE: " + testLocalTypes1);
 
+        session.withTransaction(() -> {
         session.insert(testLocalTypes1);
 
         DateTestLocalTypes testLocalTypes2 = new DateTestLocalTypes();
@@ -650,6 +707,7 @@ public abstract class BaseTest extends TestCase {
 
         assertTrue(session.delete(testLocalTypes1) > 0);
         assertTrue(session.delete(testLocalTypes3) > 0);
+        });
     }
 
     // internal insert/update/delete/select statements pass parameters through a converter
@@ -784,9 +842,10 @@ public abstract class BaseTest extends TestCase {
 
 
     public void testGetDbMetaData() throws SQLException {
-//        if (true) {
-//            return;
-//        }
+        if (true) {
+            return;
+        }
+
         DatabaseMetaData dmd = con.getMetaData();
         log.info("GetDbMetaData for " + dmd.getDatabaseProductName());
 

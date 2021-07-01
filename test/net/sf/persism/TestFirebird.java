@@ -12,6 +12,9 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.*;
 
+import static net.sf.persism.UtilsForTests.*;
+import static net.sf.persism.UtilsForTests.isViewInDatabase;
+
 @Category(ExternalDB.class)
 public class TestFirebird extends BaseTest {
 
@@ -53,7 +56,7 @@ public class TestFirebird extends BaseTest {
         String sql;
 
 
-        if (UtilsForTests.isTableInDatabase("ORDERS", con)) {
+        if (isTableInDatabase("ORDERS", con)) {
             commands.add("DROP TABLE ORDERS;");
         }
 
@@ -73,7 +76,11 @@ public class TestFirebird extends BaseTest {
 
         commands.add(sql);
 
-        if (UtilsForTests.isTableInDatabase("CUSTOMERS", con)) {
+        if (isViewInDatabase("CustomerInvoice", con)) {
+            commands.add("DROP VIEW CustomerInvoice");
+        }
+
+        if (isTableInDatabase("CUSTOMERS", con)) {
             commands.add("DROP TABLE CUSTOMERS;");
             commands.add("DROP GENERATOR GEN_CUSTOMER_ID;");
         }
@@ -105,7 +112,7 @@ public class TestFirebird extends BaseTest {
         commands.add(sql);
         executeCommands(commands, con);
 
-        if (UtilsForTests.isTableInDatabase("Invoices", con)) {
+        if (isTableInDatabase("Invoices", con)) {
             executeCommand("DROP TABLE Invoices", con);
         }
 
@@ -122,9 +129,15 @@ public class TestFirebird extends BaseTest {
                 " Discount NUMERIC(10,3) NOT NULL " +
                 ") ", con);
 
+        sql = "CREATE VIEW CustomerInvoice AS\n" +
+                " SELECT c.Customer_ID, c.Company_Name, i.Invoice_ID, i.Status, i.Created AS DateCreated, i.PAID, i.Quantity\n" +
+                "       FROM Invoices i\n" +
+                "       JOIN Customers c ON i.Customer_ID = c.Customer_ID\n" +
+                "       WHERE i.Status = 1\n";
+        executeCommand(sql, con);
 
 
-        if (UtilsForTests.isTableInDatabase("Contacts", con)) {
+        if (isTableInDatabase("Contacts", con)) {
             executeCommand("DROP TABLE Contacts", con);
         }
         // FIREBIRD and Derby don't like NULL
@@ -161,7 +174,7 @@ public class TestFirebird extends BaseTest {
 
         // TIMESTAMP for DATETIME in Firebird
 
-        if (UtilsForTests.isTableInDatabase("DateTestLocalTypes", con)) {
+        if (isTableInDatabase("DateTestLocalTypes", con)) {
             executeCommand("DROP TABLE DateTestLocalTypes", con);
         }
 
@@ -174,7 +187,7 @@ public class TestFirebird extends BaseTest {
 
         executeCommand(sql, con);
 
-        if (UtilsForTests.isTableInDatabase("DateTestSQLTypes", con)) {
+        if (isTableInDatabase("DateTestSQLTypes", con)) {
             executeCommand("DROP TABLE DateTestSQLTypes", con);
         }
 

@@ -13,6 +13,9 @@ import java.time.LocalTime;
 import java.time.ZoneId;
 import java.util.*;
 
+import static net.sf.persism.UtilsForTests.*;
+import static net.sf.persism.UtilsForTests.isViewInDatabase;
+
 /**
  * Comments for TestPostgreSQL go here.
  *
@@ -95,7 +98,7 @@ public class TestPostgreSQL extends BaseTest {
         String sql;
         sql = "CREATE EXTENSION IF NOT EXISTS \"uuid-ossp\";";
         executeCommand(sql, con);
-        if (UtilsForTests.isTableInDatabase("Orders", con)) {
+        if (isTableInDatabase("Orders", con)) {
             sql = "DROP TABLE Orders";
             commands.add(sql);
         }
@@ -115,7 +118,11 @@ public class TestPostgreSQL extends BaseTest {
 
         commands.add(sql);
 
-        if (UtilsForTests.isTableInDatabase("Customers", con)) {
+        if (isViewInDatabase("CustomerInvoice", con)) {
+            commands.add("DROP VIEW CustomerInvoice");
+        }
+
+        if (isTableInDatabase("Customers", con)) {
             commands.add("DROP TABLE Customers");
         }
 
@@ -147,7 +154,7 @@ public class TestPostgreSQL extends BaseTest {
                 " TestLocalDateTime TIMESTAMP  " +
                 ") ");
 
-        if (UtilsForTests.isTableInDatabase("Invoices", con)) {
+        if (isTableInDatabase("Invoices", con)) {
             commands.add("DROP TABLE Invoices");
         }
 
@@ -164,8 +171,14 @@ public class TestPostgreSQL extends BaseTest {
                 " Discount NUMERIC(10,3) NOT NULL " +
                 ") ");
 
+        sql = "CREATE VIEW CustomerInvoice AS\n" +
+                " SELECT c.Customer_ID, c.Company_Name, i.Invoice_ID, i.Status, i.Created AS DateCreated, i.PAID, i.Quantity\n" +
+                "       FROM Invoices i\n" +
+                "       JOIN Customers c ON i.Customer_ID = c.Customer_ID\n" +
+                "       WHERE i.Status = 1\n";
+        commands.add(sql);
 
-        if (UtilsForTests.isTableInDatabase("TABLEMULTIPRIMARY", con)) {
+        if (isTableInDatabase("TABLEMULTIPRIMARY", con)) {
             commands.add("DROP TABLE TABLEMULTIPRIMARY");
         }
 
@@ -178,7 +191,7 @@ public class TestPostgreSQL extends BaseTest {
 
         commands.add("ALTER TABLE TABLEMULTIPRIMARY ADD PRIMARY KEY (ID, CUSTOMER_NAME)");
 
-        if (UtilsForTests.isTableInDatabase("Contacts", con)) {
+        if (isTableInDatabase("Contacts", con)) {
             sql = "DROP TABLE Contacts";
             commands.add(sql);
         }
@@ -215,7 +228,7 @@ public class TestPostgreSQL extends BaseTest {
 
         executeCommands(commands, con);
 
-        if (UtilsForTests.isTableInDatabase("DateTestLocalTypes", con)) {
+        if (isTableInDatabase("DateTestLocalTypes", con)) {
             executeCommand("DROP TABLE DateTestLocalTypes", con);
         }
 
@@ -228,7 +241,7 @@ public class TestPostgreSQL extends BaseTest {
 
         executeCommand(sql, con);
 
-        if (UtilsForTests.isTableInDatabase("DateTestSQLTypes", con)) {
+        if (isTableInDatabase("DateTestSQLTypes", con)) {
             executeCommand("DROP TABLE DateTestSQLTypes", con);
         }
 
