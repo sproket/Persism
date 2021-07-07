@@ -7,7 +7,7 @@ If you are using Maven:
 <dependency>
     <groupId>io.github.sproket</groupId>
     <artifactId>persism</artifactId>
-    <version>1.1.0</version>
+    <version>1.2.0</version>
 </dependency>
 ```
 
@@ -70,6 +70,12 @@ This method returns true to indicate the object was found and initialized. Note 
 by pre-instantiating your object first. This allows you to control memory usage of your objects, 
 so you can re-use the same object if you need to run multiple queries.
 
+You may also use a simpler form of the query method to return all rows from the database. **best used for smaller tables**
+
+```
+List<Country> countries = session.query(Country.class);
+```
+
 The query can also return primitive Java types by simply using them directly.
 ```
 String result = session.fetch(String.class, "select Name from Customers where ID = ?", 10);
@@ -81,6 +87,13 @@ List<String> names = session.query(String.class, "select Name from Customers Ord
 ```
 
 **Note:** Use the query method for lists, and the fetch method for single results.
+
+## Tables, Views and Queries
+
+By default, Persism will consider a class/record with no annotation to be a Table. If you want a class to represent 
+the result of a general query you should use the ```@NotTable``` annotation. If you have a View use the ```@View``` 
+annotation. See [Annotations](#annotations)  
+
 
 ## Updating Data
 
@@ -288,20 +301,22 @@ public class Author {
 
 Persism uses the following annotations for Table which need to be specified on the Class:
 
-- *Table* - used to specify the table name in the database.
-- *NotTable* - used to specify that this class represents the result of a query - that there is no 
+- ```@Table``` - used to specify the table name in the database.
+- ```@NotTable``` - used to specify that this class represents the result of a query - that there is no 
 single table associated with it.
+- ```@View``` - used to specify that the class represents a database View. If no name is specified then Persism will 
+use the same table name logic to find the view name.
 
 Persism uses the following annotations for Columns.
 
-- *Column* - used to specify the column name and whether the column is primary, autoincrement or has a default. 
-The 3 parameters are optional.
-- *NotColumn* - used to specify that this property has no matching column. Ie that it's a calculated value and not read from the database.
+- ```@Column``` - used to specify the column name and whether the column is primary, autoincrement or has a default. 
+The name parameter is required, the other 3 parameters are optional.
+- ```@NotColumn``` - used to specify that this property has no matching column. Ie that it's a calculated value 
+  and not read from the database.
 
 **Note:** These annotations can be specified on the field or on the getter or setter. 
 
-**Note:** *NotColumn* is not required if your property has a getter only. Persism understands that a 
-read-only property would not be in the database.
+**Note:** Read-only properties are also recognized by Persism.
 
 
 ## Support for hierarchical objects

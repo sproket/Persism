@@ -1,5 +1,11 @@
 ## Release Notes
 
+### 1.2.0
+* Added support for Views
+* Added new upsert method to session (performs insert or update depending on if the row exists)
+* Added query 'select *' method to session
+* Changed query statements to make explicit forward only and read only 
+
 ### 1.1.0
 
 * Added support for Records! (Java 16)
