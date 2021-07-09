@@ -12,5 +12,9 @@ import java.lang.annotation.Target;
 @Retention(value = RetentionPolicy.RUNTIME)
 @Target(ElementType.TYPE)
 public @interface View {
+    /**
+     * View Name
+     * @return View Name
+     */
     String value() default "";
 }

@@ -1,7 +1,6 @@
 package net.sf.persism.dao;
 
 import net.sf.persism.annotations.NotTable;
-import net.sf.persism.annotations.View;
 
 import java.util.Date;
 

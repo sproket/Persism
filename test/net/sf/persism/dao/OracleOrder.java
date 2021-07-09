@@ -14,7 +14,7 @@ import java.time.LocalDate;
  * Date: 9/21/11
  * Time: 2:30 PM
  */
-@Table(value = "ORDERS")
+@Table("ORDERS")
 public final class OracleOrder extends Order {
 
     @Override

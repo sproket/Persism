@@ -1,5 +1,6 @@
 package net.sf.persism.dao;
 
+import net.sf.persism.annotations.Column;
 import net.sf.persism.annotations.View;
 
 import java.util.Date;
@@ -9,7 +10,9 @@ import java.util.Date;
  */
 @View()
 public final class CustomerInvoice {
+    @Column(primary = true) // todo wtf does this mean?
     private String customerId;
+
     private String companyName;
     private long invoiceId;
     private Date dateCreated;

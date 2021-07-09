@@ -10,6 +10,7 @@ import java.util.*;
 import java.util.regex.MatchResult;
 
 import static net.sf.persism.Parameters.*;
+import static net.sf.persism.SQL.sql;
 import static net.sf.persism.Util.isRecord;
 
 /**
@@ -545,12 +546,16 @@ public final class Session implements AutoCloseable {
      * @throws PersismException Oh no. Not again.
      */
     public <T> List<T> query(Class<T> objectClass, Parameters parameters) {
+        if (objectClass.getAnnotation(NotTable.class) != null) {
+            throw new PersismException(Messages.OperationNotSupportedForNotTableQuery.message(objectClass, "QUERY"));
+        }
+
         String sql = metaData.getDefaultSelectStatement(objectClass, connection);
 
         if (parameters.size() == 0) {
             // Get the SELECT without any WHERE clause
             sql = metaData.getSelectStatement(objectClass, connection);
-            return query(objectClass, SQL.sql(sql), none());
+            return query(objectClass, sql(sql), none());
         }
 
         parameters.areKeys = true;
@@ -559,7 +564,7 @@ public final class Session implements AutoCloseable {
 
         if (parameters.size() == primaryKeys.size()) {
             // single select
-            return query(objectClass, SQL.sql(sql), parameters);
+            return query(objectClass, sql(sql), parameters);
         }
 
         String sd = metaData.getConnectionType().getKeywordStartDelimiter();
@@ -582,7 +587,7 @@ public final class Session implements AutoCloseable {
             andSep = " AND ";
         }
         sql = sb.toString();
-        return query(objectClass, SQL.sql(sql), parameters);
+        return query(objectClass, sql(sql), parameters);
     }
 
     /**
@@ -653,6 +658,8 @@ public final class Session implements AutoCloseable {
         if (isRecord(objectClass)) {
             throw new PersismException(Messages.CannotReadThisType.message("Record"));
         }
+
+        // todo throw if View. WHAT IF PRIMARY IS DEFINED BY COLUMN? So no throw.
 
         List<String> primaryKeys = metaData.getPrimaryKeys(objectClass, connection);
         if (primaryKeys.size() == 0) {
@@ -782,11 +789,12 @@ public final class Session implements AutoCloseable {
 
         // or use sql.knownSQL
         if (isPOJO && parameters.areKeys) {
-            // todo this could be confusing to a user. Probably we don't want to auto-convert here since it's inconsistent.
+            // todo this could be confusing to a user.
             if (objectClass.getAnnotation(NotTable.class) != null || objectClass.getAnnotation(View.class) != null) {
                 throw new PersismException(Messages.PrimaryKeysDontExist.message());
             }
             // convert parameters - usually it's the UUID type that may need a conversion to byte[16]
+            // Probably we don't want to auto-convert here since it's inconsistent. DO WE? YES.
             List<String> keys = metaData.getPrimaryKeys(objectClass, connection);
             if (keys.size() == 1) {
                 Map<String, ColumnInfo> columns = metaData.getColumns(objectClass, connection);
@@ -855,7 +863,7 @@ public final class Session implements AutoCloseable {
     Private methods
      */
 
-    private JDBCResult exec(JDBCResult result, String sql, Object... parameters) throws SQLException {
+    private void exec(JDBCResult result, String sql, Object... parameters) throws SQLException {
         //sql = sql.trim(); // """ in Java 16 can result in spaces ahead or after the string.
         // bug fix for Java 16 TRIM in case
         if (sql.trim().toLowerCase().startsWith("select ")) {
@@ -863,7 +871,7 @@ public final class Session implements AutoCloseable {
 //            sql = sql.replaceAll("\t", " ");
 //            sql = sql.replaceAll("\r", " ");
 //
-            result.st = connection.prepareStatement(sql);
+            result.st = connection.prepareStatement(sql); // todo forward only etc....
 
 
             PreparedStatement pst = (PreparedStatement) result.st;
@@ -879,7 +887,6 @@ public final class Session implements AutoCloseable {
             setParameters(cst, parameters);
             result.rs = cst.executeQuery();
         }
-        return result;
     }
 
     private String translatePropertyNames(String sql, Class<?> objectClass, Connection connection) {

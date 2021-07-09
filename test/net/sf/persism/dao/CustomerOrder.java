@@ -1,5 +1,6 @@
 package net.sf.persism.dao;
 
+import net.sf.persism.annotations.Column;
 import net.sf.persism.annotations.NotTable;
 
 import java.util.Date;
@@ -13,6 +14,7 @@ import java.util.Date;
 @NotTable
 public final class CustomerOrder {
 
+    @Column(primary = true) // todo wtf does this mean?
     private String customerId;
     private String companyName;
     private String description;

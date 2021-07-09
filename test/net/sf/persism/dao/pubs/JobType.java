@@ -9,7 +9,7 @@ import net.sf.persism.annotations.Table;
  * @author Dan Howard
  * @since 5/25/12 6:06 PM
  */
-@Table(value = "JobS")
+@Table("JobS")
 public class JobType {
     /*
 	[job_id] [smallint] IDENTITY(1,1) NOT NULL,

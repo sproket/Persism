@@ -20,6 +20,10 @@ import java.lang.annotation.Target;
 @Target(ElementType.TYPE)
 public @interface Table {
 
+    /**
+     * Table Name
+     * @return Table Name
+     */
     String value();
 
 }

@@ -37,7 +37,6 @@ final class Converter {
 
             case booleanType:
             case BooleanType:
-//                log.debug("BooleanType");
                 break;
 
             case byteType:
@@ -47,7 +46,6 @@ final class Converter {
 
             case shortType:
             case ShortType:
-//                log.debug(valueType);
                 break;
 
             case integerType:
@@ -103,7 +101,6 @@ final class Converter {
 
             case floatType:
             case FloatType:
-//                log.debug("FloatType");
                 break;
 
             case doubleType:
@@ -240,25 +237,21 @@ final class Converter {
 
             case characterType:
             case CharacterType:
-//                log.debug("CharacterType");
                 break;
 
             case LocalDateType:
-//                log.debug("LocalDateType");
                 returnValue = java.sql.Date.valueOf((LocalDate) value);
                 break;
 
             case LocalDateTimeType:
-//                log.debug("LocalDateTimeType");
                 returnValue = Timestamp.valueOf((LocalDateTime) value);
                 break;
 
             case LocalTimeType:
-//                log.debug("LocalTimeType");
                 returnValue = Time.valueOf((LocalTime) value);
                 break;
 
-            case UtilDateType:
+            case UtilDateType: // why utildate here?
             case SQLDateType:
             case TimestampType:
                 if (targetType.equals(java.util.Date.class)) {
@@ -290,7 +283,6 @@ final class Converter {
                 break;
 
             case TimeType:
-//                log.debug("TimeType");
                 if (targetType.equals(LocalTime.class)) {
                     returnValue = LocalTime.parse("" + value);
                 }
@@ -304,7 +296,6 @@ final class Converter {
 
             case byteArrayType:
             case ByteArrayType:
-//                log.debug("ByteArrayType");
                 if (targetType.equals(UUID.class)) {
                     returnValue = asUuid((byte[]) value);
                 }
@@ -324,21 +315,15 @@ final class Converter {
                 break;
 
             case UUIDType:
-//                log.debug("UUIDType");
                 if (targetType.equals(Blob.class) || targetType.equals(byte[].class) || targetType.equals(Byte[].class)) {
                     returnValue = asBytes((UUID) value);
                 }
                 break;
 
             case ObjectType:
-//                log.debug("ObjectType");
                 break;
         }
         return returnValue;
-    }
-
-    void overflowWarn(Class<?> pojo, Class<?> x, Class<?> y, String columnName) {
-
     }
 
     /*

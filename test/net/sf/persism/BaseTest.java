@@ -44,6 +44,9 @@ public abstract class BaseTest extends TestCase {
     static String UUID1 = "d316ad81-946d-416b-98e3-3f3b03aa73db";
     static String UUID2 = "a0d00c5a-3de6-4ae8-ba11-e3e02c2b3a83";
 
+//    static Set<String> moo = Set.of("ass", "coco", "fggf");
+//    static Map<String, Integer> cow = Map.of("cow", 1, "moo", 2);
+
     protected abstract void createTables() throws SQLException;
 
     @Override
@@ -109,9 +112,9 @@ public abstract class BaseTest extends TestCase {
 
         assertEquals("date registration s/b", dateRegistered, df.format(customer2.getDateRegistered()));
 
-        // Try other param types - convert?
+        // todo Try other param types - convert?
         LocalDate today = LocalDate.now();
-        session.query(Customer.class, where("testLocalDate between ? AND ?"), params(today.minus(1, ChronoUnit.DAYS), today.plus(1, ChronoUnit.DAYS)));
+        session.query(Customer.class, where("TestLocalDate between ? AND ?"), params(today.minus(1, ChronoUnit.DAYS), today.plus(1, ChronoUnit.DAYS)));
 
         LocalDateTime dt = LocalDateTime.now();
         //session.query(Customer.class, where("DATE_OF_LAST_ORDER between ? AND ?"), params(dt.minus(1, ChronoUnit.DAYS), dt.plus(1, ChronoUnit.DAYS)));

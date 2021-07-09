@@ -18,7 +18,7 @@ import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 
-import static net.sf.persism.Parameters.params;
+import static net.sf.persism.Parameters.*;
 import static net.sf.persism.SQL.*;
 import static net.sf.persism.UtilsForTests.*;
 
@@ -763,8 +763,8 @@ public class TestMSSQL extends BaseTest {
 
             log.info(e.getMessage(), e);
 
-            assertEquals("message s/b 'Object class net.sf.persism.dao.Customer. Column: Region Type of property: class net.sf.persism.dao.Regions - Type read: class java.lang.String VALUE: NOTAREGION'",
-                    "Object class net.sf.persism.dao.Customer. Column: Region Type of property: class net.sf.persism.dao.Regions - Type read: class java.lang.String VALUE: NOTAREGION",
+            assertEquals("message s/b 'IllegalArgumentReadingColumn'",
+                    Messages.IllegalArgumentReadingColumn.message("region", Customer.class, "Region", Regions.class, String.class, "NOTAREGION"),
                     e.getMessage());
         }
         assertTrue(failed);
@@ -920,12 +920,16 @@ public class TestMSSQL extends BaseTest {
 
         boolean shouldHaveFailed = false;
         try {
-            session.fetch(Contact.class, sql("select [identity] from Contacts"), Parameters.none());
+            session.fetch(Contact.class, sql("select [identity] from Contacts"));
         } catch (PersismException e) {
             shouldHaveFailed = true;
             log.info(e.getMessage(), e);
             // Apparently we don't always get the same column order?
-//            assertEquals("message should be ", "Object class net.sf.persism.dao.Contact was not properly initialized. Some properties not found in the queried columns. : [Company, Email, StateProvince, Address2, Lastname, PartnerID, Address1, City, Firstname, LastModified, Type, ZipPostalCode, Country, Division, DateAdded, ContactName]", e.getMessage());
+            // Object class net.sf.persism.dao.Contact was not properly initialized. Some properties not initialized by the queried columns: [identity]  Missing: [Status, Company, Email, StateProvince, SomeDate, WhatTimeIsIt, Lastname, Address2, PartnerID, Address1, City, WhatMiteIsIt, Firstname, LastModified, Type, ZipPostalCode, BigInt, Country, Division, DateAdded, ContactName, Notes, AmountOwed]
+
+            assertEquals("message should be ",
+                    Messages.ObjectNotProperlyInitializedByQuery.message(contact.getClass(), "[identity]", "[Status, Company, Email, StateProvince, SomeDate, WhatTimeIsIt, Lastname, Address2, PartnerID, Address1, City, WhatMiteIsIt, Firstname, LastModified, Type, ZipPostalCode, BigInt, Country, Division, DateAdded, ContactName, Notes, AmountOwed]"),
+                    e.getMessage());
         }
         assertEquals("should have failed", true, shouldHaveFailed);
     }

@@ -48,14 +48,13 @@ public final class TestHSQLDB extends BaseTest {
 
     @Override
     protected void createTables() throws SQLException {
+        // http://hsqldb.org/doc/1.8/guide/ch09.html
         // sql.enforce_strict_size=false
         executeCommand(" SET PROPERTY \"sql.enforce_strict_size\" false", con);
-        List<String> commands = new ArrayList<>(12);
         String sql;
 
         if (UtilsForTests.isTableInDatabase("Orders", con)) {
             sql = "DROP TABLE Orders";
-            commands.add(sql);
             executeCommand(sql, con);
         }
 
@@ -72,12 +71,15 @@ public final class TestHSQLDB extends BaseTest {
                 " Date_Something TIMESTAMP NULL " +
                 ") ";
 
-        commands.add(sql);
         executeCommand(sql, con);
+
+        // view first
+        if (UtilsForTests.isViewInDatabase("CustomerInvoice", con)) {
+            executeCommand("DROP VIEW CustomerInvoice", con);
+        }
 
         if (UtilsForTests.isTableInDatabase("Customers", con)) {
             sql = "DROP TABLE Customers";
-            commands.add(sql);
             executeCommand(sql, con);
         }
 
@@ -100,12 +102,10 @@ public final class TestHSQLDB extends BaseTest {
                 " TestLocalDateTime Timestamp " +
 
                 ") ";
-        commands.add(sql);
         executeCommand(sql, con);
 
         if (UtilsForTests.isTableInDatabase("Invoices", con)) {
             sql = "DROP TABLE Invoices";
-            commands.add(sql);
             executeCommand(sql, con);
         }
 
@@ -121,18 +121,15 @@ public final class TestHSQLDB extends BaseTest {
                 //" Total NUMERIC(10,3) NOT NULL, " +
                 " Discount NUMERIC(10,3) NOT NULL " +
                 ") ";
-        commands.add(sql);
         executeCommand(sql, con);
 
         if (UtilsForTests.isTableInDatabase("TABLEMULTIPRIMARY", con)) {
             sql = "DROP TABLE TABLEMULTIPRIMARY";
-            commands.add(sql);
             executeCommand(sql, con);
         }
 
         if (UtilsForTests.isTableInDatabase("SavedGames", con)) {
             sql = "DROP TABLE SavedGames";
-            commands.add(sql);
             executeCommand(sql, con);
         }
 
@@ -143,11 +140,9 @@ public final class TestHSQLDB extends BaseTest {
                 " Quantity TINYINT NOT NULL, " +
                 " Discount REAL NOT NULL " +
                 ") ";
-        commands.add(sql);
         executeCommand(sql, con);
 
         sql = "ALTER TABLE TABLEMULTIPRIMARY ADD PRIMARY KEY (OrderID, ProductID)";
-        commands.add(sql);
         executeCommand(sql, con);
 
 
@@ -161,7 +156,6 @@ public final class TestHSQLDB extends BaseTest {
                 " Data CLOB NULL, " +
                 " WhatTimeIsIt Time NULL, " +
                 " SomethingBig BLOB NULL) ";
-        commands.add(sql);
         executeCommand(sql, con);
 
 

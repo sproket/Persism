@@ -316,6 +316,10 @@ public final class TestH2 extends BaseTest {
         List<Contact> contacts = session.query(Contact.class, sql(sql), params((Object) uuid));
         log.info(contacts);
 
+        // todo it can be done this way but it can only work if its a primary key - we don't detect foreign keys.
+        contacts = session.query(Contact.class, sql(sql), keys(contact.getIdentity()));
+        log.info(contacts);
+
     }
 
 

@@ -926,17 +926,17 @@ final class MetaData {
                 throw new PersismException(Messages.CouldNotFindViewNameInTheDatabase.message(tableName, objectClass.getName()));
             }
         } else {
-            tableName = guessTableName(objectClass);
+            tableName = guessTableOrViewName(objectClass);
         }
         tableOrViewMap.put(objectClass, tableName);
         return tableName;
     }
 
-    // Returns the table name found in the DB in the same case as in the DB.
-    // throws PersismException if we cannot guess any table name for this class.
-    private <T> String guessTableName(Class<T> objectClass) throws PersismException {
+    // Returns the table/view name found in the DB in the same case as in the DB.
+    // throws PersismException if we cannot guess any table/view name for this class.
+    private <T> String guessTableOrViewName(Class<T> objectClass) throws PersismException {
         Set<String> guesses = new LinkedHashSet<>(6); // guess order is important
-        List<String> guessedTables = new ArrayList<String>(6);
+        List<String> guessedTables = new ArrayList<>(6);
 
         String className = objectClass.getSimpleName();
 

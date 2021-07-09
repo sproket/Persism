@@ -4,7 +4,7 @@ enum Messages {
     // todo that verify each occurs with code coverage (some additional tests required)
 
     // Errors
-    PrimaryKeysDontExist("executeQuery: Primary keys don't exist in a Query. Please use params() rather than keys()"),
+    PrimaryKeysDontExist("executeQuery: Primary keys don't exist in a Query or View. Please use params() rather than keys()"),
     ObjectNotProperlyInitialized("Object %s was not properly initialized. Some properties not initialized in the queried columns (%s)."),
     ObjectNotProperlyInitializedByQuery("Object %s was not properly initialized. Some properties not initialized by the queried columns: %s  Missing: %s"),
     IllegalArgumentReadingColumn("Illegal Argument occurred setting property: %s. Object %s. Column: %s Type of property: %s - Type read: %s VALUE: %s"),
