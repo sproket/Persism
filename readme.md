@@ -74,6 +74,9 @@ you probably don't even need them.
 Persism can usually detect the table and column mappings for you including primary/generated keys and columns 
 with defaults.
 
+## Supports most common databases
+Derby, Firebird, H2, HSQLDB, Informix, MSAccess, MSSQL, MySQL/MariaDB, Oracle (12+), PostgreSQL, SQLite.  
+
 ## Smart
 Persism will do the correct thing by default. Persism understands that your class is called Customer and your table
 is called CUSTOMERS. It understands that your table column is CUSTOMER_ID and your property is customerId. 

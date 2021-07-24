@@ -280,7 +280,8 @@ public final class TestH2 extends BaseTest {
         sql = "CREATE TABLE ByteData ( " +
                 "ID VARCHAR(1), " +
                 "BYTE1 INT, " +
-                "BYTE2 INT ) ";
+                "BYTE2 INT, " +
+                "BYTE3 BIT ) ";
         executeCommand(sql, con);
     }
 
@@ -296,7 +297,15 @@ public final class TestH2 extends BaseTest {
 
         bd.setByte1((byte) 876); // works?
         session.update(bd);
+        session.fetch(bd);
         log.info(bd);
+
+        assertEquals("0", 0, bd.getByte3());
+        bd.setByte3((byte) 1);
+        session.update(bd);
+        session.fetch(bd);
+
+        assertEquals("1", 1, bd.getByte3());
 
         session.query(ByteData.class, "select * from ByteData");
     }

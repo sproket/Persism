@@ -45,19 +45,18 @@ public final class Session implements AutoCloseable {
      * @param sessionKey Unique string to represent the connection URL if it is not available on the Connection metadata.
      *                   This string should start with the jdbc url string to indicate the connection type.
      *                   <pre>
-     *                                                                        jdbc:h2 = h2
-     *                                                                        jdbc:sqlserver = MS SQL
-     *                                                                        jdbc:oracle = Oracle
-     *                                                                        jdbc:sqlite = SQLite
-     *                                                                        jdbc:derby = Derby
-     *                                                                        jdbc:mysql = MySQL/MariaDB
-     *                                                                        jdbc:postgresql = PostgreSQL
-     *                                                                        jdbc:firebirdsql = Firebird (Jaybird)
-     *                                                                        jdbc:hsqldb = HSQLDB
-     *                                                                        jdbc:ucanaccess = MS Access
-     *                                                                        jdbc:informix = Informix
-     *
-     *                                                       </pre>
+     *                   jdbc:h2 = h2
+     *                   jdbc:sqlserver = MS SQL
+     *                   jdbc:oracle = Oracle
+     *                   jdbc:sqlite = SQLite
+     *                   jdbc:derby = Derby
+     *                   jdbc:mysql = MySQL/MariaDB
+     *                   jbc:postgresql = PostgreSQL
+     *                   jdbc:firebirdsql = Firebird (Jaybird)
+     *                   jdbc:hsqldb = HSQLDB
+     *                   jdbc:ucanaccess = MS Access
+     *                   jdbc:informix = Informix
+     *                   </pre>
      * @throws PersismException if something goes wrong
      */
     public Session(Connection connection, String sessionKey) throws PersismException {
@@ -135,7 +134,7 @@ public final class Session implements AutoCloseable {
      * @return usually 1 to indicate rows changed via JDBC.
      * @throws PersismException Indicating the upcoming robot uprising.
      */
-    public int update(Object object) throws PersismException {
+    public <T> Result<T> update(T object) throws PersismException {
 
         checkIfView(object, "Update");
 
@@ -152,7 +151,7 @@ public final class Session implements AutoCloseable {
                 updateStatement = metaData.getUpdateStatement(object, connection);
             } catch (NoChangesDetectedForUpdateException e) {
                 log.info("No properties changed. No update required for Object: " + object + " class: " + object.getClass().getName());
-                return 0;
+                return new Result<>(0, object);
             }
 
             st = connection.prepareStatement(updateStatement);
@@ -161,7 +160,7 @@ public final class Session implements AutoCloseable {
             Map<String, PropertyInfo> allProperties = metaData.getTableColumnsPropertyInfo(object.getClass(), connection);
             Map<String, PropertyInfo> changedProperties;
             if (object instanceof Persistable) {
-                changedProperties = metaData.getChangedProperties((Persistable) object, connection);
+                changedProperties = metaData.getChangedProperties((Persistable<?>) object, connection);
             } else {
                 changedProperties = allProperties;
             }
@@ -194,14 +193,14 @@ public final class Session implements AutoCloseable {
                 }
             }
             setParameters(st, params.toArray());
-            int ret = st.executeUpdate();
+            int rows = st.executeUpdate();
 
             if (object instanceof Persistable) {
                 // Save this object state to later detect changed properties
-                ((Persistable) object).saveReadState();
+                ((Persistable<?>) object).saveReadState();
             }
 
-            return ret;
+            return new Result<>(rows, object);
 
         } catch (Exception e) {
             Util.rollback(connection);
@@ -220,9 +219,11 @@ public final class Session implements AutoCloseable {
      * @return usually 1 to indicate rows changed via JDBC.
      * @throws PersismException When planet of the apes starts happening.
      */
-    public <T> Result<T> insert(Object object) throws PersismException {
+    public <T> Result<T> insert(T object) throws PersismException {
 
         checkIfView(object, "Insert");
+
+        Object returnObject = object;
 
         String insertStatement = metaData.getInsertStatement(object, connection);
 
@@ -345,9 +346,10 @@ public final class Session implements AutoCloseable {
             if (refreshAfterInsert) {
                 // Read the full object back to update any properties which had defaults
                 if (isRecord(object.getClass())) {
-                    object = fetch(object.getClass(), metaData.getSelectStatement(object.getClass(), connection), primaryKeyValues.toArray());
+                    returnObject = fetch(object.getClass(), metaData.getSelectStatement(object.getClass(), connection), primaryKeyValues.toArray());
                 } else {
                     fetch(object);
+                    returnObject = object;
                 }
             }
 
@@ -357,7 +359,7 @@ public final class Session implements AutoCloseable {
             }
 
             //noinspection unchecked
-            return new Result<>(ret, (T) object);
+            return new Result<>(ret, (T) returnObject);
         } catch (Exception e) {
             Util.rollback(connection);
             throw new PersismException(e.getMessage(), e);
@@ -374,7 +376,7 @@ public final class Session implements AutoCloseable {
      * @return usually 1 to indicate rows changed via JDBC.
      * @throws PersismException Perhaps when asteroid 1999 RQ36 hits us?
      */
-    public int delete(Object object) throws PersismException {
+    public <T> Result<T> delete(T object) throws PersismException {
 
         checkIfView(object, "Delete");
 
@@ -404,8 +406,8 @@ public final class Session implements AutoCloseable {
                 }
             }
             setParameters(st, params.toArray());
-            int ret = st.executeUpdate();
-            return ret;
+            int rows = st.executeUpdate();
+            return new Result<>(rows, object);
 
         } catch (Exception e) {
             Util.rollback(connection);
@@ -417,7 +419,7 @@ public final class Session implements AutoCloseable {
     }
 
     // For unit tests only for now.
-    boolean execute(String sql, Object... parameters) {
+    void execute(String sql, Object... parameters) {
 
         log.debug("execute: %s params: %s", sql, Arrays.asList(parameters));
 
@@ -426,12 +428,12 @@ public final class Session implements AutoCloseable {
 
             if (parameters.length == 0) {
                 st = connection.createStatement();
-                return st.execute(sql);
+                st.execute(sql);
             } else {
                 st = connection.prepareStatement(sql);
                 PreparedStatement pst = (PreparedStatement) st;
                 setParameters(pst, parameters);
-                return pst.execute();
+                pst.execute();
             }
 
         } catch (Exception e) {
@@ -444,6 +446,7 @@ public final class Session implements AutoCloseable {
 
     /**
      * Query for all rows in a table or view.
+     *
      * @param objectClass class of objects to return.
      * @param <T>         Return type
      * @return a list of objects of the specified class
@@ -645,7 +648,7 @@ public final class Session implements AutoCloseable {
                 sql = "{call " + sql + "} ";
             }
             // Don't need If Firebird here. Firebird would call a selectable stored proc with SELECT anyway
-            result.st = connection.prepareCall(sql , ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY, ResultSet.HOLD_CURSORS_OVER_COMMIT);
+            result.st = connection.prepareCall(sql, ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY, ResultSet.HOLD_CURSORS_OVER_COMMIT);
 
             CallableStatement cst = (CallableStatement) result.st;
             setParameters(cst, parameters);

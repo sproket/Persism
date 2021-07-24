@@ -9,7 +9,6 @@ import java.sql.*;
 import java.sql.Date;
 import java.sql.ResultSet;
 import java.text.DateFormat;
-import java.text.NumberFormat;
 import java.text.SimpleDateFormat;
 import java.time.*;
 import java.time.format.DateTimeFormatter;
@@ -53,6 +52,8 @@ public abstract class BaseTest extends TestCase {
             con.close();
         }
         super.tearDown();
+
+        
     }
 
     public void testDates() {
@@ -460,7 +461,9 @@ public abstract class BaseTest extends TestCase {
         log.info("Local Date: " + ldt4 + " INSTANT: " + contact.getTestInstant());
         log.info("Local Date: " + LocalDateTime.now() + " INSTANT: " + Instant.now());
 
-        session.insert(contact);
+        Result<Contact> r = session.insert(contact);
+        log.info(r);
+
         contact.setNotes(null);
         session.update(contact);
 
@@ -472,10 +475,10 @@ public abstract class BaseTest extends TestCase {
         assertEquals(contact2.getPartnerId(), partnerId);
 
         contact.setDivision("Y");
-        assertEquals("1 update?", 1, session.update(contact));
+        assertEquals("1 update?", 1, session.update(contact).rows());
 
         contact.setDivision("Y");
-        assertEquals("0 update?", 0, session.update(contact));
+        assertEquals("0 update?", 0, session.update(contact).rows());
 
         List<Contact> contacts = session.query(Contact.class, "SELECT * FROM Contacts");
         assertEquals("should have 1? ", 1, contacts.size());
@@ -483,7 +486,7 @@ public abstract class BaseTest extends TestCase {
         Contact contact1 = contacts.get(0);
         log.info("CONTACT: " + contact1);
 
-        assertEquals("1?", 1, session.delete(contact));
+        assertEquals("1?", 1, session.delete(contact).rows());
 
         assertEquals("UDDI should be the same ", UUID1, contact1.getIdentity().toString());
         assertEquals("UDDI should be the same ", UUID2, contact1.getPartnerId().toString());
@@ -634,7 +637,7 @@ public abstract class BaseTest extends TestCase {
             List<DateTestSQLTypes> list = session.query(DateTestSQLTypes.class, "select * FROM DateTestSQLTypes");
             log.info(list);
 
-            assertTrue(session.delete(testSQLTypes1) > 0);
+            assertTrue(session.delete(testSQLTypes1).rows() > 0);
         });
     }
 
@@ -705,8 +708,8 @@ public abstract class BaseTest extends TestCase {
             assertEquals("time s/b " + localTime + " (FROM lt2)", localTime, testLocalTypes4.getTimeOnly().toString());
 
 
-            assertTrue(session.delete(testLocalTypes1) > 0);
-            assertTrue(session.delete(testLocalTypes3) > 0);
+            assertTrue(session.delete(testLocalTypes1).rows() > 0);
+            assertTrue(session.delete(testLocalTypes3).rows() > 0);
         });
     }
 
