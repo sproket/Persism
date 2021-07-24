@@ -28,9 +28,10 @@ final class Reader {
         this.converter = session.getConverter();
     }
 
-    <T> T readObject(Object object, ResultSet rs) throws IllegalAccessException, SQLException, InvocationTargetException, IOException {
+    <T> T readObject(T object, ResultSet rs) throws IllegalAccessException, SQLException, InvocationTargetException, IOException {
 
         Class<?> objectClass = object.getClass();
+
         // We should never call this method with a primitive type.
         assert Types.getType(objectClass) == null;
 
@@ -106,10 +107,10 @@ final class Reader {
 
         if (object instanceof Persistable) {
             // Save this object initial state to later detect changed properties
-            ((Persistable) object).saveReadState();
+            ((Persistable<?>) object).saveReadState();
         }
 
-        return (T) object;
+        return object;
     }
 
     <T> T readRecord(Class<T> objectClass, ResultSet rs) throws SQLException, IOException {
@@ -127,10 +128,7 @@ final class Reader {
             propertiesByColumn = metaData.getQueryColumnsPropertyInfo(objectClass, rs);
         }
 
-        // TODO ALL THIS IS CALLED once PER ROW. Can we optimize? We could cache.
-        List<String> propertyNames = propertiesByColumn.values().stream().
-                map(PropertyInfo::propertyName).
-                collect(Collectors.toList());
+        List<String> propertyNames = metaData.getPropertyNames(objectClass);
 
         Constructor<?> selectedConstructor = findConstructor(objectClass, propertyNames);
 
@@ -383,6 +381,7 @@ final class Reader {
             value = converter.convert(value, returnType, columnName);
         }
 
+        //noinspection unchecked
         return (T) value;
     }
 

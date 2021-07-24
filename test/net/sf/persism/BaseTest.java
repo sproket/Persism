@@ -87,7 +87,7 @@ public abstract class BaseTest extends TestCase {
         assertEquals("date of last order s/b", "20120528010101", dtf.format(customer.getDateOfLastOrder()));
         assertEquals("date registration s/b", dateRegistered, df.format(customer.getDateRegistered()));
 
-        session.insert(customer);
+        Result<Customer> r = session.insert(customer);
 
         Customer customer2 = new Customer();
         customer2.setCustomerId(customer.getCustomerId());
@@ -610,10 +610,10 @@ public abstract class BaseTest extends TestCase {
         assertEquals(contact2.getPartnerId(), partnerId);
 
         contact.setDivision("Y");
-        assertEquals("1 update?", 1, session.update(contact));
+        assertEquals("1 update?", 1, session.update(contact).rows());
 
         contact.setDivision("Y");
-        assertEquals("0 update?", 0, session.update(contact));
+        assertEquals("0 update?", 0, session.update(contact).rows());
 
         List<Contact> contacts = session.query(Contact.class, "SELECT * FROM Contacts");
         log.info(contacts);
@@ -622,7 +622,7 @@ public abstract class BaseTest extends TestCase {
         Contact contact1 = contacts.get(0);
         log.info("CONTACT: " + contact1);
 
-        assertEquals("1?", 1, session.delete(contact));
+        assertEquals("1?", 1, session.delete(contact).rows());
 
         assertEquals("UDDI should be the same ", UUID1, contact1.getIdentity().toString());
         assertEquals("UDDI should be the same ", UUID2, contact1.getPartnerId().toString());
@@ -775,7 +775,7 @@ public abstract class BaseTest extends TestCase {
             List<DateTestSQLTypes> list = session.query(DateTestSQLTypes.class, "select * FROM DateTestSQLTypes");
             log.info(list);
 
-            assertTrue(session.delete(testSQLTypes1) > 0);
+            assertTrue(session.delete(testSQLTypes1).rows() > 0);
         });
     }
 
@@ -846,8 +846,8 @@ public abstract class BaseTest extends TestCase {
             assertEquals("time s/b " + localTime + " (FROM lt2)", localTime, testLocalTypes4.getTimeOnly().toString());
 
 
-            assertTrue(session.delete(testLocalTypes1) > 0);
-            assertTrue(session.delete(testLocalTypes3) > 0);
+            assertTrue(session.delete(testLocalTypes1).rows() > 0);
+            assertTrue(session.delete(testLocalTypes3).rows() > 0);
 
         });
     }

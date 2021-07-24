@@ -32,4 +32,12 @@ public final class Result<T> {
     public T dataObject() {
         return dataObject;
     }
+
+    @Override
+    public String toString() {
+        return "Result{" +
+                "rows=" + rows +
+                ", dataObject=" + dataObject +
+                '}';
+    }
 }

@@ -13,7 +13,6 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import static java.text.MessageFormat.format;
 import static net.sf.persism.Util.*;
-import static net.sf.persism.Util.isNotEmpty;
 
 /**
  * Meta data collected in a map singleton based on connection url
@@ -27,11 +26,11 @@ final class MetaData {
 
     // properties for each class - static because this won't change between MetaData instances
     private static final Map<Class<?>, Collection<PropertyInfo>> propertyMap = new ConcurrentHashMap<>(32);
-    // private static final Map<Class<?>, List<String>> propertyNames = new ConcurrentHashMap<>(32);
 
     // column to property map for each class
     private Map<Class<?>, Map<String, PropertyInfo>> propertyInfoMap = new ConcurrentHashMap<>(32);
     private Map<Class<?>, Map<String, ColumnInfo>> columnInfoMap = new ConcurrentHashMap<>(32);
+    private Map<Class<?>, List<String>> propertyNames = new ConcurrentHashMap<>(32);
 
     // table or view name for each class
     private Map<Class<?>, String> tableOrViewMap = new ConcurrentHashMap<>(32);
@@ -131,6 +130,7 @@ final class MetaData {
             return propertyInfoMap.get(objectClass);
         }
 
+        List<String> propertyNames = new ArrayList<>(32);
         try {
             ResultSetMetaData rsmd = rs.getMetaData();
             Collection<PropertyInfo> properties = getPropertyInfo(objectClass);
@@ -165,6 +165,7 @@ final class MetaData {
 
                 if (foundProperty != null) {
                     columns.put(realColumnName, foundProperty);
+                    propertyNames.add(foundProperty.propertyName);
                 } else {
                     log.warn(Messages.NoPropertyFoundForColumn.message(realColumnName, objectClass));
                 }
@@ -176,6 +177,7 @@ final class MetaData {
             if (objectClass.getAnnotation(NotTable.class) == null) {
                 propertyInfoMap.put(objectClass, columns);
             }
+            this.propertyNames.put(objectClass, propertyNames);
 
             return columns;
 
@@ -799,6 +801,10 @@ final class MetaData {
         }
 
         return determineTable(objectClass);
+    }
+
+    <T> List<String> getPropertyNames(Class<T> objectClass) {
+        return propertyNames.get(objectClass);
     }
 
     // internal version to retrieve meta information about this table's columns

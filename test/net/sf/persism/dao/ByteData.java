@@ -9,6 +9,7 @@ public final class ByteData {
 
     private byte byte1;
     private short byte2;
+    private byte byte3; // db is a Boolean
 
     @NotColumn
     private int somethingInt;
@@ -37,6 +38,14 @@ public final class ByteData {
 
     public void setByte2(short byte2) {
         this.byte2 = byte2;
+    }
+
+    public byte getByte3() {
+        return byte3;
+    }
+
+    public void setByte3(byte byte3) {
+        this.byte3 = byte3;
     }
 
     public int getSomethingInt() {

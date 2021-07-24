@@ -272,7 +272,7 @@ public class TestFirebird extends BaseTest {
     public void testStoredProcedure() throws SQLException {
 
         if (true) {
-            return; 
+            return;
         }
         String sql;
 
@@ -280,20 +280,26 @@ public class TestFirebird extends BaseTest {
             executeCommand("DROP PROCEDURE spCustomerOrders", con);
         }
 
+        log.error(con.getMetaData().getDatabaseProductName() + " " + con.getMetaData().getDatabaseProductVersion());
+        // https://stackoverflow.com/questions/64350980/returning-a-table-in-firebird-3-0-with-stored-function-or-stored-procedure
+
         // https://ib-aid.com/download/docs/firebird-language-reference-2.5/fblangref25-ddl-procedure.html#create-procedure-examples
         sql = """
-                CREATE PROCEDURE spCustomerOrders(cust_id varchar(10))
-                RETURNS (Customer_ID varchar(10), Company_Name varchar(40), Order_ID integer,
-                         Description varchar(40), Date_Paid TIMESTAMP, DateCreated TIMESTAMP, Paid BOOLEAN)
+                CREATE PROCEDURE spCustomerOrders(cust_id VARCHAR(10))
+                RETURNS ("Customer_ID" VARCHAR(10), "Company_Name" VARCHAR(40), "Order_ID" integer,
+                         "Description" VARCHAR(40), "Date_Paid" TIMESTAMP, "DateCreated" TIMESTAMP, "Paid" BOOLEAN)
                 AS
                 BEGIN
-                    SELECT c.Customer_ID, c.Company_Name, o.ID Order_ID,
-                          o.Name AS Description, o.Date_Paid, o.Created AS DateCreated, o.PAID
+                    FOR SELECT c.Customer_ID, c.Company_Name, o.ID Order_ID,
+                          o.Name AS Description, o.Date_Paid, o.Created AS DateCreated, o.Paid
                             FROM ORDERS o
                             JOIN Customers c ON o.Customer_ID = c.Customer_ID
                        WHERE c.Customer_ID = :cust_id
-                       INTO :Customer_ID, :Company_Name, :Order_ID, :Description, :Date_Paid, :DateCreated, :Paid
-                    SUSPEND;
+                       INTO "Customer_ID", "Company_Name", "Order_ID", "Description", "Date_Paid", "DateCreated", "Paid"
+                    DO
+                    BEGIN
+                        SUSPEND;
+                    END
                 END
                 """;
         System.out.println(sql);

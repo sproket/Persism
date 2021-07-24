@@ -1,12 +1,10 @@
 package net.sf.persism;
 
-import junit.framework.TestCase;
 import net.sf.persism.categories.ExternalDB;
 import org.junit.experimental.categories.Category;
 
-import java.sql.*;
-import java.util.ArrayList;
-import java.util.List;
+import java.sql.DriverManager;
+import java.sql.SQLException;
 import java.util.Properties;
 
 import static net.sf.persism.UtilsForTests.isTableInDatabase;
