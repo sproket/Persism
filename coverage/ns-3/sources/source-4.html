@@ -58,10 +58,10 @@ Current scope:     <a href="../../index.html">all classes</a>
 </td>
 <td class="coverageStat">
   <span class="percent">
-    94.4%
+    100%
   </span>
   <span class="absValue">
-    (17/18)
+    (10/10)
   </span>
 </td>
 </tr>
@@ -85,7 +85,7 @@ Current scope:     <a href="../../index.html">all classes</a>
 <i class="no-highlight">10</i>&nbsp;
 <i class="no-highlight">11</i>&nbsp;    public Slf4jLogger(String logName) {
 <b class="fc"><i class="no-highlight">12</i>&nbsp;        super(LogMode.SLF4J, logName);</b>
-<b class="fc"><i class="no-highlight">13</i>&nbsp;    }</b>
+<i class="no-highlight">13</i>&nbsp;    }
 <i class="no-highlight">14</i>&nbsp;
 <i class="no-highlight">15</i>&nbsp;    @Override
 <i class="no-highlight">16</i>&nbsp;    public boolean isDebugEnabled() {
@@ -95,39 +95,39 @@ Current scope:     <a href="../../index.html">all classes</a>
 <i class="no-highlight">20</i>&nbsp;    @Override
 <i class="no-highlight">21</i>&nbsp;    public void debug(Object message, Object... params) {
 <b class="fc"><i class="no-highlight">22</i>&nbsp;        if (isDebugEnabled()) {</b>
-<b class="nc"><i class="no-highlight">23</i>&nbsp;            LoggerFactory.getLogger(logName).debug(String.format(&quot;&quot;+message, params));</b>
+<b class="fc"><i class="no-highlight">23</i>&nbsp;            LoggerFactory.getLogger(logName).debug(String.format(&quot;&quot;+message, params));</b>
 <i class="no-highlight">24</i>&nbsp;        }
-<b class="fc"><i class="no-highlight">25</i>&nbsp;    }</b>
+<i class="no-highlight">25</i>&nbsp;    }
 <i class="no-highlight">26</i>&nbsp;
 <i class="no-highlight">27</i>&nbsp;    @Override
 <i class="no-highlight">28</i>&nbsp;    public void info(Object message) {
 <b class="fc"><i class="no-highlight">29</i>&nbsp;        LoggerFactory.getLogger(logName).info(String.format(&quot;%s&quot;, message));</b>
-<b class="fc"><i class="no-highlight">30</i>&nbsp;    }</b>
+<i class="no-highlight">30</i>&nbsp;    }
 <i class="no-highlight">31</i>&nbsp;
 <i class="no-highlight">32</i>&nbsp;    @Override
 <i class="no-highlight">33</i>&nbsp;    public void info(Object message, Throwable t) {
 <b class="fc"><i class="no-highlight">34</i>&nbsp;        LoggerFactory.getLogger(logName).info(String.format(&quot;%s&quot;, message), t);</b>
-<b class="fc"><i class="no-highlight">35</i>&nbsp;    }</b>
+<i class="no-highlight">35</i>&nbsp;    }
 <i class="no-highlight">36</i>&nbsp;
 <i class="no-highlight">37</i>&nbsp;    @Override
 <i class="no-highlight">38</i>&nbsp;    public void warn(Object message) {
 <b class="fc"><i class="no-highlight">39</i>&nbsp;        LoggerFactory.getLogger(logName).warn(String.format(&quot;%s&quot;, message));</b>
-<b class="fc"><i class="no-highlight">40</i>&nbsp;    }</b>
+<i class="no-highlight">40</i>&nbsp;    }
 <i class="no-highlight">41</i>&nbsp;
 <i class="no-highlight">42</i>&nbsp;    @Override
 <i class="no-highlight">43</i>&nbsp;    public void warn(Object message, Throwable t) {
 <b class="fc"><i class="no-highlight">44</i>&nbsp;        LoggerFactory.getLogger(logName).warn(String.format(&quot;%s&quot;, message), t);</b>
-<b class="fc"><i class="no-highlight">45</i>&nbsp;    }</b>
+<i class="no-highlight">45</i>&nbsp;    }
 <i class="no-highlight">46</i>&nbsp;
 <i class="no-highlight">47</i>&nbsp;    @Override
 <i class="no-highlight">48</i>&nbsp;    public void error(Object message) {
 <b class="fc"><i class="no-highlight">49</i>&nbsp;        LoggerFactory.getLogger(logName).error(String.format(&quot;%s&quot;, message));</b>
-<b class="fc"><i class="no-highlight">50</i>&nbsp;    }</b>
+<i class="no-highlight">50</i>&nbsp;    }
 <i class="no-highlight">51</i>&nbsp;
 <i class="no-highlight">52</i>&nbsp;    @Override
 <i class="no-highlight">53</i>&nbsp;    public void error(Object message, Throwable t) {
 <b class="fc"><i class="no-highlight">54</i>&nbsp;        LoggerFactory.getLogger(logName).error(String.format(&quot;%s&quot;, message), t);</b>
-<b class="fc"><i class="no-highlight">55</i>&nbsp;    }</b>
+<i class="no-highlight">55</i>&nbsp;    }
 <i class="no-highlight">56</i>&nbsp;}
 </div>
 </pre>
@@ -155,7 +155,7 @@ Current scope:     <a href="../../index.html">all classes</a>
 
 <div class="footer">
     
-    <div style="float:right;">generated on 2021-05-09 09:45</div>
+    <div style="float:right;">generated on 2021-08-22 11:13</div>
 </div>
 </body>
 </html>

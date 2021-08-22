@@ -58,10 +58,10 @@ Current scope:     <a href="../../index.html">all classes</a>
 </td>
 <td class="coverageStat">
   <span class="percent">
-    70%
+    65%
   </span>
   <span class="absValue">
-    (35/50)
+    (26/40)
   </span>
 </td>
 </tr>
@@ -114,7 +114,7 @@ Current scope:     <a href="../../index.html">all classes</a>
 <b class="fc"><i class="no-highlight">39</i>&nbsp;    private static final List&lt;String&gt; warnings = new ArrayList&lt;&gt;(32);</b>
 <i class="no-highlight">40</i>&nbsp;
 <b class="nc"><i class="no-highlight">41</i>&nbsp;    private Log() {</b>
-<b class="nc"><i class="no-highlight">42</i>&nbsp;    }</b>
+<i class="no-highlight">42</i>&nbsp;    }
 <i class="no-highlight">43</i>&nbsp;
 <b class="fc"><i class="no-highlight">44</i>&nbsp;    Log(String logName) {</b>
 <i class="no-highlight">45</i>&nbsp;        try {
@@ -134,7 +134,7 @@ Current scope:     <a href="../../index.html">all classes</a>
 <b class="nc"><i class="no-highlight">59</i>&nbsp;            }</b>
 <b class="fc"><i class="no-highlight">60</i>&nbsp;        }</b>
 <b class="fc"><i class="no-highlight">61</i>&nbsp;        assert logger != null;</b>
-<b class="fc"><i class="no-highlight">62</i>&nbsp;    }</b>
+<i class="no-highlight">62</i>&nbsp;    }
 <i class="no-highlight">63</i>&nbsp;
 <i class="no-highlight">64</i>&nbsp;    void warnNoDuplicates(String message) {
 <i class="no-highlight">65</i>&nbsp;        //noinspection OptionalGetWithoutIsPresent
@@ -144,7 +144,7 @@ Current scope:     <a href="../../index.html">all classes</a>
 <b class="fc"><i class="no-highlight">69</i>&nbsp;            warnings.add(msg);</b>
 <b class="fc"><i class="no-highlight">70</i>&nbsp;            warn(msg);</b>
 <i class="no-highlight">71</i>&nbsp;        }
-<b class="fc"><i class="no-highlight">72</i>&nbsp;    }</b>
+<i class="no-highlight">72</i>&nbsp;    }
 <i class="no-highlight">73</i>&nbsp;
 <i class="no-highlight">74</i>&nbsp;    public static Log getLogger(Class logName) {
 <b class="fc"><i class="no-highlight">75</i>&nbsp;        return getLogger(logName.getName());</b>
@@ -166,32 +166,32 @@ Current scope:     <a href="../../index.html">all classes</a>
 <i class="no-highlight">91</i>&nbsp;
 <i class="no-highlight">92</i>&nbsp;    public void debug(Object message, Object... params) {
 <b class="fc"><i class="no-highlight">93</i>&nbsp;        logger.debug(message, params);</b>
-<b class="fc"><i class="no-highlight">94</i>&nbsp;    }</b>
+<i class="no-highlight">94</i>&nbsp;    }
 <i class="no-highlight">95</i>&nbsp;
 <i class="no-highlight">96</i>&nbsp;    public void info(Object message) {
 <b class="fc"><i class="no-highlight">97</i>&nbsp;        logger.info(message);</b>
-<b class="fc"><i class="no-highlight">98</i>&nbsp;    }</b>
+<i class="no-highlight">98</i>&nbsp;    }
 <i class="no-highlight">99</i>&nbsp;
 <i class="no-highlight">100</i>&nbsp;    public void info(Object message, Throwable t) {
 <b class="fc"><i class="no-highlight">101</i>&nbsp;        logger.info(message, t);</b>
-<b class="fc"><i class="no-highlight">102</i>&nbsp;    }</b>
+<i class="no-highlight">102</i>&nbsp;    }
 <i class="no-highlight">103</i>&nbsp;
 <i class="no-highlight">104</i>&nbsp;    public void warn(Object message) {
 <b class="fc"><i class="no-highlight">105</i>&nbsp;        logger.warn(message);</b>
-<b class="fc"><i class="no-highlight">106</i>&nbsp;    }</b>
+<i class="no-highlight">106</i>&nbsp;    }
 <i class="no-highlight">107</i>&nbsp;
 <i class="no-highlight">108</i>&nbsp;    public void warn(Object message, Throwable t) {
 <b class="fc"><i class="no-highlight">109</i>&nbsp;        logger.warn(message, t);</b>
-<b class="fc"><i class="no-highlight">110</i>&nbsp;    }</b>
+<i class="no-highlight">110</i>&nbsp;    }
 <i class="no-highlight">111</i>&nbsp;
 <i class="no-highlight">112</i>&nbsp;
 <i class="no-highlight">113</i>&nbsp;    public void error(Object message) {
 <b class="fc"><i class="no-highlight">114</i>&nbsp;        logger.error(message);</b>
-<b class="fc"><i class="no-highlight">115</i>&nbsp;    }</b>
+<i class="no-highlight">115</i>&nbsp;    }
 <i class="no-highlight">116</i>&nbsp;
 <i class="no-highlight">117</i>&nbsp;    public void error(Object message, Throwable t) {
 <b class="fc"><i class="no-highlight">118</i>&nbsp;        logger.error(message, t);</b>
-<b class="fc"><i class="no-highlight">119</i>&nbsp;    }</b>
+<i class="no-highlight">119</i>&nbsp;    }
 <i class="no-highlight">120</i>&nbsp;
 <i class="no-highlight">121</i>&nbsp;    public LogMode getLogMode() {
 <b class="nc"><i class="no-highlight">122</i>&nbsp;        return logger.getLogMode();</b>
@@ -227,7 +227,7 @@ Current scope:     <a href="../../index.html">all classes</a>
 
 <div class="footer">
     
-    <div style="float:right;">generated on 2021-05-09 09:45</div>
+    <div style="float:right;">generated on 2021-08-22 11:13</div>
 </div>
 </body>
 </html>

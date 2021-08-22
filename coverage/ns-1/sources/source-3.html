@@ -4,7 +4,7 @@
 <!DOCTYPE html>
 <html id="htmlId">
 <head>
-  <title>Coverage Report > Convertor</title>
+  <title>Coverage Report > Converter</title>
   <style type="text/css">
     @import "../../css/coverage.css";
     @import "../../css/highlight-idea.css";
@@ -20,7 +20,7 @@ Current scope:     <a href="../../index.html">all classes</a>
     <a href="../index.html">net.sf.persism</a>
 </div>
 
-<h1>Coverage Summary for Class: Convertor (net.sf.persism)</h1>
+<h1>Coverage Summary for Class: Converter (net.sf.persism)</h1>
 
 <table class="coverageStats">
 
@@ -36,7 +36,7 @@ Current scope:     <a href="../../index.html">all classes</a>
 </th>
 </tr>
 <tr>
-  <td class="name">Convertor</td>
+  <td class="name">Converter</td>
 <td class="coverageStat">
   <span class="percent">
     100%
@@ -47,15 +47,15 @@ Current scope:     <a href="../../index.html">all classes</a>
 </td>
 <td class="coverageStat">
   <span class="percent">
-    95.6%
+    96%
   </span>
   <span class="absValue">
-    (172/180)
+    (170/177)
   </span>
 </td>
 </tr>
   <tr>
-    <td class="name">Convertor$1</td>
+    <td class="name">Converter$1</td>
 <td class="coverageStat">
   <span class="percent">
     100%
@@ -85,10 +85,10 @@ Current scope:     <a href="../../index.html">all classes</a>
 </td>
 <td class="coverageStat">
   <span class="percent">
-    95.6%
+    96.1%
   </span>
   <span class="absValue">
-    (173/181)
+    (171/178)
   </span>
 </td>
 </tr>
@@ -115,9 +115,9 @@ Current scope:     <a href="../../index.html">all classes</a>
 <i class="no-highlight">14</i>&nbsp;import java.time.ZoneId;
 <i class="no-highlight">15</i>&nbsp;import java.util.*;
 <i class="no-highlight">16</i>&nbsp;
-<b class="fc"><i class="no-highlight">17</i>&nbsp;final class Convertor {</b>
+<b class="fc"><i class="no-highlight">17</i>&nbsp;final class Converter {</b>
 <i class="no-highlight">18</i>&nbsp;
-<b class="fc"><i class="no-highlight">19</i>&nbsp;    private static final Log log = Log.getLogger(Convertor.class);</b>
+<b class="fc"><i class="no-highlight">19</i>&nbsp;    private static final Log log = Log.getLogger(Converter.class);</b>
 <i class="no-highlight">20</i>&nbsp;
 <i class="no-highlight">21</i>&nbsp;    // Make a sensible conversion of the value type from the DB and the property type defined
 <i class="no-highlight">22</i>&nbsp;    // on the Data class - or the value type from the property to the statement parameter.
@@ -127,7 +127,7 @@ Current scope:     <a href="../../index.html">all classes</a>
 <b class="fc"><i class="no-highlight">26</i>&nbsp;        Types valueType = Types.getType(value.getClass());</b>
 <i class="no-highlight">27</i>&nbsp;
 <b class="fc"><i class="no-highlight">28</i>&nbsp;        if (valueType == null) {</b>
-<b class="fc"><i class="no-highlight">29</i>&nbsp;            log.warn(&quot;Conversion: Unknown type: &quot; + value.getClass() + &quot; - no conversion performed.&quot;);</b>
+<b class="fc"><i class="no-highlight">29</i>&nbsp;            log.warn(Messages.NoConversionForUnknownType.message(value.getClass()));</b>
 <b class="fc"><i class="no-highlight">30</i>&nbsp;            return value;</b>
 <i class="no-highlight">31</i>&nbsp;        }
 <i class="no-highlight">32</i>&nbsp;
@@ -143,7 +143,7 @@ Current scope:     <a href="../../index.html">all classes</a>
 <i class="no-highlight">42</i>&nbsp;
 <i class="no-highlight">43</i>&nbsp;            case byteType:
 <i class="no-highlight">44</i>&nbsp;            case ByteType:
-<b class="fc"><i class="no-highlight">45</i>&nbsp;                log.warnNoDuplicates(&quot;COLUMN: &quot; + columnName + &quot;: MSSQL Sees tinyint as 0 - 254 - Others -127 - +127 - no conversion performed - recommend changing it to SMALLINT/Short.&quot;);</b>
+<b class="fc"><i class="no-highlight">45</i>&nbsp;                log.warnNoDuplicates(Messages.TinyIntMSSQL.message(columnName));</b>
 <b class="fc"><i class="no-highlight">46</i>&nbsp;                break;</b>
 <i class="no-highlight">47</i>&nbsp;
 <i class="no-highlight">48</i>&nbsp;            case shortType:
@@ -186,7 +186,7 @@ Current scope:     <a href="../../index.html">all classes</a>
 <b class="fc"><i class="no-highlight">85</i>&nbsp;                    returnValue = new Timestamp(lval);</b>
 <i class="no-highlight">86</i>&nbsp;
 <b class="fc"><i class="no-highlight">87</i>&nbsp;                } else if (targetType.equals(Integer.class) || targetType.equals(int.class)) {</b>
-<b class="fc"><i class="no-highlight">88</i>&nbsp;                    log.warnNoDuplicates(&quot;Possible overflow column &quot; + columnName + &quot; - Target type is INT and Value type is LONG&quot;);</b>
+<b class="fc"><i class="no-highlight">88</i>&nbsp;                    log.warnNoDuplicates(Messages.PossibleOverflow.message(columnName, &quot;INT&quot;, &quot;LONG&quot;));</b>
 <b class="fc"><i class="no-highlight">89</i>&nbsp;                    returnValue = Integer.parseInt(&quot;&quot; + lval);</b>
 <i class="no-highlight">90</i>&nbsp;
 <b class="fc"><i class="no-highlight">91</i>&nbsp;                } else if (targetType.equals(LocalDate.class)) {</b>
@@ -215,15 +215,15 @@ Current scope:     <a href="../../index.html">all classes</a>
 <b class="fc"><i class="no-highlight">114</i>&nbsp;                    returnValue = new BigDecimal(&quot;&quot; + value);</b>
 <i class="no-highlight">115</i>&nbsp;
 <b class="fc"><i class="no-highlight">116</i>&nbsp;                } else if (targetType.equals(Float.class) || targetType.equals(float.class)) {</b>
-<b class="fc"><i class="no-highlight">117</i>&nbsp;                    log.warnNoDuplicates(&quot;Possible overflow column &quot; + columnName + &quot; - Target type is FLOAT and Value type is DOUBLE&quot;);</b>
+<b class="fc"><i class="no-highlight">117</i>&nbsp;                    log.warnNoDuplicates(Messages.PossibleOverflow.message(columnName, &quot;FLOAT&quot;, &quot;DOUBLE&quot;));</b>
 <b class="fc"><i class="no-highlight">118</i>&nbsp;                    returnValue = dbl.floatValue();</b>
 <i class="no-highlight">119</i>&nbsp;
 <b class="fc"><i class="no-highlight">120</i>&nbsp;                } else if (targetType.equals(Integer.class) || targetType.equals(int.class)) {</b>
-<b class="fc"><i class="no-highlight">121</i>&nbsp;                    log.warnNoDuplicates(&quot;Possible overflow column &quot; + columnName + &quot; - Target type is INT and Value type is DOUBLE&quot;);</b>
+<b class="fc"><i class="no-highlight">121</i>&nbsp;                    log.warnNoDuplicates(Messages.PossibleOverflow.message(columnName, &quot;INT&quot;, &quot;DOUBLE&quot;));</b>
 <b class="fc"><i class="no-highlight">122</i>&nbsp;                    returnValue = dbl.intValue();</b>
 <i class="no-highlight">123</i>&nbsp;
 <b class="fc"><i class="no-highlight">124</i>&nbsp;                } else if (targetType.equals(Long.class) || targetType.equals(long.class)) {</b>
-<b class="fc"><i class="no-highlight">125</i>&nbsp;                    log.warnNoDuplicates(&quot;Possible overflow column &quot; + columnName + &quot; - Target type is Long and Value type is DOUBLE&quot;);</b>
+<b class="fc"><i class="no-highlight">125</i>&nbsp;                    log.warnNoDuplicates(Messages.PossibleOverflow.message(columnName, &quot;LONG&quot;, &quot;DOUBLE&quot;));</b>
 <b class="fc"><i class="no-highlight">126</i>&nbsp;                    returnValue = dbl.longValue();</b>
 <i class="no-highlight">127</i>&nbsp;                }
 <i class="no-highlight">128</i>&nbsp;                break;
@@ -231,28 +231,28 @@ Current scope:     <a href="../../index.html">all classes</a>
 <i class="no-highlight">130</i>&nbsp;            case BigDecimalType:
 <b class="fc"><i class="no-highlight">131</i>&nbsp;                if (targetType.equals(Float.class) || targetType.equals(float.class)) {</b>
 <b class="fc"><i class="no-highlight">132</i>&nbsp;                    returnValue = ((Number) value).floatValue();</b>
-<b class="fc"><i class="no-highlight">133</i>&nbsp;                    log.warnNoDuplicates(&quot;Possible overflow column &quot; + columnName + &quot; - Target type is Float and Value type is BigDecimal&quot;);</b>
+<b class="fc"><i class="no-highlight">133</i>&nbsp;                    log.warnNoDuplicates(Messages.PossibleOverflow.message(columnName, &quot;Float&quot;, &quot;BigDecimal&quot;));</b>
 <i class="no-highlight">134</i>&nbsp;
 <b class="fc"><i class="no-highlight">135</i>&nbsp;                } else if (targetType.equals(Double.class) || targetType.equals(double.class)) {</b>
 <b class="fc"><i class="no-highlight">136</i>&nbsp;                    returnValue = ((Number) value).doubleValue();</b>
-<b class="fc"><i class="no-highlight">137</i>&nbsp;                    log.warnNoDuplicates(&quot;Possible overflow column &quot; + columnName + &quot; - Target type is Double and Value type is BigDecimal&quot;);</b>
+<b class="fc"><i class="no-highlight">137</i>&nbsp;                    log.warnNoDuplicates(Messages.PossibleOverflow.message(columnName, &quot;Double&quot;, &quot;BigDecimal&quot;));</b>
 <i class="no-highlight">138</i>&nbsp;
 <b class="fc"><i class="no-highlight">139</i>&nbsp;                } else if (targetType.equals(Long.class) || targetType.equals(long.class)) {</b>
 <b class="fc"><i class="no-highlight">140</i>&nbsp;                    returnValue = ((Number) value).longValue();</b>
-<b class="fc"><i class="no-highlight">141</i>&nbsp;                    log.warnNoDuplicates(&quot;Possible overflow column &quot; + columnName + &quot; - Target type is Long and Value type is BigDecimal&quot;);</b>
+<b class="fc"><i class="no-highlight">141</i>&nbsp;                    log.warnNoDuplicates(Messages.PossibleOverflow.message(columnName, &quot;Long&quot;, &quot;BigDecimal&quot;));</b>
 <i class="no-highlight">142</i>&nbsp;
 <b class="fc"><i class="no-highlight">143</i>&nbsp;                } else if (targetType.equals(Integer.class) || targetType.equals(int.class)) {</b>
 <b class="fc"><i class="no-highlight">144</i>&nbsp;                    returnValue = ((Number) value).intValue();</b>
-<b class="fc"><i class="no-highlight">145</i>&nbsp;                    log.warnNoDuplicates(&quot;Possible overflow column &quot; + columnName + &quot; - Target type is Integer and Value type is BigDecimal&quot;);</b>
+<b class="fc"><i class="no-highlight">145</i>&nbsp;                    log.warnNoDuplicates(Messages.PossibleOverflow.message(columnName, &quot;Integer&quot;, &quot;BigDecimal&quot;));</b>
 <i class="no-highlight">146</i>&nbsp;
 <b class="fc"><i class="no-highlight">147</i>&nbsp;                } else if (targetType.equals(Short.class) || targetType.equals(short.class)) {</b>
 <b class="fc"><i class="no-highlight">148</i>&nbsp;                    returnValue = ((Number) value).shortValue();</b>
-<b class="fc"><i class="no-highlight">149</i>&nbsp;                    log.warnNoDuplicates(&quot;Possible overflow column &quot; + columnName + &quot; - Target type is Short and Value type is BigDecimal&quot;);</b>
+<b class="fc"><i class="no-highlight">149</i>&nbsp;                    log.warnNoDuplicates(Messages.PossibleOverflow.message(columnName, &quot;Short&quot;, &quot;BigDecimal&quot;));</b>
 <i class="no-highlight">150</i>&nbsp;
 <b class="fc"><i class="no-highlight">151</i>&nbsp;                } else if (targetType.equals(Boolean.class) || targetType.equals(boolean.class)) {</b>
 <i class="no-highlight">152</i>&nbsp;                    // BigDecimal to Boolean. Oracle (sigh) - Additional for a Char to Boolean as then (see TestOracle for links)
 <b class="fc"><i class="no-highlight">153</i>&nbsp;                    returnValue = ((Number) value).intValue() == 1;</b>
-<b class="fc"><i class="no-highlight">154</i>&nbsp;                    log.warnNoDuplicates(&quot;Possible overflow column &quot; + columnName + &quot; - Target type is Boolean and Value type is BigDecimal&quot;);</b>
+<b class="fc"><i class="no-highlight">154</i>&nbsp;                    log.warnNoDuplicates(Messages.PossibleOverflow.message(columnName, &quot;Boolean&quot;, &quot;BigDecimal&quot;));</b>
 <i class="no-highlight">155</i>&nbsp;
 <b class="fc"><i class="no-highlight">156</i>&nbsp;                } else if (targetType.equals(String.class)) {</b>
 <b class="fc"><i class="no-highlight">157</i>&nbsp;                    returnValue = (value).toString();</b>
@@ -311,9 +311,9 @@ Current scope:     <a href="../../index.html">all classes</a>
 <b class="fc"><i class="no-highlight">210</i>&nbsp;                    returnValue = UUID.fromString(&quot;&quot; + value);</b>
 <i class="no-highlight">211</i>&nbsp;
 <b class="fc"><i class="no-highlight">212</i>&nbsp;                } else if (targetType.equals(Boolean.class) || targetType.equals(boolean.class)) {</b>
-<i class="no-highlight">213</i>&nbsp;                    // String to Boolean - true or 1 - otherwise false (or null)
-<b class="fc"><i class="no-highlight">214</i>&nbsp;                    String bval = &quot;&quot; + value;</b>
-<b class="fc"><i class="no-highlight">215</i>&nbsp;                    returnValue = bval.equalsIgnoreCase(&quot;true&quot;) || bval.equals(&quot;1&quot;);</b>
+<i class="no-highlight">213</i>&nbsp;                    // String to Boolean - T or 1 - otherwise false (or null)
+<b class="fc"><i class="no-highlight">214</i>&nbsp;                    String bval = (&quot;&quot; + value).toUpperCase();</b>
+<b class="fc"><i class="no-highlight">215</i>&nbsp;                    returnValue = bval.startsWith(&quot;T&quot;) || bval.startsWith(&quot;1&quot;);</b>
 <i class="no-highlight">216</i>&nbsp;
 <b class="fc"><i class="no-highlight">217</i>&nbsp;                } else if (targetType.equals(Time.class)) {</b>
 <i class="no-highlight">218</i>&nbsp;                    // MSSQL works, JTDS returns Varchar in format below with varying decimal numbers
@@ -333,151 +333,146 @@ Current scope:     <a href="../../index.html">all classes</a>
 <i class="no-highlight">232</i>&nbsp;                    try {
 <b class="fc"><i class="no-highlight">233</i>&nbsp;                        returnValue = new BigDecimal(&quot;&quot; + value);</b>
 <b class="fc"><i class="no-highlight">234</i>&nbsp;                    } catch (NumberFormatException e) {</b>
-<b class="fc"><i class="no-highlight">235</i>&nbsp;                        String msg = &quot;NumberFormatException: Column: &quot; + columnName + &quot; Type of property: &quot; + targetType + &quot; - Type read: &quot; + value.getClass() + &quot; VALUE: &quot; + value;</b>
-<b class="fc"><i class="no-highlight">236</i>&nbsp;                        throw new PersismException(msg, e);</b>
-<b class="fc"><i class="no-highlight">237</i>&nbsp;                    }</b>
-<i class="no-highlight">238</i>&nbsp;                }
-<i class="no-highlight">239</i>&nbsp;
-<i class="no-highlight">240</i>&nbsp;                break;
-<i class="no-highlight">241</i>&nbsp;
-<i class="no-highlight">242</i>&nbsp;            case characterType:
-<i class="no-highlight">243</i>&nbsp;            case CharacterType:
-<b class="fc"><i class="no-highlight">244</i>&nbsp;                log.debug(&quot;CharacterType&quot;);</b>
-<b class="fc"><i class="no-highlight">245</i>&nbsp;                break;</b>
-<i class="no-highlight">246</i>&nbsp;
-<i class="no-highlight">247</i>&nbsp;            case LocalDateType:
-<b class="fc"><i class="no-highlight">248</i>&nbsp;                log.debug(&quot;LocalDateType&quot;);</b>
-<b class="fc"><i class="no-highlight">249</i>&nbsp;                returnValue = java.sql.Date.valueOf((LocalDate) value);</b>
-<b class="fc"><i class="no-highlight">250</i>&nbsp;                break;</b>
-<i class="no-highlight">251</i>&nbsp;
-<i class="no-highlight">252</i>&nbsp;            case LocalDateTimeType:
-<b class="fc"><i class="no-highlight">253</i>&nbsp;                log.debug(&quot;LocalDateTimeType&quot;);</b>
-<b class="fc"><i class="no-highlight">254</i>&nbsp;                returnValue = Timestamp.valueOf((LocalDateTime) value);</b>
-<b class="fc"><i class="no-highlight">255</i>&nbsp;                break;</b>
-<i class="no-highlight">256</i>&nbsp;
-<i class="no-highlight">257</i>&nbsp;            case LocalTimeType:
-<b class="fc"><i class="no-highlight">258</i>&nbsp;                log.debug(&quot;LocalTimeType&quot;);</b>
-<b class="fc"><i class="no-highlight">259</i>&nbsp;                returnValue = Time.valueOf((LocalTime) value);</b>
-<b class="fc"><i class="no-highlight">260</i>&nbsp;                break;</b>
-<i class="no-highlight">261</i>&nbsp;
-<i class="no-highlight">262</i>&nbsp;            case UtilDateType:
-<i class="no-highlight">263</i>&nbsp;            case SQLDateType:
-<i class="no-highlight">264</i>&nbsp;            case TimestampType:
-<b class="fc"><i class="no-highlight">265</i>&nbsp;                if (targetType.equals(java.util.Date.class)) {</b>
-<b class="fc"><i class="no-highlight">266</i>&nbsp;                    returnValue = new java.util.Date(((Date) value).getTime());</b>
-<i class="no-highlight">267</i>&nbsp;
-<b class="fc"><i class="no-highlight">268</i>&nbsp;                } else if (targetType.equals(java.sql.Date.class)) {</b>
-<b class="fc"><i class="no-highlight">269</i>&nbsp;                    returnValue = new java.sql.Date(((Date) value).getTime());</b>
-<i class="no-highlight">270</i>&nbsp;
-<b class="fc"><i class="no-highlight">271</i>&nbsp;                } else if (targetType.equals(Timestamp.class)) {</b>
-<b class="fc"><i class="no-highlight">272</i>&nbsp;                    returnValue = new Timestamp(((Date) value).getTime());</b>
-<i class="no-highlight">273</i>&nbsp;
-<b class="fc"><i class="no-highlight">274</i>&nbsp;                } else if (targetType.equals(LocalDate.class)) {</b>
-<b class="fc"><i class="no-highlight">275</i>&nbsp;                    Date dt = new Date(((Date) value).getTime());</b>
-<b class="fc"><i class="no-highlight">276</i>&nbsp;                    returnValue = dt.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();</b>
-<i class="no-highlight">277</i>&nbsp;
-<b class="fc"><i class="no-highlight">278</i>&nbsp;                } else if (targetType.equals(LocalDateTime.class)) {</b>
-<b class="fc"><i class="no-highlight">279</i>&nbsp;                    Date dt = new Date(((Date) value).getTime());</b>
-<b class="fc"><i class="no-highlight">280</i>&nbsp;                    returnValue = dt.toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime();</b>
-<i class="no-highlight">281</i>&nbsp;
-<b class="fc"><i class="no-highlight">282</i>&nbsp;                } else if (targetType.equals(Time.class)) {</b>
-<i class="no-highlight">283</i>&nbsp;                    // Oracle doesn&#39;t seem to have Time so we use Timestamp
-<b class="fc"><i class="no-highlight">284</i>&nbsp;                    returnValue = new Time(((Date) value).getTime());</b>
-<i class="no-highlight">285</i>&nbsp;
-<b class="fc"><i class="no-highlight">286</i>&nbsp;                } else if (targetType.equals(LocalTime.class)) {</b>
-<i class="no-highlight">287</i>&nbsp;                    // Oracle.... Sigh
-<b class="fc"><i class="no-highlight">288</i>&nbsp;                    Date dt = (Date) value;</b>
-<b class="fc"><i class="no-highlight">289</i>&nbsp;                    returnValue = dt.toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime().toLocalTime();</b>
-<b class="fc"><i class="no-highlight">290</i>&nbsp;                }</b>
-<i class="no-highlight">291</i>&nbsp;                break;
-<i class="no-highlight">292</i>&nbsp;
-<i class="no-highlight">293</i>&nbsp;            case TimeType:
-<b class="fc"><i class="no-highlight">294</i>&nbsp;                log.debug(&quot;TimeType&quot;);</b>
-<b class="fc"><i class="no-highlight">295</i>&nbsp;                if (targetType.equals(LocalTime.class)) {</b>
-<b class="fc"><i class="no-highlight">296</i>&nbsp;                    returnValue = LocalTime.parse(&quot;&quot; + value);</b>
-<i class="no-highlight">297</i>&nbsp;                }
-<i class="no-highlight">298</i>&nbsp;                break;
-<i class="no-highlight">299</i>&nbsp;
-<i class="no-highlight">300</i>&nbsp;            case InstantType:
-<i class="no-highlight">301</i>&nbsp;            case OffsetDateTimeType:
-<i class="no-highlight">302</i>&nbsp;            case ZonedDateTimeType:
-<b class="nc"><i class="no-highlight">303</i>&nbsp;                log.warn(valueType + &quot; not yet supported&quot;, new Throwable());</b>
-<b class="nc"><i class="no-highlight">304</i>&nbsp;                break;</b>
-<i class="no-highlight">305</i>&nbsp;
-<i class="no-highlight">306</i>&nbsp;            case byteArrayType:
-<i class="no-highlight">307</i>&nbsp;            case ByteArrayType:
-<b class="fc"><i class="no-highlight">308</i>&nbsp;                log.debug(&quot;ByteArrayType&quot;);</b>
-<b class="fc"><i class="no-highlight">309</i>&nbsp;                if (targetType.equals(UUID.class)) {</b>
-<b class="fc"><i class="no-highlight">310</i>&nbsp;                    returnValue = asUuid((byte[]) value);</b>
-<i class="no-highlight">311</i>&nbsp;                }
-<i class="no-highlight">312</i>&nbsp;                break;
-<i class="no-highlight">313</i>&nbsp;
-<i class="no-highlight">314</i>&nbsp;            case ClobType:
-<i class="no-highlight">315</i>&nbsp;            case BlobType:
-<b class="nc"><i class="no-highlight">316</i>&nbsp;                log.warn(&quot;why? Clob is read as String, Blob as byte array - see readColumn method&quot;, new Throwable());</b>
-<b class="nc"><i class="no-highlight">317</i>&nbsp;                break;</b>
-<i class="no-highlight">318</i>&nbsp;
-<i class="no-highlight">319</i>&nbsp;            case EnumType:
-<i class="no-highlight">320</i>&nbsp;                // No need to convert it here.
-<i class="no-highlight">321</i>&nbsp;                // If it&#39;s being used for the property setter then it&#39;s OK
-<i class="no-highlight">322</i>&nbsp;                // If it&#39;s being used by setParameters it&#39;s converted to String
-<i class="no-highlight">323</i>&nbsp;                // The String case above converts from the String to the Enum
-<b class="fc"><i class="no-highlight">324</i>&nbsp;                log.debug(&quot;EnumType&quot;);</b>
-<b class="fc"><i class="no-highlight">325</i>&nbsp;                break;</b>
-<i class="no-highlight">326</i>&nbsp;
-<i class="no-highlight">327</i>&nbsp;            case UUIDType:
-<b class="fc"><i class="no-highlight">328</i>&nbsp;                log.debug(&quot;UUIDType&quot;);</b>
-<b class="fc"><i class="no-highlight">329</i>&nbsp;                if (targetType.equals(Blob.class) || targetType.equals(byte[].class) || targetType.equals(Byte[].class)) {</b>
-<b class="fc"><i class="no-highlight">330</i>&nbsp;                    returnValue = asBytes((UUID) value);</b>
-<i class="no-highlight">331</i>&nbsp;                }
-<i class="no-highlight">332</i>&nbsp;                break;
-<i class="no-highlight">333</i>&nbsp;
-<i class="no-highlight">334</i>&nbsp;            case ObjectType:
-<b class="nc"><i class="no-highlight">335</i>&nbsp;                log.debug(&quot;ObjectType&quot;);</b>
-<i class="no-highlight">336</i>&nbsp;                break;
-<i class="no-highlight">337</i>&nbsp;        }
-<b class="fc"><i class="no-highlight">338</i>&nbsp;        return returnValue;</b>
-<i class="no-highlight">339</i>&nbsp;    }
-<i class="no-highlight">340</i>&nbsp;
-<i class="no-highlight">341</i>&nbsp;    /*
-<i class="no-highlight">342</i>&nbsp;     * Used by convert for convenience - common possible parsing
-<i class="no-highlight">343</i>&nbsp;     */
-<i class="no-highlight">344</i>&nbsp;    static Date tryParseDate(Object value, Class&lt;?&gt; targetType, String columnName, DateFormat df) throws PersismException {
-<i class="no-highlight">345</i>&nbsp;        try {
-<b class="fc"><i class="no-highlight">346</i>&nbsp;            return df.parse(&quot;&quot; + value);</b>
-<b class="nc"><i class="no-highlight">347</i>&nbsp;        } catch (ParseException e) {</b>
-<b class="nc"><i class="no-highlight">348</i>&nbsp;            String msg = e.getMessage() + &quot;. Column: &quot; + columnName + &quot; Target Conversion: &quot; + targetType + &quot; - Type read: &quot; + value.getClass() + &quot; VALUE: &quot; + value;</b>
-<b class="nc"><i class="no-highlight">349</i>&nbsp;            throw new PersismException(msg, e);</b>
-<i class="no-highlight">350</i>&nbsp;        }
-<i class="no-highlight">351</i>&nbsp;    }
-<i class="no-highlight">352</i>&nbsp;
-<i class="no-highlight">353</i>&nbsp;    Timestamp tryParseTimestamp(Object value, Class&lt;?&gt; targetType, String columnName) throws PersismException {
-<i class="no-highlight">354</i>&nbsp;        try {
-<b class="fc"><i class="no-highlight">355</i>&nbsp;            return Timestamp.valueOf(&quot;&quot; + value);</b>
-<b class="fc"><i class="no-highlight">356</i>&nbsp;        } catch (IllegalArgumentException e) {</b>
-<b class="fc"><i class="no-highlight">357</i>&nbsp;            String msg = e.getMessage() + &quot;. Column: &quot; + columnName + &quot; Target Conversion: &quot; + targetType + &quot; - Type read: &quot; + value.getClass() + &quot; VALUE: &quot; + value;</b>
-<b class="fc"><i class="no-highlight">358</i>&nbsp;            throw new PersismException(msg, e);</b>
-<i class="no-highlight">359</i>&nbsp;        }
-<i class="no-highlight">360</i>&nbsp;    }
-<i class="no-highlight">361</i>&nbsp;
-<i class="no-highlight">362</i>&nbsp;    // https://stackoverflow.com/questions/17893609/convert-uuid-to-byte-that-works-when-using-uuid-nameuuidfrombytesb
-<i class="no-highlight">363</i>&nbsp;    // THANKS!
-<i class="no-highlight">364</i>&nbsp;    static UUID asUuid(byte[] bytes) {
-<b class="fc"><i class="no-highlight">365</i>&nbsp;        ByteBuffer bb = ByteBuffer.wrap(bytes);</b>
-<b class="fc"><i class="no-highlight">366</i>&nbsp;        long firstLong = bb.getLong();</b>
-<b class="fc"><i class="no-highlight">367</i>&nbsp;        long secondLong = bb.getLong();</b>
-<b class="fc"><i class="no-highlight">368</i>&nbsp;        return new UUID(firstLong, secondLong);</b>
-<i class="no-highlight">369</i>&nbsp;    }
-<i class="no-highlight">370</i>&nbsp;
-<i class="no-highlight">371</i>&nbsp;    static byte[] asBytes(UUID uuid) {
-<b class="fc"><i class="no-highlight">372</i>&nbsp;        ByteBuffer bb = ByteBuffer.wrap(new byte[16]);</b>
-<b class="fc"><i class="no-highlight">373</i>&nbsp;        bb.putLong(uuid.getMostSignificantBits());</b>
-<b class="fc"><i class="no-highlight">374</i>&nbsp;        bb.putLong(uuid.getLeastSignificantBits());</b>
-<b class="fc"><i class="no-highlight">375</i>&nbsp;        return bb.array();</b>
-<i class="no-highlight">376</i>&nbsp;    }
-<i class="no-highlight">377</i>&nbsp;
-<i class="no-highlight">378</i>&nbsp;
-<i class="no-highlight">379</i>&nbsp;}
+<b class="fc"><i class="no-highlight">235</i>&nbsp;                        throw new PersismException(Messages.NumberFormatException.message(columnName, targetType, value.getClass(), value), e);</b>
+<b class="fc"><i class="no-highlight">236</i>&nbsp;                    }</b>
+<i class="no-highlight">237</i>&nbsp;                }
+<i class="no-highlight">238</i>&nbsp;
+<i class="no-highlight">239</i>&nbsp;                break;
+<i class="no-highlight">240</i>&nbsp;
+<i class="no-highlight">241</i>&nbsp;            case characterType:
+<i class="no-highlight">242</i>&nbsp;            case CharacterType:
+<b class="fc"><i class="no-highlight">243</i>&nbsp;                log.debug(&quot;CharacterType&quot;);</b>
+<b class="fc"><i class="no-highlight">244</i>&nbsp;                break;</b>
+<i class="no-highlight">245</i>&nbsp;
+<i class="no-highlight">246</i>&nbsp;            case LocalDateType:
+<b class="fc"><i class="no-highlight">247</i>&nbsp;                log.debug(&quot;LocalDateType&quot;);</b>
+<b class="fc"><i class="no-highlight">248</i>&nbsp;                returnValue = java.sql.Date.valueOf((LocalDate) value);</b>
+<b class="fc"><i class="no-highlight">249</i>&nbsp;                break;</b>
+<i class="no-highlight">250</i>&nbsp;
+<i class="no-highlight">251</i>&nbsp;            case LocalDateTimeType:
+<b class="fc"><i class="no-highlight">252</i>&nbsp;                log.debug(&quot;LocalDateTimeType&quot;);</b>
+<b class="fc"><i class="no-highlight">253</i>&nbsp;                returnValue = Timestamp.valueOf((LocalDateTime) value);</b>
+<b class="fc"><i class="no-highlight">254</i>&nbsp;                break;</b>
+<i class="no-highlight">255</i>&nbsp;
+<i class="no-highlight">256</i>&nbsp;            case LocalTimeType:
+<b class="fc"><i class="no-highlight">257</i>&nbsp;                log.debug(&quot;LocalTimeType&quot;);</b>
+<b class="fc"><i class="no-highlight">258</i>&nbsp;                returnValue = Time.valueOf((LocalTime) value);</b>
+<b class="fc"><i class="no-highlight">259</i>&nbsp;                break;</b>
+<i class="no-highlight">260</i>&nbsp;
+<i class="no-highlight">261</i>&nbsp;            case UtilDateType:
+<i class="no-highlight">262</i>&nbsp;            case SQLDateType:
+<i class="no-highlight">263</i>&nbsp;            case TimestampType:
+<b class="fc"><i class="no-highlight">264</i>&nbsp;                if (targetType.equals(java.util.Date.class)) {</b>
+<b class="fc"><i class="no-highlight">265</i>&nbsp;                    returnValue = new java.util.Date(((Date) value).getTime());</b>
+<i class="no-highlight">266</i>&nbsp;
+<b class="fc"><i class="no-highlight">267</i>&nbsp;                } else if (targetType.equals(java.sql.Date.class)) {</b>
+<b class="fc"><i class="no-highlight">268</i>&nbsp;                    returnValue = new java.sql.Date(((Date) value).getTime());</b>
+<i class="no-highlight">269</i>&nbsp;
+<b class="fc"><i class="no-highlight">270</i>&nbsp;                } else if (targetType.equals(Timestamp.class)) {</b>
+<b class="fc"><i class="no-highlight">271</i>&nbsp;                    returnValue = new Timestamp(((Date) value).getTime());</b>
+<i class="no-highlight">272</i>&nbsp;
+<b class="fc"><i class="no-highlight">273</i>&nbsp;                } else if (targetType.equals(LocalDate.class)) {</b>
+<b class="fc"><i class="no-highlight">274</i>&nbsp;                    Date dt = new Date(((Date) value).getTime());</b>
+<b class="fc"><i class="no-highlight">275</i>&nbsp;                    returnValue = dt.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();</b>
+<i class="no-highlight">276</i>&nbsp;
+<b class="fc"><i class="no-highlight">277</i>&nbsp;                } else if (targetType.equals(LocalDateTime.class)) {</b>
+<b class="fc"><i class="no-highlight">278</i>&nbsp;                    Date dt = new Date(((Date) value).getTime());</b>
+<b class="fc"><i class="no-highlight">279</i>&nbsp;                    returnValue = dt.toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime();</b>
+<i class="no-highlight">280</i>&nbsp;
+<b class="fc"><i class="no-highlight">281</i>&nbsp;                } else if (targetType.equals(Time.class)) {</b>
+<i class="no-highlight">282</i>&nbsp;                    // Oracle doesn&#39;t seem to have Time so we use Timestamp
+<b class="fc"><i class="no-highlight">283</i>&nbsp;                    returnValue = new Time(((Date) value).getTime());</b>
+<i class="no-highlight">284</i>&nbsp;
+<b class="fc"><i class="no-highlight">285</i>&nbsp;                } else if (targetType.equals(LocalTime.class)) {</b>
+<i class="no-highlight">286</i>&nbsp;                    // Oracle.... Sigh
+<b class="fc"><i class="no-highlight">287</i>&nbsp;                    Date dt = (Date) value;</b>
+<b class="fc"><i class="no-highlight">288</i>&nbsp;                    returnValue = dt.toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime().toLocalTime();</b>
+<b class="fc"><i class="no-highlight">289</i>&nbsp;                }</b>
+<i class="no-highlight">290</i>&nbsp;                break;
+<i class="no-highlight">291</i>&nbsp;
+<i class="no-highlight">292</i>&nbsp;            case TimeType:
+<b class="fc"><i class="no-highlight">293</i>&nbsp;                log.debug(&quot;TimeType&quot;);</b>
+<b class="fc"><i class="no-highlight">294</i>&nbsp;                if (targetType.equals(LocalTime.class)) {</b>
+<b class="fc"><i class="no-highlight">295</i>&nbsp;                    returnValue = LocalTime.parse(&quot;&quot; + value);</b>
+<i class="no-highlight">296</i>&nbsp;                }
+<i class="no-highlight">297</i>&nbsp;                break;
+<i class="no-highlight">298</i>&nbsp;
+<i class="no-highlight">299</i>&nbsp;            case InstantType:
+<i class="no-highlight">300</i>&nbsp;            case OffsetDateTimeType:
+<i class="no-highlight">301</i>&nbsp;            case ZonedDateTimeType:
+<b class="nc"><i class="no-highlight">302</i>&nbsp;                log.warn(Messages.ConverterValueTypeNotYetSupported.message(valueType.getJavaType()), new Throwable());</b>
+<b class="nc"><i class="no-highlight">303</i>&nbsp;                break;</b>
+<i class="no-highlight">304</i>&nbsp;
+<i class="no-highlight">305</i>&nbsp;            case byteArrayType:
+<i class="no-highlight">306</i>&nbsp;            case ByteArrayType:
+<b class="fc"><i class="no-highlight">307</i>&nbsp;                log.debug(&quot;ByteArrayType&quot;);</b>
+<b class="fc"><i class="no-highlight">308</i>&nbsp;                if (targetType.equals(UUID.class)) {</b>
+<b class="fc"><i class="no-highlight">309</i>&nbsp;                    returnValue = asUuid((byte[]) value);</b>
+<i class="no-highlight">310</i>&nbsp;                }
+<i class="no-highlight">311</i>&nbsp;                break;
+<i class="no-highlight">312</i>&nbsp;
+<i class="no-highlight">313</i>&nbsp;            case ClobType:
+<i class="no-highlight">314</i>&nbsp;            case BlobType:
+<b class="nc"><i class="no-highlight">315</i>&nbsp;                log.warn(Messages.ConverterDoNotUseClobOrBlobAsAPropertyType.message(), new Throwable());</b>
+<b class="nc"><i class="no-highlight">316</i>&nbsp;                break;</b>
+<i class="no-highlight">317</i>&nbsp;
+<i class="no-highlight">318</i>&nbsp;            case EnumType:
+<i class="no-highlight">319</i>&nbsp;                // No need to convert it here.
+<i class="no-highlight">320</i>&nbsp;                // If it&#39;s being used for the property setter then it&#39;s OK
+<i class="no-highlight">321</i>&nbsp;                // If it&#39;s being used by setParameters it&#39;s converted to String
+<i class="no-highlight">322</i>&nbsp;                // The String case above converts from the String to the Enum
+<b class="fc"><i class="no-highlight">323</i>&nbsp;                log.debug(&quot;EnumType&quot;);</b>
+<b class="fc"><i class="no-highlight">324</i>&nbsp;                break;</b>
+<i class="no-highlight">325</i>&nbsp;
+<i class="no-highlight">326</i>&nbsp;            case UUIDType:
+<b class="fc"><i class="no-highlight">327</i>&nbsp;                log.debug(&quot;UUIDType&quot;);</b>
+<b class="fc"><i class="no-highlight">328</i>&nbsp;                if (targetType.equals(Blob.class) || targetType.equals(byte[].class) || targetType.equals(Byte[].class)) {</b>
+<b class="fc"><i class="no-highlight">329</i>&nbsp;                    returnValue = asBytes((UUID) value);</b>
+<i class="no-highlight">330</i>&nbsp;                }
+<i class="no-highlight">331</i>&nbsp;                break;
+<i class="no-highlight">332</i>&nbsp;
+<i class="no-highlight">333</i>&nbsp;            case ObjectType:
+<b class="nc"><i class="no-highlight">334</i>&nbsp;                log.debug(&quot;ObjectType&quot;);</b>
+<i class="no-highlight">335</i>&nbsp;                break;
+<i class="no-highlight">336</i>&nbsp;        }
+<b class="fc"><i class="no-highlight">337</i>&nbsp;        return returnValue;</b>
+<i class="no-highlight">338</i>&nbsp;    }
+<i class="no-highlight">339</i>&nbsp;
+<i class="no-highlight">340</i>&nbsp;    /*
+<i class="no-highlight">341</i>&nbsp;     * Used by convert for convenience - common possible parsing
+<i class="no-highlight">342</i>&nbsp;     */
+<i class="no-highlight">343</i>&nbsp;    static Date tryParseDate(Object value, Class&lt;?&gt; targetType, String columnName, DateFormat df) throws PersismException {
+<i class="no-highlight">344</i>&nbsp;        try {
+<b class="fc"><i class="no-highlight">345</i>&nbsp;            return df.parse(&quot;&quot; + value);</b>
+<b class="nc"><i class="no-highlight">346</i>&nbsp;        } catch (ParseException e) {</b>
+<b class="nc"><i class="no-highlight">347</i>&nbsp;            throw new PersismException(Messages.DateFormatException.message(e.getMessage(), columnName, targetType, value.getClass(), value), e);        }</b>
+<i class="no-highlight">348</i>&nbsp;    }
+<i class="no-highlight">349</i>&nbsp;
+<i class="no-highlight">350</i>&nbsp;    Timestamp tryParseTimestamp(Object value, Class&lt;?&gt; targetType, String columnName) throws PersismException {
+<i class="no-highlight">351</i>&nbsp;        try {
+<b class="fc"><i class="no-highlight">352</i>&nbsp;            return Timestamp.valueOf(&quot;&quot; + value);</b>
+<b class="fc"><i class="no-highlight">353</i>&nbsp;        } catch (IllegalArgumentException e) {</b>
+<b class="fc"><i class="no-highlight">354</i>&nbsp;            throw new PersismException(Messages.DateFormatException.message(e.getMessage(), columnName, targetType, value.getClass(), value), e);        }</b>
+<i class="no-highlight">355</i>&nbsp;    }
+<i class="no-highlight">356</i>&nbsp;
+<i class="no-highlight">357</i>&nbsp;    // https://stackoverflow.com/questions/17893609/convert-uuid-to-byte-that-works-when-using-uuid-nameuuidfrombytesb
+<i class="no-highlight">358</i>&nbsp;    // THANKS!
+<i class="no-highlight">359</i>&nbsp;    static UUID asUuid(byte[] bytes) {
+<b class="fc"><i class="no-highlight">360</i>&nbsp;        ByteBuffer bb = ByteBuffer.wrap(bytes);</b>
+<b class="fc"><i class="no-highlight">361</i>&nbsp;        long firstLong = bb.getLong();</b>
+<b class="fc"><i class="no-highlight">362</i>&nbsp;        long secondLong = bb.getLong();</b>
+<b class="fc"><i class="no-highlight">363</i>&nbsp;        return new UUID(firstLong, secondLong);</b>
+<i class="no-highlight">364</i>&nbsp;    }
+<i class="no-highlight">365</i>&nbsp;
+<i class="no-highlight">366</i>&nbsp;    static byte[] asBytes(UUID uuid) {
+<b class="fc"><i class="no-highlight">367</i>&nbsp;        ByteBuffer bb = ByteBuffer.wrap(new byte[16]);</b>
+<b class="fc"><i class="no-highlight">368</i>&nbsp;        bb.putLong(uuid.getMostSignificantBits());</b>
+<b class="fc"><i class="no-highlight">369</i>&nbsp;        bb.putLong(uuid.getLeastSignificantBits());</b>
+<b class="fc"><i class="no-highlight">370</i>&nbsp;        return bb.array();</b>
+<i class="no-highlight">371</i>&nbsp;    }
+<i class="no-highlight">372</i>&nbsp;
+<i class="no-highlight">373</i>&nbsp;
+<i class="no-highlight">374</i>&nbsp;}
 </div>
 </pre>
 </div>
@@ -504,7 +499,7 @@ Current scope:     <a href="../../index.html">all classes</a>
 
 <div class="footer">
     
-    <div style="float:right;">generated on 2021-05-09 09:45</div>
+    <div style="float:right;">generated on 2021-08-22 11:13</div>
 </div>
 </body>
 </html>

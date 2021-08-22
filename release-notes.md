@@ -4,7 +4,11 @@
 * Added support for Views
 * Added new upsert method to session (performs insert or update depending on if the row exists)
 * Added query 'select *' method to session
-* Changed query statements to make explicit forward only and read only 
+* Changed query statements to make explicit forward only and read only
+
+### Breaking changes
+
+* Update/Delete now also return a typed Result object containing the rows changed and modified data object.
 
 ### 1.1.0
 
