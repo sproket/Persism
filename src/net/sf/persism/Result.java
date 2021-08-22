@@ -1,7 +1,8 @@
 package net.sf.persism;
 
 /**
- * Result of an insert
+ * Result of an insert, update or delete
+ * @param <T> Type of Pojo or Record class
  */
 public final class Result<T> {
     private final int rows;

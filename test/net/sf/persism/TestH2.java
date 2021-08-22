@@ -333,6 +333,19 @@ public final class TestH2 extends BaseTest {
 
     public void testH2InsertAndReadBack() throws SQLException {
 
+        // Fail try to insert a NotTable
+        CustomerOrder customerOrder = new CustomerOrder("1243", "Abc inc", "desc", 1, null, null, false);
+
+        boolean fail = false;
+        try {
+// class net.sf.persism.dao.CustomerOrder: Insert operation not supported for @NotTable classes
+            session.insert(customerOrder);
+        } catch (PersismException e) {
+            fail = true;
+            assertEquals("message s/b class net.sf.persism.dao.CustomerOrder: Insert operation not supported for @NotTable classes",
+                    "class net.sf.persism.dao.CustomerOrder: Insert operation not supported for @NotTable classes", e.getMessage());
+        }
+        assertTrue(fail);
 
         Order order = DAOFactory.newOrder(con);
         order.setName("COW");

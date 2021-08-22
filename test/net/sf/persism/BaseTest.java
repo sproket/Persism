@@ -772,8 +772,11 @@ public abstract class BaseTest extends TestCase {
 
             session.update(testSQLTypes2);
 
-            List<DateTestSQLTypes> list = session.query(DateTestSQLTypes.class, "select * FROM DateTestSQLTypes");
-            log.info(list);
+            // Don't run this test with JTDS since it's garbage and doesn't support the sendTimeAsDateTime connection property
+            if (session.getMetaData().getConnectionType() != ConnectionTypes.JTDS) {
+                List<DateTestSQLTypes> list = session.query(DateTestSQLTypes.class, "select * FROM DateTestSQLTypes where DateAndTime <= ? AND TimeOnly <= ?", LocalDateTime.now(), LocalTime.now());
+                log.info(list);
+            }
 
             assertTrue(session.delete(testSQLTypes1).rows() > 0);
         });

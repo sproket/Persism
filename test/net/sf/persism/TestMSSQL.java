@@ -710,6 +710,21 @@ public class TestMSSQL extends BaseTest {
         roomX.setJunk("junk");
         session.insert(roomX);
 
+        boolean fail = false;
+        try {
+            // This should fail
+            RoomMissingGetter roomY = new RoomMissingGetter();
+            roomY.setDescription("room 1");
+            roomY.setIntervals(new BigDecimal(10));
+            roomY.setWeird("werid?");
+            roomY.setJunk("junk");
+            session.insert(roomY);
+        } catch (PersismException e) {
+            fail = true;
+            assertEquals("s/b Class class net.sf.persism.dao.RoomMissingGetter has no getter for property intervals", "Class class net.sf.persism.dao.RoomMissingGetter has no getter for property intervals", e.getMessage());
+        }
+        assertTrue(fail);
+
         long now = System.currentTimeMillis();
         List<Room> list = session.query(Room.class, sql("SELECT Room_no, Desc_E, Intervals, [Weird$#@]  FROM ROOMS"));
         log.info("time to read rooms: " + (System.currentTimeMillis() - now) + " size: " + list.size());

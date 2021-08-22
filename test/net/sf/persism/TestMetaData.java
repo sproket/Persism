@@ -43,6 +43,38 @@ public final class TestMetaData extends TestCase {
         session = new Session(con);
     }
 
+    public void testMessages() {
+        boolean failed = false;
+        try {
+            session.insert("junk");
+        } catch (PersismException e) {
+            log.info(e.getMessage());
+            failed = true;
+            assertEquals("s/b same message", Messages.OperationNotSupportedForJavaType.message(String.class, "Insert"), e.getMessage());
+        }
+        assertTrue(failed);
+
+        failed = false;
+        try {
+            session.update(1);
+        } catch (PersismException e) {
+            log.info(e.getMessage());
+            failed = true;
+            assertEquals("s/b same message", Messages.OperationNotSupportedForJavaType.message(Integer.class, "Update"), e.getMessage());
+        }
+        assertTrue(failed);
+
+
+        failed = false;
+        try {
+            session.delete(false);
+        } catch (PersismException e) {
+            log.info(e.getMessage());
+            failed = true;
+            assertEquals("s/b same message", Messages.OperationNotSupportedForJavaType.message(Boolean.class, "Delete"), e.getMessage());
+        }
+        assertTrue(failed);
+    }
 
     public void testGuessing() {
 

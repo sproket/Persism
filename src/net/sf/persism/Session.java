@@ -6,7 +6,10 @@ import net.sf.persism.annotations.View;
 import java.lang.reflect.Method;
 import java.math.BigDecimal;
 import java.sql.*;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
 
 import static net.sf.persism.Util.isRecord;
 
@@ -20,7 +23,7 @@ public final class Session implements AutoCloseable {
 
     private static final Log log = Log.getLogger(Session.class);
 
-    private Connection connection;
+    private final Connection connection;
 
     private MetaData metaData;
 
@@ -44,20 +47,19 @@ public final class Session implements AutoCloseable {
      * @param connection db connection
      * @param sessionKey Unique string to represent the connection URL if it is not available on the Connection metadata.
      *                   This string should start with the jdbc url string to indicate the connection type.
-     *<pre>
-     *                  jdbc:h2 = h2
-     *                  jdbc:sqlserver = MS SQL
-     *                  jdbc:oracle = Oracle
-     *                  jdbc:sqlite = SQLite
-     *                  jdbc:derby = Derby
-     *                  jdbc:mysql = MySQL/MariaDB
-     *                  jdbc:postgresql = PostgreSQL
-     *                  jdbc:firebirdsql = Firebird (Jaybird)
-     *                  jdbc:hsqldb = HSQLDB
-     *                  jdbc:ucanaccess = MS Access
-     *                  jdbc:informix = Informix
-     *
-     </pre>
+     *                   <code>
+     *                   <br> jdbc:h2 = h2
+     *                   <br> jdbc:sqlserver = MS SQL
+     *                   <br> jdbc:oracle = Oracle
+     *                   <br> jdbc:sqlite = SQLite
+     *                   <br> jdbc:derby = Derby
+     *                   <br> jdbc:mysql = MySQL/MariaDB
+     *                   <br> jbc:postgresql = PostgreSQL
+     *                   <br> jdbc:firebirdsql = Firebird (Jaybird)
+     *                   <br> jdbc:hsqldb = HSQLDB
+     *                   <br> jdbc:ucanaccess = MS Access
+     *                   <br> jdbc:informix = Informix
+     *                   </code>
      * @throws PersismException if something goes wrong
      */
     public Session(Connection connection, String sessionKey) throws PersismException {
@@ -130,14 +132,14 @@ public final class Session implements AutoCloseable {
 
     /**
      * Updates the data object in the database.
-     *
+     * @param <T> Type of Object or Record
      * @param object data object to update.
      * @return usually 1 to indicate rows changed via JDBC.
      * @throws PersismException Indicating the upcoming robot uprising.
      */
     public <T> Result<T> update(T object) throws PersismException {
 
-        checkIfView(object, "Update");
+        checkIfOkForWriteOperation(object, "Update");
 
         List<String> primaryKeys = metaData.getPrimaryKeys(object.getClass(), connection);
         if (primaryKeys.size() == 0) {
@@ -222,7 +224,7 @@ public final class Session implements AutoCloseable {
      */
     public <T> Result<T> insert(T object) throws PersismException {
 
-        checkIfView(object, "Insert");
+        checkIfOkForWriteOperation(object, "Insert");
 
         Object returnObject = object;
 
@@ -371,15 +373,15 @@ public final class Session implements AutoCloseable {
 
 
     /**
-     * Deletes the data object object from the database.
-     *
+     * Deletes the data object from the database.
+     * @param <T> Type of Object or Record
      * @param object data object to delete
      * @return usually 1 to indicate rows changed via JDBC.
      * @throws PersismException Perhaps when asteroid 1999 RQ36 hits us?
      */
     public <T> Result<T> delete(T object) throws PersismException {
 
-        checkIfView(object, "Delete");
+        checkIfOkForWriteOperation(object, "Delete");
 
         List<String> primaryKeys = metaData.getPrimaryKeys(object.getClass(), connection);
         if (primaryKeys.size() == 0) {
@@ -453,7 +455,7 @@ public final class Session implements AutoCloseable {
      * @return a list of objects of the specified class
      * @throws PersismException If something goes wrong you get a big stack trace.
      */
-    public <T> List<T> query(Class<T> objectClass) throws Exception {
+    public <T> List<T> query(Class<T> objectClass) throws PersismException {
         if (objectClass.getAnnotation(NotTable.class) != null) {
             throw new PersismException(Messages.OperationNotSupportedForNotTableQuery.message(objectClass, "QUERY"));
         }
@@ -657,9 +659,17 @@ public final class Session implements AutoCloseable {
         }
     }
 
-    private void checkIfView(Object object, String operation) {
-        if (object.getClass().getAnnotation(View.class) != null) {
-            throw new PersismException(Messages.OperationNotSupportedForView.message(object.getClass(), operation));
+    private void checkIfOkForWriteOperation(Object object, String operation) {
+        Class<?> objectClass = object.getClass();
+
+        if (objectClass.getAnnotation(View.class) != null) {
+            throw new PersismException(Messages.OperationNotSupportedForView.message(objectClass, operation));
+        }
+        if (objectClass.getAnnotation(NotTable.class) != null) {
+            throw new PersismException(Messages.OperationNotSupportedForNotTableQuery.message(objectClass, operation));
+        }
+        if (Types.getType(objectClass) != null) {
+            throw new PersismException(Messages.OperationNotSupportedForJavaType.message(objectClass, operation));
         }
     }
 

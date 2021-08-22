@@ -40,11 +40,11 @@ Add Sybase DB2 Ingres Informix hsqldb? .....
 
 TODO Handle X words Tax - Taxes, Fax - Faxes - plural rules
 
-todo     @Column(name = "IsCompound") - yeah we do a simple "is" check but I need to think about this. See determinePropertyInfo
+DONE @Column(name = "IsCompound") - yeah we do a simple "is" check but I need to think about this. See determinePropertyInfo
          private boolean compound; Find "Is" Columns so we don't need the annotation? OR just name the field isCompound - gets and sets seem to generate fine... BUT IT FAILS LOOKING FOR "compound" as the property name!
 
 
-TODO DOCUMENTATION Example how to implement Persistable
+DONE DOCUMENTATION Example how to implement Persistable
 
 TODO MAYBE https://github.com/JSQLParser/JSqlParser/releases/tag/jsqlparser-4.0
 
@@ -91,8 +91,8 @@ add the query string as a key to the Column/Property Info objects? Duplicating b
 
 DONE SQL enum to Java enum? PostgreSQL, MySQL and H2. TODO Possible with MSSQL with CHECK constraints
 
-TODO @NotTable classes should allow getters only and we can set values through fields instead. (even normal table should allow this for read only columns)
-TODO Add support for Records
+DONE @NotTable classes should allow getters only and we can set values through fields instead. (even normal table should allow this for read only columns)
+DONE Add support for Records
 
 MAVEN:
 https://www.youtube.com/watch?v=bxP9IuJbcDQ
@@ -105,7 +105,7 @@ DONE test for con.setAutoCommit(false) and commit at appropriate times. how does
 
 DONE see https://www.reddit.com/r/java/comments/lvya1x/persism_101_released_a_zero_ceremony_orm_for_java/gpghfn4/
 
-TODO money types add map to int or long in cents (future javax.money) (USELESS)
+DONE money types add map to int or long in cents (future javax.money) (USELESS)
 
 DONE Merges Logger changes and make the classes package private - check the size of the jar after
 
@@ -116,31 +116,52 @@ TODO https://stackoverflow.com/questions/1736630/sql-constraint-minvalue-maxvalu
 
 DONE test overflowing all number types - should throw various runtime exceptions if they occur
 
-TODO See about deprecating Column autoIncrement - I think all supported drivers detect this and even if you set it - why would it work? We won't get anything with getGeneratedKeys!
+DONE See about deprecating Column autoIncrement - I think all supported drivers detect this and even if you set it - why would it work? We won't get anything with getGeneratedKeys!
 
 TODO Sample Oracle DB https://docs.oracle.com/cd/E11882_01/doc.112/e26211/loe.htm
 
-IN PROGRESS Session autocommit false? https://www.reddit.com/r/java/comments/lvya1x/persism_101_released_a_zero_ceremony_orm_for_java/gpghfn4/
+DONE Session autocommit false? https://www.reddit.com/r/java/comments/lvya1x/persism_101_released_a_zero_ceremony_orm_for_java/gpghfn4/
 
 DONE POM still gets log4j logback and slf4j - FFS
 
-// todo org.apache.logging.log4j s/b log4j2 - no support for log4j1 but test BRIDGE 1.x
+// DONE org.apache.logging.log4j s/b log4j2 - no support for log4j1 but test BRIDGE 1.x
 // If existing components use Log4j 1.x and you want to have this logging routed to Log4j 2, then remove any log4j 1.x dependencies and add the following.
 // http://logging.apache.org/log4j/2.x/maven-artifacts.html
 
-todo see if contributors want mentions in the pom.xml see https://github.com/jahlborn/jackcess/blob/master/pom.xml
+
+TODO ORACLE INSERT with Generated UDDI https://www.techrepublic.com/article/oracle-tip-how-to-use-default-values-with-database-columns/
+
+**Should we have @Optional for column?** NO
+Scenario:
+
+I have a table where I may not want to select a column AND I have an associated
+Record constructor. WHY WOULD I WANT TO DO THIS? I would have to ignore for insert
+and update then.
 
 
 
-https://mkyong.com/maven/maven-jacoco-code-coverage-example/
-https://duckduckgo.com/?q=maven+generate+code+coverage
+DOCKER AND VBOX? BACK EVERYTHING UP FIRST.
+https://www.tcg.com/blog/yes-you-can-run-docker-and-virtualbox-on-windows-10-home/
 
 
-MULTI JAVA
-https://maven.apache.org/plugins/maven-compiler-plugin/examples/set-compiler-source-and-target.html
-https://maven.apache.org/plugins/maven-jar-plugin/usage.html
-https://maven.apache.org/plugins/maven-jar-plugin/
-https://www.google.com/search?q=maven-jar-plugin+build+for+Java+8&oq=maven-jar-plugin+build+for+Java+8&aqs=chrome..69i57j33i22i29i30.4055j0j4&sourceid=chrome&ie=UTF-8
+FFS
+https://stackoverflow.com/questions/36427868/failed-to-execute-goal-org-apache-maven-pluginsmaven-surefire-plugin2-12test
 
-FROM https://www.reddit.com/r/java/comments/mp96a7/your_cool_open_source_libraries/
-Maybe support https://github.com/ksuid/ksuid
+TODO https://maxdb.sap.com/
+
+TODO https://gitter.im/ maybe ....
+
+TODO CockroachDB https://www.cdata.com/drivers/cockroachdb/jdbc/ https://www.cockroachlabs.com/get-cockroachdb/
+
+TODO https://ahrefs.com/
+
+https://www.simplelists.com/
+
+TODO ADD JAVADOCS to ANNOTATION CLASSES
+
+TODO https://stackoverflow.com/questions/14163732/how-to-get-maven-metadata for dependencies web page for upload
+mvn project-info-reports:dependencies
+
+TODO https://www.logicbig.com/tutorials/core-java-tutorial/java-9-changes/platform-logging.html once we get off Java 8
+
+TODO upsert? 

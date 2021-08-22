@@ -1,8 +1,35 @@
 ## Release Notes
 
-### 1.1.0 (pending)
+### 1.2.0
+* Added support for Views
+* Added query 'select *' method to session
+* Finalized support for Informix (Tests added)
+* Changed query statements to make explicit forward only and read only
+* Improve readRecord performance
+* Added BIT column to byte property conversion 
 
-* Added support for MSAccess with UCanAccess jdbc driver
+### Breaking changes
+
+* Update/Delete now also return a typed Result object containing the rows changed and modified data object.
+
+### 1.1.0
+
+* Added support for Records! (Java 16)
+* Added preliminary support for Informix (looking for help to set up a vbox vm)
+* Fixed UPDATE statement using columns in alphabetical order (All Persism generated SQL should be in column order)
+* Fixed support for MSAccess with UCanAccess jdbc driver in Java 16
+* Fixed issue with Queries cached with missing columns
+* Fixed @Table name case sensitivity
+* Added warnings if Persism doesn't have results when querying for DatabaseMetaData
+* Added new constructor for Session to supply a fake URL for situations where the Connection metadata url returns null
+
+### Breaking changes
+
+* Insert now returns a typed Result object containing the rows changed and modified data object for cases when you insert a Record and there are defaults or autoincs to assign.
+
+### 1.0.3
+
+* Added support for MSAccess with UCanAccess jdbc driver (seems to be broken under Java 16 right now #13)
 * Added new method withTransaction() to Session - simplifying multiple operations in a single database transaction 
 * Added automatic module name sproket.github.io.persism for 9+ support
 * Added support for Log4j 2
