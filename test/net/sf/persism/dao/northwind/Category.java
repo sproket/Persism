@@ -68,7 +68,7 @@ public final class Category {
      * Convert picture data into a BufferedImage
      *
      * @return JPEG BufferedImage
-     * @throws IOException
+     * @throws IOException for IOException
      */
     public BufferedImage getImage() throws IOException {
         // Fails but maybe we could use JavaFX for this

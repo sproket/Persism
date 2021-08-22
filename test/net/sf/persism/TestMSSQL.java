@@ -591,8 +591,8 @@ public class TestMSSQL extends BaseTest {
             session.insert(barney);
         } catch (PersismException e) {
             failed = true;
-            assertEquals("message s/b 'Non-auto inc generated primary keys are not supported. Please assign your primary key value before performing an insert.'",
-                    "Non-auto inc generated primary keys are not supported. Please assign your primary key value before performing an insert.",
+            assertEquals("message s/b 'Non-auto inc generated primary keys are not supported. Please assign your primary key value before performing an insert'",
+                    "Non-auto inc generated primary keys are not supported. Please assign your primary key value before performing an insert",
                     e.getMessage());
         }
         assertTrue(failed);
@@ -685,6 +685,21 @@ public class TestMSSQL extends BaseTest {
         roomX.setWeird("werid?");
         roomX.setJunk("junk");
         session.insert(roomX);
+
+        boolean fail = false;
+        try {
+            // This should fail
+            RoomMissingGetter roomY = new RoomMissingGetter();
+            roomY.setDescription("room 1");
+            roomY.setIntervals(new BigDecimal(10));
+            roomY.setWeird("werid?");
+            roomY.setJunk("junk");
+            session.insert(roomY);
+        } catch (PersismException e) {
+            fail = true;
+            assertEquals("s/b Class class net.sf.persism.dao.RoomMissingGetter has no getter for property intervals", "Class class net.sf.persism.dao.RoomMissingGetter has no getter for property intervals", e.getMessage());
+        }
+        assertTrue(fail);
 
         long now = System.currentTimeMillis();
         List<Room> list = session.query(Room.class, "SELECT Room_no, Desc_E, Intervals, [Weird$#@]  FROM ROOMS");
@@ -926,7 +941,7 @@ public class TestMSSQL extends BaseTest {
         } catch (PersismException e) {
             shouldHaveFailed = true;
             log.info(e.getMessage(), e);
-            assertEquals("message should be ", "Object class net.sf.persism.dao.ContactFail was not properly initialized. Some properties not initialized in the queried columns (fail).", e.getMessage());
+            assertEquals("message should be ", "Object class net.sf.persism.dao.ContactFail was not properly initialized. Some properties not initialized in the queried columns (fail)", e.getMessage());
         }
 
         assertEquals("should have failed", true, shouldHaveFailed);

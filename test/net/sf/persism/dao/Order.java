@@ -16,7 +16,7 @@ import java.time.LocalDateTime;
  * Date: 9/21/11
  * Time: 2:30 PM
  */
-public class Order extends PersistableObject {
+public class Order extends PersistableObject<Order> {
 
     private long id;
     private String name;

@@ -1,5 +1,17 @@
 ## Release Notes
 
+### 1.2.0
+* Added support for Views
+* Added query 'select *' method to session
+* Finalized support for Informix (Tests added)
+* Changed query statements to make explicit forward only and read only
+* Improve readRecord performance
+* Added BIT column to byte property conversion 
+
+### Breaking changes
+
+* Update/Delete now also return a typed Result object containing the rows changed and modified data object.
+
 ### 1.1.0
 
 * Added support for Records! (Java 16)

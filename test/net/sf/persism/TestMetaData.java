@@ -2,22 +2,18 @@ package net.sf.persism;
 
 import junit.framework.TestCase;
 import net.sf.persism.dao.ByteData;
-import net.sf.persism.dao.Contact;
 import net.sf.persism.dao.OracleOrder;
-import net.sf.persism.dao.Order;
-import org.slf4j.LoggerFactory;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.sql.Connection;
 import java.sql.DriverManager;
-import java.sql.SQLException;
 import java.util.*;
 
-import static java.lang.System.in;
 import static java.lang.System.out;
-import static net.sf.persism.UtilsForTests.*;
+import static net.sf.persism.UtilsForTests.createHomeFolder;
+import static net.sf.persism.UtilsForTests.replace;
 
 public final class TestMetaData extends TestCase {
 
@@ -82,9 +78,17 @@ public final class TestMetaData extends TestCase {
             HashMap indexMap = new HashMap();
 
             String query = "select * from people where (first_name = :name or last_name = :name) and address = :address";
+            log.info(query);
             String parsedQuery = parse(query, indexMap);
             log.info(parsedQuery);
             log.info(indexMap);
+            StringBuilder sb = new StringBuilder();
+            String sep = "";
+            for (int j = 0; j < 10; j++) {
+                sb.append(sep).append(j);
+                sep = ", ";
+            }
+            out.println(sb);
 
         } catch (Exception e) {
             log.error(e.getMessage(), e);
