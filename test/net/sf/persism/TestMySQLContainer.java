@@ -1,16 +1,11 @@
 package net.sf.persism;
 
 import net.sf.persism.categories.TestContainerDB;
-import net.sf.persism.dao.Customer;
-import net.sf.persism.dao.Regions;
 import org.junit.ClassRule;
 import org.junit.experimental.categories.Category;
 import org.testcontainers.containers.MySQLContainer;
 
 import java.sql.DriverManager;
-import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * @author Dan Howard

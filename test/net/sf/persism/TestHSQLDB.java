@@ -5,9 +5,9 @@ import org.junit.experimental.categories.Category;
 
 import java.sql.DriverManager;
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Properties;
+
+import static net.sf.persism.UtilsForTests.isViewInDatabase;
 
 @Category(LocalDB.class)
 public final class TestHSQLDB extends BaseTest {
@@ -132,6 +132,17 @@ public final class TestHSQLDB extends BaseTest {
             sql = "DROP TABLE SavedGames";
             executeCommand(sql, con);
         }
+
+        if (isViewInDatabase("CustomerInvoice", con)) {
+            executeCommand("DROP VIEW CustomerInvoice", con);
+        }
+
+        sql = "CREATE VIEW CustomerInvoice AS\n" +
+                " SELECT c.Customer_ID, c.Company_Name, i.Invoice_ID, i.Status, i.Created AS DateCreated, i.PAID, i.Quantity\n" +
+                "       FROM Invoices i\n" +
+                "       JOIN Customers c ON i.Customer_ID = c.Customer_ID\n" +
+                "       WHERE i.Status = 1\n";
+        executeCommand(sql, con);
 
         sql = "CREATE TABLE TABLEMULTIPRIMARY ( " +
                 " OrderID INT NOT NULL, " +
@@ -268,7 +279,6 @@ public final class TestHSQLDB extends BaseTest {
                 "CREATED_ON DATETIME DEFAULT NOW()" +
                 ") ";
         executeCommand(sql, con);
-
 
 
     }

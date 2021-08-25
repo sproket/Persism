@@ -8,13 +8,15 @@ import java.io.File;
 import java.math.BigDecimal;
 import java.nio.file.Files;
 import java.sql.*;
-import java.time.*;
-import java.util.*;
+import java.time.Instant;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.Date;
+import java.util.*;
 
 import static net.sf.persism.Parameters.*;
-import static net.sf.persism.Parameters.none;
-import static net.sf.persism.SQL.*;
+import static net.sf.persism.SQL.sql;
+import static net.sf.persism.SQL.where;
 
 /**
  * Comments for TestH2 go here.
@@ -305,12 +307,13 @@ public final class TestH2 extends BaseTest {
 
         Contact contact = getContactForTest();
         String sql = session.getMetaData().getDefaultSelectStatement(contact.getClass(), con);
-
+log.info("testContactTable SQL for : " + Contact.class + " " + sql);
         // this works
         Contact other = new Contact();
         other.setIdentity(contact.getIdentity());
         session.fetch(other);
 
+        // UUID tests
         // TODO Fails with some DBs unless you convert yourself. the question here is how to allow a user to use the converter
         byte[] uuid = Converter.asBytes(contact.getIdentity());
         List<Contact> contacts = session.query(Contact.class, sql(sql), params((Object) uuid));
@@ -319,6 +322,8 @@ public final class TestH2 extends BaseTest {
         // todo it can be done this way but it can only work if its a primary key - we don't detect foreign keys.
         contacts = session.query(Contact.class, sql(sql), keys(contact.getIdentity()));
         log.info(contacts);
+
+
 
     }
 
@@ -338,6 +343,8 @@ public final class TestH2 extends BaseTest {
         log.info(bd);
 
         session.query(ByteData.class, sql("select * from ByteData"));
+
+        session.query(ByteData.class);
     }
 
     public void testH2InsertAndReadBack() throws SQLException {
@@ -669,6 +676,23 @@ public final class TestH2 extends BaseTest {
 //        sg = session.fetch(SavedGame.class, proc("spSearchSilver"), params(199));
     }
 
+    public void testCustomerInvoiceView2() {
+        List<Customer> customers = session.query(Customer.class, keys(1, 2, 3));
+
+        List<CustomerInvoiceTestView> byKeys = session.query(CustomerInvoiceTestView.class, keys(1, 2, 3));
+        log.warn(session.getMetaData().getSelectStatement(CustomerInvoiceTestView.class, con));
+        log.warn(session.getMetaData().getSelectStatement(Customer.class, con));
+
+        // session.getMetaData().
+        List<CustomerInvoiceTestView> oldWay = session.query(CustomerInvoiceTestView.class, "SELECT * FROM CustomerInvoice WHERE 1=?", 1);
+
+        // both should fail
+        // List<CustomerInvoiceResult> x = session.query(CustomerInvoiceResult.class, params(1, 2, 3));
+        // List<CustomerInvoiceResult> y = session.query(CustomerInvoiceResult.class, keys(1, 2, 3));
+
+
+    }
+
     public void testCustomerInvoiceView() {
         // todo add data and test results
         Customer customer = new Customer();
@@ -694,6 +718,7 @@ public final class TestH2 extends BaseTest {
         list2 = session.query(CustomerInvoiceTestView.class, where(":companyName = ?"), params("ABC Inc"));
         list2 = session.query(CustomerInvoiceTestView.class, sql("SELECT * FROM CustomerInvoice"));
 
+
         assertNotNull(customerInvoiceTestView);
 
         boolean fail = false;
@@ -701,7 +726,7 @@ public final class TestH2 extends BaseTest {
             session.insert(customerInvoiceTestView); // not supported error
         } catch (PersismException e) {
             log.info(e.getMessage());
-            assertEquals("s/b Operation not supported for Views.", Messages.OperationNotSupportedForView.message("Insert"), e.getMessage());
+            assertEquals("s/b Operation not supported for Views.", Messages.OperationNotSupportedForView.message(customerInvoiceTestView.getClass(), "Insert"), e.getMessage());
             fail = true;
         }
         assertTrue(fail);
@@ -711,7 +736,7 @@ public final class TestH2 extends BaseTest {
             session.update(customerInvoiceTestView);
         } catch (PersismException e) {
             log.info(e.getMessage());
-            assertEquals("s/b Operation not supported for Views.", Messages.OperationNotSupportedForView.message("Update"), e.getMessage());
+            assertEquals("s/b Operation not supported for Views.", Messages.OperationNotSupportedForView.message(customerInvoiceTestView.getClass(), "Update"), e.getMessage());
             fail = true;
         }
         assertTrue(fail);
@@ -721,7 +746,7 @@ public final class TestH2 extends BaseTest {
             session.delete(customerInvoiceTestView);
         } catch (PersismException e) {
             log.info(e.getMessage());
-            assertEquals("s/b Operation not supported for Views.", Messages.OperationNotSupportedForView.message("Delete"), e.getMessage());
+            assertEquals("s/b Operation not supported for Views.", Messages.OperationNotSupportedForView.message(customerInvoiceTestView.getClass(), "Delete"), e.getMessage());
             fail = true;
         }
         assertTrue(fail);
@@ -731,7 +756,7 @@ public final class TestH2 extends BaseTest {
             session.upsert(customerInvoiceTestView);
         } catch (PersismException e) {
             log.info(e.getMessage());
-            assertEquals("s/b Operation not supported for Views.", Messages.OperationNotSupportedForView.message("Upsert"), e.getMessage());
+            assertEquals("s/b Operation not supported for Views.", Messages.OperationNotSupportedForView.message(customerInvoiceTestView.getClass(), "Upsert"), e.getMessage());
             fail = true;
         }
         assertTrue(fail);
@@ -755,9 +780,9 @@ public final class TestH2 extends BaseTest {
         // select * seems to return SQL itself as col 1?
         // Customer_ID, Company_Name, Invoice_ID, Status, DateCreated, PAID, Quantity
         String sql =
-                    """
-                    SELECT * FROM "CUSTOMERINVOICE"
-                """;
+                """
+                            SELECT * FROM "CUSTOMERINVOICE"
+                        """;
         list = session.query(CustomerInvoice.class, sql(sql), none());
         sql = """
                         SELECT Customer_ID, Company_Name, Invoice_ID, Status, DateCreated, PAID, Quantity FROM CUSTOMERINVOICE

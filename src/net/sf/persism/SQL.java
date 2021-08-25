@@ -17,6 +17,13 @@ public final class SQL {
         this.sql = sql;
     }
 
+    SQL(SQL sql) {
+        this.storedProc = sql.storedProc;
+        this.sql = sql.sql;
+        this.whereOnly = sql.whereOnly;
+        this.knownSQL = sql.knownSQL;
+    }
+
     /**
      * Static initializer for a new SQL string
      * @param sql String

@@ -144,3 +144,6 @@ https://www.google.com/search?q=maven-jar-plugin+build+for+Java+8&oq=maven-jar-p
 
 FROM https://www.reddit.com/r/java/comments/mp96a7/your_cool_open_source_libraries/
 Maybe support https://github.com/ksuid/ksuid
+
+TODO idea plugin - generate classes for Tables/Views (Views should be records) + code assist for property names with where() method
+TODO could/should we support javax.persistence annotations?

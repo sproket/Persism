@@ -9,22 +9,22 @@
     <version>2.0.0-beta</version>
     <packaging>jar</packaging>
 
-<!--    <reporting>-->
-<!--        <plugins>-->
-<!--            <plugin>-->
-<!--                <groupId>org.codehaus.mojo</groupId>-->
-<!--                <artifactId>cobertura-maven-plugin</artifactId>-->
-<!--                <version>2.7</version>-->
-<!--                <configuration>-->
-<!--                    <formats>-->
-<!--                        <format>html</format>-->
-<!--                        <format>xml</format>-->
-<!--                    </formats>-->
-<!--                    <check/>-->
-<!--                </configuration>-->
-<!--            </plugin>-->
-<!--        </plugins>-->
-<!--    </reporting>-->
+    <!--    <reporting>-->
+    <!--        <plugins>-->
+    <!--            <plugin>-->
+    <!--                <groupId>org.codehaus.mojo</groupId>-->
+    <!--                <artifactId>cobertura-maven-plugin</artifactId>-->
+    <!--                <version>2.7</version>-->
+    <!--                <configuration>-->
+    <!--                    <formats>-->
+    <!--                        <format>html</format>-->
+    <!--                        <format>xml</format>-->
+    <!--                    </formats>-->
+    <!--                    <check/>-->
+    <!--                </configuration>-->
+    <!--            </plugin>-->
+    <!--        </plugins>-->
+    <!--    </reporting>-->
 
     <build>
         <sourceDirectory>./src</sourceDirectory>
@@ -32,9 +32,9 @@
         <testResources>
             <testResource>
                 <directory>./test</directory>
-<!--                <includes>-->
-<!--                    <include>*.*</include>-->
-<!--                </includes>-->
+                <!--                <includes>-->
+                <!--                    <include>*.*</include>-->
+                <!--                </includes>-->
             </testResource>
         </testResources>
         <plugins>
@@ -46,11 +46,9 @@
                 <configuration>
                     <source>16</source>
                     <target>16</target>
-                    <compilerArgs>
-<!--                        <arg>&#45;&#45;enable-preview</arg>-->
-<!--                        <arg>&#45;&#45;release 8</arg>-->
-<!-- DO NOT USE - NON-STANDARD <arg>-parameters</arg>-->
-                    </compilerArgs>
+<!--                    <compilerArgs>-->
+<!--                        <arg>-parameters</arg>-->
+<!--                    </compilerArgs>-->
                 </configuration>
             </plugin>
             <plugin>
@@ -115,31 +113,31 @@
                 </configuration>
             </plugin>
 
-<!--            <plugin>-->
-<!--                <groupId>org.codehaus.mojo</groupId>-->
-<!--                <artifactId>cobertura-maven-plugin</artifactId>-->
-<!--                <version>2.7</version>-->
+            <!--            <plugin>-->
+            <!--                <groupId>org.codehaus.mojo</groupId>-->
+            <!--                <artifactId>cobertura-maven-plugin</artifactId>-->
+            <!--                <version>2.7</version>-->
 
-<!--                <configuration>-->
-<!--                    <instrumentation>-->
-<!--                        <ignores>-->
-<!--                            <ignore>com.example.boringcode.*</ignore>-->
-<!--                        </ignores>-->
-<!--                        <excludes>-->
-<!--                            <exclude>com/example/dullcode/**/*.class</exclude>-->
-<!--                            <exclude>com/example/**/*Test.class</exclude>-->
-<!--                        </excludes>-->
-<!--                    </instrumentation>-->
-<!--                    <check/>-->
-<!--                </configuration>-->
-<!--                <executions>-->
-<!--                    <execution>-->
-<!--                        <goals>-->
-<!--                            <goal>clean</goal>-->
-<!--                        </goals>-->
-<!--                    </execution>-->
-<!--                </executions>-->
-<!--            </plugin>-->
+            <!--                <configuration>-->
+            <!--                    <instrumentation>-->
+            <!--                        <ignores>-->
+            <!--                            <ignore>com.example.boringcode.*</ignore>-->
+            <!--                        </ignores>-->
+            <!--                        <excludes>-->
+            <!--                            <exclude>com/example/dullcode/**/*.class</exclude>-->
+            <!--                            <exclude>com/example/**/*Test.class</exclude>-->
+            <!--                        </excludes>-->
+            <!--                    </instrumentation>-->
+            <!--                    <check/>-->
+            <!--                </configuration>-->
+            <!--                <executions>-->
+            <!--                    <execution>-->
+            <!--                        <goals>-->
+            <!--                            <goal>clean</goal>-->
+            <!--                        </goals>-->
+            <!--                    </execution>-->
+            <!--                </executions>-->
+            <!--            </plugin>-->
 
         </plugins>
     </build>
@@ -476,18 +474,18 @@
 
         <!-- https://mvnrepository.com/artifact/org.codehaus.mojo/cobertura-maven-plugin -->
         <!-- DOES NOT WORK with JAVA 8 + -->
-<!--        <dependency>-->
-<!--            <groupId>org.codehaus.mojo</groupId>-->
-<!--            <artifactId>cobertura-maven-plugin</artifactId>-->
-<!--            <version>2.7</version>-->
-<!--            <scope>test</scope>-->
-<!--            <exclusions>-->
-<!--                <exclusion>-->
-<!--                    <groupId>com.sun</groupId>-->
-<!--                    <artifactId>tools</artifactId>-->
-<!--                </exclusion>-->
-<!--            </exclusions>-->
-<!--        </dependency>-->
+        <!--        <dependency>-->
+        <!--            <groupId>org.codehaus.mojo</groupId>-->
+        <!--            <artifactId>cobertura-maven-plugin</artifactId>-->
+        <!--            <version>2.7</version>-->
+        <!--            <scope>test</scope>-->
+        <!--            <exclusions>-->
+        <!--                <exclusion>-->
+        <!--                    <groupId>com.sun</groupId>-->
+        <!--                    <artifactId>tools</artifactId>-->
+        <!--                </exclusion>-->
+        <!--            </exclusions>-->
+        <!--        </dependency>-->
 
 
     </dependencies>

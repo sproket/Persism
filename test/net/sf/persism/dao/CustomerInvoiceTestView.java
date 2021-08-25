@@ -1,5 +1,6 @@
 package net.sf.persism.dao;
 
+import net.sf.persism.annotations.Column;
 import net.sf.persism.annotations.View;
 
 import java.util.Date;
@@ -10,7 +11,10 @@ import java.util.Date;
 @View("CustomerInvoice")
 public final class CustomerInvoiceTestView {
 
+    @Column(primary = true)
     private String customerId;
+
+    //@Column(primary = true) // TODO super fucked up to do this. Should we say no to this method with View?????? How would know the primary key order..?
     private String companyName;
     private long invoiceId;
     private Date dateCreated;

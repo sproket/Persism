@@ -16,7 +16,7 @@ import static net.sf.persism.Util.*;
 
 /**
  * Meta data collected in a map singleton based on connection url
- *
+ * todo decide what or IF we want to expose any methods here.
  * @author Dan Howard
  * @since 3/31/12 4:19 PM
  */
@@ -31,6 +31,7 @@ final class MetaData {
     // column to property map for each class
     private Map<Class<?>, Map<String, PropertyInfo>> propertyInfoMap = new ConcurrentHashMap<>(32);
     private Map<Class<?>, Map<String, ColumnInfo>> columnInfoMap = new ConcurrentHashMap<>(32);
+    private Map<Class<?>, List<String>> propertyNames = new ConcurrentHashMap<>(32);
 
     // table/view name for each class
     private Map<Class<?>, String> tableOrViewMap = new ConcurrentHashMap<>(32);
@@ -124,17 +125,18 @@ final class MetaData {
 
     // Should only be called IF the map does not contain the column meta information yet.
     private synchronized <T> Map<String, PropertyInfo> determinePropertyInfo(Class<T> objectClass, ResultSet rs) {
-        // double check map - note this could be called with a Query were we never have that in here
+        // double check map - note this could be called with a Query where we never have that in here
         if (propertyInfoMap.containsKey(objectClass)) {
             return propertyInfoMap.get(objectClass);
         }
 
+        List<String> propertyNames = new ArrayList<>(32);
         try {
             ResultSetMetaData rsmd = rs.getMetaData();
             Collection<PropertyInfo> properties = getPropertyInfo(objectClass);
 
             int columnCount = rsmd.getColumnCount();
-            //Map<String, PropertyInfo> columns = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
+
             Map<String, PropertyInfo> columns = new LinkedHashMap<>(columnCount);
             for (int j = 1; j <= columnCount; j++) {
                 String realColumnName = rsmd.getColumnLabel(j);
@@ -163,6 +165,7 @@ final class MetaData {
 
                 if (foundProperty != null) {
                     columns.put(realColumnName, foundProperty);
+                    propertyNames.add(foundProperty.propertyName);
                 } else {
                     log.warn(Messages.NoPropertyFoundForColumn.message(realColumnName, objectClass));
                 }
@@ -171,9 +174,16 @@ final class MetaData {
             // Do not put query classes into the metadata. It's possible the 1st run has a query with missing columns
             // any calls afterward would fail because I never would refresh the columns again. Table is fine since we
             // can do a SELECT * to get all columns up front but we can't do that with a query.
+            //if (objectClass.getAnnotation(NotTable.class) == null) {
+
+            // If we have properties > columns then we will later have an uninitialized object which is an error
+            // so in that case, we won't cache this. The assumption is that in the case of a long-running app which
+            // may catch and continue, we would always have a bad cache.
+            //if (properties.size() <= columnCount) {
             if (objectClass.getAnnotation(NotTable.class) == null) {
                 propertyInfoMap.put(objectClass, columns);
             }
+            this.propertyNames.put(objectClass, propertyNames);
 
             return columns;
 
@@ -724,7 +734,7 @@ final class MetaData {
     }
 
     /**
-     * SQL SELECT COLUMNS ONLY
+     * SQL SELECT COLUMNS ONLY - make public? or put a delegate somewhere else?
      *
      * @param objectClass
      * @param connection
@@ -847,10 +857,13 @@ final class MetaData {
     }
 
     <T> Map<String, PropertyInfo> getQueryColumnsPropertyInfo(Class<T> objectClass, ResultSet rs) throws PersismException {
-        // should not be mapped since ResultSet could contain different # of columns at different times.
+        // should not be mapped since ResultSet could contain different # of columns at different times. OK NOW. If properties > columns we won't cache it
+        // nope breaks records tests
 //        if (propertyInfoMap.containsKey(objectClass)) {
 //            return propertyInfoMap.get(objectClass);
 //        }
+
+        log.error("MOO getQueryColumnsPropertyInfo");
 
         return determinePropertyInfo(objectClass, rs);
     }
@@ -863,7 +876,6 @@ final class MetaData {
     }
 
     <T> String getTableName(Class<T> objectClass) {
-
         if (tableOrViewMap.containsKey(objectClass)) {
             return tableOrViewMap.get(objectClass);
         }
@@ -871,7 +883,11 @@ final class MetaData {
         return determineTable(objectClass);
     }
 
-    // internal version to retrieve meta information about this Table or View's columns
+    <T> List<String> getPropertyNames(Class<T> objectClass) {
+        return propertyNames.get(objectClass);
+    }
+
+    // internal version to retrieve meta information about this table's columns
     // at the same time we find the table name itself.
     private <T> String getTableName(Class<T> objectClass, Connection connection) {
 

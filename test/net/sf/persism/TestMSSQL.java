@@ -690,7 +690,7 @@ public class TestMSSQL extends BaseTest {
         assertEquals("should only have 1 proc in the list", 1, list.size());
 
         Procedure proc = list.get(0);
-        int result = session.delete(proc);
+        int result = session.delete(proc).rows();
         assertEquals("Should be 1 for delete", 1, result);
     }
 

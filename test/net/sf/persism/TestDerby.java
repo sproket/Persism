@@ -1,6 +1,5 @@
 package net.sf.persism;
 
-import net.sf.persism.categories.ExternalDB;
 import net.sf.persism.categories.LocalDB;
 import net.sf.persism.dao.Contact;
 import net.sf.persism.dao.Customer;
@@ -9,16 +8,15 @@ import net.sf.persism.dao.Order;
 import org.junit.experimental.categories.Category;
 
 import java.sql.*;
-import java.sql.Date;
-import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.time.LocalTime;
 import java.util.*;
 import java.util.stream.Collectors;
 
 import static net.sf.persism.Parameters.params;
 import static net.sf.persism.SQL.where;
+import static net.sf.persism.UtilsForTests.isTableInDatabase;
+import static net.sf.persism.UtilsForTests.isViewInDatabase;
 
 /**
  * Comments for TestDerby go here.
@@ -68,7 +66,7 @@ public final class TestDerby extends BaseTest {
     protected void createTables() throws SQLException {
         List<String> commands = new ArrayList<String>(12);
         String sql;
-        if (UtilsForTests.isTableInDatabase("Orders", con)) {
+        if (isTableInDatabase("Orders", con)) {
             sql = "DROP TABLE Orders";
             commands.add(sql);
         }
@@ -88,7 +86,11 @@ public final class TestDerby extends BaseTest {
 
         commands.add(sql);
 
-        if (UtilsForTests.isTableInDatabase("Customers", con)) {
+        if (isViewInDatabase("CustomerInvoice", con)) {
+            commands.add("DROP VIEW CustomerInvoice");
+        }
+
+        if (isTableInDatabase("Customers", con)) {
             commands.add("DROP TABLE Customers");
         }
 
@@ -111,7 +113,7 @@ public final class TestDerby extends BaseTest {
                 " TestLocalDateTime TIMESTAMP " +
                 ") ");
 
-        if (UtilsForTests.isTableInDatabase("Invoices", con)) {
+        if (isTableInDatabase("Invoices", con)) {
             commands.add("DROP TABLE Invoices");
         }
 
@@ -129,8 +131,14 @@ public final class TestDerby extends BaseTest {
                 " Discount NUMERIC(10,3) NOT NULL " +
                 ") ");
 
+        sql = "CREATE VIEW CustomerInvoice AS\n" +
+                " SELECT c.Customer_ID, c.Company_Name, i.Invoice_ID, i.Status, i.Created AS DateCreated, i.PAID, i.Quantity\n" +
+                "       FROM Invoices i\n" +
+                "       JOIN Customers c ON i.Customer_ID = c.Customer_ID\n" +
+                "       WHERE i.Status = 1\n";
+        commands.add(sql);
 
-        if (UtilsForTests.isTableInDatabase("TABLEMULTIPRIMARY", con)) {
+        if (isTableInDatabase("TABLEMULTIPRIMARY", con)) {
             commands.add("DROP TABLE TABLEMULTIPRIMARY");
         }
 
@@ -145,7 +153,7 @@ public final class TestDerby extends BaseTest {
 
         executeCommands(commands, con);
 
-        if (UtilsForTests.isTableInDatabase("Contacts", con)) {
+        if (isTableInDatabase("Contacts", con)) {
             executeCommand("DROP TABLE Contacts", con);
         }
 
@@ -179,7 +187,7 @@ public final class TestDerby extends BaseTest {
 
         executeCommand(sql, con);
 
-        if (UtilsForTests.isTableInDatabase("DateTestLocalTypes", con)) {
+        if (isTableInDatabase("DateTestLocalTypes", con)) {
             executeCommand("DROP TABLE DateTestLocalTypes", con);
         }
 
@@ -193,7 +201,7 @@ public final class TestDerby extends BaseTest {
 
         executeCommand(sql, con);
 
-        if (UtilsForTests.isTableInDatabase("DateTestSQLTypes", con)) {
+        if (isTableInDatabase("DateTestSQLTypes", con)) {
             executeCommand("DROP TABLE DateTestSQLTypes", con);
         }
 
@@ -207,7 +215,7 @@ public final class TestDerby extends BaseTest {
 
         executeCommand(sql, con);
 
-        if (UtilsForTests.isTableInDatabase("RecordTest1", con)) {
+        if (isTableInDatabase("RecordTest1", con)) {
             executeCommand("DROP TABLE RecordTest1", con);
         }
         sql = "CREATE TABLE RecordTest1 ( " +
@@ -218,7 +226,7 @@ public final class TestDerby extends BaseTest {
                 ") ";
         executeCommand(sql, con);
 
-        if (UtilsForTests.isTableInDatabase("RecordTest2", con)) {
+        if (isTableInDatabase("RecordTest2", con)) {
             executeCommand("DROP TABLE RecordTest2", con);
         }
         sql = "CREATE TABLE RecordTest2 ( " +

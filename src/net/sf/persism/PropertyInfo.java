@@ -20,7 +20,7 @@ final class PropertyInfo {
     Field field;
     boolean readOnly;
 
-    Map<Class<? extends Annotation>, Annotation> annotations = new HashMap<Class<? extends Annotation>, Annotation>(4);
+    Map<Class<? extends Annotation>, Annotation> annotations = new HashMap<>(4);
 
     Annotation getAnnotation(Class<? extends  Annotation> annotationClass) {
         return annotations.get(annotationClass);

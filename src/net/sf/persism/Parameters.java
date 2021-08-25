@@ -1,16 +1,17 @@
 package net.sf.persism;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
+import java.util.*;
 
 /**
  * Helper Class to represent parameters to a query.
  */
 public final class Parameters {
     List<Object> parameters;
-    boolean okToVerify = false;
+    Map<String, Object> namedParameters;
+
+    boolean okToVerify = false; // todo ? what for?
     boolean areKeys = false;
+    boolean areNamed = false;
 
     private static final Parameters none = new Parameters();
 
@@ -24,8 +25,15 @@ public final class Parameters {
         this.parameters = new ArrayList<>(Arrays.asList(parameters));
     }
 
+    Parameters(Map<String, Object> params) {
+        this();
+        areNamed = true;
+        namedParameters = params;
+    }
+
     /**
      * Static initializer for a new set of Parameters
+     *
      * @param values varargs list of arbitrary parameters for a query.
      * @return new Parameters object
      */
@@ -34,7 +42,17 @@ public final class Parameters {
     }
 
     /**
+     * Static initializer for named parameters
+     * @param nameValuePair - use Map.of("key1", value, "key2", value) etc.
+     * @return new Parameters object
+     */
+    public static Parameters named(Map<String, Object> nameValuePair) {
+        return new Parameters(nameValuePair);
+    }
+
+    /**
      * Static initializer for a new set of Parameters indicating that they are primary key values
+     *
      * @param values varargs list of arbitrary parameters for a query.
      * @return new Parameters object
      */
@@ -47,6 +65,7 @@ public final class Parameters {
 
     /**
      * Represents no Parameters
+     *
      * @return empty array instance of Parameters
      */
     public static Parameters none() {
@@ -69,10 +88,28 @@ public final class Parameters {
         parameters.set(index, parameter);
     }
 
-    /**
-     * Format of Parameters suitable for passing to a JDBC statement.
-     * @return Object array of parameter values.
-     */
+    void setParameterMap(Map<String, List<Integer>> parameterMap) {
+        if (areNamed) {
+            // TODO note we max out at 32. Good enough?
+            Object[] arr = new Object[32];
+
+            parameterMap.keySet().forEach((key) -> {
+                Object value = namedParameters.get(key);
+
+                List<Integer> list = parameterMap.get(key);
+                for (Integer integer : list) {
+                    arr[integer - 1] = value;
+                }
+            });
+            List<Object> newParams = new LinkedList<>(Arrays.asList(arr));
+            newParams.removeAll(Collections.singleton(null));
+            parameters.clear();
+            parameters.addAll(newParams);
+        } else {
+            throw new Error("wtf? why would I call it in this case? BUG!");
+        }
+    }
+
     Object[] toArray() {
         return parameters.toArray();
     }

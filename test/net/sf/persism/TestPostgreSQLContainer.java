@@ -1,19 +1,11 @@
 package net.sf.persism;
 
 import net.sf.persism.categories.TestContainerDB;
-import net.sf.persism.dao.Contact;
-import net.sf.persism.dao.Customer;
 import org.junit.ClassRule;
 import org.junit.experimental.categories.Category;
 import org.testcontainers.containers.PostgreSQLContainer;
 
 import java.sql.*;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.LocalTime;
-import java.time.ZoneId;
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * Comments for TestPostgreSQL go here.

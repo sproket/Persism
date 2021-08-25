@@ -1,15 +1,10 @@
 package net.sf.persism;
 
-import com.carrotsearch.junitbenchmarks.BenchmarkRule;
 import net.sf.persism.categories.ExternalDB;
 import net.sf.persism.dao.Customer;
 import net.sf.persism.dao.DAOFactory;
 import net.sf.persism.dao.Order;
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
-import org.junit.Rule;
 import org.junit.experimental.categories.Category;
-import org.junit.rules.TestRule;
 
 import java.sql.DriverManager;
 import java.sql.SQLException;

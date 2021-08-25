@@ -8,21 +8,11 @@ package net.sf.persism;
  */
 
 import net.sf.persism.categories.TestContainerDB;
-import net.sf.persism.dao.*;
 import org.junit.ClassRule;
 import org.junit.experimental.categories.Category;
 import org.testcontainers.containers.MSSQLServerContainer;
 
-import java.math.BigDecimal;
 import java.sql.*;
-import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.UUID;
-
-import static net.sf.persism.UtilsForTests.*;
 
 @Category(TestContainerDB.class)
 public final class TestMSSQLContainer extends TestMSSQL {

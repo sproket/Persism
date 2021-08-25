@@ -24,7 +24,7 @@ public record CustomerOrderRec(String customerId,
     //    @ConstructorProperties({"id", "filename"})
     public CustomerOrderRec {
         // Note this constructor is not in the objectClass.getConstructors() GOOD?
-        System.out.println("CustomerOrderRec");
+        System.out.println("CustomerOrderRec canonical constructor...");
     }
 
     @ConstructorProperties({"customerId", "companyName", "description", "orderId"})

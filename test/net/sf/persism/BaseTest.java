@@ -2,10 +2,7 @@ package net.sf.persism;
 
 import junit.framework.TestCase;
 import net.sf.persism.dao.*;
-import net.sf.persism.dao.records.CustomerOrderRec;
-import net.sf.persism.dao.records.CustomerOrderGarbage;
-import net.sf.persism.dao.records.RecordTest1;
-import net.sf.persism.dao.records.RecordTest2;
+import net.sf.persism.dao.records.*;
 
 import java.lang.reflect.InvocationTargetException;
 import java.math.BigDecimal;
@@ -20,6 +17,7 @@ import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
 import java.util.*;
 
+import static java.util.Comparator.comparing;
 import static net.sf.persism.Parameters.*;
 import static net.sf.persism.SQL.*;
 
@@ -351,7 +349,7 @@ public abstract class BaseTest extends TestCase {
         StringBuilder sb;
         List<CustomerOrderRec> results;
 
-        log.error("testQueryResultRecord");
+        log.error("testQueryResultRecord*************************************");
         queryDataSetup();
 
         sb = new StringBuilder();
@@ -365,6 +363,7 @@ public abstract class BaseTest extends TestCase {
         results = session.query(CustomerOrderRec.class, sql(sql));
         log.info(results);
         assertEquals("size should be 4", 4, results.size());
+
 
         // ORDER 1 s/b paid = true others paid = false
         for (CustomerOrderRec customerOrder : results) {
@@ -387,10 +386,10 @@ public abstract class BaseTest extends TestCase {
         sb.append(" JOIN Customers c ON o.Customer_ID = c.Customer_ID");
 
         sql = sb.toString();
-        log.info(sql);
+        log.info("testQueryResultRecord: " + sql);
 
         var fail = session.query(CustomerOrderRec.class, sql(sql));
-        log.warn(fail);
+        log.warn("testQueryResultRecord: " + fail);
 
     }
 
@@ -419,7 +418,7 @@ public abstract class BaseTest extends TestCase {
             // todo older message was more informative. findConstructor should have some way to provide more info on what's wrong.
             failed = true;
         }
-
+        // This will fail if we compile with -parameters
         assertTrue(failed);
 
         sb = new StringBuilder();
@@ -613,6 +612,73 @@ public abstract class BaseTest extends TestCase {
         return contact;
     }
 
+    public void testCustomerInvoiceView() throws Exception {
+        Customer customer = new Customer();
+        customer.setCustomerId("ABC");
+        customer.setCompanyName("ABC Inc");
+        session.insert(customer);
+        Invoice invoice = new Invoice();
+        invoice.setCustomerId("ABC");
+        invoice.setQuantity(10);
+        invoice.setPrice(10.23f);
+        invoice.setActualPrice(BigDecimal.valueOf(9.99d));
+        invoice.setStatus(1);
+        session.insert(invoice);
+        Customer customer1 = session.fetch(Customer.class, "SELECT * FROM Customers WHERE Company_Name = ?", "ABC Inc");
+        assertNotNull(customer1);
+        CustomerInvoice customerInvoice = session.fetch(CustomerInvoice.class, "SELECT * FROM CustomerInvoice WHERE Company_Name = ?", "ABC Inc");
+        assertNotNull(customerInvoice);
+
+        CustomerInvoiceRec customerInvoiceRec =session.fetch(CustomerInvoiceRec.class, "SELECT * FROM CustomerInvoice WHERE Company_Name = ?", "ABC Inc");
+        assertNotNull(customerInvoiceRec);
+
+        CustomerInvoiceTestView customerInvoiceTestView = session.fetch(CustomerInvoiceTestView.class, "SELECT * FROM CustomerInvoice WHERE Company_Name = ?", "ABC Inc");
+        List<CustomerInvoiceTestView> list2 = session.query(CustomerInvoiceTestView.class);
+
+        assertNotNull(customerInvoiceTestView);
+        assertTrue(list2.size() > 0);
+
+        boolean fail = false;
+        try {
+            session.insert(customerInvoiceTestView);
+        } catch (PersismException e) {
+            fail = true;
+            assertEquals("s/b", Messages.OperationNotSupportedForView.message(customerInvoiceTestView.getClass(), "Insert"), e.getMessage());
+        }
+        assertTrue(fail);
+
+        fail = false;
+        try {
+            session.update(customerInvoiceTestView);
+        } catch (PersismException e) {
+            fail = true;
+            assertEquals("s/b", Messages.OperationNotSupportedForView.message(customerInvoiceTestView.getClass(), "Update"), e.getMessage());
+        }
+        assertTrue(fail);
+
+        fail = false;
+        try {
+            session.delete(customerInvoiceTestView);
+        } catch (PersismException e) {
+            fail = true;
+            assertEquals("s/b", Messages.OperationNotSupportedForView.message(customerInvoiceTestView.getClass(),"Delete"), e.getMessage());
+        }
+        assertTrue(fail);
+
+        fail = false;
+        try {
+            // @NotTable Should fail. We can't use no sql specified for these since we don't know what the SQL would be.
+            List<CustomerInvoiceResult> list3 = session.query(CustomerInvoiceResult.class);
+        } catch (PersismException e) {
+            log.info(e);
+
+            fail = true;
+            assertEquals("s/b",
+                    Messages.OperationNotSupportedForNotTableQuery.message(CustomerInvoiceResult.class, "QUERY w/o specifying the SQL"),
+                    e.getMessage());
+        }
+        assertTrue(fail);
+    }
     public void testContactTable() throws SQLException {
 
         Contact contact = getContactForTest();
@@ -645,7 +711,7 @@ public abstract class BaseTest extends TestCase {
         Contact contact1 = contacts.get(0);
         log.info("CONTACT: " + contact1);
 
-        assertEquals("1?", 1, session.delete(contact));
+        assertEquals("1?", 1, session.delete(contact).rows());
 
         assertEquals("UDDI should be the same ", UUID1, contact1.getIdentity().toString());
         assertEquals("UDDI should be the same ", UUID2, contact1.getPartnerId().toString());
@@ -746,7 +812,20 @@ public abstract class BaseTest extends TestCase {
         log.info(result);
 
         //todo Try this. should it convert? yes but it doesn't oracle just passes the bad string into the byte array so we don't find a result.
-        assertTrue(session.query(Contact.class, where(":partnerId = ?"), params(contact.getPartnerId())).size() > 0);
+        // assertTrue(session.query(Contact.class, where(":partnerId = ?"), params(contact.getPartnerId())).size() > 0);
+
+        // named params
+        contacts = session.query(Contact.class,
+                sql("select * from Contacts where (firstname = @name OR company = @name) and lastname = @last"),
+                named(Map.of("last", "Flintstone", "name", "Fred")));
+        log.info(contacts);
+
+        // named params + properties instead of columns
+        contacts = session.query(Contact.class,
+                where("(:firstname = @name OR :company = @name) and :lastname = @last"),
+                named(Map.of("name", "Fred", "last", "Flintstone")));
+        log.info(contacts);
+
     }
 
     static LocalDateTime ldt = LocalDateTime.parse("1998-02-17 10:23:43.567", formatter);
@@ -810,10 +889,7 @@ public abstract class BaseTest extends TestCase {
 
             session.update(testSQLTypes2);
 
-            List<DateTestSQLTypes> list = session.query(DateTestSQLTypes.class, sql("select * FROM DateTestSQLTypes"));
-            log.info(list);
-
-            assertTrue(session.delete(testSQLTypes1) > 0);
+            assertTrue(session.delete(testSQLTypes1).rows() > 0);
         });
     }
 
@@ -884,8 +960,8 @@ public abstract class BaseTest extends TestCase {
             assertEquals("time s/b " + localTime + " (FROM lt2)", localTime, testLocalTypes4.getTimeOnly().toString());
 
 
-            assertTrue(session.delete(testLocalTypes1) > 0);
-            assertTrue(session.delete(testLocalTypes3) > 0);
+            assertTrue(session.delete(testLocalTypes1).rows() > 0);
+            assertTrue(session.delete(testLocalTypes3).rows() > 0);
 
         });
     }

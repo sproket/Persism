@@ -7,7 +7,10 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.StringWriter;
-import java.lang.reflect.*;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Parameter;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.sql.*;
@@ -28,7 +31,7 @@ final class Reader {
         this.converter = session.getConverter();
     }
 
-    <T> T readObject(Object object, ResultSet rs) throws IllegalAccessException, SQLException, InvocationTargetException, IOException {
+    <T> T readObject(T object, ResultSet rs) throws IllegalAccessException, SQLException, InvocationTargetException, IOException {
 
         Class<?> objectClass = object.getClass();
         // We should never call this method with a primitive type.
@@ -128,15 +131,13 @@ final class Reader {
             propertiesByColumn = metaData.getQueryColumnsPropertyInfo(objectClass, rs);
         }
 
-        // TODO ALL THIS IS CALLED once PER ROW. Can we optimize? We could cache.
-        List<String> propertyNames = propertiesByColumn.values().stream().
-                map(PropertyInfo::propertyName).
-                collect(Collectors.toList());
+        List<String> propertyNames = metaData.getPropertyNames(objectClass);
 
         Constructor<?> selectedConstructor = findConstructor(objectClass, propertyNames);
 
         // now read resultset by property order
         Map<String, PropertyInfo> propertyInfoByConstructorOrder = new LinkedHashMap<>(selectedConstructor.getParameterCount());
+
         for (String paramName : propertyNames) {
             for (String col : propertiesByColumn.keySet()) {
                 if (paramName.equals(propertiesByColumn.get(col).field.getName())) {
@@ -197,7 +198,7 @@ final class Reader {
         Constructor<?> selectedConstructor = null;
 
         for (Constructor<?> constructor : constructors) {
-
+            log.debug("findConstructor LOOP: " + debugConstructor(constructor));
             // Check with canonical or maybe -parameters
             List<String> parameterNames = Arrays.stream(constructor.getParameters()).
                     map(Parameter::getName).collect(Collectors.toList());
@@ -224,11 +225,38 @@ final class Reader {
             }
         }
 
-        log.debug("findConstructor: %s", selectedConstructor);
+
+        int x = 0;
+        for (Constructor<?> constructor : constructors) {
+            log.debug("CON " + (x++) + " " + constructor.equals(selectedConstructor) + " -> " + debugConstructor(constructor));
+        }
+
+        log.debug(Arrays.asList(constructors));
+        log.debug("INDEX: " + Arrays.asList(constructors).indexOf(selectedConstructor));
+//selectedConstructor.getParameters()[1].getName();
+        log.debug("findConstructor selected: %s", debugConstructor(selectedConstructor));
         if (selectedConstructor == null) {
             throw new PersismException(Messages.CouldNotFindConstructorForRecord.message(objectClass, propertyNames));
         }
         return selectedConstructor;
+    }
+
+    private String debugConstructor(Constructor<?> constructor) {
+        if (constructor == null) {
+            return null;
+        }
+        TestDescription desc = constructor.getAnnotation(TestDescription.class);
+        if (desc != null) {
+            return desc.value();
+        }
+        StringBuilder sb = new StringBuilder();
+        String sep = "";
+        for (Parameter p : constructor.getParameters()) {
+            sb.append(sep).append(p.getName());
+            sep = ",";
+        }
+
+        return "" + constructor + " names: " + sb;
     }
 
     // https://stackoverflow.com/questions/1075656/simple-way-to-find-if-two-different-lists-contain-exactly-the-same-elements
@@ -386,6 +414,7 @@ final class Reader {
 
         return (T) value;
     }
+
 
     // Poor man's case insensitive linked hash map ;)
     private PropertyInfo getPropertyInfo(String col, Map<String, PropertyInfo> properties) {

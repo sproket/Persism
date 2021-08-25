@@ -22,8 +22,8 @@ enum Messages {
     CouldNotDetermineTableOrViewForType("Could not determine a %s for type: %s Guesses were: %s"),
     CouldNotDetermineTableOrViewForTypeMultipleMatches("Could not determine a %s for type: %s Guesses were: %s and we found multiple matching: %s"),
     CouldNotFindConstructorForRecord("findConstructor: Could not find a constructor for class: %s properties: %s"),
-    OperationNotSupportedForView("%s operation not supported for Views."),
-    OperationNotSupportedForNotTableQuery("%s: %s operation not supported for @NotTable classes (Cannot determine SQL)"),
+    OperationNotSupportedForView("s: %s operation not supported for Views"),
+    OperationNotSupportedForNotTableQuery("%s: %s operation not supported for @NotTable classes"),
     WhereNotSupportedForNotTableQueries("WHERE clause not supported for Queries (using @NotTable). If this is a View annotate the class as @View"),
 
     // WARNINGS

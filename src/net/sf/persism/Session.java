@@ -1,5 +1,6 @@
 package net.sf.persism;
 
+import net.sf.persism.annotations.Column;
 import net.sf.persism.annotations.NotTable;
 import net.sf.persism.annotations.View;
 
@@ -9,7 +10,8 @@ import java.sql.*;
 import java.util.*;
 import java.util.regex.MatchResult;
 
-import static net.sf.persism.Parameters.*;
+import static net.sf.persism.Parameters.none;
+import static net.sf.persism.Parameters.params;
 import static net.sf.persism.SQL.sql;
 import static net.sf.persism.Util.isRecord;
 
@@ -45,20 +47,20 @@ public final class Session implements AutoCloseable {
      * @param connection db connection
      * @param sessionKey Unique string to represent the connection URL if it is not available on the Connection metadata.
      *                   This string should start with the jdbc url string to indicate the connection type.
-     *                   <pre>
-     *                                                                                                                                                                  jdbc:h2 = h2
-     *                                                                                                                                                                  jdbc:sqlserver = MS SQL
-     *                                                                                                                                                                  jdbc:oracle = Oracle
-     *                                                                                                                                                                  jdbc:sqlite = SQLite
-     *                                                                                                                                                                  jdbc:derby = Derby
-     *                                                                                                                                                                  jdbc:mysql = MySQL/MariaDB
-     *                                                                                                                                                                  jdbc:postgresql = PostgreSQL
-     *                                                                                                                                                                  jdbc:firebirdsql = Firebird (Jaybird)
-     *                                                                                                                                                                  jdbc:hsqldb = HSQLDB
-     *                                                                                                                                                                  jdbc:ucanaccess = MS Access
-     *                                                                                                                                                                  jdbc:informix = Informix
-     *
-     *                                                                                                                                                 </pre>
+     *                   <code>
+     *                   <br>
+     *                   <br>   jdbc:h2 = h2
+     *                   <br>   jdbc:sqlserver = MS SQL
+     *                   <br>   jdbc:oracle = Oracle
+     *                   <br>   jdbc:sqlite = SQLite
+     *                   <br>   jdbc:derby = Derby
+     *                   <br>   jdbc:mysql = MySQL/MariaDB
+     *                   <br>   jdbc:postgresql = PostgreSQL
+     *                   <br>   jdbc:firebirdsql = Firebird (Jaybird)
+     *                   <br>   jdbc:hsqldb = HSQLDB
+     *                   <br>   jdbc:ucanaccess = MS Access
+     *                   <br>   jdbc:informix = Informix
+     *                   </code>
      * @throws PersismException if something goes wrong
      */
     public Session(Connection connection, String sessionKey) throws PersismException {
@@ -136,7 +138,7 @@ public final class Session implements AutoCloseable {
      * @return Result object containing rows changed (usually 1 to indicate rows changed via JDBC) and the data object itself which may have been changed.
      * @throws PersismException Indicating the upcoming robot uprising.
      */
-    public <T> Result<T> update(Object object) throws PersismException {
+    public <T> Result<T> update(T object) throws PersismException {
         checkIfView(object, "Update");
 
         List<String> primaryKeys = metaData.getPrimaryKeys(object.getClass(), connection);
@@ -152,7 +154,6 @@ public final class Session implements AutoCloseable {
                 updateStatement = metaData.getUpdateStatement(object, connection);
             } catch (NoChangesDetectedForUpdateException e) {
                 log.info("No properties changed. No update required for Object: " + object + " class: " + object.getClass().getName());
-                //noinspection unchecked
                 return new Result<>(0, (T) object);
             }
 
@@ -198,12 +199,12 @@ public final class Session implements AutoCloseable {
             int ret = st.executeUpdate();
 
             if (object instanceof Persistable<?> pojo) {
+
                 // Save this object state to later detect changed properties
                 pojo.saveReadState();
             }
 
-            //noinspection unchecked
-            return new Result<>(ret, (T) object);
+            return new Result<>(ret, object);
 
         } catch (Exception e) {
             Util.rollback(connection);
@@ -215,14 +216,14 @@ public final class Session implements AutoCloseable {
     }
 
     /**
-     * Performs an Insert or Update depending on whether the primary key is defined.
+     * Performs an Insert or Update depending on whether the primary key is defined by the object parameter.
      *
      * @param object the data object to insert or update.
      * @param <T>    Type of the returning data object in Result.
      * @return Result object containing rows changed (usually 1 to indicate rows changed via JDBC) and the data object itself which may have been changed by auto-inc or column defaults.
      * @throws PersismException If this table has no primary keys or some SQL error.
      */
-    public <T> Result<T> upsert(Object object) throws PersismException {
+    public <T> Result<T> upsert(T object) throws PersismException {
         checkIfView(object, "Upsert");
 
         List<String> primaryKeys = metaData.getPrimaryKeys(object.getClass(), connection);
@@ -278,13 +279,15 @@ public final class Session implements AutoCloseable {
      * @return Result object containing rows changed (usually 1 to indicate rows changed via JDBC) and the data object itself which may have been changed by auto-inc or column defaults.
      * @throws PersismException When planet of the apes starts happening.
      */
-    public <T> Result<T> insert(Object object) throws PersismException {
+    public <T> Result<T> insert(T object) throws PersismException {
         checkIfView(object, "Insert");
 
         String insertStatement = metaData.getInsertStatement(object, connection);
 
         PreparedStatement st = null;
         ResultSet rs = null;
+
+        Object returnObject = object;
 
         try {
             // These keys should always be in sorted order.
@@ -403,9 +406,10 @@ public final class Session implements AutoCloseable {
                 // Read the full object back to update any properties which had defaults
                 if (isRecord(object.getClass())) {
                     SQL sql = new SQL(metaData.getDefaultSelectStatement(object.getClass(), connection));
-                    object = fetch(object.getClass(), sql, params(primaryKeyValues.toArray()));
+                    returnObject = fetch(object.getClass(), sql, params(primaryKeyValues.toArray()));
                 } else {
                     fetch(object);
+                    returnObject = object;
                 }
             }
 
@@ -415,7 +419,7 @@ public final class Session implements AutoCloseable {
             }
 
             //noinspection unchecked
-            return new Result<>(ret, (T) object);
+            return new Result<>(ret, (T) returnObject);
         } catch (Exception e) {
             Util.rollback(connection);
             throw new PersismException(e.getMessage(), e);
@@ -425,13 +429,13 @@ public final class Session implements AutoCloseable {
     }
 
     /**
-     * Deletes the data object object from the database.
+     * Deletes the data object from the database.
      *
      * @param object data object to delete
      * @return usually 1 to indicate rows changed via JDBC.
      * @throws PersismException Perhaps when asteroid 1999 RQ36 hits us?
      */
-    public int delete(Object object) throws PersismException {
+    public <T> Result<T> delete(T object) throws PersismException {
 
         checkIfView(object, "Delete");
 
@@ -461,8 +465,8 @@ public final class Session implements AutoCloseable {
                 }
             }
             setParameters(st, params.toArray());
-            int ret = st.executeUpdate();
-            return ret;
+            int rows = st.executeUpdate();
+            return new Result<>(rows, object);
 
         } catch (Exception e) {
             Util.rollback(connection);
@@ -539,43 +543,68 @@ public final class Session implements AutoCloseable {
     /**
      * Query to return any results matching the primary key values provided.
      *
-     * @param objectClass Type of returned value
-     * @param parameters  Parameters containing primary key values
-     * @param <T>         Return type
+     * @param objectClass      Type of returned value
+     * @param primaryKeyValues Parameters containing primary key values
+     * @param <T>              Return type
      * @return List of type T read from the database of any rows matching the primary keys. If you pass multiple primaries this will use WHERE IN(?,?,?) to find them.
      * @throws PersismException Oh no. Not again.
      */
-    public <T> List<T> query(Class<T> objectClass, Parameters parameters) {
+    public <T> List<T> query(Class<T> objectClass, Parameters primaryKeyValues) {
         if (objectClass.getAnnotation(NotTable.class) != null) {
-            throw new PersismException(Messages.OperationNotSupportedForNotTableQuery.message(objectClass, "QUERY"));
+            throw new PersismException(Messages.OperationNotSupportedForNotTableQuery.message(objectClass, "QUERY w/o specifying the SQL"));
         }
 
-        String sql = metaData.getDefaultSelectStatement(objectClass, connection);
+        //                 throw new PersismException(Messages.PrimaryKeysDontExist.message());
 
-        if (parameters.size() == 0) {
+        if (objectClass.getAnnotation(View.class) != null) {
+
+            // todo really we should just not support this at all. Fail like NotTable
+            // TODO Also add log.warn if primary keys are defined on properties of NotTable or View
+            Collection<PropertyInfo> properties = MetaData.getPropertyInfo(objectClass);
+            long primaries = properties.stream().
+                    filter(p -> p.annotations.get(Column.class) != null && ((Column) p.annotations.get(Column.class)).primary()).
+                    count();
+
+            if (primaries > 1) {
+                throw new PersismException("Cant do this with a View and you specified multiple primaries!");
+            } else if (primaries == 0) {
+                throw new PersismException("Cant do this with a View and you specified NO primaries");
+            }
+            // if 0 or greater than 1
+        }
+
+        String sql;
+        if (primaryKeyValues.size() == 0) {
             // Get the SELECT without any WHERE clause
             sql = metaData.getSelectStatement(objectClass, connection);
             return query(objectClass, sql(sql), none());
+        } else {
+            sql = metaData.getDefaultSelectStatement(objectClass, connection);
         }
 
-        parameters.areKeys = true;
+        primaryKeyValues.areKeys = true;
 
         List<String> primaryKeys = metaData.getPrimaryKeys(objectClass, connection);
 
-        if (parameters.size() == primaryKeys.size()) {
+        if (primaryKeyValues.size() == primaryKeys.size()) {
             // single select
-            return query(objectClass, sql(sql), parameters);
+            return query(objectClass, sql(sql), primaryKeyValues);
         }
 
         String sd = metaData.getConnectionType().getKeywordStartDelimiter();
         String ed = metaData.getConnectionType().getKeywordEndDelimiter();
 
         String andSep = "";
-        int n = sql.indexOf(" WHERE");
-        sql = sql.substring(0, n + 7);
+        // View should not check for WHERE
+        if (objectClass.getAnnotation(View.class) == null) {
+            int n = sql.indexOf(" WHERE");
+            sql = sql.substring(0, n + 7);
+        } else {
+            sql += " WHERE ";
+        }
 
         StringBuilder sb = new StringBuilder(sql);
-        int groups = parameters.size() / primaryKeys.size();
+        int groups = primaryKeyValues.size() / primaryKeys.size(); // check for divide by zero?
         for (String column : primaryKeys) {
             String sep = "";
             sb.append(andSep).append(sd).append(column).append(ed).append(" IN (");
@@ -587,7 +616,7 @@ public final class Session implements AutoCloseable {
             andSep = " AND ";
         }
         sql = sb.toString();
-        return query(objectClass, sql(sql), parameters);
+        return query(objectClass, sql(sql), primaryKeyValues);
     }
 
     /**
@@ -787,10 +816,19 @@ public final class Session implements AutoCloseable {
     private JDBCResult executeQuery(Class<?> objectClass, SQL sql, Parameters parameters, boolean isPOJO) throws SQLException {
         JDBCResult result = new JDBCResult();
 
+        String sqlQuery = sql.toString();
+
+        if (isPOJO && parameters.areNamed) {
+            Map<String, List<Integer>> paramMap = new HashMap<>();
+            sqlQuery = parse(sql.toString(), paramMap);
+            parameters.setParameterMap(paramMap);
+        }
+
         // or use sql.knownSQL
         if (isPOJO && parameters.areKeys) {
-            // todo this could be confusing to a user.
-            if (objectClass.getAnnotation(NotTable.class) != null || objectClass.getAnnotation(View.class) != null) {
+            // todo this could be confusing to a user. NotTable has no way of knowing a primary key or does it? What if we just annotate it?
+            // todo for View this is OK maybe but for NotTable we have no SQL so that wouldn't work
+            if (objectClass.getAnnotation(NotTable.class) != null) { // || objectClass.getAnnotation(View.class) != null
                 throw new PersismException(Messages.PrimaryKeysDontExist.message());
             }
             // convert parameters - usually it's the UUID type that may need a conversion to byte[16]
@@ -807,32 +845,119 @@ public final class Session implements AutoCloseable {
                 }
             }
         }
+
         if (sql.whereOnly) {
             if (objectClass.getAnnotation(NotTable.class) != null) {
                 throw new PersismException(Messages.WhereNotSupportedForNotTableQueries.message());
             }
             String select = metaData.getSelectStatement(objectClass, connection);
-            if (log.isDebugEnabled()) {
-                log.debug("executeQuery: %s params: %s", select + " " + sql, parameters);
-            }
-            String xsql = translatePropertyNames(select + " " + sql, objectClass, connection);
-            exec(result, xsql, parameters.toArray());
-        } else {
+            String xsql = translatePropertyNames(select + " " + sqlQuery, objectClass, connection);
 
             if (log.isDebugEnabled()) {
-                log.debug("executeQuery: %s params: %s", sql, parameters);
+                log.debug("executeQuery: %s params: %s", select + " " + xsql, parameters);
             }
+
+            exec(result, xsql, parameters.toArray());
+        } else {
 
             checkStoredProcOrSQL(objectClass, sql);
 
             // forget translating properties on normal SQL - stupid idea. It's OK for a WHERE clause though
             //String xsql = translatePropertyNames(sql.toString(), objectClass, connection);
 
+            if (log.isDebugEnabled()) {
+                log.debug("executeQuery: %s params: %s", sqlQuery, parameters);
+            }
+
             // we don't check parameter types here? Nope - we don't know anything at this point.
-            exec(result, sql.toString(), parameters.toArray());
+            exec(result, sqlQuery, parameters.toArray());
         }
         return result;
     }
+
+    /**
+     * Adam Crume, JavaWorld.com, 04/03/07
+     * http://www.javaworld.com/javaworld/jw-04-2007/jw-04-jdbc.html?page=2
+     * https://www.infoworld.com/article/2077706/named-parameters-for-preparedstatement.html?page=2
+     * Parses a query with named parameters.  The parameter-index mappings are
+     * put into the map, and the
+     * parsed query is returned.  DO NOT CALL FROM CLIENT CODE.  This
+     * method is non-private so JUnit code can
+     * test it.
+     *
+     * @param query    query to parse
+     * @param paramMap map to hold parameter-index mappings
+     * @return the parsed query
+     */
+    static String parse(String query, Map<String, List<Integer>> paramMap) {
+        // I was originally using regular expressions, but they didn't work well
+        // for ignoring parameter-like strings inside quotes.
+
+        // originally used : - which conflicts with property names so I'll use @
+        // todo verify about inquote vars - we have different delimiters based on the different dbs
+        // todo add unit tests
+        int length = query.length();
+        StringBuilder parsedQuery = new StringBuilder(length);
+        boolean inSingleQuote = false;
+        boolean inDoubleQuote = false;
+        int index = 1;
+
+        for (int i = 0; i < length; i++) {
+            char c = query.charAt(i);
+            if (inSingleQuote) {
+                if (c == '\'') {
+                    inSingleQuote = false;
+                }
+            } else if (inDoubleQuote) {
+                if (c == '"') {
+                    inDoubleQuote = false;
+                }
+            } else {
+                if (c == '\'') {
+                    inSingleQuote = true;
+                } else if (c == '"') {
+                    inDoubleQuote = true;
+                } else if (c == '@' && i + 1 < length && // was :
+                        Character.isJavaIdentifierStart(query.charAt(i + 1))) {
+                    int j = i + 2;
+                    while (j < length && Character.isJavaIdentifierPart(query.charAt(j))) {
+                        j++;
+                    }
+                    String name = query.substring(i + 1, j);
+                    c = '?'; // replace the parameter with a question mark
+                    i += name.length(); // skip past the end if the parameter
+
+                    List<Integer> indexList = paramMap.get(name);
+                    if (indexList == null) {
+                        indexList = new LinkedList<>();
+                        paramMap.put(name, indexList);
+                    }
+                    indexList.add(index);
+
+                    index++;
+                }
+            }
+            parsedQuery.append(c);
+        }
+
+        // why bother?
+
+//        // replace the lists of Integer objects with arrays of ints
+//        for (Iterator itr = paramMap.entrySet().iterator(); itr.hasNext(); ) {
+//            Map.Entry entry = (Map.Entry) itr.next();
+//            List list = (List) entry.getValue();
+//            int[] indexes = new int[list.size()];
+//            int i = 0;
+//            for (Iterator itr2 = list.iterator(); itr2.hasNext(); ) {
+//                Integer x = (Integer) itr2.next();
+//                indexes[i++] = x.intValue();
+//            }
+//            entry.setValue(indexes);
+//        }
+
+        return parsedQuery.toString();
+    }
+
 
     private <T> void checkStoredProcOrSQL(Class<T> objectClass, SQL sql) {
         boolean startsWithSelect = sql.toString().trim().toLowerCase().startsWith("select ");
@@ -864,12 +989,8 @@ public final class Session implements AutoCloseable {
      */
 
     private void exec(JDBCResult result, String sql, Object... parameters) throws SQLException {
-        //sql = sql.trim(); // """ in Java 16 can result in spaces ahead or after the string.
         // bug fix for Java 16 TRIM in case
         if (sql.trim().toLowerCase().startsWith("select ")) {
-//            sql = sql.replaceAll("\n", " ");
-//            sql = sql.replaceAll("\t", " ");
-//            sql = sql.replaceAll("\r", " ");
 //
             result.st = connection.prepareStatement(sql); // todo forward only etc....
 
@@ -913,10 +1034,10 @@ public final class Session implements AutoCloseable {
             Map<String, PropertyInfo> properties;
             // todo with VIEW
 //            if (objectClass.getAnnotation(NotTable.class) == null) {
-                properties = metaData.getTableColumnsPropertyInfo(objectClass, connection);
-  //          } else {
-                //properties = metaData.getQueryColumnsPropertyInfo(objectClass, connection);
-    //        }
+            properties = metaData.getTableColumnsPropertyInfo(objectClass, connection);
+            //          } else {
+            //properties = metaData.getQueryColumnsPropertyInfo(objectClass, connection);
+            //        }
             String sd = metaData.getConnectionType().getKeywordStartDelimiter();
             String ed = metaData.getConnectionType().getKeywordEndDelimiter();
 
@@ -940,7 +1061,7 @@ public final class Session implements AutoCloseable {
 
     private void checkIfView(Object object, String operation) {
         if (object.getClass().getAnnotation(View.class) != null) {
-            throw new PersismException(Messages.OperationNotSupportedForView.message(operation));
+            throw new PersismException(Messages.OperationNotSupportedForView.message(object.getClass(), operation));
         }
     }
 
@@ -1123,5 +1244,4 @@ public final class Session implements AutoCloseable {
             n++;
         }
     }
-
 }
