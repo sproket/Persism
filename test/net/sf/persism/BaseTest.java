@@ -8,7 +8,6 @@ import java.lang.reflect.InvocationTargetException;
 import java.math.BigDecimal;
 import java.sql.*;
 import java.sql.Date;
-import java.sql.ResultSet;
 import java.text.DateFormat;
 import java.text.NumberFormat;
 import java.text.SimpleDateFormat;
@@ -17,7 +16,6 @@ import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
 import java.util.*;
 
-import static java.util.Comparator.comparing;
 import static net.sf.persism.Parameters.*;
 import static net.sf.persism.SQL.*;
 
@@ -41,9 +39,6 @@ public abstract class BaseTest extends TestCase {
 
     static String UUID1 = "d316ad81-946d-416b-98e3-3f3b03aa73db";
     static String UUID2 = "a0d00c5a-3de6-4ae8-ba11-e3e02c2b3a83";
-
-//    static Set<String> moo = Set.of("ass", "coco", "fggf");
-//    static Map<String, Integer> cow = Map.of("cow", 1, "moo", 2);
 
     protected abstract void createTables() throws SQLException;
 
@@ -116,8 +111,9 @@ public abstract class BaseTest extends TestCase {
 
         LocalDateTime dt = LocalDateTime.now();
         //session.query(Customer.class, where("DATE_OF_LAST_ORDER between ? AND ?"), params(dt.minus(1, ChronoUnit.DAYS), dt.plus(1, ChronoUnit.DAYS)));
-        // todo fails with postgresql check if converter will fix this....
-        session.query(Customer.class, where(":dateOfLastOrder is not null AND :dateOfLastOrder between ? AND ? and :status = ?"), params(dt.minus(1, ChronoUnit.DAYS), dt.plus(1, ChronoUnit.DAYS), 1));
+        // todo fails with postgresql check if converter will fix this.... Where the status col = char(1) and we pass int. No we cant correct for this.
+        // session.query(Customer.class, where(":dateOfLastOrder is not null AND :dateOfLastOrder between ? AND ? and :status = ?"), params(dt.minus(1, ChronoUnit.DAYS), dt.plus(1, ChronoUnit.DAYS), 1));
+        session.query(Customer.class, where(":dateOfLastOrder is not null AND :dateOfLastOrder between ? AND ? and :status = ?"), params(dt.minus(1, ChronoUnit.DAYS), dt.plus(1, ChronoUnit.DAYS), "1"));
 
         session.query(Customer.class, where("TestLocalDate between ? AND ?"), params(dt.minus(1, ChronoUnit.DAYS), dt.plus(1, ChronoUnit.DAYS)));
 
@@ -629,7 +625,7 @@ public abstract class BaseTest extends TestCase {
         CustomerInvoice customerInvoice = session.fetch(CustomerInvoice.class, "SELECT * FROM CustomerInvoice WHERE Company_Name = ?", "ABC Inc");
         assertNotNull(customerInvoice);
 
-        CustomerInvoiceRec customerInvoiceRec =session.fetch(CustomerInvoiceRec.class, "SELECT * FROM CustomerInvoice WHERE Company_Name = ?", "ABC Inc");
+        CustomerInvoiceRec customerInvoiceRec = session.fetch(CustomerInvoiceRec.class, "SELECT * FROM CustomerInvoice WHERE Company_Name = ?", "ABC Inc");
         assertNotNull(customerInvoiceRec);
 
         CustomerInvoiceTestView customerInvoiceTestView = session.fetch(CustomerInvoiceTestView.class, "SELECT * FROM CustomerInvoice WHERE Company_Name = ?", "ABC Inc");
@@ -661,7 +657,7 @@ public abstract class BaseTest extends TestCase {
             session.delete(customerInvoiceTestView);
         } catch (PersismException e) {
             fail = true;
-            assertEquals("s/b", Messages.OperationNotSupportedForView.message(customerInvoiceTestView.getClass(),"Delete"), e.getMessage());
+            assertEquals("s/b", Messages.OperationNotSupportedForView.message(customerInvoiceTestView.getClass(), "Delete"), e.getMessage());
         }
         assertTrue(fail);
 
@@ -679,6 +675,7 @@ public abstract class BaseTest extends TestCase {
         }
         assertTrue(fail);
     }
+
     public void testContactTable() throws SQLException {
 
         Contact contact = getContactForTest();
@@ -815,17 +812,61 @@ public abstract class BaseTest extends TestCase {
         // assertTrue(session.query(Contact.class, where(":partnerId = ?"), params(contact.getPartnerId())).size() > 0);
 
         // named params
+        SQL sql = sql("select * from Contacts where (firstname = @name OR company = @name) and lastname = @last");
+        log.info(sql);
         contacts = session.query(Contact.class,
-                sql("select * from Contacts where (firstname = @name OR company = @name) and lastname = @last"),
+                sql,
                 named(Map.of("last", "Flintstone", "name", "Fred")));
         log.info(contacts);
 
         // named params + properties instead of columns
+        sql = where("(:firstname = @name OR :company = @name) and :lastname = @last");
+        log.info(sql);
         contacts = session.query(Contact.class,
-                where("(:firstname = @name OR :company = @name) and :lastname = @last"),
+                sql,
                 named(Map.of("name", "Fred", "last", "Flintstone")));
         log.info(contacts);
 
+        sql = where("(:firstname = @name OR :company = @name) and :lastname = @last and :city = @city and :amountOwed > @owe");
+        log.info(sql);
+        contacts = session.query(Contact.class,
+                sql,
+                named(Map.of("name", "Fred", "last", "Flintstone", "owe", 10, "city", "Somewhere")));
+        log.info(contacts);
+
+        boolean failed = false;
+        // Misspell parameters
+        sql = where("(:firstname = @name OR :company = @name) and :lastname = @last and :city = @city and :amountOwed > @owe");
+        log.info(sql);
+        try {
+            contacts = session.query(Contact.class,
+                    sql,
+                    named(Map.of("Xame", "Fred", "Xast", "Flintstone", "owe", 10, "city", "Somewhere")));
+        } catch (PersismException e) {
+            failed = true;
+            log.info(e.getMessage(), e);
+            String msg = Messages.QueryParameterNamesMissingOrNotFound.message("[last, name]", "[Xame, Xast]");
+            assertEquals("s/b " + msg, msg, e.getMessage());
+        }
+        assertTrue(failed);
+
+        failed = false;
+        sql = where("(:firstXame = @name OR :Xompany = @name) and :lastname = @last and :city = @city and :amountOwed > @owe");
+        log.info(sql);
+        try {
+            contacts = session.query(Contact.class,
+                    sql,
+                    named(Map.of("name", "Fred", "last", "Flintstone", "owe", 10, "city", "Somewhere")));
+        } catch (PersismException e) {
+            failed = true;
+            log.info(e.getMessage(), e);
+            String msg = Messages.QueryPropertyNamesMissingOrNotFound.message("[firstXame, Xompany]", "");
+            assertTrue("s/b (starts with) " + msg, e.getMessage().startsWith(msg));
+        }
+        assertTrue(failed);
+
+        // TODO Misspelled BOTH? - document?
+        // In that case you would get Parameters missing error then Properties missing next time you try
     }
 
     static LocalDateTime ldt = LocalDateTime.parse("1998-02-17 10:23:43.567", formatter);

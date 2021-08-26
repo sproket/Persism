@@ -347,7 +347,7 @@ public class TestNorthwind extends TestCase {
             assertEquals("discount should be 0.50", "0.50", "" + f.format(orderDetail.getDiscount()));
 
 
-            assertEquals("delete should return 1", 1, session.delete(orderDetail));
+            assertEquals("delete should return 1", 1, session.delete(orderDetail).rows());
         } catch (SQLException e) {
             log.error(e.getMessage(), e);
             fail(e.getMessage());

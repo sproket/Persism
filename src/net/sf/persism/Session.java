@@ -25,7 +25,7 @@ public final class Session implements AutoCloseable {
 
     private static final Log log = Log.getLogger(Session.class);
 
-    private Connection connection;
+    private final Connection connection;
 
     private MetaData metaData;
 
@@ -638,7 +638,7 @@ public final class Session implements AutoCloseable {
         boolean isRecord = isPOJO && isRecord(objectClass);
 
         if (isPOJO && objectClass.getAnnotation(NotTable.class) == null) {
-            // Make sure columns are initialized if this is a table.
+            // Make sure columns are initialized if this is a table. TODO WHY DID WE NEED TO DO THIS?
             metaData.getTableColumnsPropertyInfo(objectClass, connection);
         }
 
@@ -717,7 +717,7 @@ public final class Session implements AutoCloseable {
                 }
             }
 
-            sql = translatePropertyNames(sql, objectClass, connection);
+            sql = parsePropertyNames(sql, objectClass, connection);
 
             exec(JDBCResult, sql, params.toArray());
 
@@ -735,6 +735,7 @@ public final class Session implements AutoCloseable {
         }
     }
 
+    // todo Optional? totally breaks the API though...
     /**
      * @param objectClass
      * @param sql
@@ -813,14 +814,16 @@ public final class Session implements AutoCloseable {
         }
     }
 
+    // TODO NEED TO REFACTOR THIS SIMILAR TO DEV version
     private JDBCResult executeQuery(Class<?> objectClass, SQL sql, Parameters parameters, boolean isPOJO) throws SQLException {
         JDBCResult result = new JDBCResult();
 
         String sqlQuery = sql.toString();
 
+        // todo add unit test for named params with non-pojo like Select String from something. Why do I need isPOJO here?
         if (isPOJO && parameters.areNamed) {
             Map<String, List<Integer>> paramMap = new HashMap<>();
-            sqlQuery = parse(sql.toString(), paramMap);
+            sqlQuery = parseParameters(sql.toString(), paramMap);
             parameters.setParameterMap(paramMap);
         }
 
@@ -851,10 +854,10 @@ public final class Session implements AutoCloseable {
                 throw new PersismException(Messages.WhereNotSupportedForNotTableQueries.message());
             }
             String select = metaData.getSelectStatement(objectClass, connection);
-            String xsql = translatePropertyNames(select + " " + sqlQuery, objectClass, connection);
+            String xsql = parsePropertyNames(select + " " + sqlQuery, objectClass, connection);
 
             if (log.isDebugEnabled()) {
-                log.debug("executeQuery: %s params: %s", select + " " + xsql, parameters);
+                log.debug("executeQuery: %s params: %s", xsql, parameters);
             }
 
             exec(result, xsql, parameters.toArray());
@@ -875,6 +878,60 @@ public final class Session implements AutoCloseable {
         return result;
     }
 
+    private String parsePropertyNames(String sql, Class<?> objectClass, Connection connection) {
+        // look for ":"
+        Scanner scanner = new Scanner(sql);
+        List<MatchResult> matchResults = scanner.findAll(":").toList();
+        Set<String> propertyNames = new LinkedHashSet<>();
+        Set<String> propertiesNotFound = new LinkedHashSet<>();
+
+        if (matchResults.size() > 0) {
+            log.debug("Parse properties -> SQL before: %s", sql);
+            for (MatchResult result : matchResults) {
+                String sub = sql.substring(result.start());
+                int n = 0;
+                for (int j = result.start() + 1; j < sql.length(); j++) {
+                    char c = sql.charAt(j);
+                    if (Character.isJavaIdentifierPart(c)) {
+                        n++;
+                    } else {
+                        propertyNames.add(sub.substring(0, n + 1));
+                        break;
+                    }
+                }
+            }
+
+            Map<String, PropertyInfo> properties;
+            properties = metaData.getTableColumnsPropertyInfo(objectClass, connection);
+            String sd = metaData.getConnectionType().getKeywordStartDelimiter();
+            String ed = metaData.getConnectionType().getKeywordEndDelimiter();
+
+            String repl = sql;
+            for (String propertyName : propertyNames) {
+                String pname = propertyName.substring(1); // remove :
+                boolean found = false;
+                for (String column : properties.keySet()) {
+                    PropertyInfo info = properties.get(column);
+                    if (info.propertyName.equalsIgnoreCase(pname)) {
+                        found = true;
+                        String col = sd + column + ed;
+                        repl = repl.replace(propertyName, col);
+                        break;
+                    }
+                }
+                if (!found) {
+                    propertiesNotFound.add(pname);
+                }
+            }
+            log.debug("Parse properties -> SQL after : %s", repl);
+            sql = repl;
+        }
+        if (propertiesNotFound.size() > 0) {
+            throw new PersismException(Messages.QueryPropertyNamesMissingOrNotFound.message(propertiesNotFound, sql));
+        }
+        return sql;
+    }
+
     /**
      * Adam Crume, JavaWorld.com, 04/03/07
      * http://www.javaworld.com/javaworld/jw-04-2007/jw-04-jdbc.html?page=2
@@ -889,13 +946,15 @@ public final class Session implements AutoCloseable {
      * @param paramMap map to hold parameter-index mappings
      * @return the parsed query
      */
-    static String parse(String query, Map<String, List<Integer>> paramMap) {
+    static String parseParameters(String query, Map<String, List<Integer>> paramMap) {
         // I was originally using regular expressions, but they didn't work well
         // for ignoring parameter-like strings inside quotes.
 
         // originally used : - which conflicts with property names so I'll use @
         // todo verify about inquote vars - we have different delimiters based on the different dbs
         // todo add unit tests
+        // todo maybe use the similar method we did for parseProperties
+
         int length = query.length();
         StringBuilder parsedQuery = new StringBuilder(length);
         boolean inSingleQuote = false;
@@ -991,72 +1050,27 @@ public final class Session implements AutoCloseable {
     private void exec(JDBCResult result, String sql, Object... parameters) throws SQLException {
         // bug fix for Java 16 TRIM in case
         if (sql.trim().toLowerCase().startsWith("select ")) {
-//
-            result.st = connection.prepareStatement(sql); // todo forward only etc....
-
+            if (metaData.getConnectionType() == ConnectionTypes.Firebird) {
+                // https://stackoverflow.com/questions/935511/how-can-i-avoid-resultset-is-closed-exception-in-java
+                result.st = connection.prepareStatement(sql, ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY, ResultSet.HOLD_CURSORS_OVER_COMMIT);
+            } else {
+                result.st = connection.prepareStatement(sql, ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
+            }
 
             PreparedStatement pst = (PreparedStatement) result.st;
             setParameters(pst, parameters);
             result.rs = pst.executeQuery();
         } else {
-            if (!sql.toLowerCase().startsWith("{call")) {
+            if (!sql.trim().toLowerCase().startsWith("{call")) {
                 sql = "{call " + sql + "} ";
             }
-            result.st = connection.prepareCall(sql);
+            // Don't need If Firebird here. Firebird would call a selectable stored proc with SELECT anyway
+            result.st = connection.prepareCall(sql, ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY, ResultSet.HOLD_CURSORS_OVER_COMMIT);
 
             CallableStatement cst = (CallableStatement) result.st;
             setParameters(cst, parameters);
             result.rs = cst.executeQuery();
         }
-    }
-
-    private String translatePropertyNames(String sql, Class<?> objectClass, Connection connection) {
-        // look for ":"
-        Scanner scanner = new Scanner(sql);
-        List<MatchResult> matchResults = scanner.findAll(":").toList();
-        Set<String> propertyNames = new HashSet<>();
-        if (matchResults.size() > 0) {
-            log.debug("Parse properties -> SQL before: %s", sql);
-            for (MatchResult result : matchResults) {
-                String sub = sql.substring(result.start());
-                int n = 0;
-                for (int j = result.start() + 1; j < sql.length(); j++) {
-                    char c = sql.charAt(j);
-                    if (Character.isJavaIdentifierPart(c)) {
-                        n++;
-                    } else {
-                        propertyNames.add(sub.substring(0, n + 1));
-                        break;
-                    }
-                }
-            }
-
-            Map<String, PropertyInfo> properties;
-            // todo with VIEW
-//            if (objectClass.getAnnotation(NotTable.class) == null) {
-            properties = metaData.getTableColumnsPropertyInfo(objectClass, connection);
-            //          } else {
-            //properties = metaData.getQueryColumnsPropertyInfo(objectClass, connection);
-            //        }
-            String sd = metaData.getConnectionType().getKeywordStartDelimiter();
-            String ed = metaData.getConnectionType().getKeywordEndDelimiter();
-
-            String repl = sql;
-            for (String propertyName : propertyNames) {
-                String pname = propertyName.substring(1); // remove :
-                for (String column : properties.keySet()) {
-                    PropertyInfo info = properties.get(column);
-                    if (info.propertyName.equalsIgnoreCase(pname)) {
-                        String col = sd + column + ed;
-                        repl = repl.replace(propertyName, col);
-                        break;
-                    }
-                }
-            }
-            log.debug("Parse properties -> SQL after : %s", repl);
-            sql = repl;
-        }
-        return sql;
     }
 
     private void checkIfView(Object object, String operation) {

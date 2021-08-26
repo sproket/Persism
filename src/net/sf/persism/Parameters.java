@@ -6,6 +6,9 @@ import java.util.*;
  * Helper Class to represent parameters to a query.
  */
 public final class Parameters {
+
+    private static final Log log = Log.getLogger(Parameters.class);
+
     List<Object> parameters;
     Map<String, Object> namedParameters;
 
@@ -43,6 +46,7 @@ public final class Parameters {
 
     /**
      * Static initializer for named parameters
+     *
      * @param nameValuePair - use Map.of("key1", value, "key2", value) etc.
      * @return new Parameters object
      */
@@ -89,25 +93,44 @@ public final class Parameters {
     }
 
     void setParameterMap(Map<String, List<Integer>> parameterMap) {
-        if (areNamed) {
-            // TODO note we max out at 32. Good enough?
-            Object[] arr = new Object[32];
+        assert areNamed;
 
-            parameterMap.keySet().forEach((key) -> {
+        // todo any way to detect if there's a missing param? Currently it leaves it as a null
+        // todo any way to detect if there's a mis-spelled key?
+        // find largest index
+        int max = 0;
+        for (List<Integer> integers : parameterMap.values()) {
+            Optional<Integer> x = integers.stream().max(Integer::compare);
+            if (x.isPresent() && x.get() > max) {
+                max = x.get();
+            }
+        }
+
+        log.debug("MAX? " + max);
+        Object[] arr = new Object[max];
+        Set<String> paramsNotFound = new TreeSet<>();
+
+        parameterMap.keySet().forEach((key) -> {
+            if (namedParameters.containsKey(key)) {
                 Object value = namedParameters.get(key);
 
                 List<Integer> list = parameterMap.get(key);
                 for (Integer integer : list) {
                     arr[integer - 1] = value;
                 }
-            });
-            List<Object> newParams = new LinkedList<>(Arrays.asList(arr));
-            newParams.removeAll(Collections.singleton(null));
-            parameters.clear();
-            parameters.addAll(newParams);
-        } else {
-            throw new Error("wtf? why would I call it in this case? BUG!");
+            } else {
+                paramsNotFound.add(key);
+            }
+        });
+
+        Set<String> mistypeSet = new TreeSet<>(namedParameters.keySet());
+        mistypeSet.removeAll(parameterMap.keySet());
+
+        if (paramsNotFound.size() > 0) {
+            throw new PersismException(Messages.QueryParameterNamesMissingOrNotFound.message(paramsNotFound, mistypeSet));
         }
+        parameters.clear();
+        parameters.addAll(Arrays.asList(arr));
     }
 
     Object[] toArray() {

@@ -25,6 +25,8 @@ enum Messages {
     OperationNotSupportedForView("s: %s operation not supported for Views"),
     OperationNotSupportedForNotTableQuery("%s: %s operation not supported for @NotTable classes"),
     WhereNotSupportedForNotTableQueries("WHERE clause not supported for Queries (using @NotTable). If this is a View annotate the class as @View"),
+    QueryParameterNamesMissingOrNotFound("Parameters missing or not found %s mistyped: %s"),
+    QueryPropertyNamesMissingOrNotFound("Properties missing or not found %s SQL: %s"),
 
     // WARNINGS
     UnknownConnectionType("Unknown connection type. Please contact Persism to add support for %s"),

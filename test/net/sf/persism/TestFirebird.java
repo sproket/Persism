@@ -1,17 +1,24 @@
 package net.sf.persism;
 
 import net.sf.persism.categories.ExternalDB;
-import net.sf.persism.dao.Customer;
-import net.sf.persism.dao.DAOFactory;
-import net.sf.persism.dao.Order;
+import net.sf.persism.dao.*;
+import org.junit.AfterClass;
+import org.junit.BeforeClass;
+import org.junit.Rule;
 import org.junit.experimental.categories.Category;
+import org.junit.rules.TestRule;
 
 import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 
+import static net.sf.persism.Parameters.params;
+import static net.sf.persism.SQL.sql;
+import static net.sf.persism.UtilsForTests.*;
+import static net.sf.persism.UtilsForTests.isViewInDatabase;
 @Category(ExternalDB.class)
 public class TestFirebird extends BaseTest {
 
@@ -22,7 +29,7 @@ public class TestFirebird extends BaseTest {
 
 // https://www.hascode.com/2013/03/micro-benchmarking-your-tests-using-junit-and-junitbenchmarks/
 // http://labs.carrotsearch.com/junit-benchmarks-tutorial.html
-    
+
 //
 //    @Rule
 //    public TestRule benchmarkRun = new BenchmarkRule();
@@ -71,12 +78,14 @@ public class TestFirebird extends BaseTest {
 
     @Override
     protected void createTables() throws SQLException {
-        List<String> commands = new ArrayList<>(12);
         String sql;
 
+        if (isProcedureInDatabase("spCustomerOrders", con)) {
+            executeCommand("DROP PROCEDURE spCustomerOrders", con);
+        }
 
-        if (UtilsForTests.isTableInDatabase("ORDERS", con)) {
-            commands.add("DROP TABLE ORDERS;");
+        if (isTableInDatabase("ORDERS", con)) {
+            executeCommand("DROP TABLE ORDERS;", con);
         }
 
 
@@ -93,16 +102,19 @@ public class TestFirebird extends BaseTest {
                 " DATE_SOMETHING TIMESTAMP " +
                 "); ";
 
-        commands.add(sql);
+        executeCommand(sql, con);
 
-        if (UtilsForTests.isTableInDatabase("CUSTOMERS", con)) {
-            commands.add("DROP TABLE CUSTOMERS;");
-            commands.add("DROP GENERATOR GEN_CUSTOMER_ID;");
+        if (isViewInDatabase("CustomerInvoice", con)) {
+            executeCommand("DROP VIEW CustomerInvoice", con);
+        }
+
+        if (isTableInDatabase("CUSTOMERS", con)) {
+            executeCommand("DROP TABLE CUSTOMERS;", con);
+            executeCommand("DROP GENERATOR GEN_CUSTOMER_ID;", con);
         }
 
         sql = "CREATE GENERATOR GEN_CUSTOMER_ID; ";
-        commands.add(sql);
-//        executeCommand(sql, con);
+        executeCommand(sql, con);
 
 
         sql = "CREATE TABLE CUSTOMERS ( " +
@@ -118,16 +130,15 @@ public class TestFirebird extends BaseTest {
                 "  PHONE VARCHAR(30), " +
                 "  FAX VARCHAR(30), " +
                 "  STATUS CHAR(1), " +
-                "  DATE_REGISTERED TIMESTAMP, " +
+                "  DATE_REGISTERED TIMESTAMP default 'NOW', " +
                 "  DATE_OF_LAST_ORDER DATE, " +
                 " TestLocalDate DATE, " +
                 " TestLocalDateTime TIMESTAMP, " +
                 "  CONSTRAINT PK_CUSTOMER PRIMARY KEY (CUSTOMER_ID) " +
                 "); ";
-        commands.add(sql);
-        executeCommands(commands, con);
+        executeCommand(sql, con);
 
-        if (UtilsForTests.isTableInDatabase("Invoices", con)) {
+        if (isTableInDatabase("Invoices", con)) {
             executeCommand("DROP TABLE Invoices", con);
         }
 
@@ -136,7 +147,7 @@ public class TestFirebird extends BaseTest {
                 " Customer_ID varchar(10) NOT NULL, " +
                 " Paid BOOLEAN NOT NULL, " +
                 " Price NUMERIC(7,3) NOT NULL, " +
-                " ActualPrice NUMERIC(7,3) NOT NULL, " +
+                " ACTUALPRICE NUMERIC(7,3) NOT NULL, " +
                 " Status INT DEFAULT 1, " +
                 " Created TIMESTAMP default 'NOW', " + // make read-only in Invoice Object
                 " Quantity NUMERIC(10) NOT NULL, " +
@@ -144,9 +155,15 @@ public class TestFirebird extends BaseTest {
                 " Discount NUMERIC(10,3) NOT NULL " +
                 ") ", con);
 
+        sql = "CREATE VIEW CustomerInvoice AS\n" +
+                " SELECT c.Customer_ID, c.Company_Name, i.Invoice_ID, i.Status, i.Created AS DateCreated, i.PAID, i.Quantity\n" +
+                "       FROM Invoices i\n" +
+                "       JOIN Customers c ON i.Customer_ID = c.Customer_ID\n" +
+                "       WHERE i.Status = 1\n";
+        executeCommand(sql, con);
 
 
-        if (UtilsForTests.isTableInDatabase("Contacts", con)) {
+        if (isTableInDatabase("Contacts", con)) {
             executeCommand("DROP TABLE Contacts", con);
         }
         // FIREBIRD and Derby don't like NULL
@@ -183,7 +200,7 @@ public class TestFirebird extends BaseTest {
 
         // TIMESTAMP for DATETIME in Firebird
 
-        if (UtilsForTests.isTableInDatabase("DateTestLocalTypes", con)) {
+        if (isTableInDatabase("DateTestLocalTypes", con)) {
             executeCommand("DROP TABLE DateTestLocalTypes", con);
         }
 
@@ -196,7 +213,7 @@ public class TestFirebird extends BaseTest {
 
         executeCommand(sql, con);
 
-        if (UtilsForTests.isTableInDatabase("DateTestSQLTypes", con)) {
+        if (isTableInDatabase("DateTestSQLTypes", con)) {
             executeCommand("DROP TABLE DateTestSQLTypes", con);
         }
 
@@ -252,6 +269,103 @@ public class TestFirebird extends BaseTest {
         order.setCustomerId("SOMEONE");
 
         session.insert(order);
+    }
+
+    public void testStoredProcedure() throws SQLException {
+
+        if (true) {
+            return;
+        }
+        String sql;
+
+        if (isProcedureInDatabase("spCustomerOrders", con)) {
+            executeCommand("DROP PROCEDURE spCustomerOrders", con);
+        }
+
+        log.error(con.getMetaData().getDatabaseProductName() + " " + con.getMetaData().getDatabaseProductVersion());
+        // https://stackoverflow.com/questions/64350980/returning-a-table-in-firebird-3-0-with-stored-function-or-stored-procedure
+
+        // https://ib-aid.com/download/docs/firebird-language-reference-2.5/fblangref25-ddl-procedure.html#create-procedure-examples
+        sql = """
+                CREATE PROCEDURE spCustomerOrders(cust_id VARCHAR(10))
+                RETURNS ("Customer_ID" VARCHAR(10), "Company_Name" VARCHAR(40), "Order_ID" integer,
+                         "Description" VARCHAR(40), "Date_Paid" TIMESTAMP, "DateCreated" TIMESTAMP, "Paid" BOOLEAN)
+                AS
+                BEGIN
+                    FOR SELECT c.Customer_ID, c.Company_Name, o.ID Order_ID,
+                          o.Name AS Description, o.Date_Paid, o.Created AS DateCreated, o.Paid
+                            FROM ORDERS o
+                            JOIN Customers c ON o.Customer_ID = c.Customer_ID
+                       WHERE c.Customer_ID = :cust_id
+                       INTO "Customer_ID", "Company_Name", "Order_ID", "Description", "Date_Paid", "DateCreated", "Paid"
+                    DO
+                    BEGIN
+                        SUSPEND;
+                    END
+                END
+                """;
+        System.out.println(sql);
+        executeCommand(sql, con);
+
+        // todo this is copied from TestMSSQL - eventually we should move this into BaseTest
+        Customer c1 = new Customer();
+        c1.setCustomerId("123");
+        c1.setCompanyName("ABC INC");
+        c1.setRegion(Regions.East);
+        c1.setStatus('1');
+        session.insert(c1);
+        session.fetch(c1);
+        c1.setStatus('2');
+        session.update(c1);
+
+        Customer cx = new Customer();
+        cx.setCustomerId("123");
+        cx.setCompanyName("ABC INC");
+        cx.setRegion(Regions.East);
+        cx.setAddress("asasasas");
+        cx.setStatus('e');
+        session.update(cx);
+
+        assertNotNull("Should be defaulted", c1.getDateRegistered());
+
+        Customer c2 = new Customer();
+        c2.setCustomerId("456");
+        c2.setCompanyName("XYZ INC");
+        session.insert(c2);
+
+        Order order;
+        order = DAOFactory.newOrder(con);
+        order.setCustomerId("123");
+        order.setName("ORDER 1");
+        order.setCreated(LocalDate.now());
+        order.setPaid(true);
+        session.insert(order);
+
+        order = DAOFactory.newOrder(con);
+        order.setCustomerId("123");
+        order.setName("ORDER 2");
+        order.setCreated(LocalDate.now());
+        order.setPaid(false);
+        session.insert(order);
+
+        session.fetch(order);
+
+        List<CustomerOrder> list = session.query(CustomerOrder.class, "spCustomerOrders(?)", params("123"));
+        log.info(list);
+        // Both forms should work - the 1st is a cleaner way but this should be supported
+        list = session.query(CustomerOrder.class, "{call spCustomerOrders(?) }", params("123"));
+        log.info(list);
+
+        // query orders by date
+        //DateFormat df = new SimpleDateFormat("MM/dd/yyyy");
+        //DateTimeFormatter df = DateTimeFormatter.ISO_DATE;
+
+        List<Order> orders = session.query(Order.class, sql("select * from Orders where CONVERT(varchar, created, 112) = ?"), params(order.getCreated().format(DateTimeFormatter.ISO_LOCAL_DATE)));
+        log.info("ORDERS?  " + orders);
+
+        orders = session.query(Order.class, sql("select * from Orders where created = ?"), params(order.getCreated().format(DateTimeFormatter.ISO_LOCAL_DATE)));
+        log.info("ORDERS AGAIN?  " + orders);
+
 
     }
 

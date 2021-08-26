@@ -1,5 +1,6 @@
 package net.sf.persism;
 
+import net.sf.persism.categories.ExternalDB;
 import net.sf.persism.categories.LocalDB;
 import net.sf.persism.dao.Contact;
 import net.sf.persism.dao.Customer;
@@ -8,15 +9,15 @@ import net.sf.persism.dao.Order;
 import org.junit.experimental.categories.Category;
 
 import java.sql.*;
+import java.sql.Date;
+import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.*;
 import java.util.stream.Collectors;
 
-import static net.sf.persism.Parameters.params;
-import static net.sf.persism.SQL.where;
-import static net.sf.persism.UtilsForTests.isTableInDatabase;
-import static net.sf.persism.UtilsForTests.isViewInDatabase;
+import static net.sf.persism.UtilsForTests.*;
 
 /**
  * Comments for TestDerby go here.
@@ -39,8 +40,8 @@ public final class TestDerby extends BaseTest {
         props.load(getClass().getResourceAsStream("/derby.properties"));
         Class.forName(props.getProperty("database.driver")).newInstance(); // derby needs new instance....
 
-        String home = UtilsForTests.createHomeFolder("pinfderby");
-        String url = UtilsForTests.replace(props.getProperty("database.url"), "{$home}", home);
+        String home = createHomeFolder("pinfderby");
+        String url = replace(props.getProperty("database.url"), "{$home}", home);
         log.info(url);
 
         con = DriverManager.getConnection(url);
@@ -89,7 +90,6 @@ public final class TestDerby extends BaseTest {
         if (isViewInDatabase("CustomerInvoice", con)) {
             commands.add("DROP VIEW CustomerInvoice");
         }
-
         if (isTableInDatabase("Customers", con)) {
             commands.add("DROP TABLE Customers");
         }
@@ -125,11 +125,12 @@ public final class TestDerby extends BaseTest {
                 " Created TIMESTAMP DEFAULT CURRENT_TIMESTAMP, " + // make read-only in Invoice Object
                 " Status INT DEFAULT 1, " +
                 " Price NUMERIC(7,3) NOT NULL, " +
-                " ActualPrice NUMERIC(7,3) NOT NULL, " +
+                " ACTUALPRICE NUMERIC(7,3) NOT NULL, " +
                 " Quantity INT NOT NULL, " +
 //                " Total NUMERIC(10,3) NOT NULL, " +
                 " Discount NUMERIC(10,3) NOT NULL " +
                 ") ");
+
 
         sql = "CREATE VIEW CustomerInvoice AS\n" +
                 " SELECT c.Customer_ID, c.Company_Name, i.Invoice_ID, i.Status, i.Created AS DateCreated, i.PAID, i.Quantity\n" +
@@ -137,7 +138,6 @@ public final class TestDerby extends BaseTest {
                 "       JOIN Customers c ON i.Customer_ID = c.Customer_ID\n" +
                 "       WHERE i.Status = 1\n";
         commands.add(sql);
-
         if (isTableInDatabase("TABLEMULTIPRIMARY", con)) {
             commands.add("DROP TABLE TABLEMULTIPRIMARY");
         }
@@ -159,7 +159,7 @@ public final class TestDerby extends BaseTest {
 
         sql = "CREATE TABLE Contacts(  " +
                 "   \"identity\" CHAR(16) FOR BIT DATA NOT NULL PRIMARY KEY,  " +  // test binary(16)
-                "   PartnerID CHAR(16) FOR BIT DATA NOT NULL,  " + // test varchar(36)
+                "   PartnerID varchar(36) NOT NULL,  " + // test varchar(36)
                 "   Type char(2) NOT NULL,  " +
                 "   Firstname varchar(50) NOT NULL,  " +
                 "   Lastname varchar(50) NOT NULL,  " +
@@ -215,7 +215,7 @@ public final class TestDerby extends BaseTest {
 
         executeCommand(sql, con);
 
-        if (isTableInDatabase("RecordTest1", con)) {
+        if (UtilsForTests.isTableInDatabase("RecordTest1", con)) {
             executeCommand("DROP TABLE RecordTest1", con);
         }
         sql = "CREATE TABLE RecordTest1 ( " +
@@ -226,7 +226,7 @@ public final class TestDerby extends BaseTest {
                 ") ";
         executeCommand(sql, con);
 
-        if (isTableInDatabase("RecordTest2", con)) {
+        if (UtilsForTests.isTableInDatabase("RecordTest2", con)) {
             executeCommand("DROP TABLE RecordTest2", con);
         }
         sql = "CREATE TABLE RecordTest2 ( " +
@@ -310,8 +310,7 @@ public final class TestDerby extends BaseTest {
                 assertNotNull("type should not be null", columnInfo.columnType);
             }
 
-            //List<Order> orders = session.query(Order.class, where("Customer_ID = ?").orderBy("DATE_PAID"), params("123"));
-            List<Order> orders = session.query(Order.class, where("Customer_ID = ? ORDER BY DATE_PAID"), params("123")).
+            List<Order> orders = session.query(Order.class, "SELECT * FROM Orders WHERE Customer_ID = ? ORDER BY DATE_PAID", "123").
                     stream().sorted(Comparator.comparing(Order::getCreated)).collect(Collectors.toList());
             log.warn(orders);
 
@@ -327,6 +326,7 @@ public final class TestDerby extends BaseTest {
     @Override
     public void testAllDates() {
         super.testAllDates();
-        session.query(Contact.class, where("LastName = ?"), params("fred"));
+
+        session.query(Contact.class, "SELECT * FROM CONTACTS WHERE LastName = ?","fred");
     }
 }
