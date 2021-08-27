@@ -171,7 +171,7 @@ abstract class SessionInternal {
                     inSingleQuote = true;
                 } else if (c == '"') {
                     inDoubleQuote = true;
-                } else if (c == '@' && i + 1 < length && // was :
+                } else if (c == '@' && i + 1 < length &&
                         Character.isJavaIdentifierStart(query.charAt(i + 1))) {
                     int j = i + 2;
                     while (j < length && Character.isJavaIdentifierPart(query.charAt(j))) {

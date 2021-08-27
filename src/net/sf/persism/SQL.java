@@ -57,20 +57,9 @@ public final class SQL {
         return sql;
     }
 
-//// kinda useless
-//    public static SQL orderBy(String orderBy) {
-//        SQL sql = new SQL(" ORDER BY " + orderBy);
-//        sql.addSQL = true;
-//        return sql;
-//    }
-//
-//    // stupid
-//    public SQL OrderBy(String orderBy) {
-//        SQL sql = new SQL(" ORDER BY " + orderBy);
-//        sql.addSQL = true;
-//        return sql;
-//    }
-
+    /**
+     * @hidden
+     */
     @Override
     public String toString() {
         return sql;

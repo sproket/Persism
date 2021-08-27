@@ -89,42 +89,326 @@ public final class Session extends SessionInternal implements AutoCloseable {
         reader = new Reader(this);
     }
 
+
+
+
     /**
-     * Function block of database operations to group together in one transaction.
-     * This method will set autocommit to false then execute the function, commit and set autocommit back to true.
-     * <pre>{@code
-     * session.withTransaction(() -> {
-     *     Contact contact = getContactFromSomewhere();
+     * Fetch an object from the database by it's primary key(s).
+     * You should instantiate the object and set the primary key properties before calling this method.
      *
-     *     contact.setIdentity(randomUUID);
-     *     session.insert(contact);
-     *
-     *     contact.setContactName("Wilma Flintstone");
-     *
-     *     session.update(contact);
-     *     session.fetch(contact);
-     * });
-     * }</pre>
-     *
-     * @param transactionBlock Block of operations expected to run as a single transaction.
-     * @throws PersismException in case of SQLException where the transaction is rolled back.
+     * @param object Data object to read from the database.
+     * @return true if the object was found by the primary key.
+     * @throws PersismException if something goes wrong.
      */
-    public void withTransaction(Runnable transactionBlock) {
+    public boolean fetch(Object object) throws PersismException {
+        Class<?> objectClass = object.getClass();
+
+        // If we know this type it means it's a primitive type. This method cannot be used for primitives
+        boolean readPrimitive = Types.getType(objectClass) != null;
+        if (readPrimitive) {
+            throw new PersismException(Messages.OperationNotSupportedForJavaType.message(objectClass, "FETCH"));
+        }
+
+        if (isRecord(objectClass)) {
+            throw new PersismException(Messages.OperationNotSupportedForRecord.message(objectClass, "FETCH"));
+        }
+
+        if (objectClass.getAnnotation(View.class) != null) {
+            throw new PersismException(Messages.OperationNotSupportedForView.message(objectClass, "FETCH"));
+        }
+
+        if (objectClass.getAnnotation(NotTable.class) != null) {
+            throw new PersismException(Messages.OperationNotSupportedForNotTableQuery.message(objectClass, "FETCH"));
+        }
+
+        List<String> primaryKeys = metaData.getPrimaryKeys(objectClass, connection);
+        if (primaryKeys.size() == 0) {
+            throw new PersismException(Messages.TableHasNoPrimaryKeys.message("FETCH", metaData.getTableName(objectClass)));
+        }
+
+        Map<String, PropertyInfo> properties = metaData.getTableColumnsPropertyInfo(object.getClass(), connection);
+        Parameters params = new Parameters();
+
+        List<ColumnInfo> columnInfos = new ArrayList<>(properties.size());
+        Map<String, ColumnInfo> cols = metaData.getColumns(objectClass, connection);
+        JDBCResult JDBCResult = new JDBCResult();
         try {
-            connection.setAutoCommit(false);
-            transactionBlock.run();
-            connection.commit();
+            for (String column : primaryKeys) {
+                PropertyInfo propertyInfo = properties.get(column);
+                params.add(propertyInfo.getter.invoke(object));
+                columnInfos.add(cols.get(column));
+            }
+            assert params.size() == columnInfos.size();
+
+            String sql = metaData.getDefaultSelectStatement(object.getClass(), connection);
+            log.debug("FETCH %s PARAMS: %s", sql, params);
+            for (int j = 0; j < params.size(); j++) {
+                if (params.get(j) != null) {
+                    params.set(j, converter.convert(params.get(j), columnInfos.get(j).columnType.getJavaType(), columnInfos.get(j).columnName));
+                }
+            }
+
+            sql = parsePropertyNames(sql, objectClass, connection);
+
+            exec(JDBCResult, sql, params.toArray());
+
+            if (JDBCResult.rs.next()) {
+                reader.readObject(object, JDBCResult.rs);
+                return true;
+            }
+            return false;
+
         } catch (Exception e) {
             Util.rollback(connection);
             throw new PersismException(e.getMessage(), e);
         } finally {
-            try {
-                connection.setAutoCommit(true);
-            } catch (SQLException e) {
-                log.warn(e.getMessage());
-            }
+            Util.cleanup(JDBCResult.st, JDBCResult.rs);
         }
     }
+
+    /**
+     * Fetch object by primary key(s)
+     *
+     * @param objectClass      Type to return (should be a POJO data class or a record)
+     * @param primaryKeyValues primary key values
+     * @param <T>              Type
+     * @return Instance of object type T or NULL if not found
+     * @throws PersismException if you pass a Java primitive or other invalid type for objectClass or something else goes wrong.
+     */
+    public <T> T fetch(Class<T> objectClass, Parameters primaryKeyValues) {
+        if (objectClass.getAnnotation(NotTable.class) != null || objectClass.getAnnotation(View.class) != null) {
+            throw new PersismException(Messages.OperationNotSupportedForNotTableQuery.message(objectClass, "QUERY w/o specifying the SQL"));
+        }
+        if (Types.getType(objectClass) != null) {
+            throw new PersismException(Messages.OperationNotSupportedForJavaType.message(objectClass, "FETCH"));
+        }
+        primaryKeyValues.areKeys = true;
+        return fetch(objectClass, new SQL(metaData.getDefaultSelectStatement(objectClass, connection)), primaryKeyValues);
+    }
+
+    /**
+     * Fetch object by arbitrary SQL
+     *
+     * @param objectClass Type to return
+     * @param sql         SQL query
+     * @param <T>         Type
+     * @return Instance of object type T or NULL if not found
+     * @throws PersismException if something goes wrong.
+     */
+    public <T> T fetch(Class<T> objectClass, SQL sql) {
+        return fetch(objectClass, sql, none());
+    }
+
+    /**
+     * Fetch an object of the specified type from the database. The type can be a Data Object or a native Java Object or primitive.
+     *
+     * @param objectClass Type of returned value
+     * @param sql         query - this would usually be a select OR a select of a single column if the type is a primitive.
+     *                    If this is a primitive type then this method will only look at the 1st column in the result.
+     * @param parameters  parameters to the query.
+     * @param <T>         Return type
+     * @return value read from the database of type T or null if not found
+     * @throws PersismException Well, this is a runtime exception so actually it could be anything really.
+     */
+    public <T> T fetch(Class<T> objectClass, SQL sql, Parameters parameters) {
+        // If we know this type it means it's a primitive type. Not a DAO so we use a different rule to read those
+        boolean isPOJO = Types.getType(objectClass) == null;
+        boolean isRecord = isPOJO && isRecord(objectClass);
+
+        JDBCResult result = JDBCResult.DEFAULT;
+        try {
+            result = executeQuery(objectClass, sql, parameters);
+            if (result.rs.next()) {
+                if (isRecord) {
+                    return reader.readRecord(objectClass, result.rs);
+                } else if (isPOJO) {
+                    T t = objectClass.getDeclaredConstructor().newInstance();
+                    return reader.readObject(t, result.rs);
+                } else {
+                    return reader.readColumn(result.rs, 1, objectClass);
+                }
+            }
+
+            return null;
+
+        } catch (Exception e) {
+            Util.rollback(connection);
+            throw new PersismException(e.getMessage(), e);
+        } finally {
+            Util.cleanup(result.st, result.rs);
+        }
+    }
+
+    /**
+     * @param objectClass
+     * @param sql
+     * @param parameters
+     * @param <T>
+     * @return
+     * @deprecated
+     */
+    public <T> T fetch(Class<T> objectClass, String sql, Object... parameters) {
+        return fetch(objectClass, new SQL(sql), new Parameters(parameters));
+    }
+
+    /**
+     * Query to return all results.
+     *
+     * @param objectClass Type of returned value
+     * @param <T>         Return type
+     * @return List of type T read from the database
+     * @throws PersismException Oof.
+     */
+    public <T> List<T> query(Class<T> objectClass) {
+        if (objectClass.getAnnotation(NotTable.class) != null) {
+            throw new PersismException(Messages.OperationNotSupportedForNotTableQuery.message(objectClass, "QUERY w/o specifying the SQL"));
+        }
+
+        if (Types.getType(objectClass) != null) {
+            throw new PersismException(Messages.OperationNotSupportedForJavaType.message(objectClass, "QUERY w/o specifying the SQL"));
+        }
+
+        return query(objectClass, sql(metaData.getSelectStatement(objectClass, connection)), none());
+    }
+
+    /**
+     * Query for any arbitrary SQL statement.
+     *
+     * @param objectClass Type of returned value
+     * @param sql         SQL to use for Querying
+     * @param <T>         Return type
+     * @return List of type T read from the database
+     * @throws PersismException He's dead Jim!
+     */
+    public <T> List<T> query(Class<T> objectClass, SQL sql) {
+        return query(objectClass, sql, none());
+    }
+
+    /**
+     * Query to return any results matching the primary key values provided.
+     *
+     * @param objectClass      Type of returned value
+     * @param primaryKeyValues Parameters containing primary key values
+     * @param <T>              Return type
+     * @return List of type T read from the database of any rows matching the primary keys. If you pass multiple primaries this will use WHERE IN(?,?,?) to find them.
+     * @throws PersismException Oh no. Not again.
+     */
+    public <T> List<T> query(Class<T> objectClass, Parameters primaryKeyValues) {
+        if (objectClass.getAnnotation(NotTable.class) != null || objectClass.getAnnotation(View.class) != null) {
+            throw new PersismException(Messages.OperationNotSupportedForNotTableQuery.message(objectClass, "QUERY w/o specifying the SQL"));
+        }
+        if (Types.getType(objectClass) != null) {
+            throw new PersismException(Messages.OperationNotSupportedForJavaType.message(objectClass, "QUERY"));
+        }
+
+        String sql;
+        if (primaryKeyValues.size() == 0) {
+            // Get the SELECT without any WHERE clause
+            sql = metaData.getSelectStatement(objectClass, connection);
+            return query(objectClass, sql(sql), none());
+        } else {
+            sql = metaData.getDefaultSelectStatement(objectClass, connection);
+        }
+
+        primaryKeyValues.areKeys = true;
+
+        List<String> primaryKeys = metaData.getPrimaryKeys(objectClass, connection);
+
+        if (primaryKeyValues.size() == primaryKeys.size()) {
+            // single select
+            return query(objectClass, sql(sql), primaryKeyValues);
+        }
+
+        String sd = metaData.getConnectionType().getKeywordStartDelimiter();
+        String ed = metaData.getConnectionType().getKeywordEndDelimiter();
+
+        String andSep = "";
+        // View should not check for WHERE
+        if (objectClass.getAnnotation(View.class) == null) {
+            int n = sql.indexOf(" WHERE");
+            sql = sql.substring(0, n + 7);
+        } else {
+            sql += " WHERE ";
+        }
+
+        StringBuilder sb = new StringBuilder(sql);
+        int groups = primaryKeyValues.size() / primaryKeys.size(); // check for divide by zero?
+        for (String column : primaryKeys) {
+            String sep = "";
+            sb.append(andSep).append(sd).append(column).append(ed).append(" IN (");
+            for (int j = 0; j < groups; j++) {
+                sb.append(sep).append("?");
+                sep = ", ";
+            }
+            sb.append(")");
+            andSep = " AND ";
+        }
+        sql = sb.toString();
+        return query(objectClass, sql(sql), primaryKeyValues);
+    }
+
+    /**
+     * Query for a list of objects of the specified class using the specified SQL query and parameters.
+     * The type of the list can be Data Objects or native Java Objects or primitives.
+     *
+     * @param objectClass class of objects to return.
+     * @param sql         query string to execute.
+     * @param parameters  parameters to the query.
+     * @param <T>         Return type
+     * @return a list of objects of the specified class using the specified SQL query and parameters.
+     * @throws PersismException If something goes wrong you get a big stack trace.
+     */
+    public <T> List<T> query(Class<T> objectClass, SQL sql, Parameters parameters) {
+        List<T> list = new ArrayList<>(32);
+
+        // If we know this type it means it's a primitive type. Not a DAO so we use a different rule to read those
+        boolean isPOJO = Types.getType(objectClass) == null;
+        boolean isRecord = isPOJO && isRecord(objectClass);
+
+        if (isPOJO && objectClass.getAnnotation(NotTable.class) == null) {
+            // Make sure columns are initialized if this is a table. TODO WHY DID WE NEED TO DO THIS?
+            metaData.getTableColumnsPropertyInfo(objectClass, connection);
+        }
+
+        JDBCResult result = JDBCResult.DEFAULT;
+        try {
+            result = executeQuery(objectClass, sql, parameters);
+            while (result.rs.next()) {
+                if (isRecord) {
+                    list.add(reader.readRecord(objectClass, result.rs));
+                } else if (isPOJO) {
+                    T t = objectClass.getDeclaredConstructor().newInstance();
+                    list.add(reader.readObject(t, result.rs));
+                } else {
+                    list.add(reader.readColumn(result.rs, 1, objectClass));
+                }
+            }
+
+        } catch (Exception e) {
+            Util.rollback(connection);
+            throw new PersismException(e.getMessage(), e);
+        } finally {
+            Util.cleanup(result.st, result.rs);
+        }
+
+        return list;
+
+    }
+
+    /**
+     * @param objectClass
+     * @param sql
+     * @param parameters
+     * @param <T>
+     * @return
+     * @deprecated
+     */
+    public <T> List<T> query(Class<T> objectClass, String sql, Object... parameters) {
+        return query(objectClass, new SQL(sql), new Parameters(parameters));
+    }
+
+
+    /* ****************************** Write methods ****************************************/
 
     /**
      * Updates the data object in the database.
@@ -207,61 +491,6 @@ public final class Session extends SessionInternal implements AutoCloseable {
 
         } finally {
             Util.cleanup(st, null);
-        }
-    }
-
-    /**
-     * Performs an Insert or Update depending on whether the primary key is defined by the object parameter.
-     *
-     * @param object the data object to insert or update.
-     * @param <T>    Type of the returning data object in Result.
-     * @return Result object containing rows changed (usually 1 to indicate rows changed via JDBC) and the data object itself which may have been changed by auto-inc or column defaults.
-     * @throws PersismException If this table has no primary keys or some SQL error.
-     */
-    public <T> Result<T> upsert(T object) throws PersismException {
-        checkIfOkForWriteOperation(object, "UPSERT");
-
-        List<String> primaryKeys = metaData.getPrimaryKeys(object.getClass(), connection);
-        if (primaryKeys.size() == 0) {
-            throw new PersismException(Messages.TableHasNoPrimaryKeys.message("UPSERT", metaData.getTableName(object.getClass())));
-        }
-
-        try {
-            Map<String, PropertyInfo> properties = metaData.getTableColumnsPropertyInfo(object.getClass(), connection);
-            Map<String, ColumnInfo> columns = metaData.getColumns(object.getClass(), connection);
-            List<Object> params = new ArrayList<>(primaryKeys.size());
-            boolean isInsert = false;
-
-            if (primaryKeys.size() == 1 && columns.get(primaryKeys.get(0)).autoIncrement) {
-                // If this is a single auto inc - we don't have to fetch back to the DB to decide
-                PropertyInfo propertyInfo = properties.get(primaryKeys.get(0));
-                Class<?> returnType = propertyInfo.getter.getReturnType();
-                Object value = propertyInfo.getter.invoke(object);
-                if (value == null || (returnType.isPrimitive() && value == Types.getDefaultValue(returnType))) {
-                    isInsert = true;
-                }
-            } else {
-                // Multiple primaries or the key(s) are set by the user - need to fetch to see if this is an insert or update
-                for (String key : primaryKeys) {
-                    PropertyInfo propertyInfo = properties.get(key);
-                    Object value = propertyInfo.getter.invoke(object);
-                    params.add(value);
-                }
-
-                Parameters parameters = params(params.toArray());
-                Object pojo = fetch(object.getClass(), parameters);
-                isInsert = pojo == null;
-            }
-
-            if (isInsert) {
-                return insert(object);
-            } else {
-                return update(object);
-            }
-        } catch (PersismException e) {
-            throw e; // todo see how this works. do we lose information?
-        } catch (Exception e) {
-            throw new PersismException(e.getMessage(), e);
         }
     }
 
@@ -471,321 +700,98 @@ public final class Session extends SessionInternal implements AutoCloseable {
         }
     }
 
-
     /**
-     * @param objectClass
-     * @param sql
-     * @param parameters
-     * @param <T>
-     * @return
-     * @deprecated
-     */
-    public <T> List<T> query(Class<T> objectClass, String sql, Object... parameters) {
-        return query(objectClass, new SQL(sql), new Parameters(parameters));
-    }
-
-    /**
-     * Query to return all results.
+     * Performs an Insert or Update depending on whether the primary key is defined by the object parameter.
      *
-     * @param objectClass Type of returned value
-     * @param <T>         Return type
-     * @return List of type T read from the database
-     * @throws PersismException Oof.
+     * @param object the data object to insert or update.
+     * @param <T>    Type of the returning data object in Result.
+     * @return Result object containing rows changed (usually 1 to indicate rows changed via JDBC) and the data object itself which may have been changed by auto-inc or column defaults.
+     * @throws PersismException If this table has no primary keys or some SQL error.
      */
-    public <T> List<T> query(Class<T> objectClass) {
-        if (objectClass.getAnnotation(NotTable.class) != null) {
-            throw new PersismException(Messages.OperationNotSupportedForNotTableQuery.message(objectClass, "QUERY w/o specifying the SQL"));
-        }
+    public <T> Result<T> upsert(T object) throws PersismException {
+        checkIfOkForWriteOperation(object, "UPSERT");
 
-        if (Types.getType(objectClass) != null) {
-            throw new PersismException(Messages.OperationNotSupportedForJavaType.message(objectClass, "QUERY w/o specifying the SQL"));
-        }
-
-        return query(objectClass, sql(metaData.getSelectStatement(objectClass, connection)), none());
-    }
-
-    /**
-     * Query for any arbitrary SQL statement.
-     *
-     * @param objectClass Type of returned value
-     * @param sql         SQL to use for Querying
-     * @param <T>         Return type
-     * @return List of type T read from the database
-     * @throws PersismException He's dead Jim!
-     */
-    public <T> List<T> query(Class<T> objectClass, SQL sql) {
-        return query(objectClass, sql, none());
-    }
-
-    /**
-     * Query to return any results matching the primary key values provided.
-     *
-     * @param objectClass      Type of returned value
-     * @param primaryKeyValues Parameters containing primary key values
-     * @param <T>              Return type
-     * @return List of type T read from the database of any rows matching the primary keys. If you pass multiple primaries this will use WHERE IN(?,?,?) to find them.
-     * @throws PersismException Oh no. Not again.
-     */
-    public <T> List<T> query(Class<T> objectClass, Parameters primaryKeyValues) {
-        if (objectClass.getAnnotation(NotTable.class) != null || objectClass.getAnnotation(View.class) != null) {
-            throw new PersismException(Messages.OperationNotSupportedForNotTableQuery.message(objectClass, "QUERY w/o specifying the SQL"));
-        }
-        if (Types.getType(objectClass) != null) {
-            throw new PersismException(Messages.OperationNotSupportedForJavaType.message(objectClass, "QUERY"));
-        }
-
-        String sql;
-        if (primaryKeyValues.size() == 0) {
-            // Get the SELECT without any WHERE clause
-            sql = metaData.getSelectStatement(objectClass, connection);
-            return query(objectClass, sql(sql), none());
-        } else {
-            sql = metaData.getDefaultSelectStatement(objectClass, connection);
-        }
-
-        primaryKeyValues.areKeys = true;
-
-        List<String> primaryKeys = metaData.getPrimaryKeys(objectClass, connection);
-
-        if (primaryKeyValues.size() == primaryKeys.size()) {
-            // single select
-            return query(objectClass, sql(sql), primaryKeyValues);
-        }
-
-        String sd = metaData.getConnectionType().getKeywordStartDelimiter();
-        String ed = metaData.getConnectionType().getKeywordEndDelimiter();
-
-        String andSep = "";
-        // View should not check for WHERE
-        if (objectClass.getAnnotation(View.class) == null) {
-            int n = sql.indexOf(" WHERE");
-            sql = sql.substring(0, n + 7);
-        } else {
-            sql += " WHERE ";
-        }
-
-        StringBuilder sb = new StringBuilder(sql);
-        int groups = primaryKeyValues.size() / primaryKeys.size(); // check for divide by zero?
-        for (String column : primaryKeys) {
-            String sep = "";
-            sb.append(andSep).append(sd).append(column).append(ed).append(" IN (");
-            for (int j = 0; j < groups; j++) {
-                sb.append(sep).append("?");
-                sep = ", ";
-            }
-            sb.append(")");
-            andSep = " AND ";
-        }
-        sql = sb.toString();
-        return query(objectClass, sql(sql), primaryKeyValues);
-    }
-
-    /**
-     * Query for a list of objects of the specified class using the specified SQL query and parameters.
-     * The type of the list can be Data Objects or native Java Objects or primitives.
-     *
-     * @param objectClass class of objects to return.
-     * @param sql         query string to execute.
-     * @param parameters  parameters to the query.
-     * @param <T>         Return type
-     * @return a list of objects of the specified class using the specified SQL query and parameters.
-     * @throws PersismException If something goes wrong you get a big stack trace.
-     */
-    public <T> List<T> query(Class<T> objectClass, SQL sql, Parameters parameters) {
-        List<T> list = new ArrayList<>(32);
-
-        // If we know this type it means it's a primitive type. Not a DAO so we use a different rule to read those
-        boolean isPOJO = Types.getType(objectClass) == null;
-        boolean isRecord = isPOJO && isRecord(objectClass);
-
-        if (isPOJO && objectClass.getAnnotation(NotTable.class) == null) {
-            // Make sure columns are initialized if this is a table. TODO WHY DID WE NEED TO DO THIS?
-            metaData.getTableColumnsPropertyInfo(objectClass, connection);
-        }
-
-        JDBCResult result = JDBCResult.DEFAULT;
-        try {
-            result = executeQuery(objectClass, sql, parameters);
-            while (result.rs.next()) {
-                if (isRecord) {
-                    list.add(reader.readRecord(objectClass, result.rs));
-                } else if (isPOJO) {
-                    T t = objectClass.getDeclaredConstructor().newInstance();
-                    list.add(reader.readObject(t, result.rs));
-                } else {
-                    list.add(reader.readColumn(result.rs, 1, objectClass));
-                }
-            }
-
-        } catch (Exception e) {
-            Util.rollback(connection);
-            throw new PersismException(e.getMessage(), e);
-        } finally {
-            Util.cleanup(result.st, result.rs);
-        }
-
-        return list;
-
-    }
-
-    /**
-     * Fetch an object from the database by it's primary key(s).
-     * You should instantiate the object and set the primary key properties before calling this method.
-     *
-     * @param object Data object to read from the database.
-     * @return true if the object was found by the primary key.
-     * @throws PersismException if something goes wrong.
-     */
-    public boolean fetch(Object object) throws PersismException {
-        Class<?> objectClass = object.getClass();
-
-        // If we know this type it means it's a primitive type. This method cannot be used for primitives
-        boolean readPrimitive = Types.getType(objectClass) != null;
-        if (readPrimitive) {
-            throw new PersismException(Messages.OperationNotSupportedForJavaType.message(objectClass, "FETCH"));
-        }
-
-        if (isRecord(objectClass)) {
-            throw new PersismException(Messages.OperationNotSupportedForRecord.message(objectClass, "FETCH"));
-        }
-
-        if (objectClass.getAnnotation(View.class) != null) {
-            throw new PersismException(Messages.OperationNotSupportedForView.message(objectClass, "FETCH"));
-        }
-
-        if (objectClass.getAnnotation(NotTable.class) != null) {
-            throw new PersismException(Messages.OperationNotSupportedForNotTableQuery.message(objectClass, "FETCH"));
-        }
-
-        List<String> primaryKeys = metaData.getPrimaryKeys(objectClass, connection);
+        List<String> primaryKeys = metaData.getPrimaryKeys(object.getClass(), connection);
         if (primaryKeys.size() == 0) {
-            throw new PersismException(Messages.TableHasNoPrimaryKeys.message("FETCH", metaData.getTableName(objectClass)));
+            throw new PersismException(Messages.TableHasNoPrimaryKeys.message("UPSERT", metaData.getTableName(object.getClass())));
         }
 
-        Map<String, PropertyInfo> properties = metaData.getTableColumnsPropertyInfo(object.getClass(), connection);
-        Parameters params = new Parameters();
-
-        List<ColumnInfo> columnInfos = new ArrayList<>(properties.size());
-        Map<String, ColumnInfo> cols = metaData.getColumns(objectClass, connection);
-        JDBCResult JDBCResult = new JDBCResult();
         try {
-            for (String column : primaryKeys) {
-                PropertyInfo propertyInfo = properties.get(column);
-                params.add(propertyInfo.getter.invoke(object));
-                columnInfos.add(cols.get(column));
-            }
-            assert params.size() == columnInfos.size();
+            Map<String, PropertyInfo> properties = metaData.getTableColumnsPropertyInfo(object.getClass(), connection);
+            Map<String, ColumnInfo> columns = metaData.getColumns(object.getClass(), connection);
+            List<Object> params = new ArrayList<>(primaryKeys.size());
+            boolean isInsert = false;
 
-            String sql = metaData.getDefaultSelectStatement(object.getClass(), connection);
-            log.debug("FETCH %s PARAMS: %s", sql, params);
-            for (int j = 0; j < params.size(); j++) {
-                if (params.get(j) != null) {
-                    params.set(j, converter.convert(params.get(j), columnInfos.get(j).columnType.getJavaType(), columnInfos.get(j).columnName));
+            if (primaryKeys.size() == 1 && columns.get(primaryKeys.get(0)).autoIncrement) {
+                // If this is a single auto inc - we don't have to fetch back to the DB to decide
+                PropertyInfo propertyInfo = properties.get(primaryKeys.get(0));
+                Class<?> returnType = propertyInfo.getter.getReturnType();
+                Object value = propertyInfo.getter.invoke(object);
+                if (value == null || (returnType.isPrimitive() && value == Types.getDefaultValue(returnType))) {
+                    isInsert = true;
                 }
+            } else {
+                // Multiple primaries or the key(s) are set by the user - need to fetch to see if this is an insert or update
+                for (String key : primaryKeys) {
+                    PropertyInfo propertyInfo = properties.get(key);
+                    Object value = propertyInfo.getter.invoke(object);
+                    params.add(value);
+                }
+
+                Parameters parameters = params(params.toArray());
+                Object pojo = fetch(object.getClass(), parameters);
+                isInsert = pojo == null;
             }
 
-            sql = parsePropertyNames(sql, objectClass, connection);
-
-            exec(JDBCResult, sql, params.toArray());
-
-            if (JDBCResult.rs.next()) {
-                reader.readObject(object, JDBCResult.rs);
-                return true;
+            if (isInsert) {
+                return insert(object);
+            } else {
+                return update(object);
             }
-            return false;
+        } catch (PersismException e) {
+            throw e; // todo see how this works. do we lose information?
+        } catch (Exception e) {
+            throw new PersismException(e.getMessage(), e);
+        }
+    }
 
+    /**
+     * Function block of database operations to group together in one transaction.
+     * This method will set autocommit to false then execute the function, commit and set autocommit back to true.
+     * <pre>{@code
+     * session.withTransaction(() -> {
+     *     Contact contact = getContactFromSomewhere();
+     *
+     *     contact.setIdentity(randomUUID);
+     *     session.insert(contact);
+     *
+     *     contact.setContactName("Wilma Flintstone");
+     *
+     *     session.update(contact);
+     *     session.fetch(contact);
+     * });
+     * }</pre>
+     *
+     * @param transactionBlock Block of operations expected to run as a single transaction.
+     * @throws PersismException in case of SQLException where the transaction is rolled back.
+     */
+    public void withTransaction(Runnable transactionBlock) {
+        try {
+            connection.setAutoCommit(false);
+            transactionBlock.run();
+            connection.commit();
         } catch (Exception e) {
             Util.rollback(connection);
             throw new PersismException(e.getMessage(), e);
         } finally {
-            Util.cleanup(JDBCResult.st, JDBCResult.rs);
-        }
-    }
-
-    /**
-     * @param objectClass
-     * @param sql
-     * @param parameters
-     * @param <T>
-     * @return
-     * @deprecated
-     */
-    public <T> T fetch(Class<T> objectClass, String sql, Object... parameters) {
-        return fetch(objectClass, new SQL(sql), new Parameters(parameters));
-    }
-
-    /**
-     * Fetch object by primary key(s)
-     *
-     * @param objectClass      Type to return (should be a POJO data class or a record)
-     * @param primaryKeyValues primary key values
-     * @param <T>              Type
-     * @return Instance of object type T or NULL if not found
-     * @throws PersismException if you pass a Java primitive or other invalid type for objectClass or something else goes wrong.
-     */
-    public <T> T fetch(Class<T> objectClass, Parameters primaryKeyValues) {
-        if (objectClass.getAnnotation(NotTable.class) != null || objectClass.getAnnotation(View.class) != null) {
-            throw new PersismException(Messages.OperationNotSupportedForNotTableQuery.message(objectClass, "QUERY w/o specifying the SQL"));
-        }
-        if (Types.getType(objectClass) != null) {
-            throw new PersismException(Messages.OperationNotSupportedForJavaType.message(objectClass, "FETCH"));
-        }
-        primaryKeyValues.areKeys = true;
-        return fetch(objectClass, new SQL(metaData.getDefaultSelectStatement(objectClass, connection)), primaryKeyValues);
-    }
-
-    /**
-     * Fetch object by arbitrary SQL
-     *
-     * @param objectClass Type to return
-     * @param sql         SQL query
-     * @param <T>         Type
-     * @return Instance of object type T or NULL if not found
-     * @throws PersismException if something goes wrong.
-     */
-    public <T> T fetch(Class<T> objectClass, SQL sql) {
-        return fetch(objectClass, sql, none());
-    }
-
-    /**
-     * Fetch an object of the specified type from the database. The type can be a Data Object or a native Java Object or primitive.
-     *
-     * @param objectClass Type of returned value
-     * @param sql         query - this would usually be a select OR a select of a single column if the type is a primitive.
-     *                    If this is a primitive type then this method will only look at the 1st column in the result.
-     * @param parameters  parameters to the query.
-     * @param <T>         Return type
-     * @return value read from the database of type T or null if not found
-     * @throws PersismException Well, this is a runtime exception so actually it could be anything really.
-     */
-    public <T> T fetch(Class<T> objectClass, SQL sql, Parameters parameters) {
-        // If we know this type it means it's a primitive type. Not a DAO so we use a different rule to read those
-        boolean isPOJO = Types.getType(objectClass) == null;
-        boolean isRecord = isPOJO && isRecord(objectClass);
-
-        JDBCResult result = JDBCResult.DEFAULT;
-        try {
-            result = executeQuery(objectClass, sql, parameters);
-            if (result.rs.next()) {
-                if (isRecord) {
-                    return reader.readRecord(objectClass, result.rs);
-                } else if (isPOJO) {
-                    T t = objectClass.getDeclaredConstructor().newInstance();
-                    return reader.readObject(t, result.rs);
-                } else {
-                    return reader.readColumn(result.rs, 1, objectClass);
-                }
+            try {
+                connection.setAutoCommit(true);
+            } catch (SQLException e) {
+                log.warn(e.getMessage());
             }
-
-            return null;
-
-        } catch (Exception e) {
-            Util.rollback(connection);
-            throw new PersismException(e.getMessage(), e);
-        } finally {
-            Util.cleanup(result.st, result.rs);
         }
     }
+
 
     MetaData getMetaData() {
         return metaData;

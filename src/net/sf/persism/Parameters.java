@@ -1,5 +1,7 @@
 package net.sf.persism;
 
+import net.sf.persism.annotations.NotTable;
+
 import java.util.*;
 
 /**
@@ -123,6 +125,9 @@ public final class Parameters {
         return parameters.toArray();
     }
 
+    /**
+     * @hidden
+     */
     @Override
     public String toString() {
         return "" + parameters;

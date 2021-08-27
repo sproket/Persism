@@ -4,8 +4,6 @@ enum Messages {
     // todo that verify each occurs with code coverage (some additional tests required)
 
     // Errors
-    @Deprecated // use OperationNotSupportedFor
-    PrimaryKeysDontExist("executeQuery: Primary keys don't exist in a Query or View. Please use params() rather than keys()"),
     ObjectNotProperlyInitialized("Object %s was not properly initialized. Some properties not initialized in the queried columns (%s)"),
     ObjectNotProperlyInitializedByQuery("Object %s was not properly initialized. Some properties not initialized by the queried columns: %s  Missing: %s"),
     IllegalArgumentReadingColumn("Illegal Argument occurred setting property: %s. Object %s. Column: %s Type of property: %s - Type read: %s VALUE: %s"),
@@ -17,8 +15,6 @@ enum Messages {
     TableHasNoPrimaryKeysForWhere("Could not determine WHERE clause for %s. No primary keys detected"),
     ClassHasNoGetterForProperty("Class %s has no getter for property %s"),
     NonAutoIncGeneratedNotSupported("Non-auto inc generated primary keys are not supported. Please assign your primary key value before performing an insert"),
-    @Deprecated // use OperationNotSupportedFor...
-    CannotReadThisType("Cannot read a %s type object with this method"),
     CouldNotFindTableNameInTheDatabase("Could not find a Table in the database named %s. Check the @Table annotation on %s"),
     CouldNotFindViewNameInTheDatabase("Could not find a View in the database named %s. Check the @View annotation on %s"),
     CouldNotDetermineTableOrViewForType("Could not determine a %s for type: %s Guesses were: %s"),
