@@ -7,14 +7,17 @@ import net.sf.persism.dao.records.*;
 import java.lang.reflect.InvocationTargetException;
 import java.math.BigDecimal;
 import java.sql.*;
-import java.sql.Date;
 import java.text.DateFormat;
 import java.text.NumberFormat;
 import java.text.SimpleDateFormat;
 import java.time.*;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
+import java.util.logging.Logger;
 
 import static net.sf.persism.Parameters.*;
 import static net.sf.persism.SQL.*;
@@ -277,31 +280,25 @@ public abstract class BaseTest extends TestCase {
         sql += " WHERE 1 = ?";
         log.info(sql);
 
-        fail = false;
-        try {
-            // this should fail with don't use keys() with a Query
-            results = session.query(CustomerOrder.class, sql(sql), keys(1));
-        } catch (PersismException e) {
-            fail = true;
-            log.info("expected error " + e.getMessage());
-            assertEquals("", e.getMessage(), Messages.PrimaryKeysDontExist.message());
-        }
-
-        assertTrue(fail);
+        // this should work now since we don't use keys() method - this should not fail any longer if I remove they keys() method
+        results = session.query(CustomerOrder.class, sql(sql), params(1));
 
         // This should not fail - we will refresh the metadata
         results = session.query(CustomerOrder.class, sql(sql), params(1));
         log.info(results);
         assertEquals("size should be 4", 4, results.size());
 
+        // get one for test later with fetch
+        CustomerOrder customerOrder = results.get(0);
+
         // ORDER 1 s/b paid = true others paid = false
-        for (CustomerOrder customerOrder : results) {
-            log.info("date created? " + customerOrder.getDateCreated());
-            log.info("date paid? " + customerOrder.getDatePaid());
-            if ("ORDER 1".equals(customerOrder.getDescription())) {
-                assertTrue("order 1 s/b paid", customerOrder.isPaid());
+        for (CustomerOrder co : results) {
+            log.info("date created? " + co.getDateCreated());
+            log.info("date paid? " + co.getDatePaid());
+            if ("ORDER 1".equals(co.getDescription())) {
+                assertTrue("order 1 s/b paid", co.isPaid());
             } else {
-                assertFalse("order OTHER s/b NOT paid", customerOrder.isPaid());
+                assertFalse("order OTHER s/b NOT paid", co.isPaid());
             }
         }
 
@@ -316,7 +313,7 @@ public abstract class BaseTest extends TestCase {
         session.insert(customer);
 
         // test primitives
-        String result = session.fetch(String.class, sql("select Contact_Name from Customers where Customer_ID = ?"), keys("1234"));
+        String result = session.fetch(String.class, sql("select Contact_Name from Customers where Customer_ID = ?"), params("1234"));
         log.info(result);
         assertEquals("should be Fred", "Fred", result);
 
@@ -324,6 +321,54 @@ public abstract class BaseTest extends TestCase {
         log.info("count " + count);
         assertEquals("should be 1", "1", "" + count);
 
+        fail = false;
+        try {
+            session.query(Logger.class); // this kind of shit fails too
+        } catch (PersismException e) {
+            fail = true;
+            assertEquals("s/b 'Could not determine a table for type: java.util.logging.Logger Guesses were: [Logger, Loggers]'",
+                    "Could not determine a table for type: java.util.logging.Logger Guesses were: [Logger, Loggers]",
+                    e.getMessage());
+        }
+        assertTrue(fail);
+
+        // Test Query on NotTable with no SQL provided
+        fail = false;
+        try {
+
+            session.query(CustomerOrder.class, params("junk"));
+        } catch (PersismException e) {
+            fail = true;
+            assertEquals("s/b class net.sf.persism.dao.CustomerOrder: QUERY w/o specifying the SQL operation not supported for @NotTable classes",
+                    "class net.sf.persism.dao.CustomerOrder: QUERY w/o specifying the SQL operation not supported for @NotTable classes",
+                    e.getMessage());
+        }
+        assertTrue(fail);
+
+        // Test Fetch on NotTable with no SQL provided
+        fail = false;
+        try {
+
+            session.fetch(CustomerOrder.class, params("junk"));
+        } catch (PersismException e) {
+            fail = true;
+            assertEquals("s/b class net.sf.persism.dao.CustomerOrder: QUERY w/o specifying the SQL operation not supported for @NotTable classes",
+                    "class net.sf.persism.dao.CustomerOrder: QUERY w/o specifying the SQL operation not supported for @NotTable classes",
+                    e.getMessage());
+        }
+        assertTrue(fail);
+
+        // Test simple object Fetch with NotTable
+        fail = false;
+        try {
+            session.fetch(customerOrder);
+        } catch (PersismException e) {
+            fail = true;
+            assertEquals("s/b class net.sf.persism.dao.CustomerOrder: FETCH operation not supported for @NotTable classes",
+                    "class net.sf.persism.dao.CustomerOrder: FETCH operation not supported for @NotTable classes",
+                    e.getMessage());
+        }
+        assertTrue(fail);
     }
 
     public void testSelectMultipleByPrimaryKey() throws SQLException {
@@ -561,12 +606,22 @@ public abstract class BaseTest extends TestCase {
             session.fetch(countryString);
         } catch (PersismException e) {
             failed = true;
-            assertEquals("message s/b 'Cannot read a primitive type object with this method.'",
-                    "Cannot read a primitive type object with this method.",
+            assertEquals("message s/b 'class java.lang.String: FETCH operation not supported for Java types'",
+                    "class java.lang.String: FETCH operation not supported for Java types",
                     e.getMessage());
         }
         assertTrue("should have thrown the exception", failed);
 
+        failed = false;
+        try {
+            session.fetch(String.class, params(""));
+        } catch (PersismException e) {
+            failed = true;
+            assertEquals("message s/b 'class java.lang.String: FETCH operation not supported for Java types'",
+                    "class java.lang.String: FETCH operation not supported for Java types",
+                    e.getMessage());
+        }
+        assertTrue("should have thrown the exception", failed);
     }
 
     UUID identity = UUID.fromString(UUID1);
@@ -794,7 +849,7 @@ public abstract class BaseTest extends TestCase {
         // https://stackoverflow.com/questions/45305283/parsing-sql-query-in-java
 
         // test where and keys - this at least does conversions for UUID so they don't have to manually do it.
-        // As long as they use keys() rather than params() todo review
+        // As long as they use the query/fetch without the SQL param.
         String columnName = session.getMetaData().getPrimaryKeys(Contact.class, con).get(0);
         String where = session.getMetaData().getConnectionType().getKeywordStartDelimiter() +
                 columnName +
@@ -802,14 +857,15 @@ public abstract class BaseTest extends TestCase {
                 "=?";
         log.info("testContactTable " + where);
         // testing that this should not fail.
-        List<Contact> results = session.query(Contact.class, where(where), keys(identity));
+        List<Contact> results = session.query(Contact.class, params(identity));
         log.info(results);
 
-        Contact result = session.fetch(Contact.class, where(where), keys(identity));
+        Contact result = session.fetch(Contact.class, params(identity));
         log.info(result);
+        assertNotNull(result);
 
-        //todo Try this. should it convert? yes but it doesn't oracle just passes the bad string into the byte array so we don't find a result.
-        // assertTrue(session.query(Contact.class, where(":partnerId = ?"), params(contact.getPartnerId())).size() > 0);
+        //todo Try this. should it convert foreign key propery? WE CANT !
+        assertTrue(session.query(Contact.class, where(":partnerId = ?"), params(contact.getPartnerId())).size() > 0);
 
         // named params
         SQL sql = sql("select * from Contacts where (firstname = @name OR company = @name) and lastname = @last");
@@ -867,6 +923,35 @@ public abstract class BaseTest extends TestCase {
 
         // TODO Misspelled BOTH? - document?
         // In that case you would get Parameters missing error then Properties missing next time you try
+
+    }
+
+    public void testNamedParameters() {
+
+        // null checks for unset properties.
+        Contact contact = new Contact();
+        UUID rand = UUID.randomUUID();
+        contact.setIdentity(rand);
+        contact.setPartnerId(partnerId);
+        contact.setType("X");
+        contact.setFirstname("not null");
+        contact.setLastname("not null");
+        contact.setCompany("Y");
+        contact.setContactName("X");
+
+        session.insert(contact);
+        session.fetch(contact);
+
+
+        // test with primitives
+
+        String name = session.fetch(String.class, sql("SELECT LASTNAME FROM Contacts WHERE FIRSTNAME = @first"), named(Map.of("first", "not null")));
+        assertNotNull(name);
+
+        List<String> names = session.query(String.class, sql("SELECT LASTNAME FROM Contacts WHERE FIRSTNAME = @first"), named(Map.of("first", "not null")));
+        assertTrue(names.size() > 0);
+
+        // test with stored proc - see TestMSSQL testStoredProc
     }
 
     static LocalDateTime ldt = LocalDateTime.parse("1998-02-17 10:23:43.567", formatter);
@@ -1191,8 +1276,9 @@ public abstract class BaseTest extends TestCase {
             session.fetch(rt1);
         } catch (PersismException e) {
             fail = true;
-            //log.error(e.getMessage(), e);
-            assertEquals("s/b 'Cannot read a Record type object with this method.'", "Cannot read a Record type object with this method.", e.getMessage());
+            assertEquals("s/b 'class net.sf.persism.dao.records.RecordTest1: FETCH operation not supported for record types'",
+                    "class net.sf.persism.dao.records.RecordTest1: FETCH operation not supported for record types",
+                    e.getMessage());
         }
         assertTrue(fail);
 
@@ -1255,8 +1341,8 @@ public abstract class BaseTest extends TestCase {
 
         } catch (PersismException e) {
             fail = true;
-            assertEquals("s/b 'Cannot read a Record type object with this method.'",
-                    "Cannot read a Record type object with this method.",
+            assertEquals("s/b 'class net.sf.persism.dao.records.RecordTest2: FETCH operation not supported for record types'",
+                    "class net.sf.persism.dao.records.RecordTest2: FETCH operation not supported for record types",
                     e.getMessage());
         }
         assertTrue(fail);

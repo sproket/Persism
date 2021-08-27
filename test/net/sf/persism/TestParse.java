@@ -16,26 +16,26 @@ public class TestParse {
 
     private static class ParameterizedQuery {
         final String sql;
-        final Parameter[] params;
+        final XParameter[] params;
 
-        ParameterizedQuery(String sql, Parameter[] params) {
+        ParameterizedQuery(String sql, XParameter[] params) {
             this.sql = sql;
             this.params = params.clone();
         }
     }
 
-    private static class Parameter {
+    private static class XParameter {
         final int position;
         final String value;
 
-        Parameter(int position, String value) {
+        XParameter(int position, String value) {
             this.position = position;
             this.value = value;
         }
     }
 
     private static ParameterizedQuery parse(String query) {
-        List<Parameter> parms = new ArrayList<>();
+        List<XParameter> parms = new ArrayList<>();
         Matcher matcher = CONST_PATTERN.matcher(query);
         int start = 0;
         StringBuilder buf = new StringBuilder();
@@ -44,12 +44,12 @@ public class TestParse {
             buf.append(query, start, pos)
                     .append(matcher.group(1))
                     .append("?");
-            parms.add(new Parameter(buf.length()-1,matcher.group(2)));
+            parms.add(new XParameter(buf.length()-1,matcher.group(2)));
             start = matcher.end();
         }
         buf.append(query, start, query.length());
         return new ParameterizedQuery(
-                buf.toString(), parms.toArray(new Parameter[parms.size()]));
+                buf.toString(), parms.toArray(new XParameter[parms.size()]));
     }
 
     private static ParameterizedQuery[] simplify(ParameterizedQuery[] queries) {
@@ -102,19 +102,19 @@ public class TestParse {
     }
 
     private static ParameterizedQuery expandQuery(String query,
-                                                  Parameter[] params, boolean[] diff) {
+                                                  XParameter[] params, boolean[] diff) {
         int count = 0;
         for (boolean b: diff) {
             if (b) {
                 ++count;
             }
         }
-        Parameter[] result = new Parameter[count];
+        XParameter[] result = new XParameter[count];
         int r = 0;
         int start = 0;
         StringBuilder buf = new StringBuilder();
         for (int i = 0; i < diff.length; ++i) {
-            Parameter parm = params[i];
+            XParameter parm = params[i];
             if (!diff[i]) {
                 // expand param
                 buf.append(query, start, parm.position);
@@ -122,7 +122,7 @@ public class TestParse {
                 start = parm.position+1;
             } else {
                 buf.append(query, start, parm.position);
-                result[r++] = new Parameter(buf.length(), parm.value);
+                result[r++] = new XParameter(buf.length(), parm.value);
                 start = parm.position;
             }
         }
@@ -130,13 +130,13 @@ public class TestParse {
         return new ParameterizedQuery(buf.toString(), result);
     }
 
-    private static Parameter[] keep(Parameter[] params, Parameter[] ref,
-                                    boolean[] diff) {
-        Parameter[] result = new Parameter[ref.length];
+    private static XParameter[] keep(XParameter[] params, XParameter[] ref,
+                                     boolean[] diff) {
+        XParameter[] result = new XParameter[ref.length];
         int j = 0;
         for (int i = 0; i < params.length; ++i) {
             if (diff[i]) {
-                result[j] = new Parameter(ref[j].position, params[i].value);
+                result[j] = new XParameter(ref[j].position, params[i].value);
                 ++j;
             }
         }
@@ -158,7 +158,7 @@ public class TestParse {
         for (ParameterizedQuery cur: queries) {
             System.out.println(cur.sql);
             int i = 0;
-            for (Parameter parm: cur.params) {
+            for (XParameter parm: cur.params) {
                 System.out.println("    " + (++i) + ": " + parm.value);
             }
         }
@@ -166,7 +166,7 @@ public class TestParse {
         for (ParameterizedQuery cur: queries) {
             System.out.println(cur.sql);
             int i = 0;
-            for (Parameter parm: cur.params) {
+            for (XParameter parm: cur.params) {
                 System.out.println("    " + (++i) + ": " + parm.value);
             }
         }

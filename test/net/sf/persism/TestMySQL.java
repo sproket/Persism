@@ -10,7 +10,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 
-import static net.sf.persism.Parameters.keys;
 import static net.sf.persism.Parameters.params;
 import static net.sf.persism.SQL.sql;
 
@@ -222,7 +221,7 @@ public class TestMySQL extends BaseTest {
         List<Customer> customers = session.query(Customer.class, sql("SELECT * FROM Customers"));
         log.info(customers);
 
-        String result = session.fetch(String.class, sql("select `Contact_Name` from Customers where Customer_ID = ?"), keys(123));
+        String result = session.fetch(String.class, sql("select `Contact_Name` from Customers where Customer_ID = ?"), params(123));
         log.info(result);
         assertEquals("should be Fred", "Fred", result);
 
@@ -231,7 +230,7 @@ public class TestMySQL extends BaseTest {
         log.info("count " + count);
 
         session.query(Customer.class, params("123"));
-        session.query(Customer.class, keys("123","456","780"));
+        session.query(Customer.class, params("123","456","780"));
 
     }
 

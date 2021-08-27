@@ -46,25 +46,13 @@ public final class Parameters {
 
     /**
      * Static initializer for named parameters
+     * TODO should we have the user pass the indicator string like @ or : or something else? What would happen if they passed ":"? would it break the query when we parse for property names? WELL MAYBE WE DO CALL parse for params first.
      *
      * @param nameValuePair - use Map.of("key1", value, "key2", value) etc.
      * @return new Parameters object
      */
     public static Parameters named(Map<String, Object> nameValuePair) {
         return new Parameters(nameValuePair);
-    }
-
-    /**
-     * Static initializer for a new set of Parameters indicating that they are primary key values
-     *
-     * @param values varargs list of arbitrary parameters for a query.
-     * @return new Parameters object
-     */
-    public static Parameters keys(Object... values) {
-        // todo how will this work if you set this on a @NotTable class? We don't know the primary keys. TODO TEST - WE PROBABLY NEED TO FAIL EARLY
-        Parameters parameters = new Parameters(values);
-        parameters.areKeys = true;
-        return parameters;
     }
 
     /**
@@ -95,8 +83,6 @@ public final class Parameters {
     void setParameterMap(Map<String, List<Integer>> parameterMap) {
         assert areNamed;
 
-        // todo any way to detect if there's a missing param? Currently it leaves it as a null
-        // todo any way to detect if there's a mis-spelled key?
         // find largest index
         int max = 0;
         for (List<Integer> integers : parameterMap.values()) {

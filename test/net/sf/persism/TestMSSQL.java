@@ -607,8 +607,8 @@ public class TestMSSQL extends BaseTest {
             session.insert(barney);
         } catch (PersismException e) {
             failed = true;
-            assertEquals("message s/b 'Non-auto inc generated primary keys are not supported. Please assign your primary key value before performing an insert.'",
-                    "Non-auto inc generated primary keys are not supported. Please assign your primary key value before performing an insert.",
+            assertEquals("message s/b 'Non-auto inc generated primary keys are not supported. Please assign your primary key value before performing an insert'",
+                    "Non-auto inc generated primary keys are not supported. Please assign your primary key value before performing an insert",
                     e.getMessage());
         }
         assertTrue(failed);
@@ -838,12 +838,23 @@ public class TestMSSQL extends BaseTest {
         List<CustomerOrder> list;
         list = session.query(CustomerOrder.class, proc("[spCustomerOrders](?)"), params("123"));
         log.info(list);
+        assertTrue(list.size() > 0);
+
+
         // Checking for warning
         list = session.query(CustomerOrder.class, sql("[spCustomerOrders](?)"), params("123"));
+        log.info(list);
+        assertTrue(list.size() > 0);
 
         // Both forms should work - the 1st is a cleaner way but this should be supported
         list = session.query(CustomerOrder.class, proc("{call [spCustomerOrders](?) }"), params("123"));
         log.info(list);
+        assertTrue(list.size() > 0);
+
+        // TODO Should we allow this? It doesn't make sense. Maybe just warn and move on....
+        list = session.query(CustomerOrder.class, sql("{call [spCustomerOrders](@custId) }"), named(Map.of("custId", "123")));
+        log.info(list);
+        assertTrue(list.size() > 0);
 
         // query orders by date
         //DateFormat df = new SimpleDateFormat("MM/dd/yyyy");
@@ -950,7 +961,7 @@ public class TestMSSQL extends BaseTest {
         } catch (PersismException e) {
             shouldHaveFailed = true;
             log.info(e.getMessage(), e);
-            assertEquals("message should be ", "Object class net.sf.persism.dao.ContactFail was not properly initialized. Some properties not initialized in the queried columns (fail).", e.getMessage());
+            assertEquals("message should be ", "Object class net.sf.persism.dao.ContactFail was not properly initialized. Some properties not initialized in the queried columns (fail)", e.getMessage());
         }
 
         assertEquals("should have failed", true, shouldHaveFailed);

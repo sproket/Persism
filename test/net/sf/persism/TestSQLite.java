@@ -305,7 +305,6 @@ public final class TestSQLite extends BaseTest {
 
 
     public void testCustomers() {
-
         Customer customer = new Customer();
         customer.setCompanyName("MOO");
 
@@ -323,9 +322,19 @@ public final class TestSQLite extends BaseTest {
         //customer.setDateOfLastOrder(new Date(System.currentTimeMillis()));
         customer.setDateOfLastOrder(LocalDateTime.now());
         customer.setDateRegistered(new Timestamp(System.currentTimeMillis() - 10000000l));
+        customer.setContactTitle("testing 1.2.3");
         session.insert(customer); // this should be ok now.
 
         log.info("Customer 1 ?" + customer);
+
+        List<Customer> list;
+        list = session.query(Customer.class, "SELECT *, Company_Name, Contact_Name, :contactTitle FROM  CUSTOMERS");
+
+        log.info(list);
+
+        // somehow SQLite is OK with this. <sigh>
+        String result = session.fetch(String.class, "SELECT :contactTitle FROM CUSTOMERS");
+        log.warn("WTF! " + result);
 
         // insert a duplicate
         boolean dupFail = false;
@@ -342,7 +351,7 @@ public final class TestSQLite extends BaseTest {
 
         assertTrue("duplicate key should fail", dupFail);
 
-        List<Customer> list = session.query(Customer.class, sql("select * from customers"));
+        list = session.query(Customer.class, sql("select * from customers"));
 
         assertEquals("list should have 1 customer", 1, list.size());
 
@@ -566,8 +575,8 @@ public final class TestSQLite extends BaseTest {
             session.update(junk);
         } catch (PersismException e) {
             shouldFail = true;
-            assertEquals("Message s/b 'Cannot perform UPDATE - TABLENOPRIMARY has no primary keys.'",
-                    "Cannot perform UPDATE - TABLENOPRIMARY has no primary keys.",
+            assertEquals("Message s/b 'Cannot perform UPDATE - TABLENOPRIMARY has no primary keys'",
+                    "Cannot perform UPDATE - TABLENOPRIMARY has no primary keys",
                     e.getMessage());
         }
         assertTrue(shouldFail);
@@ -577,8 +586,8 @@ public final class TestSQLite extends BaseTest {
             session.fetch(junk);
         } catch (PersismException e) {
             shouldFail = true;
-            assertEquals("Message s/b 'Cannot perform FETCH - TABLENOPRIMARY has no primary keys.'",
-                    "Cannot perform FETCH - TABLENOPRIMARY has no primary keys.",
+            assertEquals("Message s/b 'Cannot perform FETCH - TABLENOPRIMARY has no primary keys'",
+                    "Cannot perform FETCH - TABLENOPRIMARY has no primary keys",
                     e.getMessage());
         }
         assertTrue(shouldFail);
@@ -588,8 +597,8 @@ public final class TestSQLite extends BaseTest {
             session.delete(junk);
         } catch (PersismException e) {
             shouldFail = true;
-            assertEquals("Message s/b 'Cannot perform DELETE - TABLENOPRIMARY has no primary keys.'",
-                    "Cannot perform DELETE - TABLENOPRIMARY has no primary keys.",
+            assertEquals("Message s/b 'Cannot perform DELETE - TABLENOPRIMARY has no primary keys'",
+                    "Cannot perform DELETE - TABLENOPRIMARY has no primary keys",
                     e.getMessage());
         }
         assertTrue(shouldFail);

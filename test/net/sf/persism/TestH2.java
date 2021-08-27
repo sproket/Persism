@@ -14,7 +14,8 @@ import java.time.LocalDateTime;
 import java.util.Date;
 import java.util.*;
 
-import static net.sf.persism.Parameters.*;
+import static net.sf.persism.Parameters.none;
+import static net.sf.persism.Parameters.params;
 import static net.sf.persism.SQL.sql;
 import static net.sf.persism.SQL.where;
 
@@ -307,7 +308,7 @@ public final class TestH2 extends BaseTest {
 
         Contact contact = getContactForTest();
         String sql = session.getMetaData().getDefaultSelectStatement(contact.getClass(), con);
-log.info("testContactTable SQL for : " + Contact.class + " " + sql);
+        log.info("testContactTable SQL for : " + Contact.class + " " + sql);
         // this works
         Contact other = new Contact();
         other.setIdentity(contact.getIdentity());
@@ -315,14 +316,14 @@ log.info("testContactTable SQL for : " + Contact.class + " " + sql);
 
         // UUID tests
         // TODO Fails with some DBs unless you convert yourself. the question here is how to allow a user to use the converter
-        byte[] uuid = Converter.asBytes(contact.getIdentity());
-        List<Contact> contacts = session.query(Contact.class, sql(sql), params((Object) uuid));
-        log.info(contacts);
+        List<Contact> contacts;
+//        byte[] uuid = Converter.asBytes(contact.getIdentity());
+//        contacts = session.query(Contact.class, sql(sql), params((Object) uuid));
+//        log.info(contacts);
 
         // todo it can be done this way but it can only work if its a primary key - we don't detect foreign keys.
-        contacts = session.query(Contact.class, sql(sql), keys(contact.getIdentity()));
+        contacts = session.query(Contact.class, params(contact.getIdentity()));
         log.info(contacts);
-
 
 
     }
@@ -676,25 +677,8 @@ log.info("testContactTable SQL for : " + Contact.class + " " + sql);
 //        sg = session.fetch(SavedGame.class, proc("spSearchSilver"), params(199));
     }
 
-    public void testCustomerInvoiceView2() {
-        List<Customer> customers = session.query(Customer.class, keys(1, 2, 3));
-
-        List<CustomerInvoiceTestView> byKeys = session.query(CustomerInvoiceTestView.class, keys(1, 2, 3));
-        log.warn(session.getMetaData().getSelectStatement(CustomerInvoiceTestView.class, con));
-        log.warn(session.getMetaData().getSelectStatement(Customer.class, con));
-
-        // session.getMetaData().
-        List<CustomerInvoiceTestView> oldWay = session.query(CustomerInvoiceTestView.class, "SELECT * FROM CustomerInvoice WHERE 1=?", 1);
-
-        // both should fail
-        // List<CustomerInvoiceResult> x = session.query(CustomerInvoiceResult.class, params(1, 2, 3));
-        // List<CustomerInvoiceResult> y = session.query(CustomerInvoiceResult.class, keys(1, 2, 3));
-
-
-    }
-
     public void testCustomerInvoiceView() {
-        // todo add data and test results
+        // todo move to BaseTests
         Customer customer = new Customer();
         customer.setCustomerId("ABC");
         customer.setCompanyName("ABC Inc");
@@ -789,20 +773,12 @@ log.info("testContactTable SQL for : " + Contact.class + " " + sql);
                 """;
         list = session.query(CustomerInvoice.class, sql(sql), none());
 
-        // not supporting property names for general SQL. Not really worth it.
+        // we ARE supporting property names for general SQL. Not really worth it. - YES IT IS!
         sql = """
                 SELECT :customerId, :companyName, :invoiceId, :status, :dateCreated, :paid, :quantity
                 FROM "CUSTOMERINVOICE"
                 """;
-        fail = false;
-        try {
-            list = session.query(CustomerInvoice.class, sql(sql), none());
-        } catch (Exception e) {
-            log.info(e.getMessage());
-            fail = true;
-        }
-        assertTrue(fail); //
-
+        list = session.query(CustomerInvoice.class, sql(sql), none());
     }
 
     @Override
