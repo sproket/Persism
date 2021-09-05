@@ -90,8 +90,6 @@ public final class Session extends SessionInternal implements AutoCloseable {
     }
 
 
-
-
     /**
      * Fetch an object from the database by it's primary key(s).
      * You should instantiate the object and set the primary key properties before calling this method.
@@ -176,9 +174,15 @@ public final class Session extends SessionInternal implements AutoCloseable {
      * @throws PersismException if you pass a Java primitive or other invalid type for objectClass or something else goes wrong.
      */
     public <T> T fetch(Class<T> objectClass, Parameters primaryKeyValues) {
-        if (objectClass.getAnnotation(NotTable.class) != null || objectClass.getAnnotation(View.class) != null) {
-            throw new PersismException(Messages.OperationNotSupportedForNotTableQuery.message(objectClass, "QUERY w/o specifying the SQL"));
+        if (objectClass.getAnnotation(NotTable.class) != null) {
+            throw new PersismException(Messages.OperationNotSupportedForNotTableQuery.message(objectClass, "FETCH w/o specifying the SQL"));
         }
+
+        // View does not have any good way to know about primary keys
+        if (objectClass.getAnnotation(View.class) != null) {
+            throw new PersismException(Messages.OperationNotSupportedForView.message(objectClass, "FETCH w/o specifying the SQL with @View"));
+        }
+
         if (Types.getType(objectClass) != null) {
             throw new PersismException(Messages.OperationNotSupportedForJavaType.message(objectClass, "FETCH"));
         }
@@ -294,25 +298,34 @@ public final class Session extends SessionInternal implements AutoCloseable {
      * @throws PersismException Oh no. Not again.
      */
     public <T> List<T> query(Class<T> objectClass, Parameters primaryKeyValues) {
-        if (objectClass.getAnnotation(NotTable.class) != null || objectClass.getAnnotation(View.class) != null) {
+
+        // NotTable requires SQL - we don't know what SQL to use here.
+        if (objectClass.getAnnotation(NotTable.class) != null) {
             throw new PersismException(Messages.OperationNotSupportedForNotTableQuery.message(objectClass, "QUERY w/o specifying the SQL"));
         }
+
+        // View does not have any good way to know about primary keys
+        if (objectClass.getAnnotation(View.class) != null && primaryKeyValues.size() > 0) {
+            throw new PersismException(Messages.OperationNotSupportedForView.message(objectClass, "QUERY w/o specifying the SQL with @View since we don't have Primary Keys"));
+        }
+
+        // Requires a POJO or Record
         if (Types.getType(objectClass) != null) {
             throw new PersismException(Messages.OperationNotSupportedForJavaType.message(objectClass, "QUERY"));
         }
 
-        String sql;
         if (primaryKeyValues.size() == 0) {
-            // Get the SELECT without any WHERE clause
-            sql = metaData.getSelectStatement(objectClass, connection);
-            return query(objectClass, sql(sql), none());
-        } else {
-            sql = metaData.getDefaultSelectStatement(objectClass, connection);
+            return query(objectClass); // select all
         }
 
-        primaryKeyValues.areKeys = true;
-
         List<String> primaryKeys = metaData.getPrimaryKeys(objectClass, connection);
+        if (primaryKeys.size() == 0) {
+            throw new PersismException(Messages.TableHasNoPrimaryKeys.message("QUERY", metaData.getTableName(objectClass)));
+        }
+
+        String sql = metaData.getDefaultSelectStatement(objectClass, connection);
+
+        primaryKeyValues.areKeys = true;
 
         if (primaryKeyValues.size() == primaryKeys.size()) {
             // single select
@@ -323,7 +336,7 @@ public final class Session extends SessionInternal implements AutoCloseable {
         String ed = metaData.getConnectionType().getKeywordEndDelimiter();
 
         String andSep = "";
-        // View should not check for WHERE
+        // View should not check for WHERE we don't support @View here anyway RIGHT?
         if (objectClass.getAnnotation(View.class) == null) {
             int n = sql.indexOf(" WHERE");
             sql = sql.substring(0, n + 7);
@@ -332,7 +345,7 @@ public final class Session extends SessionInternal implements AutoCloseable {
         }
 
         StringBuilder sb = new StringBuilder(sql);
-        int groups = primaryKeyValues.size() / primaryKeys.size(); // check for divide by zero?
+        int groups = primaryKeyValues.size() / primaryKeys.size();
         for (String column : primaryKeys) {
             String sep = "";
             sb.append(andSep).append(sd).append(column).append(ed).append(" IN (");
@@ -365,14 +378,10 @@ public final class Session extends SessionInternal implements AutoCloseable {
         boolean isPOJO = Types.getType(objectClass) == null;
         boolean isRecord = isPOJO && isRecord(objectClass);
 
-        if (isPOJO && objectClass.getAnnotation(NotTable.class) == null) {
-            // Make sure columns are initialized if this is a table. TODO WHY DID WE NEED TO DO THIS?
-            metaData.getTableColumnsPropertyInfo(objectClass, connection);
-        }
-
         JDBCResult result = JDBCResult.DEFAULT;
         try {
             result = executeQuery(objectClass, sql, parameters);
+
             while (result.rs.next()) {
                 if (isRecord) {
                     list.add(reader.readRecord(objectClass, result.rs));
@@ -431,6 +440,7 @@ public final class Session extends SessionInternal implements AutoCloseable {
             String updateStatement = null;
             try {
                 updateStatement = metaData.getUpdateStatement(object, connection);
+                log.debug(updateStatement);
             } catch (NoChangesDetectedForUpdateException e) {
                 log.info("No properties changed. No update required for Object: " + object + " class: " + object.getClass().getName());
                 return new Result<>(0, (T) object);
@@ -506,6 +516,7 @@ public final class Session extends SessionInternal implements AutoCloseable {
         checkIfOkForWriteOperation(object, "INSERT");
 
         String insertStatement = metaData.getInsertStatement(object, connection);
+        log.debug(insertStatement);
 
         PreparedStatement st = null;
         ResultSet rs = null;
@@ -670,6 +681,8 @@ public final class Session extends SessionInternal implements AutoCloseable {
         PreparedStatement st = null;
         try {
             String deleteStatement = metaData.getDeleteStatement(object, connection);
+            log.debug(deleteStatement);
+
             st = connection.prepareStatement(deleteStatement);
 
             // These keys should always be in sorted order.
@@ -731,14 +744,23 @@ public final class Session extends SessionInternal implements AutoCloseable {
                     isInsert = true;
                 }
             } else {
+                List<ColumnInfo> columnInfos = new ArrayList<>();
                 // Multiple primaries or the key(s) are set by the user - need to fetch to see if this is an insert or update
                 for (String key : primaryKeys) {
                     PropertyInfo propertyInfo = properties.get(key);
                     Object value = propertyInfo.getter.invoke(object);
                     params.add(value);
+                    columnInfos.add(metaData.getColumns(object.getClass(), connection).get(key));
+                }
+
+                for (int j = 0; j < params.size(); j++) {
+                    if (params.get(j) != null) {
+                        params.set(j, converter.convert(params.get(j), columnInfos.get(j).columnType.getJavaType(), columnInfos.get(j).columnName));
+                    }
                 }
 
                 Parameters parameters = params(params.toArray());
+
                 Object pojo = fetch(object.getClass(), parameters);
                 isInsert = pojo == null;
             }

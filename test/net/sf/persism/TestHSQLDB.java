@@ -1,10 +1,14 @@
 package net.sf.persism;
 
 import net.sf.persism.categories.LocalDB;
+import net.sf.persism.dao.Contact;
 import org.junit.experimental.categories.Category;
 
 import java.sql.DriverManager;
 import java.sql.SQLException;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 
 import static net.sf.persism.UtilsForTests.isViewInDatabase;
@@ -44,13 +48,28 @@ public final class TestHSQLDB extends BaseTest {
     public void testContactTable() throws SQLException {
         super.testContactTable();
         assertTrue(true);
+        Contact contact = new Contact();
+        // MAX 10
+        contact.setZipPostalCode("KJH DKJH SLKJDH SLKDJH SLKJDH SLKDJH DSLKJDH SLKJH DSLKDJH SDLKJSH LDKJH ");
+
+        boolean fail = false;
+        try {
+            var x = session.insert(contact);
+        } catch (PersismException e) {
+            fail = true;
+            log.info(e.getMessage());
+            assertEquals("s/b data truncation", "data exception: string data, right truncation;  table: CONTACTS column: ZIPPOSTALCODE", e.getMessage());
+        }
+        assertTrue(fail);
     }
 
     @Override
     protected void createTables() throws SQLException {
+        // todo this doesn't seem to matter tests pass either way
+        // 3/7/2021 introduced
         // http://hsqldb.org/doc/1.8/guide/ch09.html
         // sql.enforce_strict_size=false
-        executeCommand(" SET PROPERTY \"sql.enforce_strict_size\" false", con);
+//         executeCommand(" SET PROPERTY \"sql.enforce_strict_size\" false", con);
         String sql;
 
         if (UtilsForTests.isTableInDatabase("Orders", con)) {
@@ -290,6 +309,12 @@ public final class TestHSQLDB extends BaseTest {
 
     public void testAnything() {
         log.info("HELLO HSQLDB!");
+
+        int[] a = new int[]{1, 2, 3, 4, 6};
+        for (int i : a) {
+            System.out.println(i);
+        }
+        //var x= List.of(a, ); // .stream().forEach(i -> System.out.println(i));
     }
 
     @Override

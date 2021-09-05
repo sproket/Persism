@@ -1,7 +1,5 @@
 package net.sf.persism;
 
-import net.sf.persism.annotations.NotTable;
-
 import java.util.*;
 
 /**
@@ -37,7 +35,10 @@ public final class Parameters {
     }
 
     /**
-     * Static initializer for a new set of Parameters
+     * Static initializer for a new set of Parameters.
+     * <pre>{@code
+     *      Employee employee = session.fetch(Employee.class, sql("SELECT * FROM Employees WHERE LastName=? and FirstName=?"), params("Leverling", "Janet"));
+     * }</pre>
      *
      * @param values varargs list of arbitrary parameters for a query.
      * @return new Parameters object
@@ -47,8 +48,13 @@ public final class Parameters {
     }
 
     /**
-     * Static initializer for named parameters
-     * TODO should we have the user pass the indicator string like @ or : or something else? What would happen if they passed ":"? would it break the query when we parse for property names? WELL MAYBE WE DO CALL parse for params first.
+     * Static initializer for named parameters.
+     * <pre>{@code
+     *      List<Contact> contacts;
+     *      contacts = session.query(Contact.class,
+     *                 where("(:firstname = @name OR :company = @name) and :lastname = @last and :city = @city and :amountOwed > @owe ORDER BY :dateAdded"),
+     *                 named(Map.of("name", "Fred", "last", "Flintstone", "owe", 10, "city", "Somewhere")));
+     * }</pre>
      *
      * @param nameValuePair - use Map.of("key1", value, "key2", value) etc.
      * @return new Parameters object
@@ -58,7 +64,7 @@ public final class Parameters {
     }
 
     /**
-     * Represents no Parameters
+     * Represents no Parameters.
      *
      * @return empty array instance of Parameters
      */

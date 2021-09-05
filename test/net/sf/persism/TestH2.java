@@ -297,6 +297,18 @@ public final class TestH2 extends BaseTest {
 
     }
 
+    public void testDontGetMetaFirstOnQuery() throws Exception {
+
+        var sql = """
+                INSERT INTO ByteData (ID, Byte1, Byte2) Values ('X', 1, 2)
+                """;
+        Statement st = con.createStatement();
+        st.execute(sql);
+
+        List<ByteData> list = session.query(ByteData.class, "select * from ByteData");
+        assertEquals("1", 1, list.size());
+    }
+
     @Override
     public void testContactTable() throws SQLException {
         super.testContactTable();

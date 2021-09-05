@@ -31,8 +31,10 @@ abstract class SessionInternal {
             if (sql.storedProc) {
                 log.warn(Messages.NamedParametersUsedWithStoredProc.message());
             }
+
+            char delim = '@';
             Map<String, List<Integer>> paramMap = new HashMap<>();
-            sqlQuery = parseParameters(sql.toString(), paramMap);
+            sqlQuery = parseParameters(delim, sql.toString(), paramMap);
             parameters.setParameterMap(paramMap);
         }
 
@@ -53,11 +55,13 @@ abstract class SessionInternal {
         }
 
         if (sql.whereOnly) {
+
             if (objectClass.getAnnotation(NotTable.class) != null) {
                 throw new PersismException(Messages.WhereNotSupportedForNotTableQueries.message());
             }
             String select = metaData.getSelectStatement(objectClass, connection);
             sqlQuery = parsePropertyNames(select + " " + sqlQuery, objectClass, connection);
+
         } else {
 
             checkIfStoredProcOrSQL(objectClass, sql);
@@ -78,28 +82,34 @@ abstract class SessionInternal {
     }
 
     final void exec(JDBCResult result, String sql, Object... parameters) throws SQLException {
-        if (sql.trim().toLowerCase().startsWith("select ")) {
-            if (metaData.getConnectionType() == ConnectionTypes.Firebird) {
-                // https://stackoverflow.com/questions/935511/how-can-i-avoid-resultset-is-closed-exception-in-java
-                result.st = connection.prepareStatement(sql, ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY, ResultSet.HOLD_CURSORS_OVER_COMMIT);
+        try {
+            if (sql.trim().toLowerCase().startsWith("select ")) {
+                if (metaData.getConnectionType() == ConnectionTypes.Firebird) {
+                    // https://stackoverflow.com/questions/935511/how-can-i-avoid-resultset-is-closed-exception-in-java
+                    result.st = connection.prepareStatement(sql, ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY, ResultSet.HOLD_CURSORS_OVER_COMMIT);
+                } else {
+                    result.st = connection.prepareStatement(sql, ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
+                }
+
+                PreparedStatement pst = (PreparedStatement) result.st;
+                setParameters(pst, parameters);
+                result.rs = pst.executeQuery();
             } else {
-                result.st = connection.prepareStatement(sql, ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
+                if (!sql.trim().toLowerCase().startsWith("{call")) {
+                    sql = "{call " + sql + "} ";
+                }
+                // Don't need If Firebird here. Firebird would call a selectable stored proc with SELECT anyway
+                result.st = connection.prepareCall(sql, ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY, ResultSet.HOLD_CURSORS_OVER_COMMIT);
+
+                CallableStatement cst = (CallableStatement) result.st;
+                setParameters(cst, parameters);
+                result.rs = cst.executeQuery();
             }
 
-            PreparedStatement pst = (PreparedStatement) result.st;
-            setParameters(pst, parameters);
-            result.rs = pst.executeQuery();
-        } else {
-            if (!sql.trim().toLowerCase().startsWith("{call")) {
-                sql = "{call " + sql + "} ";
-            }
-            // Don't need If Firebird here. Firebird would call a selectable stored proc with SELECT anyway
-            result.st = connection.prepareCall(sql, ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY, ResultSet.HOLD_CURSORS_OVER_COMMIT);
-
-            CallableStatement cst = (CallableStatement) result.st;
-            setParameters(cst, parameters);
-            result.rs = cst.executeQuery();
+        } catch (SQLException e) {
+            throw new SQLException(e.getMessage() + " -> " + sql, e);
         }
+
     }
 
     // For unit tests only for now.
@@ -128,6 +138,13 @@ abstract class SessionInternal {
         }
     }
 
+    final String parseParametersx(String query, Map<String, List<Integer>> paramMap) {
+        // todo placeholder to try parsing a different way
+        Scanner scanner = new Scanner(query);
+        List<MatchResult> matchResults = scanner.findAll(":").toList();
+        return "";
+    }
+
     /**
      * Adam Crume, JavaWorld.com, 04/03/07
      * http://www.javaworld.com/javaworld/jw-04-2007/jw-04-jdbc.html?page=2
@@ -142,13 +159,14 @@ abstract class SessionInternal {
      * @param paramMap map to hold parameter-index mappings
      * @return the parsed query
      */
-    final String parseParameters(String query, Map<String, List<Integer>> paramMap) {
+    final String parseParameters(char delim, String query, Map<String, List<Integer>> paramMap) {
         // I was originally using regular expressions, but they didn't work well
         // for ignoring parameter-like strings inside quotes.
 
         // originally used : - which conflicts with property names so I'll use @
         // todo verify about inquote vars - we have different delimiters based on the different dbs
         // todo add unit tests
+        log.info("parseParameters using " + delim);
 
         int length = query.length();
         StringBuilder parsedQuery = new StringBuilder(length);
@@ -171,7 +189,7 @@ abstract class SessionInternal {
                     inSingleQuote = true;
                 } else if (c == '"') {
                     inDoubleQuote = true;
-                } else if (c == '@' && i + 1 < length &&
+                } else if (c == delim && i + 1 < length &&
                         Character.isJavaIdentifierStart(query.charAt(i + 1))) {
                     int j = i + 2;
                     while (j < length && Character.isJavaIdentifierPart(query.charAt(j))) {
@@ -198,6 +216,8 @@ abstract class SessionInternal {
     }
 
     final String parsePropertyNames(String sql, Class<?> objectClass, Connection connection) {
+        sql += " "; // add a space for if a property name is the last part of the string otherwise parser skips it
+
         // look for ":"
         Scanner scanner = new Scanner(sql);
         List<MatchResult> matchResults = scanner.findAll(":").toList();
@@ -265,14 +285,14 @@ abstract class SessionInternal {
         }
     }
 
-    final <T> T getTypedValueReturnedFromGeneratedKeys(Class<T> objectClass, ResultSet rs) throws SQLException {
+    final Object getTypedValueReturnedFromGeneratedKeys(Class<?> objectClass, ResultSet rs) throws SQLException {
 
         Object value = null;
         Types type = Types.getType(objectClass);
 
         if (type == null) {
             log.warn(Messages.UnknownTypeForPrimaryGeneratedKey.message(objectClass));
-            return (T) rs.getObject(1);
+            return rs.getObject(1);
         }
 
         switch (type) {
@@ -290,7 +310,7 @@ abstract class SessionInternal {
             default:
                 value = rs.getObject(1);
         }
-        return (T) value;
+        return value;
     }
 
     void setParameters(PreparedStatement st, Object[] parameters) throws SQLException {
@@ -393,7 +413,7 @@ abstract class SessionInternal {
                     case InstantType:
                         log.warn(Messages.UnSupportedTypeInSetParameters.message(type));
                         st.setObject(n, param);
-                        // todo ZonedDateTime, OffsetDateTimeType and MAYBE Instant
+                        // todo ZonedDateTime, OffsetDateTimeType and MAYBE Instant NAH
                         break;
 
                     case byteArrayType:
@@ -421,10 +441,10 @@ abstract class SessionInternal {
 
                     case UUIDType:
                         if (metaData.getConnectionType() == ConnectionTypes.PostgreSQL) {
-                            // PostgreSQL does work with setObject but not setString unless you set the connection property stringtype=unspecified
+                            // PostgreSQL does work with setObject but not setString unless you set the connection property stringtype=unspecified todo document this
                             st.setObject(n, param);
                         } else {
-                            // todo mysql seems to set the byte array this way? But it won't match!
+                            // TODO mysql seems to set the byte array this way? But it won't match!
                             st.setString(n, param.toString());
                         }
                         break;

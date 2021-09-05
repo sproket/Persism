@@ -63,9 +63,11 @@ final class Converter {
                     returnValue = new Time((Integer) value).toLocalTime();
 
                 } else if (targetType.equals(Short.class) || targetType.equals(short.class)) {
+                    log.warnNoDuplicates(Messages.PossibleOverflow.message(columnName, "SHORT", "INT"));
                     returnValue = Short.parseShort("" + value);
 
                 } else if (targetType.equals(Byte.class) || targetType.equals(byte.class)) {
+                    log.warnNoDuplicates(Messages.PossibleOverflow.message(columnName, "BYTE", "INT"));
                     returnValue = Byte.parseByte("" + value);
                 }
                 break;
@@ -251,9 +253,10 @@ final class Converter {
                 returnValue = Time.valueOf((LocalTime) value);
                 break;
 
-            case UtilDateType: // why utildate here?
+            case UtilDateType: // TODO why utildate here?
             case SQLDateType:
             case TimestampType:
+                // TODO if they are the same type we are creating new objects here... Should we?
                 if (targetType.equals(java.util.Date.class)) {
                     returnValue = new java.util.Date(((Date) value).getTime());
 
@@ -345,6 +348,7 @@ final class Converter {
         }
     }
 
+    // todo document UUID usage for supported and non-supported DBs. Point out this URL to get converter code - otherwise we could expose these 2 static methods somewhere (which we dont want to do)
     // https://stackoverflow.com/questions/17893609/convert-uuid-to-byte-that-works-when-using-uuid-nameuuidfrombytesb
     // THANKS!
     static UUID asUuid(byte[] bytes) {

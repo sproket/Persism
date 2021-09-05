@@ -7,16 +7,14 @@ import net.sf.persism.dao.records.*;
 import java.lang.reflect.InvocationTargetException;
 import java.math.BigDecimal;
 import java.sql.*;
+import java.sql.Date;
 import java.text.DateFormat;
 import java.text.NumberFormat;
 import java.text.SimpleDateFormat;
 import java.time.*;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 import java.util.logging.Logger;
 
 import static net.sf.persism.Parameters.*;
@@ -352,8 +350,8 @@ public abstract class BaseTest extends TestCase {
             session.fetch(CustomerOrder.class, params("junk"));
         } catch (PersismException e) {
             fail = true;
-            assertEquals("s/b class net.sf.persism.dao.CustomerOrder: QUERY w/o specifying the SQL operation not supported for @NotTable classes",
-                    "class net.sf.persism.dao.CustomerOrder: QUERY w/o specifying the SQL operation not supported for @NotTable classes",
+            assertEquals("s/b class net.sf.persism.dao.CustomerOrder: FETCH w/o specifying the SQL operation not supported for @NotTable classes",
+                    "class net.sf.persism.dao.CustomerOrder: FETCH w/o specifying the SQL operation not supported for @NotTable classes",
                     e.getMessage());
         }
         assertTrue(fail);
@@ -738,10 +736,10 @@ public abstract class BaseTest extends TestCase {
         log.info("Local Date: " + ldt4 + " INSTANT: " + contact.getTestInstant());
         log.info("Local Date: " + LocalDateTime.now() + " INSTANT: " + Instant.now());
 
-        assertEquals("expect 1", 1, session.upsert(contact).rows());
+        assertEquals("expect 1", 1, session.insert(contact).rows());
 
         contact.setNotes(null);
-        assertEquals("expect 1", 1, session.upsert(contact).rows());
+        assertEquals("expect 1", 1, session.update(contact).rows());
 
         Contact contact2 = new Contact();
         contact2.setIdentity(identity);
@@ -864,7 +862,7 @@ public abstract class BaseTest extends TestCase {
         log.info(result);
         assertNotNull(result);
 
-        //todo Try this. should it convert foreign key propery? WE CANT !
+        //todo Try this. should it convert foreign key property? WE CANT !
         assertTrue(session.query(Contact.class, where(":partnerId = ?"), params(contact.getPartnerId())).size() > 0);
 
         // named params
@@ -872,7 +870,10 @@ public abstract class BaseTest extends TestCase {
         log.info(sql);
         contacts = session.query(Contact.class,
                 sql,
-                named(Map.of("last", "Flintstone", "name", "Fred")));
+                // named(Map.of(null, "junk"))); // fails here with NullPointerException which is fine
+                //named(Map.of("", "junk"))); // index out of range - added IF
+                //named(Collections.emptyMap())); // index out of range - added IF
+                named(Map.of("last", "Flintstone", "name", "Fred"))); // works
         log.info(contacts);
 
         // named params + properties instead of columns
@@ -883,7 +884,7 @@ public abstract class BaseTest extends TestCase {
                 named(Map.of("name", "Fred", "last", "Flintstone")));
         log.info(contacts);
 
-        sql = where("(:firstname = @name OR :company = @name) and :lastname = @last and :city = @city and :amountOwed > @owe");
+        sql = where("(:firstname = @name OR :company = @name) and :lastname = @last and :city = @city and :amountOwed > @owe ORDER BY :dateAdded");
         log.info(sql);
         contacts = session.query(Contact.class,
                 sql,
@@ -1194,7 +1195,7 @@ public abstract class BaseTest extends TestCase {
         assertEquals("country s/b US", "US", customer.getCountry());
 
         Invoice invoice = new Invoice();
-        invoice.setCustomerId("MOO");
+        invoice.setCustomerId("123");
         invoice.setPrice(10.5f);
         invoice.setQuantity(10);
         invoice.setPaid(true);
@@ -1208,7 +1209,7 @@ public abstract class BaseTest extends TestCase {
 
 // todo add test select columns in reverse order or similar
 
-        List<Invoice> invoices = session.query(Invoice.class, where("CUSTOMER_ID=? ORDER BY CUSTOMER_ID"), params("MOO"));
+        List<Invoice> invoices = session.query(Invoice.class, where("CUSTOMER_ID=? ORDER BY CUSTOMER_ID"), params("123"));
         log.info(invoices);
         assertEquals("invoices s/b 1", 1, invoices.size());
 

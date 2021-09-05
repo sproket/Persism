@@ -147,7 +147,7 @@ Maybe support https://github.com/ksuid/ksuid
 
 TODO idea plugin - generate classes for Tables/Views (Views should be records) + code assist for property names with where() method
 TODO could/should we support javax.persistence annotations?
-
+https://github.com/javaee/jpa-spec/tree/master/javax.persistence-api/src/main/java/javax/persistence
 
 Maven code-coverage - see if we get this to work with AllTests (no container setting)
 https://stackoverflow.com/questions/36199422/how-to-make-maven-unit-test-code-coverage-work

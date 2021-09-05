@@ -18,10 +18,28 @@ import java.util.UUID;
  */
 public final class Contact implements Persistable<Contact> {
 
-    //@Column(primary = true)
-    private UUID identity;
+    private UUID identity; // primary
+    @NotColumn // for now
+    private UUID identity2; // test for byte[16]
+    @NotColumn
+    private UUID identity3; // test for Varchar
 
-    private UUID partnerId; // todo add a 3rd or 4th uuid
+    // later test with byte[] or does it matter?
+    private UUID partnerId; // todo the reason this breaks is all DBs need to be UUID or byte array type to map properly
+
+    @NotColumn // for now
+    private String personId;  // test for UUID in supported DBs so UUID to String
+
+    // 1 db supports UUID - class has UUID (identity, identity2, identity3)
+    // 2 db supports UUID - class has String (personId)
+    // 3 db supports UUID - class has byte[16] (personId)
+    // 4 db No UUID uses VARCHAR - class has UUID (identity, identity2, identity3)
+    // 5 db No UUID uses BINARY(16) - class has UUID (identity, identity2, identity3)
+    // 6 db No UUID uses VARCHAR - class has String (personId)
+    // 7 db No UUID uses BINARY(16) - class has String - CAN'T WORK - WE DON'T KNOW if this is a UUID type then
+    // 8 db No UUID uses VARCHAR - class has byte[16] - CAN'T WORK - WE DON'T KNOW if this is a UUID type then
+    // 9 db No UUID uses BINARY(16) - class has byte[16] - simple same to same type. Up to user to convert to UDDI
+
     private String type;
     private String firstname;
     private String lastname;
@@ -65,12 +83,36 @@ public final class Contact implements Persistable<Contact> {
         this.identity = identity;
     }
 
+    public UUID getIdentity2() {
+        return identity2;
+    }
+
+    public void setIdentity2(UUID identity2) {
+        this.identity2 = identity2;
+    }
+
+    public UUID getIdentity3() {
+        return identity3;
+    }
+
+    public void setIdentity3(UUID identity3) {
+        this.identity3 = identity3;
+    }
+
     public UUID getPartnerId() {
         return partnerId;
     }
 
     public void setPartnerId(UUID partnerId) {
         this.partnerId = partnerId;
+    }
+
+    public String getPersonId() {
+        return personId;
+    }
+
+    public void setPersonId(String personId) {
+        this.personId = personId;
     }
 
     public String getType() {

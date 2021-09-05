@@ -863,8 +863,6 @@ final class MetaData {
 //            return propertyInfoMap.get(objectClass);
 //        }
 
-        log.error("MOO getQueryColumnsPropertyInfo");
-
         return determinePropertyInfo(objectClass, rs);
     }
 
