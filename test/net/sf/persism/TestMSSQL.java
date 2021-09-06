@@ -176,12 +176,12 @@ public class TestMSSQL extends BaseTest {
             commands.add("DROP TABLE Contacts");
         }
 
-        String sql = "CREATE TABLE [dbo].[Contacts]( " +
+        String sql = "CREATE TABLE Contacts ( " +
                 "   [identity] [uniqueidentifier] NOT NULL, " +
                 "   [PartnerID] [uniqueidentifier] NULL, " +
                 "   [Type] [char](2) NOT NULL, " +
-                "   [Firstname] [nvarchar](50) NULL, " +
-                "   [Lastname] [nvarchar](50) NULL, " +
+                "   [First Name] [nvarchar](50) NULL, " +
+                "   [Last Name] [nvarchar](50) NULL, " +
                 "   [ContactName] [nvarchar](50) NULL, " +
                 "   [Company] [nvarchar](50) NULL, " +
                 "   [Division] [nvarchar](50) NULL, " +
@@ -583,7 +583,7 @@ public class TestMSSQL extends BaseTest {
 
         // This case will not work.
         Contact barney = new Contact();
-        //contact.setIdentity(UUID.randomUUID());
+        //barney.setIdentity(UUID.randomUUID());
         barney.setFirstname("Barney");
         barney.setLastname("Rubble");
         barney.setDivision("DIVISION X");
@@ -591,7 +591,7 @@ public class TestMSSQL extends BaseTest {
         barney.setContactName("Fred Flintstone");
         barney.setAddress1("123 Sesame Street");
         barney.setAddress2("Appt #0 (garbage can)");
-        barney.setCompany("Grouch Inc");
+        barney.setCompany("Barney");
         barney.setCountry("US");
         barney.setCity("Philly?");
         barney.setType("X");
@@ -617,7 +617,21 @@ public class TestMSSQL extends BaseTest {
                 count,
                 session.query(Contact.class, sql("select * from Contacts")).size());
 
+        barney.setIdentity(UUID.randomUUID());
+        session.insert(barney);
+
         log.info(session.query(Contact.class, sql("select * from Contacts")));
+
+        // test with columns with spaces and delimiters
+        SQL sql = where("([First Name] = @name OR :company = @name) and [Last Name] = @last");
+        log.info(sql);
+        List<Contact> contacts;
+        contacts = session.query(Contact.class,
+                sql,
+                named(Map.of("name", "Barney", "last", "Rubble")));
+        log.info(contacts);
+        assertTrue(contacts.size() > 0);
+
 
     }
 
@@ -935,14 +949,11 @@ public class TestMSSQL extends BaseTest {
         } catch (PersismException e) {
             shouldHaveFailed = true;
             log.info(e.getMessage(), e);
-            // Apparently we don't always get the same column order?
-            // Object class net.sf.persism.dao.Contact was not properly initialized. Some properties not initialized by the queried columns: [identity]  Missing: [Status, Company, Email, StateProvince, SomeDate, WhatTimeIsIt, Lastname, Address2, PartnerID, Address1, City, WhatMiteIsIt, Firstname, LastModified, Type, ZipPostalCode, BigInt, Country, Division, DateAdded, ContactName, Notes, AmountOwed]
-
             assertEquals("message should be ",
-                    Messages.ObjectNotProperlyInitializedByQuery.message(contact.getClass(), "[identity]", "[Status, Company, Email, StateProvince, SomeDate, WhatTimeIsIt, Lastname, Address2, PartnerID, Address1, City, WhatMiteIsIt, Firstname, LastModified, Type, ZipPostalCode, BigInt, Country, Division, DateAdded, ContactName, Notes, AmountOwed]"),
+                    Messages.ObjectNotProperlyInitializedByQuery.message(contact.getClass(), "[identity]", "[PartnerID, Type, First Name, Last Name, ContactName, Company, Division, Email, Address1, Address2, City, StateProvince, ZipPostalCode, Country, DateAdded, LastModified, Notes, Status, AmountOwed, BigInt, SomeDate, WhatMiteIsIt, WhatTimeIsIt]"),
                     e.getMessage());
         }
-        assertEquals("should have failed", true, shouldHaveFailed);
+        assertTrue("should have failed", shouldHaveFailed);
     }
 
     public void testAdditionalPropertyNotMappedException() {
@@ -1144,7 +1155,7 @@ public class TestMSSQL extends BaseTest {
         log.info(session.query(Contact.class, sql("select * from Contacts")));
 
 //        String insertStatement = "INSERT INTO Customers (Customer_ID, Company_Name, Contact_Name) VALUES ( ?, ?, ? ) ";
-        String insertStatement = "INSERT INTO Contacts (FirstName, LastName, Type, Status) VALUES ( ?, ?, ?, ? ) ";
+        String insertStatement = "INSERT INTO Contacts ([First Name], [Last Name], Type, Status) VALUES ( ?, ?, ?, ? ) ";
 
         PreparedStatement st = null;
         ResultSet rs = null;

@@ -1,5 +1,17 @@
 package net.sf.persism;
 
+// todo add line comment strings and multi line string comments properties for trimming in isSelect method
+// oracle postgresql, mssql, SQLite
+// Derby ? -- ? No mention of it exactly
+// h2 -- // and /* */
+// HSQLDB -- // and /* */
+// Mysql # -- and /* */
+// Firebird /* */ Single line?
+// ACCESS ? NOT SUPPORTED? standard -- and /* */ seem to work from DBeaver...
+// Informix hyphen ( -- ), braces ( { } ), and C-style ( /* . . . */ )
+
+// todo add isXSupported methods.
+
 enum ConnectionTypes {
     Oracle("%", "\"", "\""),
 
@@ -20,7 +32,7 @@ enum ConnectionTypes {
 
     Firebird(null, "\"", "\""),
 
-    HSQLDB(null, "", ""),
+    HSQLDB(null, "\"", "\""),
 
     UCanAccess(null, "[", "]"),
 
@@ -30,6 +42,7 @@ enum ConnectionTypes {
     ;
 
     private final String schemaPattern;
+    // todo need more than 1 but always use the 1st. We need to know if the DB supports multiple delims to skip them when parsing....
     private final String keywordStartDelimiter;
     private final String keywordEndDelimiter;
 

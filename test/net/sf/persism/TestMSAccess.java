@@ -1,12 +1,15 @@
 package net.sf.persism;
 
 import junit.framework.TestCase;
+import net.sf.persism.dao.Customer;
+import net.sf.persism.dao.Regions;
 import net.sf.persism.dao.access.Contact;
 import net.ucanaccess.complex.Attachment;
 
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
-import java.io.*;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.net.URI;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -15,6 +18,12 @@ import java.nio.file.StandardCopyOption;
 import java.sql.*;
 import java.time.LocalDateTime;
 import java.util.*;
+
+import static net.sf.persism.BaseTest.executeCommand;
+import static net.sf.persism.Parameters.params;
+import static net.sf.persism.SQL.sql;
+import static net.sf.persism.SQL.where;
+import static net.sf.persism.UtilsForTests.isTableInDatabase;
 
 public class TestMSAccess extends TestCase {
 
@@ -38,7 +47,9 @@ public class TestMSAccess extends TestCase {
 
         Path from = Paths.get(uri);
         Path to = Paths.get(home + "/Contacts.accdb");
-        Files.copy(from, to, StandardCopyOption.REPLACE_EXISTING);
+        if (!to.toFile().exists()) {
+            Files.copy(from, to, StandardCopyOption.REPLACE_EXISTING);
+        }
 
         String url = String.format(props.getProperty("database.url"), home + "/Contacts.accdb");
         log.info(url);
@@ -47,7 +58,104 @@ public class TestMSAccess extends TestCase {
 
         session = new Session(con);
 
-        // listMetaData();
+        createTables();
+    }
+
+    private void createTables() throws SQLException {
+        String sql;
+
+        if (isTableInDatabase("Customers", con)) {
+            sql = "DROP TABLE Customers";
+            executeCommand(sql, con);
+        }
+
+        // todo " and ' and [ and ] and `
+        sql = """
+                CREATE TABLE Customers (\s
+                 `Customer ID` varchar(10) PRIMARY KEY NOT NULL,\s
+                 `Company Name` VARCHAR(30) NULL,\s
+                 `Contact : / @ # Name` VARCHAR(30) NULL,\s 
+                 `Contact Title` VARCHAR(10) NULL,\s
+                 `Address` VARCHAR(40) NULL,\s
+                 `City` VARCHAR(30) NULL,\s
+                 `Region` VARCHAR(10) NULL,\s
+                 `Postal Code` VARCHAR(10) NULL,\s
+                 `Country` VARCHAR(2) DEFAULT 'US',\s
+                 `Phone` VARCHAR(30) NULL,\s
+                 `Fax` VARCHAR(30) NULL,\s
+                 `Status` CHAR(1) NULL,\s
+                 `Date Registered` Timestamp DEFAULT NOW(),\s
+                 `Date Of Last Order` DATE,\s
+                 `Test Local Date` date,\s
+                 `TestLocalDateTime` Timestamp\s
+                )
+                """;
+        // Somehow Access Makes the column `Test Local DateTime] as `TEST LOCAL TIMESTAMP] WTF! - REMOVED SPACES TO FIX IT
+        // filed https://sourceforge.net/p/jackcess/bugs/155/
+
+        executeCommand(sql, con);
+    }
+
+    public void testCustomer() {
+        Customer customer = new Customer();
+        customer.setCustomerId("123");
+        customer.setAddress("123 Sesame Street");
+        customer.setCity("MTL");
+        customer.setCompanyName("ABC Inc");
+        customer.setContactName("Fred");
+        customer.setContactTitle("LORD");
+        customer.setCountry("US");
+
+        customer.setFax("fax");
+        customer.setPhone("phone");
+        customer.setPostalCode("12345");
+        customer.setRegion(Regions.East);
+        customer.setStatus('2');
+
+        session.insert(customer);
+
+
+        List<Customer> customers = session.query(Customer.class);
+
+        log.info(customers.size());
+        assertTrue(customers.size() > 0);
+
+//        customers = session.query(Customer.class, where(":city = @city AND :contactName = @contact"), params(Map.of("city", "MTL", "contact", "Fred")));
+//        log.info(customers.size());
+//        assertTrue(customers.size() > 0);
+
+        // TODO should we have Table name mapping Too? Probably <sigh>
+        // Same with full query
+        String query = """
+                SELECT
+                    :customerId,
+                    :companyName,
+                    :contactName,
+                    :contactTitle,
+                    :address,
+                    :city,
+                    :region,
+                    :postalCode,
+                    :country,
+                    :phone,
+                    :fax,
+                    :status,
+                    :dateRegistered,
+                    :dateOfLastOrder,
+                    :testLocalDate,
+                    :testLocalDateTime
+                FROM Customers
+                WHERE :city = @city AND :contactName = @contact
+                """;
+
+// todo stypidly had extra quotes around WHERE :city = @city AND :contactName = @contact FUCKING """!
+
+        assertTrue(session.isSelect(query));
+
+        customers = session.query(Customer.class, sql(query), params(Map.of("city", "MTL", "contact", "Fred")));
+        log.info(customers.size());
+        assertTrue(customers.size() > 0);
+
     }
 
     public void testContact() throws SQLException, IOException {

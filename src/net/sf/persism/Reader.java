@@ -101,7 +101,7 @@ final class Reader {
         // This tests for when a user writes their own SQL and forgets a column.
         if (foundColumns.size() < properties.keySet().size()) {
 
-            Set<String> missing = new HashSet<>(columnCount);
+            Set<String> missing = new LinkedHashSet<>(columnCount);
             missing.addAll(properties.keySet());
             foundColumns.forEach(missing::remove);
 

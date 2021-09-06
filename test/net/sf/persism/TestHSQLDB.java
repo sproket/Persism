@@ -11,6 +11,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
+import static net.sf.persism.Parameters.named;
+import static net.sf.persism.SQL.where;
+import static net.sf.persism.UtilsForTests.*;
 import static net.sf.persism.UtilsForTests.isViewInDatabase;
 
 @Category(LocalDB.class)
@@ -27,8 +30,8 @@ public final class TestHSQLDB extends BaseTest {
         props.load(getClass().getResourceAsStream("/hsqldb.properties"));
         Class.forName(props.getProperty("database.driver"));
 
-        String home = UtilsForTests.createHomeFolder("pinfhsqldb");
-        String url = UtilsForTests.replace(props.getProperty("database.url"), "{$home}", home);
+        String home = createHomeFolder("pinfhsqldb");
+        String url = replace(props.getProperty("database.url"), "{$home}", home);
         log.info(url);
 
         con = DriverManager.getConnection(url, props);
@@ -61,18 +64,34 @@ public final class TestHSQLDB extends BaseTest {
             assertEquals("s/b data truncation", "data exception: string data, right truncation;  table: CONTACTS column: ZIPPOSTALCODE", e.getMessage());
         }
         assertTrue(fail);
+
+        // test with columns with spaces and delimiters
+        SQL sql = where("( \"First Name\" = @name OR :company = @name) and \"Last Name\" = @last");
+        log.info(sql);
+        List<Contact> contacts;
+        contacts = session.query(Contact.class,
+                sql,
+                named(Map.of("name", "Fred", "last", "Flintstone")));
+        log.info(contacts);
+
     }
 
     @Override
     protected void createTables() throws SQLException {
-        // todo this doesn't seem to matter tests pass either way
-        // 3/7/2021 introduced
-        // http://hsqldb.org/doc/1.8/guide/ch09.html
-        // sql.enforce_strict_size=false
-//         executeCommand(" SET PROPERTY \"sql.enforce_strict_size\" false", con);
         String sql;
 
-        if (UtilsForTests.isTableInDatabase("Orders", con)) {
+        if (isTableInDatabase("TestSpaces", con)) {
+            executeCommand("DROP TABLE TestSpaces", con);
+        }
+        sql = """
+                CREATE TABLE TestSpaces (
+                	"COLUMN ONE" VARCHAR(100),
+                	"COLUMN TWO @ : CPW" VARCHAR(100)
+                )
+                """;
+        executeCommand(sql, con);
+
+        if (isTableInDatabase("Orders", con)) {
             sql = "DROP TABLE Orders";
             executeCommand(sql, con);
         }
@@ -93,11 +112,11 @@ public final class TestHSQLDB extends BaseTest {
         executeCommand(sql, con);
 
         // view first
-        if (UtilsForTests.isViewInDatabase("CustomerInvoice", con)) {
+        if (isViewInDatabase("CustomerInvoice", con)) {
             executeCommand("DROP VIEW CustomerInvoice", con);
         }
 
-        if (UtilsForTests.isTableInDatabase("Customers", con)) {
+        if (isTableInDatabase("Customers", con)) {
             sql = "DROP TABLE Customers";
             executeCommand(sql, con);
         }
@@ -123,7 +142,7 @@ public final class TestHSQLDB extends BaseTest {
                 ") ";
         executeCommand(sql, con);
 
-        if (UtilsForTests.isTableInDatabase("Invoices", con)) {
+        if (isTableInDatabase("Invoices", con)) {
             sql = "DROP TABLE Invoices";
             executeCommand(sql, con);
         }
@@ -142,12 +161,12 @@ public final class TestHSQLDB extends BaseTest {
                 ") ";
         executeCommand(sql, con);
 
-        if (UtilsForTests.isTableInDatabase("TABLEMULTIPRIMARY", con)) {
+        if (isTableInDatabase("TABLEMULTIPRIMARY", con)) {
             sql = "DROP TABLE TABLEMULTIPRIMARY";
             executeCommand(sql, con);
         }
 
-        if (UtilsForTests.isTableInDatabase("SavedGames", con)) {
+        if (isTableInDatabase("SavedGames", con)) {
             sql = "DROP TABLE SavedGames";
             executeCommand(sql, con);
         }
@@ -189,41 +208,46 @@ public final class TestHSQLDB extends BaseTest {
         executeCommand(sql, con);
 
 
-        if (UtilsForTests.isTableInDatabase("Contacts", con)) {
+        if (isTableInDatabase("Contacts", con)) {
             executeCommand("DROP TABLE Contacts", con);
         }
 
-        sql = "CREATE TABLE Contacts( " +
-                "   identity binary(16) NOT NULL PRIMARY KEY, " +  // test binary(16)
-                "   PartnerID varchar(36) NOT NULL, " + // test varchar(36)
-                "   Type char(2) NOT NULL, " +
-                "   Firstname varchar(50) NOT NULL, " +
-                "   Lastname varchar(50) NOT NULL, " +
-                "   ContactName varchar(50) NOT NULL, " +
-                "   Company varchar(50) NOT NULL, " +
-                "   Division varchar(50) NULL, " +
-                "   Email varchar(50) NULL, " +
-                "   Address1 varchar(50) NULL, " +
-                "   Address2 varchar(50) NULL, " +
-                "   City varchar(50) NULL, " +
-                "   Status TINYINT NULL, " +
-                "   StateProvince varchar(50) NULL, " +
-                "   ZipPostalCode varchar(10) NULL, " +
-                "   Country varchar(50) NULL, " +
-                "   DateAdded Date NULL, " +
-                "   LastModified DateTime NULL, " +
-                "   Notes Clob NULL, " +
-                "   AmountOwed REAL NULL, " +
-                "   BigInt DECIMAL(20) NULL, " +
-                "   TestInstant DateTime NULL, " +
-                "   SomeDate DateTime NULL, " +
-                "   TestInstant2 DateTime NULL, " +
-                "   WhatMiteIsIt TIME NULL, " +
-                "   WhatTimeIsIt TIME NULL) ";
+
+// test binary(16)
+        // test varchar(36)
+        sql = """
+                CREATE TABLE Contacts(\s
+                   identity binary(16) NOT NULL PRIMARY KEY,\s
+                   PartnerID varchar(36) NOT NULL,\s
+                   Type char(2) NOT NULL,\s
+                   "First Name" varchar(50) NOT NULL,\s
+                   "Last Name" varchar(50) NOT NULL,\s
+                   ContactName varchar(50) NOT NULL,\s
+                   Company varchar(50) NOT NULL,\s
+                   Division varchar(50) NULL,\s
+                   Email varchar(50) NULL,\s
+                   Address1 varchar(50) NULL,\s
+                   Address2 varchar(50) NULL,\s
+                   City varchar(50) NULL,\s
+                   Status TINYINT NULL,\s
+                   StateProvince varchar(50) NULL,\s
+                   ZipPostalCode varchar(10) NULL,\s
+                   Country varchar(50) NULL,\s
+                   DateAdded Date NULL,\s
+                   LastModified DateTime NULL,\s
+                   Notes Clob NULL,\s
+                   AmountOwed REAL NULL,\s
+                   BigInt DECIMAL(20) NULL,\s
+                   TestInstant DateTime NULL,\s
+                   SomeDate DateTime NULL,\s
+                   TestInstant2 DateTime NULL,\s
+                   WhatMiteIsIt TIME NULL,\s
+                   WhatTimeIsIt TIME NULL)\s                
+                """;
 
         executeCommand(sql, con);
 
-        if (UtilsForTests.isTableInDatabase("DateTest", con)) {
+        if (isTableInDatabase("DateTest", con)) {
             executeCommand("DROP TABLE DateTest", con);
         }
 
@@ -249,7 +273,7 @@ public final class TestHSQLDB extends BaseTest {
 
         executeCommand(sql, con);
 
-        if (UtilsForTests.isTableInDatabase("DateTestLocalTypes", con)) {
+        if (isTableInDatabase("DateTestLocalTypes", con)) {
             executeCommand("DROP TABLE DateTestLocalTypes", con);
         }
 
@@ -262,7 +286,7 @@ public final class TestHSQLDB extends BaseTest {
 
         executeCommand(sql, con);
 
-        if (UtilsForTests.isTableInDatabase("DateTestSQLTypes", con)) {
+        if (isTableInDatabase("DateTestSQLTypes", con)) {
             executeCommand("DROP TABLE DateTestSQLTypes", con);
         }
 
@@ -276,7 +300,7 @@ public final class TestHSQLDB extends BaseTest {
 
         executeCommand(sql, con);
 
-        if (UtilsForTests.isTableInDatabase("RecordTest1", con)) {
+        if (isTableInDatabase("RecordTest1", con)) {
             executeCommand("DROP TABLE RecordTest1", con);
         }
         sql = "CREATE TABLE RecordTest1 ( " +
@@ -287,7 +311,7 @@ public final class TestHSQLDB extends BaseTest {
                 ") ";
         executeCommand(sql, con);
 
-        if (UtilsForTests.isTableInDatabase("RecordTest2", con)) {
+        if (isTableInDatabase("RecordTest2", con)) {
             executeCommand("DROP TABLE RecordTest2", con);
         }
         sql = "CREATE TABLE RecordTest2 ( " +

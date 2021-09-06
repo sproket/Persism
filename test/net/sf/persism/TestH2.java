@@ -761,6 +761,8 @@ public final class TestH2 extends BaseTest {
         List<CustomerInvoiceResult> results = session.query(CustomerInvoiceResult.class, "SELECT * FROM CustomerInvoice");
         log.info(results);
 
+        // todo CustomerInvoiceResult with named parameters
+
         fail = false;
         try {
             // should fail with WHERE clause not supported

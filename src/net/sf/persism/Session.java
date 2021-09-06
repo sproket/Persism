@@ -146,8 +146,6 @@ public final class Session extends SessionInternal implements AutoCloseable {
                 }
             }
 
-            sql = parsePropertyNames(sql, objectClass, connection);
-
             exec(JDBCResult, sql, params.toArray());
 
             if (JDBCResult.rs.next()) {
@@ -187,7 +185,10 @@ public final class Session extends SessionInternal implements AutoCloseable {
             throw new PersismException(Messages.OperationNotSupportedForJavaType.message(objectClass, "FETCH"));
         }
         primaryKeyValues.areKeys = true;
-        return fetch(objectClass, new SQL(metaData.getDefaultSelectStatement(objectClass, connection)), primaryKeyValues);
+
+        SQL sql = new SQL(metaData.getDefaultSelectStatement(objectClass, connection));
+        sql.parseForProperties = false;
+        return fetch(objectClass, sql, primaryKeyValues);
     }
 
     /**
@@ -271,8 +272,9 @@ public final class Session extends SessionInternal implements AutoCloseable {
         if (Types.getType(objectClass) != null) {
             throw new PersismException(Messages.OperationNotSupportedForJavaType.message(objectClass, "QUERY w/o specifying the SQL"));
         }
-
-        return query(objectClass, sql(metaData.getSelectStatement(objectClass, connection)), none());
+        SQL sql = sql(metaData.getSelectStatement(objectClass, connection));
+        sql.parseForProperties = false;
+        return query(objectClass, sql, none());
     }
 
     /**
@@ -323,13 +325,13 @@ public final class Session extends SessionInternal implements AutoCloseable {
             throw new PersismException(Messages.TableHasNoPrimaryKeys.message("QUERY", metaData.getTableName(objectClass)));
         }
 
-        String sql = metaData.getDefaultSelectStatement(objectClass, connection);
+        String query = metaData.getDefaultSelectStatement(objectClass, connection);
 
         primaryKeyValues.areKeys = true;
 
         if (primaryKeyValues.size() == primaryKeys.size()) {
             // single select
-            return query(objectClass, sql(sql), primaryKeyValues);
+            return query(objectClass, sql(query), primaryKeyValues);
         }
 
         String sd = metaData.getConnectionType().getKeywordStartDelimiter();
@@ -338,13 +340,13 @@ public final class Session extends SessionInternal implements AutoCloseable {
         String andSep = "";
         // View should not check for WHERE we don't support @View here anyway RIGHT?
         if (objectClass.getAnnotation(View.class) == null) {
-            int n = sql.indexOf(" WHERE");
-            sql = sql.substring(0, n + 7);
+            int n = query.indexOf(" WHERE");
+            query = query.substring(0, n + 7);
         } else {
-            sql += " WHERE ";
+            query += " WHERE ";
         }
 
-        StringBuilder sb = new StringBuilder(sql);
+        StringBuilder sb = new StringBuilder(query);
         int groups = primaryKeyValues.size() / primaryKeys.size();
         for (String column : primaryKeys) {
             String sep = "";
@@ -356,8 +358,10 @@ public final class Session extends SessionInternal implements AutoCloseable {
             sb.append(")");
             andSep = " AND ";
         }
-        sql = sb.toString();
-        return query(objectClass, sql(sql), primaryKeyValues);
+        query = sb.toString();
+        SQL sql = sql(query);
+        sql.parseForProperties = false;
+        return query(objectClass, sql, primaryKeyValues);
     }
 
     /**
@@ -374,7 +378,10 @@ public final class Session extends SessionInternal implements AutoCloseable {
     public <T> List<T> query(Class<T> objectClass, SQL sql, Parameters parameters) {
         List<T> list = new ArrayList<>(32);
 
-        // If we know this type it means it's a primitive type. Not a DAO so we use a different rule to read those
+        if (objectClass.getAnnotation(NotTable.class) != null) {
+            sql.parseForProperties = false;
+        }
+            // If we know this type it means it's a primitive type. Not a DAO so we use a different rule to read those
         boolean isPOJO = Types.getType(objectClass) == null;
         boolean isRecord = isPOJO && isRecord(objectClass);
 

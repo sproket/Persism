@@ -1,7 +1,9 @@
 package net.sf.persism;
 
-import java.sql.*;
+import java.sql.Connection;
 import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
 
 /**
  * @author Dan Howard
@@ -98,5 +100,6 @@ final class Util {
         }
         return false;
     }
+
 
 }

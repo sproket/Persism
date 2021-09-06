@@ -11,6 +11,7 @@ public final class Parameters {
 
     List<Object> parameters;
     Map<String, Object> namedParameters;
+    Map<String, List<Integer>> parameterMap;
 
     boolean okToVerify = false; // todo ? what for?
     boolean areKeys = false;
@@ -63,6 +64,10 @@ public final class Parameters {
         return new Parameters(nameValuePair);
     }
 
+    public static Parameters params(Map<String, Object> nameValuePair) {
+        return new Parameters(nameValuePair);
+    }
+
     /**
      * Represents no Parameters.
      *
@@ -89,6 +94,8 @@ public final class Parameters {
     }
 
     void setParameterMap(Map<String, List<Integer>> parameterMap) {
+        this.parameterMap = parameterMap;
+
         assert areNamed;
 
         // find largest index

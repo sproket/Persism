@@ -6,6 +6,7 @@ import net.sf.persism.annotations.View;
 import java.math.BigDecimal;
 import java.sql.*;
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.regex.MatchResult;
 
 // Non-public code Session uses.
@@ -13,6 +14,9 @@ abstract class SessionInternal {
 
     // leave this using the Session.class for logging
     private static final Log log = Log.getLogger(Session.class);
+
+    // todo maybe cache SQL objects with "parsed" property so we don't reparse. Also could cache the Parameter Map and not parse again for parameters
+    private static final Map<String, SQLInfo> queries = new ConcurrentHashMap<>(32);
 
     Connection connection;
     MetaData metaData;
@@ -25,7 +29,7 @@ abstract class SessionInternal {
 
         JDBCResult result = new JDBCResult();
         String sqlQuery = sql.toString();
-        sql.storedProc = !sql.whereOnly && !sqlQuery.trim().toLowerCase().startsWith("select ");
+        sql.storedProc = !sql.whereOnly && isStoredProc(sqlQuery);
 
         if (parameters.areNamed) {
             if (sql.storedProc) {
@@ -34,11 +38,10 @@ abstract class SessionInternal {
 
             char delim = '@';
             Map<String, List<Integer>> paramMap = new HashMap<>();
-            sqlQuery = parseParameters(delim, sql.toString(), paramMap);
+            sqlQuery = parseParameters(delim, sqlQuery, paramMap);
             parameters.setParameterMap(paramMap);
-        }
 
-        if (parameters.areKeys) {
+        } else if (parameters.areKeys) {
             // convert parameters - usually it's the UUID type that may need a conversion to byte[16]
             // Probably we don't want to auto-convert here since it's inconsistent. DO WE? YES.
             List<String> keys = metaData.getPrimaryKeys(objectClass, connection);
@@ -60,13 +63,13 @@ abstract class SessionInternal {
                 throw new PersismException(Messages.WhereNotSupportedForNotTableQueries.message());
             }
             String select = metaData.getSelectStatement(objectClass, connection);
-            sqlQuery = parsePropertyNames(select + " " + sqlQuery, objectClass, connection);
+            sqlQuery = select + " " + parsePropertyNames(sqlQuery, objectClass, connection);
 
         } else {
 
             checkIfStoredProcOrSQL(objectClass, sql);
 
-            if (isPOJO) {
+            if (isPOJO && sql.parseForProperties) {
                 // Only for pojos or records - not for built-in types.
                 sqlQuery = parsePropertyNames(sqlQuery, objectClass, connection);
             }
@@ -83,7 +86,7 @@ abstract class SessionInternal {
 
     final void exec(JDBCResult result, String sql, Object... parameters) throws SQLException {
         try {
-            if (sql.trim().toLowerCase().startsWith("select ")) {
+            if (isSelect(sql)) {
                 if (metaData.getConnectionType() == ConnectionTypes.Firebird) {
                     // https://stackoverflow.com/questions/935511/how-can-i-avoid-resultset-is-closed-exception-in-java
                     result.st = connection.prepareStatement(sql, ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY, ResultSet.HOLD_CURSORS_OVER_COMMIT);
@@ -138,76 +141,64 @@ abstract class SessionInternal {
         }
     }
 
-    final String parseParametersx(String query, Map<String, List<Integer>> paramMap) {
-        // todo placeholder to try parsing a different way
-        Scanner scanner = new Scanner(query);
-        List<MatchResult> matchResults = scanner.findAll(":").toList();
-        return "";
-    }
-
     /**
-     * Adam Crume, JavaWorld.com, 04/03/07
-     * http://www.javaworld.com/javaworld/jw-04-2007/jw-04-jdbc.html?page=2
-     * https://www.infoworld.com/article/2077706/named-parameters-for-preparedstatement.html?page=2
-     * Parses a query with named parameters.  The parameter-index mappings are
-     * put into the map, and the
-     * parsed query is returned.  DO NOT CALL FROM CLIENT CODE.  This
-     * method is non-private so JUnit code can
-     * test it.
+     * Original from Adam Crume, JavaWorld.com, 04/03/07
+     * https://www.infoworld.com/article/2077706/named-parameters-for-preparedstatement.html
      *
-     * @param query    query to parse
+     * @param sql      query to parse
      * @param paramMap map to hold parameter-index mappings
      * @return the parsed query
      */
-    final String parseParameters(char delim, String query, Map<String, List<Integer>> paramMap) {
-        // I was originally using regular expressions, but they didn't work well
-        // for ignoring parameter-like strings inside quotes.
+    final String parseParameters(char delim, String sql, Map<String, List<Integer>> paramMap) {
+        log.debug("parseParameters using " + delim);
 
-        // originally used : - which conflicts with property names so I'll use @
-        // todo verify about inquote vars - we have different delimiters based on the different dbs
-        // todo add unit tests
-        log.info("parseParameters using " + delim);
-
-        int length = query.length();
+        int length = sql.length();
         StringBuilder parsedQuery = new StringBuilder(length);
-        boolean inSingleQuote = false;
-        boolean inDoubleQuote = false;
+
+        Set<Character> startDelims = new HashSet<>(4);
+        startDelims.add('"');
+        startDelims.add('\'');
+
+        if (Util.isNotEmpty(metaData.getConnectionType().getKeywordStartDelimiter())) {
+            startDelims.add(metaData.getConnectionType().getKeywordStartDelimiter().charAt(0));
+        }
+
+        Set<Character> endDelims = new HashSet<>(4);
+        endDelims.add('"');
+        endDelims.add('\'');
+
+        if (Util.isNotEmpty(metaData.getConnectionType().getKeywordEndDelimiter())) {
+            endDelims.add(metaData.getConnectionType().getKeywordEndDelimiter().charAt(0));
+        }
+
+        boolean inDelimiter = false;
         int index = 1;
 
         for (int i = 0; i < length; i++) {
-            char c = query.charAt(i);
-            if (inSingleQuote) {
-                if (c == '\'') {
-                    inSingleQuote = false;
+            char c = sql.charAt(i);
+            if (inDelimiter) {
+                if (endDelims.contains(c)) {
+                    inDelimiter = false;
                 }
-            } else if (inDoubleQuote) {
-                if (c == '"') {
-                    inDoubleQuote = false;
+            } else if (startDelims.contains(c)) {
+                inDelimiter = true;
+            } else if (c == delim && i + 1 < length && Character.isJavaIdentifierStart(sql.charAt(i + 1))) {
+                int j = i + 2;
+                while (j < length && Character.isJavaIdentifierPart(sql.charAt(j))) {
+                    j++;
                 }
-            } else {
-                if (c == '\'') {
-                    inSingleQuote = true;
-                } else if (c == '"') {
-                    inDoubleQuote = true;
-                } else if (c == delim && i + 1 < length &&
-                        Character.isJavaIdentifierStart(query.charAt(i + 1))) {
-                    int j = i + 2;
-                    while (j < length && Character.isJavaIdentifierPart(query.charAt(j))) {
-                        j++;
-                    }
-                    String name = query.substring(i + 1, j);
-                    c = '?'; // replace the parameter with a question mark
-                    i += name.length(); // skip past the end if the parameter
+                String name = sql.substring(i + 1, j);
+                c = '?'; // replace the parameter with a question mark
+                i += name.length(); // skip past the end if the parameter
 
-                    List<Integer> indexList = paramMap.get(name);
-                    if (indexList == null) {
-                        indexList = new LinkedList<>();
-                        paramMap.put(name, indexList);
-                    }
-                    indexList.add(index);
-
-                    index++;
+                List<Integer> indexList = paramMap.get(name);
+                if (indexList == null) {
+                    indexList = new LinkedList<>();
+                    paramMap.put(name, indexList);
                 }
+                indexList.add(index);
+
+                index++;
             }
             parsedQuery.append(c);
         }
@@ -216,6 +207,85 @@ abstract class SessionInternal {
     }
 
     final String parsePropertyNames(String sql, Class<?> objectClass, Connection connection) {
+        log.debug("parsePropertyNames using : with SQL: " + sql);
+
+        int length = sql.length();
+        StringBuilder parsedQuery = new StringBuilder(length);
+
+        String sd = metaData.getConnectionType().getKeywordStartDelimiter();
+        String ed = metaData.getConnectionType().getKeywordEndDelimiter();
+
+        Set<Character> startDelims = new HashSet<>(4);
+        startDelims.add('"');
+        startDelims.add('\'');
+
+        if (Util.isNotEmpty(metaData.getConnectionType().getKeywordStartDelimiter())) {
+            startDelims.add(sd.charAt(0));
+        }
+
+        Set<Character> endDelims = new HashSet<>(4);
+        endDelims.add('"');
+        endDelims.add('\'');
+
+        if (Util.isNotEmpty(metaData.getConnectionType().getKeywordEndDelimiter())) {
+            endDelims.add(ed.charAt(0));
+        }
+
+
+
+        Map<String, PropertyInfo> properties = metaData.getTableColumnsPropertyInfo(objectClass, connection);
+
+        Set<String> propertiesNotFound = new LinkedHashSet<>();
+
+        boolean inDelimiter = false;
+        boolean appendChar;
+        for (int i = 0; i < length; i++) {
+            appendChar = true;
+            char c = sql.charAt(i);
+            if (inDelimiter) {
+                if (endDelims.contains(c)) {
+                    inDelimiter = false;
+                }
+            } else if (startDelims.contains(c)) {
+                inDelimiter = true;
+            } else if (c == ':' && i + 1 < length && Character.isJavaIdentifierStart(sql.charAt(i + 1))) {
+                int j = i + 2;
+                while (j < length && Character.isJavaIdentifierPart(sql.charAt(j))) {
+                    j++;
+                }
+                String name = sql.substring(i + 1, j);
+                log.debug("property name " + name);
+                i += name.length(); // skip past the end if the property name
+
+                boolean found = false;
+                for (String col : properties.keySet()) {
+                    PropertyInfo propertyInfo = properties.get(col);
+                    // ignore case?
+                    if (propertyInfo.propertyName.equals(name)) {
+                        parsedQuery.append(sd).append(col).append(ed);
+                        appendChar = false;
+                        found = true;
+                        break;
+                    }
+                }
+                if (!found) {
+                    propertiesNotFound.add(name);
+                }
+            }
+            if (appendChar) {
+                parsedQuery.append(c);
+            }
+        }
+
+        if (propertiesNotFound.size() > 0) {
+            throw new PersismException(Messages.QueryPropertyNamesMissingOrNotFound.message(propertiesNotFound, sql));
+        }
+
+        return parsedQuery.toString();
+    }
+
+    // todo - do it like parseParameters where we check delimiters. If there's a ":" in a column name (common with MSACCESS) - it fails.
+    final String XparsePropertyNames(String sql, Class<?> objectClass, Connection connection) {
         sql += " "; // add a space for if a property name is the last part of the string otherwise parser skips it
 
         // look for ":"
@@ -459,15 +529,30 @@ abstract class SessionInternal {
 
             } else {
                 // param is null
-                st.setObject(n, param);
+                if (metaData.getConnectionType() == ConnectionTypes.UCanAccess) {
+                    st.setNull(n, java.sql.Types.OTHER);
+                } else {
+                    st.setObject(n, param);
+                }
             }
 
             n++;
         }
     }
 
+    final boolean isSelect(String sql) {
+        assert sql != null;
+        // todo figure out removing possible starting comments
+        return sql.trim().substring(0, 7).trim().equalsIgnoreCase("select");
+    }
+
+    final boolean isStoredProc(String sql) {
+        return !isSelect(sql);
+    }
+
+
     private <T> void checkIfStoredProcOrSQL(Class<T> objectClass, SQL sql) {
-        boolean startsWithSelect = sql.toString().trim().toLowerCase().startsWith("select ");
+        boolean startsWithSelect = isSelect(sql.toString());
         if (sql.storedProc) {
             if (startsWithSelect) {
                 log.warnNoDuplicates(Messages.InappropriateMethodUsedForSQLTypeInstance.message(objectClass, "sql()", "a stored proc", "proc()"));
