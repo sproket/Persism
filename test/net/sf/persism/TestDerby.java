@@ -1,6 +1,5 @@
 package net.sf.persism;
 
-import net.sf.persism.categories.ExternalDB;
 import net.sf.persism.categories.LocalDB;
 import net.sf.persism.dao.Contact;
 import net.sf.persism.dao.Customer;
@@ -9,11 +8,8 @@ import net.sf.persism.dao.Order;
 import org.junit.experimental.categories.Category;
 
 import java.sql.*;
-import java.sql.Date;
-import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.time.LocalTime;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -327,6 +323,6 @@ public final class TestDerby extends BaseTest {
     public void testAllDates() {
         super.testAllDates();
 
-        session.query(Contact.class, "SELECT * FROM CONTACTS WHERE LastName = ?","fred");
+        session.query(Contact.class, "SELECT * FROM CONTACTS WHERE LastName = ?", "fred");
     }
 }

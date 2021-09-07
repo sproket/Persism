@@ -5,7 +5,9 @@ import net.sf.persism.dao.Contact;
 import org.junit.experimental.categories.Category;
 
 import java.sql.DriverManager;
+import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
@@ -45,35 +47,6 @@ public final class TestHSQLDB extends BaseTest {
     @Override
     public void tearDown() throws Exception {
         super.tearDown();
-    }
-
-    @Override
-    public void testContactTable() throws SQLException {
-        super.testContactTable();
-        assertTrue(true);
-        Contact contact = new Contact();
-        // MAX 10
-        contact.setZipPostalCode("KJH DKJH SLKJDH SLKDJH SLKJDH SLKDJH DSLKJDH SLKJH DSLKDJH SDLKJSH LDKJH ");
-
-        boolean fail = false;
-        try {
-            var x = session.insert(contact);
-        } catch (PersismException e) {
-            fail = true;
-            log.info(e.getMessage());
-            assertEquals("s/b data truncation", "data exception: string data, right truncation;  table: CONTACTS column: ZIPPOSTALCODE", e.getMessage());
-        }
-        assertTrue(fail);
-
-        // test with columns with spaces and delimiters
-        SQL sql = where("( \"First Name\" = @name OR :company = @name) and \"Last Name\" = @last");
-        log.info(sql);
-        List<Contact> contacts;
-        contacts = session.query(Contact.class,
-                sql,
-                named(Map.of("name", "Fred", "last", "Flintstone")));
-        log.info(contacts);
-
     }
 
     @Override
@@ -323,6 +296,35 @@ public final class TestHSQLDB extends BaseTest {
                 ") ";
         executeCommand(sql, con);
 
+
+    }
+
+    @Override
+    public void testContactTable() throws SQLException {
+        super.testContactTable();
+        assertTrue(true);
+        Contact contact = new Contact();
+        // MAX 10
+        contact.setZipPostalCode("KJH DKJH SLKJDH SLKDJH SLKJDH SLKDJH DSLKJDH SLKJH DSLKDJH SDLKJSH LDKJH ");
+
+        boolean fail = false;
+        try {
+            var x = session.insert(contact);
+        } catch (PersismException e) {
+            fail = true;
+            log.info(e.getMessage());
+            assertEquals("s/b data truncation", "data exception: string data, right truncation;  table: CONTACTS column: ZIPPOSTALCODE", e.getMessage());
+        }
+        assertTrue(fail);
+
+        // test with columns with spaces and delimiters
+        SQL sql = where("( \"First Name\" = @name OR :company = @name) and \"Last Name\" = @last");
+        log.info(sql);
+        List<Contact> contacts;
+        contacts = session.query(Contact.class,
+                sql,
+                named(Map.of("name", "Fred", "last", "Flintstone")));
+        log.info(contacts);
 
     }
 

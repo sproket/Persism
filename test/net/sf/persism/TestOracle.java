@@ -75,65 +75,6 @@ grant create trigger, create sequence to pinf;
     }
 
     @Override
-    public void testContactTable() throws SQLException {
-        super.testContactTable();
-
-        // TODO Oracle getting Generated GUID like postgreSQL
-//        // Insert NULL GUID -- should give us back a value
-//        Contact contact = new Contact();
-//        contact.setFirstname("Fred");
-//        contact.setLastname("Flintstone");
-//        contact.setDivision("DIVISION X");
-//        contact.setLastModified(new Timestamp(System.currentTimeMillis() - 100000000l));
-//        contact.setContactName("Fred Flintstone");
-//        contact.setAddress1("123 Sesame Street");
-//        contact.setAddress2("Appt #0 (garbage can)");
-//        contact.setCompany("Grouch Inc");
-//        contact.setCountry("US");
-//        contact.setCity("Philly?");
-//        contact.setType("X");
-//        contact.setDateAdded(new java.sql.Date(System.currentTimeMillis()));
-//        contact.setAmountOwed(100.23f);
-//        contact.setNotes("B:AH B:AH VBLAH\r\n BLAH BLAY!");
-//        contact.setWhatTimeIsIt(Time.valueOf(LocalTime.now()));
-//        session.insert(contact);
-//
-//        log.info("contact after insert: " + contact);
-//        assertNotNull("should not be null identity", contact.getIdentity());
-//
-//        session.fetch(contact);
-//
-//        contact.setDivision("DIVISION Y");
-//        session.update(contact);
-//
-//        session.delete(contact);
-    }
-
-/*
-YOU NEED THE TRIGGER PART
-CREATE table "TEST" (
-    "ID"         NUMBER(10) NOT NULL,
-    "NAME"       VARCHAR2(20),
-    constraint  "TEST_PK" primary key ("ID")
-)
-/
-
-CREATE sequence "TEST_SEQ"
-/
-
-CREATE trigger "BI_TEST"
-  before insert on "TEST"
-  for each row
-begin
-  if :NEW."ID" is null then
-    select "TEST_SEQ".nextval into :NEW."ID" from dual;
-  end if;
-end;
-/
-*/
-
-
-    @Override
     protected void createTables() throws SQLException {
         String sql;
 
@@ -374,6 +315,42 @@ end;
         List<Order> list = session.query(Order.class, sql("select * from ORDERS"));
         log.info("List of orders:" + list);
 
+    }
+
+
+    @Override
+    public void testContactTable() throws SQLException {
+        super.testContactTable();
+
+        // TODO Oracle getting Generated GUID like postgreSQL
+//        // Insert NULL GUID -- should give us back a value
+//        Contact contact = new Contact();
+//        contact.setFirstname("Fred");
+//        contact.setLastname("Flintstone");
+//        contact.setDivision("DIVISION X");
+//        contact.setLastModified(new Timestamp(System.currentTimeMillis() - 100000000l));
+//        contact.setContactName("Fred Flintstone");
+//        contact.setAddress1("123 Sesame Street");
+//        contact.setAddress2("Appt #0 (garbage can)");
+//        contact.setCompany("Grouch Inc");
+//        contact.setCountry("US");
+//        contact.setCity("Philly?");
+//        contact.setType("X");
+//        contact.setDateAdded(new java.sql.Date(System.currentTimeMillis()));
+//        contact.setAmountOwed(100.23f);
+//        contact.setNotes("B:AH B:AH VBLAH\r\n BLAH BLAY!");
+//        contact.setWhatTimeIsIt(Time.valueOf(LocalTime.now()));
+//        session.insert(contact);
+//
+//        log.info("contact after insert: " + contact);
+//        assertNotNull("should not be null identity", contact.getIdentity());
+//
+//        session.fetch(contact);
+//
+//        contact.setDivision("DIVISION Y");
+//        session.update(contact);
+//
+//        session.delete(contact);
     }
 
     public void testTimeStamp() {

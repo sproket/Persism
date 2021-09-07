@@ -40,6 +40,11 @@ public class TestInformix extends BaseTest {
     }
 
     @Override
+    public void tearDown() throws Exception {
+        super.tearDown();
+    }
+
+    @Override
     protected void createTables() throws SQLException {
         String sql;
 
@@ -264,12 +269,6 @@ public class TestInformix extends BaseTest {
                 ") ";
         executeCommand(sql, con);
 
-    }
-
-
-    @Override
-    public void tearDown() throws Exception {
-        super.tearDown();
     }
 
     public void testSomething() throws Exception {

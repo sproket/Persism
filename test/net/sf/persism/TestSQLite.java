@@ -8,13 +8,18 @@ package net.sf.persism;
  */
 
 import net.sf.persism.categories.LocalDB;
-import net.sf.persism.dao.*;
+import net.sf.persism.dao.Customer;
+import net.sf.persism.dao.DAOFactory;
+import net.sf.persism.dao.Order;
+import net.sf.persism.dao.TableNoPrimary;
 import org.junit.experimental.categories.Category;
 
 import java.sql.*;
-import java.sql.Date;
 import java.time.*;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
 
 import static net.sf.persism.SQL.sql;
 import static net.sf.persism.UtilsForTests.*;
@@ -55,24 +60,6 @@ public final class TestSQLite extends BaseTest {
     @Override
     protected void tearDown() throws Exception {
         super.tearDown();
-    }
-
-    @Override
-    public void testContactTable() throws SQLException {
-
-        LocalTime lt = Instant.ofEpochMilli(55423000l)
-                .atZone(ZoneId.systemDefault()).toLocalTime();
-
-        log.info("lt:" + lt);
-
-
-        LocalTime lt2 = Instant.ofEpochMilli(698383421107l)
-                .atZone(ZoneId.systemDefault()).toLocalTime();
-
-        log.info("lt2:" + lt2);
-
-        super.testContactTable();
-        assertTrue(true);
     }
 
     @Override
@@ -246,6 +233,24 @@ public final class TestSQLite extends BaseTest {
                 "CREATED_ON DATETIME default current_timestamp" +
                 ") ";
         executeCommand(sql, con);
+    }
+
+    @Override
+    public void testContactTable() throws SQLException {
+
+        LocalTime lt = Instant.ofEpochMilli(55423000l)
+                .atZone(ZoneId.systemDefault()).toLocalTime();
+
+        log.info("lt:" + lt);
+
+
+        LocalTime lt2 = Instant.ofEpochMilli(698383421107l)
+                .atZone(ZoneId.systemDefault()).toLocalTime();
+
+        log.info("lt2:" + lt2);
+
+        super.testContactTable();
+        assertTrue(true);
     }
 
     public void testOrders() throws Exception {

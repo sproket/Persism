@@ -50,12 +50,6 @@ public class TestMySQL extends BaseTest {
     }
 
     @Override
-    public void testContactTable() throws SQLException {
-        super.testContactTable();
-        assertTrue(true);
-    }
-
-    @Override
     protected void createTables() throws SQLException {
 
         List<String> commands = new ArrayList<String>(12);
@@ -205,6 +199,12 @@ public class TestMySQL extends BaseTest {
                 ") ";
         executeCommand(sql, con);
 
+    }
+
+    @Override
+    public void testContactTable() throws SQLException {
+        super.testContactTable();
+        assertTrue(true);
     }
 
     public void testSomething() {

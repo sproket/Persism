@@ -62,41 +62,6 @@ public class TestPostgreSQL extends BaseTest {
     }
 
     @Override
-    public void testContactTable() throws SQLException {
-
-        super.testContactTable();
-
-        // Insert NULL GUID -- should give us back a value
-        Contact contact = new Contact();
-        contact.setFirstname("Fred");
-        contact.setLastname("Flintstone");
-        contact.setDivision("DIVISION X");
-        contact.setLastModified(new Timestamp(System.currentTimeMillis() - 100000000l));
-        contact.setContactName("Fred Flintstone");
-        contact.setAddress1("123 Sesame Street");
-        contact.setAddress2("Appt #0 (garbage can)");
-        contact.setCompany("Grouch Inc");
-        contact.setCountry("US");
-        contact.setCity("Philly?");
-        contact.setType("X");
-        contact.setDateAdded(new Date(System.currentTimeMillis()));
-        contact.setAmountOwed(100.23f);
-        contact.setNotes("B:AH B:AH VBLAH\r\n BLAH BLAY!");
-        contact.setWhatTimeIsIt(Time.valueOf(LocalTime.now()));
-        session.insert(contact);
-
-        log.info("contact after insert: " + contact);
-        assertNotNull("should not be null identity", contact.getIdentity());
-
-        session.fetch(contact);
-
-        contact.setDivision("DIVISION Y");
-        session.update(contact);
-
-        session.delete(contact);
-    }
-
-    @Override
     protected void createTables() throws SQLException {
 
         List<String> commands = new ArrayList<String>(12);
@@ -282,6 +247,41 @@ public class TestPostgreSQL extends BaseTest {
                 ") ";
         executeCommand(sql, con);
 
+    }
+
+    @Override
+    public void testContactTable() throws SQLException {
+
+        super.testContactTable();
+
+        // Insert NULL GUID -- should give us back a value
+        Contact contact = new Contact();
+        contact.setFirstname("Fred");
+        contact.setLastname("Flintstone");
+        contact.setDivision("DIVISION X");
+        contact.setLastModified(new Timestamp(System.currentTimeMillis() - 100000000l));
+        contact.setContactName("Fred Flintstone");
+        contact.setAddress1("123 Sesame Street");
+        contact.setAddress2("Appt #0 (garbage can)");
+        contact.setCompany("Grouch Inc");
+        contact.setCountry("US");
+        contact.setCity("Philly?");
+        contact.setType("X");
+        contact.setDateAdded(new Date(System.currentTimeMillis()));
+        contact.setAmountOwed(100.23f);
+        contact.setNotes("B:AH B:AH VBLAH\r\n BLAH BLAY!");
+        contact.setWhatTimeIsIt(Time.valueOf(LocalTime.now()));
+        session.insert(contact);
+
+        log.info("contact after insert: " + contact);
+        assertNotNull("should not be null identity", contact.getIdentity());
+
+        session.fetch(contact);
+
+        contact.setDivision("DIVISION Y");
+        session.update(contact);
+
+        session.delete(contact);
     }
 
 

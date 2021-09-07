@@ -9,7 +9,9 @@ import org.junit.experimental.categories.Category;
 import org.junit.rules.TestRule;
 
 import java.sql.DriverManager;
+import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Statement;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -68,7 +70,6 @@ public class TestFirebird extends BaseTest {
             session = new Session(con);
         }
     }
-
 
     @Override
     public void testContactTable() throws SQLException {
