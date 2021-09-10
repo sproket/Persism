@@ -55,6 +55,9 @@ public final class TestDerby extends BaseTest {
 
     @Override
     public void testContactTable() throws SQLException {
+        COLUMN_FIRST_NAME = "FIRST_NAME";
+        COLUMN_LAST_NAME = "LAST_NAME";
+
         super.testContactTable();
         assertTrue(true);
     }
@@ -157,8 +160,8 @@ public final class TestDerby extends BaseTest {
                 "   \"identity\" CHAR(16) FOR BIT DATA NOT NULL PRIMARY KEY,  " +  // test binary(16)
                 "   PartnerID varchar(36) NOT NULL,  " + // test varchar(36)
                 "   Type char(2) NOT NULL,  " +
-                "   Firstname varchar(50) NOT NULL,  " +
-                "   Lastname varchar(50) NOT NULL,  " +
+                "   FIRST_NAME varchar(50) NOT NULL,  " +
+                "   LAST_NAME varchar(50) NOT NULL,  " +
                 "   ContactName varchar(50) NOT NULL,  " +
                 "   Company varchar(50) NOT NULL,  " +
                 "   Division varchar(50),  " +
@@ -323,6 +326,6 @@ public final class TestDerby extends BaseTest {
     public void testAllDates() {
         super.testAllDates();
 
-        session.query(Contact.class, "SELECT * FROM CONTACTS WHERE LastName = ?", "fred");
+        session.query(Contact.class, "SELECT * FROM CONTACTS WHERE Last_Name = ?", "fred");
     }
 }

@@ -58,21 +58,13 @@ abstract class SessionInternal {
         }
 
         if (sql.whereOnly) {
-
             if (objectClass.getAnnotation(NotTable.class) != null) {
                 throw new PersismException(Messages.WhereNotSupportedForNotTableQueries.message());
             }
             String select = metaData.getSelectStatement(objectClass, connection);
             sqlQuery = select + " " + parsePropertyNames(sqlQuery, objectClass, connection);
-
         } else {
-
             checkIfStoredProcOrSQL(objectClass, sql);
-
-            if (isPOJO && sql.parseForProperties) {
-                // Only for pojos or records - not for built-in types.
-                sqlQuery = parsePropertyNames(sqlQuery, objectClass, connection);
-            }
         }
 
         if (log.isDebugEnabled()) {
@@ -110,7 +102,7 @@ abstract class SessionInternal {
             }
 
         } catch (SQLException e) {
-            throw new SQLException(e.getMessage() + " -> " + sql, e);
+            throw new SQLException(e.getMessage() + " SQL: " + sql, e);
         }
 
     }

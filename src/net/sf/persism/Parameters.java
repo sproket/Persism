@@ -54,16 +54,12 @@ public final class Parameters {
      *      List<Contact> contacts;
      *      contacts = session.query(Contact.class,
      *                 where("(:firstname = @name OR :company = @name) and :lastname = @last and :city = @city and :amountOwed > @owe ORDER BY :dateAdded"),
-     *                 named(Map.of("name", "Fred", "last", "Flintstone", "owe", 10, "city", "Somewhere")));
+     *                 params(Map.of("name", "Fred", "last", "Flintstone", "owe", 10, "city", "Somewhere")));
      * }</pre>
      *
      * @param nameValuePair - use Map.of("key1", value, "key2", value) etc.
      * @return new Parameters object
      */
-    public static Parameters named(Map<String, Object> nameValuePair) {
-        return new Parameters(nameValuePair);
-    }
-
     public static Parameters params(Map<String, Object> nameValuePair) {
         return new Parameters(nameValuePair);
     }

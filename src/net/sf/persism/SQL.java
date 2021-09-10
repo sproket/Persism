@@ -3,10 +3,9 @@ package net.sf.persism;
 /**
  * Simple wrapper for SQL String. Mainly to allow for overloads to fetch/query methods.
  * @see <a href="https://sproket.github.io/Persism/manual.html">Using the new Query/Fetch methods</a>
- * todo wrong link for now....
- *
- * todo cache these if we do any parsing so we only parse once.
  */
+// todo wrong link for now....
+// todo cache these if we do any parsing so we only parse once.
 public final class SQL {
 
     private final String sql;
@@ -14,14 +13,12 @@ public final class SQL {
     boolean whereOnly; // flags this as WHERE only - we add the SELECT part.
     boolean storedProc; // indicates this is a stored proc rather than an SQL statement
 
-    boolean parseForProperties = true;
-
     SQL(String sql) {
         this.sql = sql;
     }
 
     /**
-     * Static initializer for a new SQL string.
+     * Method to instantiate a regular SQL string.
      * <pre>{@code
      *      Contact> contact;
      *      contact = session.fetch(Contact.class,
@@ -37,8 +34,9 @@ public final class SQL {
     }
 
     /**
-     * Convenience method used to specify an SQL WHERE clause for an SQL Statement.
+     * Method used to specify an SQL WHERE clause for an SQL Statement.
      * The SELECT ... parts would be provided by Persism.
+     * Only here do we allow property names in the query
      * <pre>{@code
      *      List<Contact> contacts;
      *      contacts = session.query(Contact.class,

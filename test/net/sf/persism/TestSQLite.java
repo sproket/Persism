@@ -89,6 +89,11 @@ public final class TestSQLite extends BaseTest {
                 " DATE_SOMETHING datetime NULL" +
                 ") ");
 
+        // view first
+        if (isViewInDatabase("CustomerInvoice", con)) {
+            commands.add("DROP VIEW CustomerInvoice");
+        }
+
 
         if (isTableInDatabase("Customers", con)) {
             commands.add("DROP TABLE Customers");
@@ -233,6 +238,16 @@ public final class TestSQLite extends BaseTest {
                 "CREATED_ON DATETIME default current_timestamp" +
                 ") ";
         executeCommand(sql, con);
+
+        sql = """
+                CREATE VIEW CustomerInvoice AS
+                    SELECT c.Customer_ID, c.Company_Name, i.Invoice_ID, i.Status, i.Created AS DateCreated, i.PAID, i.Quantity
+                    FROM Invoices i
+                    JOIN Customers c ON i.Customer_ID = c.Customer_ID
+                    WHERE i.Status = 1
+                """;
+        executeCommand(sql, con);
+
     }
 
     @Override

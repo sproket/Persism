@@ -18,6 +18,8 @@ import static net.sf.persism.Parameters.none;
 import static net.sf.persism.Parameters.params;
 import static net.sf.persism.SQL.sql;
 import static net.sf.persism.SQL.where;
+import static net.sf.persism.UtilsForTests.isTableInDatabase;
+import static net.sf.persism.UtilsForTests.isViewInDatabase;
 
 /**
  * Comments for TestH2 go here.
@@ -30,6 +32,18 @@ public final class TestH2 extends BaseTest {
 
     // data types
     // http://www.h2database.com/html/datatypes.html
+
+    // todo  case sensitivity tests
+    // http://www.h2database.com/html/features.html
+    /*
+Compatibility
+All database engines behave a little bit different. Where possible, H2 supports the ANSI SQL standard,
+and tries to be compatible to other databases. There are still a few differences however:
+
+In MySQL text columns are case insensitive by default, while in H2 they are case sensitive. However H2 supports
+case insensitive columns as well. To create the tables with case insensitive texts, append IGNORECASE=TRUE
+to the database URL (example: jdbc:h2:~/test;IGNORECASE=TRUE).
+     */
 
     private static final Log log = Log.getLogger(TestH2.class);
 
@@ -68,7 +82,7 @@ public final class TestH2 extends BaseTest {
     protected void createTables() throws SQLException {
         List<String> commands = new ArrayList<>(12);
         String sql;
-        if (UtilsForTests.isTableInDatabase("Orders", con)) {
+        if (isTableInDatabase("Orders", con)) {
             sql = "DROP TABLE Orders";
             commands.add(sql);
         }
@@ -89,11 +103,11 @@ public final class TestH2 extends BaseTest {
         commands.add(sql);
 
         // view first
-        if (UtilsForTests.isViewInDatabase("CustomerInvoice", con)) {
+        if (isViewInDatabase("CustomerInvoice", con)) {
             commands.add("DROP VIEW CustomerInvoice");
         }
 
-        if (UtilsForTests.isTableInDatabase("Customers", con)) {
+        if (isTableInDatabase("Customers", con)) {
             commands.add("DROP TABLE Customers");
         }
 
@@ -116,7 +130,7 @@ public final class TestH2 extends BaseTest {
                 " TestLocalDateTime datetime NULL" +
                 ") ");
 
-        if (UtilsForTests.isTableInDatabase("Invoices", con)) {
+        if (isTableInDatabase("Invoices", con)) {
             commands.add("DROP TABLE Invoices");
         }
 
@@ -143,7 +157,7 @@ public final class TestH2 extends BaseTest {
         commands.add(sql);
 
 
-        if (UtilsForTests.isTableInDatabase("TABLEMULTIPRIMARY", con)) {
+        if (isTableInDatabase("TABLEMULTIPRIMARY", con)) {
             commands.add("DROP TABLE TABLEMULTIPRIMARY");
         }
 
@@ -158,7 +172,7 @@ public final class TestH2 extends BaseTest {
         commands.add("ALTER TABLE TABLEMULTIPRIMARY ADD PRIMARY KEY (ProductID, OrderID)");
 
 
-        if (UtilsForTests.isTableInDatabase("SavedGames", con)) {
+        if (isTableInDatabase("SavedGames", con)) {
             commands.add("DROP TABLE SavedGames");
         }
 
@@ -175,7 +189,7 @@ public final class TestH2 extends BaseTest {
 
         executeCommands(commands, con);
 
-        if (UtilsForTests.isTableInDatabase("Contacts", con)) {
+        if (isTableInDatabase("Contacts", con)) {
             executeCommand("DROP TABLE Contacts", con);
         }
 
@@ -209,7 +223,7 @@ public final class TestH2 extends BaseTest {
 
         executeCommand(sql, con);
 
-        if (UtilsForTests.isTableInDatabase("DateTest", con)) {
+        if (isTableInDatabase("DateTest", con)) {
             executeCommand("DROP TABLE DateTest", con);
         }
 
@@ -235,7 +249,7 @@ public final class TestH2 extends BaseTest {
 
         executeCommand(sql, con);
 
-        if (UtilsForTests.isTableInDatabase("DateTestLocalTypes", con)) {
+        if (isTableInDatabase("DateTestLocalTypes", con)) {
             executeCommand("DROP TABLE DateTestLocalTypes", con);
         }
 
@@ -248,7 +262,7 @@ public final class TestH2 extends BaseTest {
 
         executeCommand(sql, con);
 
-        if (UtilsForTests.isTableInDatabase("DateTestSQLTypes", con)) {
+        if (isTableInDatabase("DateTestSQLTypes", con)) {
             executeCommand("DROP TABLE DateTestSQLTypes", con);
         }
 
@@ -262,7 +276,7 @@ public final class TestH2 extends BaseTest {
 
         executeCommand(sql, con);
 
-        if (UtilsForTests.isTableInDatabase("ByteData", con)) {
+        if (isTableInDatabase("ByteData", con)) {
             executeCommand("DROP TABLE ByteData", con);
         }
         sql = "CREATE TABLE ByteData ( " +
@@ -271,7 +285,7 @@ public final class TestH2 extends BaseTest {
                 "BYTE2 INT ) ";
         executeCommand(sql, con);
 
-        if (UtilsForTests.isTableInDatabase("RecordTest1", con)) {
+        if (isTableInDatabase("RecordTest1", con)) {
             executeCommand("DROP TABLE RecordTest1", con);
         }
         sql = "CREATE TABLE RecordTest1 ( " +
@@ -282,7 +296,7 @@ public final class TestH2 extends BaseTest {
                 ") ";
         executeCommand(sql, con);
 
-        if (UtilsForTests.isTableInDatabase("RecordTest2", con)) {
+        if (isTableInDatabase("RecordTest2", con)) {
             executeCommand("DROP TABLE RecordTest2", con);
         }
         sql = "CREATE TABLE RecordTest2 ( " +
@@ -294,6 +308,38 @@ public final class TestH2 extends BaseTest {
                 ") ";
         executeCommand(sql, con);
 
+        if (isTableInDatabase("USERS", con)) {
+            executeCommand("DROP TABLE USERS", con);
+        }
+
+        sql = "CREATE TABLE USERS ( " +
+                "   USER_NO int IDENTITY PRIMARY KEY, " +
+                "   USERCODE varchar(23) NULL, " +
+                "   UserPass varchar(32) NULL, " +
+                "   Name varchar(50) NULL, " +
+                "   PasswordLastChg datetime NULL, " +
+                "   Status varchar(1) NULL, " +
+                "   LastLogin datetime NULL, " +
+                "   TypeOfUser varchar(1) NULL, " +
+                "   License_No varchar(20) NULL, " +
+                "   BillingGroup varchar(30) NULL, " +
+                "   Department int NULL, " +
+                "   Phone text NULL ) ";
+
+        executeCommand(sql, con);
+
+
+    }
+
+    public void testUser() {
+        //session.execute("DELETE FROM USERS");
+
+        User user = new User();
+        user.setName("TEST 1");
+        user.setUserName("login");
+        user.setTypeOfUser("X");
+        session.insert(user);
+        assertTrue(user.getId() > 0);
 
     }
 
@@ -622,7 +668,7 @@ public final class TestH2 extends BaseTest {
 
         try {
             st = con.createStatement();
-            if (UtilsForTests.isTableInDatabase("TEST_COLS", con)) {
+            if (isTableInDatabase("TEST_COLS", con)) {
                 st.execute("drop table TEST_COLS");
             }
             st.execute("create table TEST_COLS (a datetime default current_timestamp, b text)");
@@ -687,112 +733,6 @@ public final class TestH2 extends BaseTest {
         SavedGame sg = session.fetch(SavedGame.class, where("Silver > ?"), params(199));
         log.warn(sg);
 //        sg = session.fetch(SavedGame.class, proc("spSearchSilver"), params(199));
-    }
-
-    public void testCustomerInvoiceView() {
-        // todo move to BaseTests
-        Customer customer = new Customer();
-        customer.setCustomerId("ABC");
-        customer.setCompanyName("ABC Inc");
-        session.insert(customer);
-
-        Invoice invoice = new Invoice();
-        invoice.setCustomerId("ABC");
-        invoice.setQuantity(10);
-        invoice.setPrice(10.23f);
-        invoice.setActualPrice(BigDecimal.valueOf(9.99d));
-        invoice.setStatus(1);
-        session.insert(invoice);
-
-        CustomerInvoice customerInvoice = session.fetch(CustomerInvoice.class, where(":companyName = ?"), params("ABC Inc"));
-        List<CustomerInvoice> list = session.query(CustomerInvoice.class);
-        list = session.query(CustomerInvoice.class, where(":companyName = ?"), params("ABC Inc"));
-        list = session.query(CustomerInvoice.class, sql("SELECT * FROM CustomerInvoice"));
-
-        CustomerInvoiceTestView customerInvoiceTestView = session.fetch(CustomerInvoiceTestView.class, where(":companyName = ?"), params("ABC Inc"));
-        List<CustomerInvoiceTestView> list2 = session.query(CustomerInvoiceTestView.class);
-        list2 = session.query(CustomerInvoiceTestView.class, where(":companyName = ?"), params("ABC Inc"));
-        list2 = session.query(CustomerInvoiceTestView.class, sql("SELECT * FROM CustomerInvoice"));
-
-
-        assertNotNull(customerInvoiceTestView);
-
-        boolean fail = false;
-        try {
-            session.insert(customerInvoiceTestView); // not supported error
-        } catch (PersismException e) {
-            log.info(e.getMessage());
-            assertEquals("s/b Operation not supported for Views.", Messages.OperationNotSupportedForView.message(customerInvoiceTestView.getClass(), "Insert"), e.getMessage());
-            fail = true;
-        }
-        assertTrue(fail);
-
-        fail = false;
-        try {
-            session.update(customerInvoiceTestView);
-        } catch (PersismException e) {
-            log.info(e.getMessage());
-            assertEquals("s/b Operation not supported for Views.", Messages.OperationNotSupportedForView.message(customerInvoiceTestView.getClass(), "Update"), e.getMessage());
-            fail = true;
-        }
-        assertTrue(fail);
-
-        fail = false;
-        try {
-            session.delete(customerInvoiceTestView);
-        } catch (PersismException e) {
-            log.info(e.getMessage());
-            assertEquals("s/b Operation not supported for Views.", Messages.OperationNotSupportedForView.message(customerInvoiceTestView.getClass(), "Delete"), e.getMessage());
-            fail = true;
-        }
-        assertTrue(fail);
-
-        fail = false;
-        try {
-            session.upsert(customerInvoiceTestView);
-        } catch (PersismException e) {
-            log.info(e.getMessage());
-            assertEquals("s/b Operation not supported for Views.", Messages.OperationNotSupportedForView.message(customerInvoiceTestView.getClass(), "Upsert"), e.getMessage());
-            fail = true;
-        }
-        assertTrue(fail);
-
-        // old call
-        List<CustomerInvoiceResult> results = session.query(CustomerInvoiceResult.class, "SELECT * FROM CustomerInvoice");
-        log.info(results);
-
-        // todo CustomerInvoiceResult with named parameters
-
-        fail = false;
-        try {
-            // should fail with WHERE clause not supported
-            List<CustomerOrder> junk = session.query(CustomerOrder.class, where(":customerId = ?"), params("x"));
-        } catch (PersismException e) {
-            assertEquals("message should be WHERE clause not supported...", Messages.WhereNotSupportedForNotTableQueries.message(), e.getMessage());
-            fail = true;
-        }
-        assertTrue(fail);
-
-        // now lets try query with property names - total fail....
-        // can only work MAYBE with view
-        // select * seems to return SQL itself as col 1?
-        // Customer_ID, Company_Name, Invoice_ID, Status, DateCreated, PAID, Quantity
-        String sql =
-                """
-                            SELECT * FROM "CUSTOMERINVOICE"
-                        """;
-        list = session.query(CustomerInvoice.class, sql(sql), none());
-        sql = """
-                        SELECT Customer_ID, Company_Name, Invoice_ID, Status, DateCreated, PAID, Quantity FROM CUSTOMERINVOICE
-                """;
-        list = session.query(CustomerInvoice.class, sql(sql), none());
-
-        // we ARE supporting property names for general SQL. Not really worth it. - YES IT IS!
-        sql = """
-                SELECT :customerId, :companyName, :invoiceId, :status, :dateCreated, :paid, :quantity
-                FROM "CUSTOMERINVOICE"
-                """;
-        list = session.query(CustomerInvoice.class, sql(sql), none());
     }
 
     @Override

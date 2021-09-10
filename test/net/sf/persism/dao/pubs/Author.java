@@ -22,10 +22,10 @@ public class Author {
 	[contract] [bit] NOT NULL,
      */
 
-    @Column(name = "aU_iD") // fuck up case
+    @Column(name = "aU_iD") // make sure case doesn't match - it should still work
     private String authorId;
 
-    @Column(name = "au_LNAME")
+    @Column(name = "au_LNAME") // same here
     private String lastName;
 
     @Column(name = "au_FNAME")

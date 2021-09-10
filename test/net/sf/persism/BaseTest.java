@@ -19,7 +19,8 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.logging.Logger;
 
-import static net.sf.persism.Parameters.*;
+import static net.sf.persism.Parameters.none;
+import static net.sf.persism.Parameters.params;
 import static net.sf.persism.SQL.*;
 
 /**
@@ -42,6 +43,9 @@ public abstract class BaseTest extends TestCase {
 
     static String UUID1 = "d316ad81-946d-416b-98e3-3f3b03aa73db";
     static String UUID2 = "a0d00c5a-3de6-4ae8-ba11-e3e02c2b3a83";
+
+    String COLUMN_FIRST_NAME = "FirstName";
+    String COLUMN_LAST_NAME = "LastName";
 
     protected abstract void createTables() throws SQLException;
 
@@ -746,6 +750,120 @@ public abstract class BaseTest extends TestCase {
                     e.getMessage());
         }
         assertTrue(fail);
+
+        customer = new Customer();
+        customer.setCustomerId("XYZ");
+        customer.setCompanyName("XYZ Inc");
+        session.insert(customer);
+
+        invoice = new Invoice();
+        invoice.setCustomerId("XYZ");
+        invoice.setQuantity(10);
+        invoice.setPrice(10.23f);
+        invoice.setActualPrice(BigDecimal.valueOf(9.99d));
+        invoice.setStatus(1);
+        session.insert(invoice);
+
+        customerInvoice = session.fetch(CustomerInvoice.class, where(":companyName = ?"), params("ABC Inc"));
+        List<CustomerInvoice> list = session.query(CustomerInvoice.class);
+        list = session.query(CustomerInvoice.class, where(":companyName = ?"), params("ABC Inc"));
+        list = session.query(CustomerInvoice.class, sql("SELECT * FROM CustomerInvoice"));
+
+        customerInvoiceTestView = session.fetch(CustomerInvoiceTestView.class, where(":companyName = ?"), params("ABC Inc"));
+        list2 = session.query(CustomerInvoiceTestView.class);
+        list2 = session.query(CustomerInvoiceTestView.class, where(":companyName = ?"), params("ABC Inc"));
+        list2 = session.query(CustomerInvoiceTestView.class, sql("SELECT * FROM CustomerInvoice"));
+
+
+        assertNotNull(customerInvoiceTestView);
+
+        fail = false;
+        try {
+            session.insert(customerInvoiceTestView); // not supported error
+        } catch (PersismException e) {
+            log.info(e.getMessage());
+            assertEquals("s/b Operation not supported for Views.", Messages.OperationNotSupportedForView.message(customerInvoiceTestView.getClass(), "Insert"), e.getMessage());
+            fail = true;
+        }
+        assertTrue(fail);
+
+        fail = false;
+        try {
+            session.update(customerInvoiceTestView);
+        } catch (PersismException e) {
+            log.info(e.getMessage());
+            assertEquals("s/b Operation not supported for Views.", Messages.OperationNotSupportedForView.message(customerInvoiceTestView.getClass(), "Update"), e.getMessage());
+            fail = true;
+        }
+        assertTrue(fail);
+
+        fail = false;
+        try {
+            session.delete(customerInvoiceTestView);
+        } catch (PersismException e) {
+            log.info(e.getMessage());
+            assertEquals("s/b Operation not supported for Views.", Messages.OperationNotSupportedForView.message(customerInvoiceTestView.getClass(), "Delete"), e.getMessage());
+            fail = true;
+        }
+        assertTrue(fail);
+
+        fail = false;
+        try {
+            session.upsert(customerInvoiceTestView);
+        } catch (PersismException e) {
+            log.info(e.getMessage());
+            assertEquals("s/b Operation not supported for Views.", Messages.OperationNotSupportedForView.message(customerInvoiceTestView.getClass(), "Upsert"), e.getMessage());
+            fail = true;
+        }
+        assertTrue(fail);
+
+        // old call
+        List<CustomerInvoiceResult> results = session.query(CustomerInvoiceResult.class, "SELECT * FROM CustomerInvoice");
+        log.info(results);
+
+        // todo CustomerInvoiceResult with named parameters YES TODO
+
+        fail = false;
+        try {
+            // should fail with WHERE clause not supported
+            List<CustomerOrder> junk = session.query(CustomerOrder.class, where(":customerId = ?"), params("x"));
+        } catch (PersismException e) {
+            assertEquals("message should be WHERE clause not supported...", Messages.WhereNotSupportedForNotTableQueries.message(), e.getMessage());
+            fail = true;
+        }
+        assertTrue(fail);
+
+        // now lets try query with property names - total fail....
+        // can only work MAYBE with view
+        // select * seems to return SQL itself as col 1?
+        // Customer_ID, Company_Name, Invoice_ID, Status, DateCreated, PAID, Quantity
+        String sql =
+                """
+                            SELECT * FROM CUSTOMERINVOICE
+                        """;
+        list = session.query(CustomerInvoice.class, sql(sql), none());
+        sql = """
+                        SELECT Customer_ID, Company_Name, Invoice_ID, Status, DateCreated, PAID, Quantity FROM CUSTOMERINVOICE
+                """;
+        list = session.query(CustomerInvoice.class, sql(sql), none());
+
+        // we ARE NOT supporting property names for general SQL. Not really worth it. - YES IT IS! NO IT ISNT!
+        fail = false;
+        try {
+            sql = """
+                    SELECT :customerId, :companyName, :invoiceId, :status, :dateCreated, :paid, :quantity
+                    FROM "CUSTOMERINVOICE"
+                    """;
+            list = session.query(CustomerInvoice.class, sql(sql), none());
+
+        } catch (PersismException e) {
+            // message would be different for different DBS.
+            log.warn(e.getMessage(), e);
+            fail = true;
+        }
+        assertTrue(fail);
+
+
     }
 
     public void testContactTable() throws SQLException {
@@ -863,6 +981,8 @@ public abstract class BaseTest extends TestCase {
         session.insert(contact);
         session.fetch(contact);
 
+        boolean failed = false;
+
         // https://stackoverflow.com/questions/45305283/parsing-sql-query-in-java
 
         // test where and keys - this at least does conversions for UUID so they don't have to manually do it.
@@ -884,15 +1004,24 @@ public abstract class BaseTest extends TestCase {
         //todo Try this. should it convert foreign key property? WE CANT !
         assertTrue(session.query(Contact.class, where(":partnerId = ?"), params(contact.getPartnerId())).size() > 0);
 
+        var sd = session.getMetaData().getConnectionType().getKeywordStartDelimiter();
+        var ed = session.getMetaData().getConnectionType().getKeywordEndDelimiter();
+        if (COLUMN_FIRST_NAME.contains(" ")) {
+            COLUMN_FIRST_NAME = sd + COLUMN_FIRST_NAME + ed;
+        }
+        if (COLUMN_LAST_NAME.contains(" ")) {
+            COLUMN_LAST_NAME = sd + COLUMN_LAST_NAME + ed;
+        }
         // named params
-        SQL sql = sql("select * from Contacts where (:firstname = @name OR company = @name) and :lastname = @last");
+        SQL sql = sql("select * from Contacts where (" + COLUMN_FIRST_NAME + " = @name OR Company = @name) and " + COLUMN_LAST_NAME + " = @last");
+
         log.info(sql);
         contacts = session.query(Contact.class,
                 sql,
                 // named(Map.of(null, "junk"))); // fails here with NullPointerException which is fine
                 //named(Map.of("", "junk"))); // index out of range - added IF
                 //named(Collections.emptyMap())); // index out of range - added IF
-                named(Map.of("last", "Flintstone", "name", "Fred"))); // works
+                params(Map.of("last", "Flintstone", "name", "Fred"))); // works
         log.info(contacts);
 
         // named params + properties instead of columns
@@ -900,28 +1029,27 @@ public abstract class BaseTest extends TestCase {
         log.info(sql);
         contacts = session.query(Contact.class,
                 sql,
-                named(Map.of("name", "Fred", "last", "Flintstone")));
+                params(Map.of("name", "Fred", "last", "Flintstone")));
         log.info(contacts);
 
         // Fetch?
-        contact = session.fetch(Contact.class, sql, named(Map.of("name", "Fred", "last", "Flintstone")));
+        contact = session.fetch(Contact.class, sql, params(Map.of("name", "Fred", "last", "Flintstone")));
         assertNotNull(contact);
 
         sql = where("(:firstname = @name OR :company = @name) and :lastname = @last and :city = @city and :amountOwed > @owe ORDER BY :dateAdded");
         log.info(sql);
         contacts = session.query(Contact.class,
                 sql,
-                named(Map.of("name", "Fred", "last", "Flintstone", "owe", 10, "city", "Somewhere")));
+                params(Map.of("name", "Fred", "last", "Flintstone", "owe", 10, "city", "Somewhere")));
         log.info(contacts);
 
-        boolean failed = false;
         // Misspell parameters
         sql = where("(:firstname = @name OR :company = @name) and :lastname = @last and :city = @city and :amountOwed > @owe");
         log.info(sql);
         try {
             contacts = session.query(Contact.class,
                     sql,
-                    named(Map.of("Xame", "Fred", "Xast", "Flintstone", "owe", 10, "city", "Somewhere")));
+                    params(Map.of("Xame", "Fred", "Xast", "Flintstone", "owe", 10, "city", "Somewhere")));
         } catch (PersismException e) {
             failed = true;
             log.info(e.getMessage(), e);
@@ -936,7 +1064,7 @@ public abstract class BaseTest extends TestCase {
         try {
             contacts = session.query(Contact.class,
                     sql,
-                    named(Map.of("name", "Fred", "last", "Flintstone", "owe", 10, "city", "Somewhere")));
+                    params(Map.of("name", "Fred", "last", "Flintstone", "owe", 10, "city", "Somewhere")));
         } catch (PersismException e) {
             failed = true;
             log.info(e.getMessage(), e);

@@ -12,13 +12,13 @@ import net.sf.persism.dao.*;
 import org.junit.experimental.categories.Category;
 
 import java.math.BigDecimal;
-import java.sql.*;
 import java.sql.Date;
+import java.sql.*;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 
-import static net.sf.persism.Parameters.*;
+import static net.sf.persism.Parameters.params;
 import static net.sf.persism.SQL.*;
 import static net.sf.persism.UtilsForTests.*;
 
@@ -149,7 +149,6 @@ public class TestMSSQL extends BaseTest {
                 //" Total NUMERIC(10,3) NOT NULL, " +
                 " Discount NUMERIC(10,3) NOT NULL " +
                 ") ");
-
 
 
         if (isTableInDatabase("TABLENOPRIMARY", con)) {
@@ -578,7 +577,8 @@ public class TestMSSQL extends BaseTest {
 
     @Override
     public void testContactTable() throws SQLException {
-
+        COLUMN_FIRST_NAME = "First Name";
+        COLUMN_LAST_NAME = "Last Name";
         super.testContactTable();
 
         // This case will not work.
@@ -628,7 +628,7 @@ public class TestMSSQL extends BaseTest {
         List<Contact> contacts;
         contacts = session.query(Contact.class,
                 sql,
-                named(Map.of("name", "Barney", "last", "Rubble")));
+                params(Map.of("name", "Barney", "last", "Rubble")));
         log.info(contacts);
         assertTrue(contacts.size() > 0);
 
@@ -866,7 +866,7 @@ public class TestMSSQL extends BaseTest {
         assertTrue(list.size() > 0);
 
         // TODO Should we allow this? It doesn't make sense. Maybe just warn and move on....
-        list = session.query(CustomerOrder.class, sql("{call [spCustomerOrders](@custId) }"), named(Map.of("custId", "123")));
+        list = session.query(CustomerOrder.class, sql("{call [spCustomerOrders](@custId) }"), params(Map.of("custId", "123")));
         log.info(list);
         assertTrue(list.size() > 0);
 
@@ -901,7 +901,8 @@ public class TestMSSQL extends BaseTest {
         assertEquals("original value = 10", 10, exam.getOriginalValue());
 
         Exam exam1 = new Exam();
-        exam1.setExamId(exam.getExamId());;
+        exam1.setExamId(exam.getExamId());
+        ;
         session.fetch(exam1);
         assertEquals("sb/v 10?", 10, exam1.getOriginalValue()); // can't read this value back since we remove it
 

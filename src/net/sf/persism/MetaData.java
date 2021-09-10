@@ -15,8 +15,8 @@ import static java.text.MessageFormat.format;
 import static net.sf.persism.Util.*;
 
 /**
- * Meta data collected in a map singleton based on connection url
- * todo decide what or IF we want to expose any methods here.
+ * DB and POJO related Metadata collected based connection url
+ *
  * @author Dan Howard
  * @since 3/31/12 4:19 PM
  */
@@ -24,14 +24,13 @@ final class MetaData {
 
     private static final Log log = Log.getLogger(MetaData.class);
 
-    // properties for each class - static because this won't change between MetaData instances
+    // properties for each class - static because this won't need to change between MetaData instances
     private static final Map<Class<?>, Collection<PropertyInfo>> propertyMap = new ConcurrentHashMap<>(32);
-    // private static final Map<Class<?>, List<String>> propertyNames = new ConcurrentHashMap<>(32);
 
     // column to property map for each class
     private Map<Class<?>, Map<String, PropertyInfo>> propertyInfoMap = new ConcurrentHashMap<>(32);
     private Map<Class<?>, Map<String, ColumnInfo>> columnInfoMap = new ConcurrentHashMap<>(32);
-    private Map<Class<?>, List<String>> propertyNames = new ConcurrentHashMap<>(32);
+    private Map<Class<?>, List<String>> propertyNames = new ConcurrentHashMap<>(32); // not static since this is by column order which may vary
 
     // table/view name for each class
     private Map<Class<?>, String> tableOrViewMap = new ConcurrentHashMap<>(32);
@@ -147,15 +146,15 @@ final class MetaData {
                 }
                 PropertyInfo foundProperty = null;
                 for (PropertyInfo propertyInfo : properties) {
-                    String propertyName = propertyInfo.propertyName.toLowerCase().replace("_", "");
-                    if (propertyName.equalsIgnoreCase(columnName)) {
+                    String checkName = propertyInfo.propertyName.toLowerCase().replace("_", "");
+                    if (checkName.equalsIgnoreCase(columnName)) {
                         foundProperty = propertyInfo;
                         break;
                     } else {
                         // check annotation against column name
-                        Annotation annotation = propertyInfo.getAnnotation(Column.class);
-                        if (annotation != null) {
-                            if (((Column) annotation).name().equalsIgnoreCase(realColumnName)) {
+                        Column column = (Column) propertyInfo.getAnnotation(Column.class);
+                        if (column != null) {
+                            if (column.name().equalsIgnoreCase(realColumnName)) {
                                 foundProperty = propertyInfo;
                                 break;
                             }

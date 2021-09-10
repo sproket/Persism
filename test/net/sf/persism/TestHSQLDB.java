@@ -5,18 +5,14 @@ import net.sf.persism.dao.Contact;
 import org.junit.experimental.categories.Category;
 
 import java.sql.DriverManager;
-import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Statement;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
-import static net.sf.persism.Parameters.named;
+import static net.sf.persism.Parameters.params;
 import static net.sf.persism.SQL.where;
 import static net.sf.persism.UtilsForTests.*;
-import static net.sf.persism.UtilsForTests.isViewInDatabase;
 
 @Category(LocalDB.class)
 public final class TestHSQLDB extends BaseTest {
@@ -301,6 +297,8 @@ public final class TestHSQLDB extends BaseTest {
 
     @Override
     public void testContactTable() throws SQLException {
+        COLUMN_FIRST_NAME = "First Name";
+        COLUMN_LAST_NAME = "Last Name";
         super.testContactTable();
         assertTrue(true);
         Contact contact = new Contact();
@@ -323,7 +321,7 @@ public final class TestHSQLDB extends BaseTest {
         List<Contact> contacts;
         contacts = session.query(Contact.class,
                 sql,
-                named(Map.of("name", "Fred", "last", "Flintstone")));
+                params(Map.of("name", "Fred", "last", "Flintstone")));
         log.info(contacts);
 
     }

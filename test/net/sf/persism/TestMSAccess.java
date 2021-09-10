@@ -120,35 +120,16 @@ public class TestMSAccess extends TestCase {
         log.info(customers.size());
         assertTrue(customers.size() > 0);
 
-//        customers = session.query(Customer.class, where(":city = @city AND :contactName = @contact"), params(Map.of("city", "MTL", "contact", "Fred")));
-//        log.info(customers.size());
-//        assertTrue(customers.size() > 0);
+        customers = session.query(Customer.class, where(":city = @city AND :contactName = @contact"), params(Map.of("city", "MTL", "contact", "Fred")));
+        log.info(customers.size());
+        assertTrue(customers.size() > 0);
 
-        // TODO should we have Table name mapping Too? Probably <sigh>
         // Same with full query
         String query = """
-                SELECT
-                    :customerId,
-                    :companyName,
-                    :contactName,
-                    :contactTitle,
-                    :address,
-                    :city,
-                    :region,
-                    :postalCode,
-                    :country,
-                    :phone,
-                    :fax,
-                    :status,
-                    :dateRegistered,
-                    :dateOfLastOrder,
-                    :testLocalDate,
-                    :testLocalDateTime
+                SELECT *
                 FROM Customers
-                WHERE :city = @city AND :contactName = @contact
+                WHERE City = @city AND `Contact : / @ # Name` = @contact
                 """;
-
-// todo stypidly had extra quotes around WHERE :city = @city AND :contactName = @contact FUCKING """!
 
         assertTrue(session.isSelect(query));
 

@@ -187,7 +187,6 @@ public final class Session extends SessionInternal implements AutoCloseable {
         primaryKeyValues.areKeys = true;
 
         SQL sql = new SQL(metaData.getDefaultSelectStatement(objectClass, connection));
-        sql.parseForProperties = false;
         return fetch(objectClass, sql, primaryKeyValues);
     }
 
@@ -273,7 +272,6 @@ public final class Session extends SessionInternal implements AutoCloseable {
             throw new PersismException(Messages.OperationNotSupportedForJavaType.message(objectClass, "QUERY w/o specifying the SQL"));
         }
         SQL sql = sql(metaData.getSelectStatement(objectClass, connection));
-        sql.parseForProperties = false;
         return query(objectClass, sql, none());
     }
 
@@ -360,7 +358,6 @@ public final class Session extends SessionInternal implements AutoCloseable {
         }
         query = sb.toString();
         SQL sql = sql(query);
-        sql.parseForProperties = false;
         return query(objectClass, sql, primaryKeyValues);
     }
 
@@ -378,10 +375,7 @@ public final class Session extends SessionInternal implements AutoCloseable {
     public <T> List<T> query(Class<T> objectClass, SQL sql, Parameters parameters) {
         List<T> list = new ArrayList<>(32);
 
-        if (objectClass.getAnnotation(NotTable.class) != null) {
-            sql.parseForProperties = false;
-        }
-            // If we know this type it means it's a primitive type. Not a DAO so we use a different rule to read those
+        // If we know this type it means it's a primitive type. Not a DAO so we use a different rule to read those
         boolean isPOJO = Types.getType(objectClass) == null;
         boolean isRecord = isPOJO && isRecord(objectClass);
 
