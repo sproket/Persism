@@ -2,9 +2,11 @@
 
 ### 1.2.0
 * Added support for Views
-* Added new upsert method to session (performs insert or update depending on if the row exists)
 * Added query 'select *' method to session
+* Finalized support for Informix (Tests added)
 * Changed query statements to make explicit forward only and read only
+* Improve readRecord performance
+* Added BIT column to byte property conversion
 
 ### Breaking changes
 

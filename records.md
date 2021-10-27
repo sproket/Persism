@@ -1,5 +1,11 @@
 ## Using Records with Persism
 
+TODO ADD INFO  abnout insert/update etc.
+see here:
+https://www.reddit.com/r/java/comments/p9ljk8/persism_120_released_a_zero_ceremony_orm_for_java/ha0nksc/?context=3
+
+OVERRIDE CSS https://stackoverflow.com/questions/41254582/overriding-css-on-github-pages-using-slate-theme
+
 Records are an exiting new feature of Java 16 (previewed in 14 and 15) that allow us to write simple immutable 
 data classes with little ceremony. 
 

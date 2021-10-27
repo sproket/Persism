@@ -99,6 +99,10 @@ annotation. See [Annotations](#annotations)
 ## Updating Data
 
 With the session object you can perform inserts, updates and deletes with data objects.
+These methods return a Result object of your POJO type containing the original object
+and the number of rows affected returned by JDBC
+
+
 
 To perform an operation simply use the appropriate method.
 ### Insert
@@ -115,9 +119,12 @@ Customer customer = new Customer();
 customer.setCustomerName("Fred");
 customer.setAddress("123 Sesame Street");
 
-session.insert(customer); // insert new Customer
+// Insert and get a result
+Result<Customer> result = session.insert(customer);
+log.info(result.rows());
+log.info(result.dataObject());
 
-// Inserted and new autoinc value assigned 
+// Inserted and new autoinc value assigned
 assert customer.getCustomerId() > 0
 ```
 **Note:**  Persism detects if a String is longer than the specified width in the database and will trim it 
