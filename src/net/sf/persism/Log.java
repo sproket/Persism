@@ -3,12 +3,11 @@ package net.sf.persism;
 
 import net.sf.persism.logging.AbstractLogger;
 import net.sf.persism.logging.LogMode;
-import net.sf.persism.logging.implementation.JulLogger;
-import net.sf.persism.logging.implementation.Log4j2Logger;
-import net.sf.persism.logging.implementation.Log4jLogger;
-import net.sf.persism.logging.implementation.Slf4jLogger;
+import net.sf.persism.logging.JulLogger;
+import net.sf.persism.logging.Log4j2Logger;
+import net.sf.persism.logging.Log4jLogger;
+import net.sf.persism.logging.Slf4jLogger;
 
-import java.lang.reflect.Method;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -92,6 +91,10 @@ final class Log {
 
     public boolean isDebugEnabled() {
         return logger.isDebugEnabled();
+    }
+
+    public void debug(Object message) {
+        logger.debug(message);
     }
 
     public void debug(Object message, Object... params) {

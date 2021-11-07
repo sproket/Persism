@@ -1,10 +1,12 @@
 package net.sf.persism.dao;
 
 import net.sf.persism.annotations.Column;
+import net.sf.persism.annotations.NotColumn;
 
 import java.sql.Timestamp;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.List;
 
 /**
  * General customer class for database types.
@@ -31,6 +33,14 @@ public class Customer {
 
     //private java.sql.Date dateOfLastOrder;
     private LocalDateTime dateOfLastOrder;
+
+//    //@Column(collectionType = Invoice.class, foreignPropertyName = "customerId")
+//    // parentKeys = "x,y" childKeys = "a,b"
+//    @Join(to = Invoice.class, onProperties = "customerId", toProperties = "customerId")
+//    private List<Invoice> invoices;
+//
+//    @NotColumn // for now
+//    private Contact contact;
 
     private LocalDate testLocalDate;
     private LocalDateTime testLocalDateTime;

@@ -103,7 +103,7 @@ public class TestPostgreSQL extends BaseTest {
         }
 
         // https://stackoverflow.com/questions/1347646/postgres-error-on-insert-error-invalid-byte-sequence-for-encoding-utf8-0x0
-        // Postgres error on insert - ERROR: invalid byte sequence for encoding “UTF8”: 0x00 - CHAR if LEFT NULL
+        // Postgres error on insert - ERROR: invalid byte sequence for encoding "UTF8": 0x00 - CHAR if LEFT NULL
         commands.add("CREATE TABLE Customers ( " +
                 " Customer_ID VARCHAR(36) PRIMARY KEY DEFAULT uuid_generate_v1(), " +
                 " Company_Name VARCHAR(30) NULL, " +

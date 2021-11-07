@@ -4,8 +4,11 @@ import junit.framework.TestCase;
 import net.sf.persism.dao.*;
 import net.sf.persism.dao.records.*;
 
+import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.RecordComponent;
 import java.math.BigDecimal;
+import java.sql.Date;
 import java.sql.*;
 import java.text.DateFormat;
 import java.text.NumberFormat;
@@ -13,10 +16,7 @@ import java.text.SimpleDateFormat;
 import java.time.*;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 import java.util.logging.Logger;
 
 import static net.sf.persism.Parameters.none;
@@ -333,6 +333,11 @@ public abstract class BaseTest extends TestCase {
 
         session.insert(customer);
 
+        List<Customer> customers = session.query(Customer.class);
+
+        Customer customer1 = session.fetch(Customer.class, params(customers.get(0).getCustomerId()));
+        log.info(customer1);
+
         // test primitives
         String result = session.fetch(String.class, sql("select Contact_Name from Customers where Customer_ID = ?"), params("1234"));
         log.info(result);
@@ -426,6 +431,9 @@ public abstract class BaseTest extends TestCase {
         log.info(results);
         assertEquals("size should be 4", 4, results.size());
 
+        getCanonicalConstructor(CustomerOrderRec.class);
+
+        CustomerOrderRec cor = new CustomerOrderRec("1", "name", "desc", 123L, LocalDateTime.now(), null, false);
 
         // ORDER 1 s/b paid = true others paid = false
         for (CustomerOrderRec customerOrder : results) {
@@ -510,6 +518,16 @@ public abstract class BaseTest extends TestCase {
 
 
     private void queryDataSetup() throws SQLException {
+
+        Invoice invoice = new Invoice();
+        invoice.setCustomerId("123");
+        invoice.setStatus(1);
+        invoice.setPaid(true);
+        invoice.setPrice(10.0f);
+        invoice.setActualPrice(BigDecimal.TEN);
+        invoice.setQuantity(10);
+        session.insert(invoice);
+
         Customer c1 = new Customer();
         c1.setCustomerId("123");
         c1.setCompanyName("ABC INC");
@@ -1058,6 +1076,7 @@ public abstract class BaseTest extends TestCase {
         }
         assertTrue(failed);
 
+        // Misspelled property names
         failed = false;
         sql = where("(:firstXame = @name OR :Xompany = @name) and :lastname = @last and :city = @city and :amountOwed > @owe");
         log.info(sql);
@@ -1072,9 +1091,6 @@ public abstract class BaseTest extends TestCase {
             assertTrue("s/b (starts with) " + msg, e.getMessage().startsWith(msg));
         }
         assertTrue(failed);
-
-        // TODO Misspelled BOTH? - document?
-        // In that case you would get Parameters missing error then Properties missing next time you try
 
     }
 
@@ -1620,5 +1636,18 @@ public abstract class BaseTest extends TestCase {
         }
         return count;
     }
+
+    // https://stackoverflow.com/questions/67126109/is-there-a-way-to-recognise-a-java-16-records-canonical-constructor-via-reflect
+    // Can't be used with Java 8
+    private static <T> Constructor<T> getCanonicalConstructor(Class<T> recordClass)
+            throws NoSuchMethodException, SecurityException {
+
+        var components = recordClass.getRecordComponents();
+        Class<?>[] componentTypes = Arrays.stream(components)
+                .map(RecordComponent::getType)
+                .toArray(Class<?>[]::new);
+        return recordClass.getDeclaredConstructor(componentTypes);
+    }
+
 
 }

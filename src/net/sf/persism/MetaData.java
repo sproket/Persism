@@ -333,7 +333,7 @@ final class MetaData {
             // If we have a primary that's NUMERIC and HAS a default AND autoinc is not set then set it.
             if (connectionType == ConnectionTypes.Oracle) {
                 Optional<ColumnInfo> autoInc = map.values().stream().filter(e -> e.autoIncrement).findFirst();
-                if (!autoInc.isPresent()) {
+                if (autoInc.isEmpty()) {
                     // Do a second check if we have a primary that's numeric with a default.
                     Optional<ColumnInfo> primaryOpt = map.values().stream().filter(e -> e.primary).findFirst();
                     if (primaryOpt.isPresent()) {
@@ -992,15 +992,24 @@ final class MetaData {
 
         String guess;
         String pluralClassName;
+        String pluralClassName2 = null;
 
         if (className.endsWith("y")) {
+            // supply - supplies, category - categories
             pluralClassName = className.substring(0, className.length() - 1) + "ies";
+            pluralClassName2 = className + "s"; // holiday
+        } else if (className.endsWith("x")) {
+            // tax - taxes, mailbox - mailboxes
+            pluralClassName = className + "es";
         } else {
             pluralClassName = className + "s";
         }
 
         guesses.add(className);
         guesses.add(pluralClassName);
+        if (pluralClassName2 != null) {
+            guesses.add(pluralClassName2);
+        }
 
         guess = camelToTitleCase(className);
         guesses.add(guess); // name with spaces
@@ -1009,6 +1018,12 @@ final class MetaData {
         guess = camelToTitleCase(pluralClassName);
         guesses.add(guess); // plural name with spaces
         guesses.add(guess.replaceAll(" ", "_")); // plural name with spaces changed to _
+
+        if (pluralClassName2 != null) {
+            guess = camelToTitleCase(pluralClassName2);
+            guesses.add(guess); // plural name with spaces
+            guesses.add(guess.replaceAll(" ", "_")); // plural name with spaces changed to _
+        }
     }
 
     List<String> getPrimaryKeys(Class<?> objectClass, Connection connection) throws PersismException {

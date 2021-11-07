@@ -103,7 +103,7 @@ public final class Parameters {
             }
         }
 
-        log.debug("MAX? " + max);
+        log.debug("setParameterMap MAX? %d", max);
         Object[] arr = new Object[max];
         Set<String> paramsNotFound = new TreeSet<>();
 

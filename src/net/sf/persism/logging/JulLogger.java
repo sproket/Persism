@@ -1,7 +1,4 @@
-package net.sf.persism.logging.implementation;
-
-import net.sf.persism.logging.AbstractLogger;
-import net.sf.persism.logging.LogMode;
+package net.sf.persism.logging;
 
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -21,6 +18,13 @@ public final class JulLogger extends AbstractLogger {
     public void debug(Object message, Object... params) {
         if (isDebugEnabled()) {
             Logger.getLogger(logName).fine(String.format("" + message, params));
+        }
+    }
+
+    @Override
+    public void debug(Object message) {
+        if (isDebugEnabled()) {
+            Logger.getLogger(logName).fine("" + message);
         }
     }
 

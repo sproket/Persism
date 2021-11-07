@@ -1,7 +1,5 @@
-package net.sf.persism.logging.implementation;
+package net.sf.persism.logging;
 
-import net.sf.persism.logging.AbstractLogger;
-import net.sf.persism.logging.LogMode;
 import org.apache.log4j.Logger;
 
 public final class Log4jLogger extends AbstractLogger {
@@ -19,6 +17,13 @@ public final class Log4jLogger extends AbstractLogger {
     public void debug(Object message, Object... params) {
         if (isDebugEnabled()) {
             Logger.getLogger(logName).debug(String.format("" + message, params));
+        }
+    }
+
+    @Override
+    public void debug(Object message) {
+        if (isDebugEnabled()) {
+            Logger.getLogger(logName).debug("" + message);
         }
     }
 

@@ -44,8 +44,8 @@
                 <version>3.8.1</version>
                 <!-- MSSQL does not seem to able to connect with 16 -->
                 <configuration>
-                    <source>16</source>
-                    <target>16</target>
+                    <source>17</source>
+                    <target>17</target>
 <!--                    <compilerArgs>-->
 <!--                        <arg>-parameters</arg>-->
 <!--                    </compilerArgs>-->
@@ -82,7 +82,7 @@
                 <version>3.2.0</version>
                 <configuration>
                     <excludePackageNames>net.sf.persism.log*;net.sf.persism.logging.*</excludePackageNames>
-                    <source>16</source>
+                    <source>17</source>
                 </configuration>
                 <executions>
                     <execution>

@@ -7,10 +7,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.StringWriter;
-import java.lang.reflect.Constructor;
-import java.lang.reflect.Field;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Parameter;
+import java.lang.reflect.*;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.sql.*;
@@ -135,7 +132,7 @@ final class Reader {
 
         Constructor<?> selectedConstructor = findConstructor(objectClass, propertyNames);
 
-        // now read resultset by property order
+        // now read results by property order
         Map<String, PropertyInfo> propertyInfoByConstructorOrder = new LinkedHashMap<>(selectedConstructor.getParameterCount());
 
         for (String paramName : propertyNames) {
@@ -172,7 +169,7 @@ final class Reader {
         }
 
         try {
-            // Select the constructor to double check we have the correct one
+            // Select the constructor to double-check we have the correct one
             // This would be a double check on the types rather than just the names
             Constructor<?> constructor = objectClass.getConstructor(constructorTypes.toArray(new Class<?>[0]));
             //noinspection unchecked
@@ -183,22 +180,11 @@ final class Reader {
         }
     }
 
-    // https://stackoverflow.com/questions/67126109/is-there-a-way-to-recognise-a-java-16-records-canonical-constructor-via-reflect
-    // Can't be used with Java 8
-//    private static <T> Constructor<T> getCanonicalConstructor(Class<T> recordClass)
-//            throws NoSuchMethodException, SecurityException {
-//        Class<?>[] componentTypes = Arrays.stream(recordClass.getRecordComponents())
-//                .map(RecordComponent::getType)
-//                .toArray(Class<?>[]::new);
-//        return recordClass.getDeclaredConstructor(componentTypes);
-//    }
-
     private Constructor<?> findConstructor(Class<?> objectClass, List<String> propertyNames) {
         Constructor<?>[] constructors = objectClass.getConstructors();
         Constructor<?> selectedConstructor = null;
 
         for (Constructor<?> constructor : constructors) {
-            log.debug("findConstructor LOOP: " + debugConstructor(constructor));
             // Check with canonical or maybe -parameters
             List<String> parameterNames = Arrays.stream(constructor.getParameters()).
                     map(Parameter::getName).collect(Collectors.toList());
@@ -226,15 +212,17 @@ final class Reader {
         }
 
 
-        int x = 0;
-        for (Constructor<?> constructor : constructors) {
-            log.debug("CON " + (x++) + " " + constructor.equals(selectedConstructor) + " -> " + debugConstructor(constructor));
+        if (log.isDebugEnabled()) {
+            int x = 0;
+            for (Constructor<?> constructor : constructors) {
+                log.debug("CON " + (x++) + " " + constructor.equals(selectedConstructor) + " -> " + debugConstructor(constructor));
+            }
+            log.debug(Arrays.asList(constructors));
+            log.debug("INDEX: " + Arrays.asList(constructors).indexOf(selectedConstructor));
+            log.debug("findConstructor selected: %s", debugConstructor(selectedConstructor));
         }
 
-        log.debug(Arrays.asList(constructors));
-        log.debug("INDEX: " + Arrays.asList(constructors).indexOf(selectedConstructor));
-//selectedConstructor.getParameters()[1].getName();
-        log.debug("findConstructor selected: %s", debugConstructor(selectedConstructor));
+
         if (selectedConstructor == null) {
             throw new PersismException(Messages.CouldNotFindConstructorForRecord.message(objectClass, propertyNames));
         }

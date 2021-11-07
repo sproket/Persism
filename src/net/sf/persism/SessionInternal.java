@@ -10,13 +10,13 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.regex.MatchResult;
 
 // Non-public code Session uses.
-abstract class SessionInternal {
+abstract sealed class SessionInternal permits Session {
 
     // leave this using the Session.class for logging
     private static final Log log = Log.getLogger(Session.class);
 
     // todo maybe cache SQL objects with "parsed" property so we don't reparse. Also could cache the Parameter Map and not parse again for parameters
-    private static final Map<String, SQLInfo> queries = new ConcurrentHashMap<>(32);
+    private static final Map<String, String> queries = new ConcurrentHashMap<>(32);
 
     Connection connection;
     MetaData metaData;
@@ -25,7 +25,7 @@ abstract class SessionInternal {
 
     final JDBCResult executeQuery(Class<?> objectClass, SQL sql, Parameters parameters) throws SQLException {
 
-        boolean isPOJO = Types.getType(objectClass) == null;
+//        boolean isPOJO = Types.getType(objectClass) == null;
 
         JDBCResult result = new JDBCResult();
         String sqlQuery = sql.toString();
@@ -181,7 +181,7 @@ abstract class SessionInternal {
                 }
                 String name = sql.substring(i + 1, j);
                 c = '?'; // replace the parameter with a question mark
-                i += name.length(); // skip past the end if the parameter
+                i += name.length(); // skip past the end of the parameter
 
                 List<Integer> indexList = paramMap.get(name);
                 if (indexList == null) {
@@ -199,7 +199,13 @@ abstract class SessionInternal {
     }
 
     final String parsePropertyNames(String sql, Class<?> objectClass, Connection connection) {
-        log.debug("parsePropertyNames using : with SQL: " + sql);
+        log.debug("parsePropertyNames using : with SQL: %s", sql);
+
+        String key = metaData.getConnectionType() + " : " + objectClass.getName() + " : " + sql;
+        log.debug("parsePropertyNames: query cache key: %s", key);
+        if (queries.containsKey(key)) {
+            return queries.get(key);
+        }
 
         int length = sql.length();
         StringBuilder parsedQuery = new StringBuilder(length);
@@ -223,8 +229,6 @@ abstract class SessionInternal {
             endDelims.add(ed.charAt(0));
         }
 
-
-
         Map<String, PropertyInfo> properties = metaData.getTableColumnsPropertyInfo(objectClass, connection);
 
         Set<String> propertiesNotFound = new LinkedHashSet<>();
@@ -246,7 +250,7 @@ abstract class SessionInternal {
                     j++;
                 }
                 String name = sql.substring(i + 1, j);
-                log.debug("property name " + name);
+                log.debug("parsePropertyNames property name: %s", name);
                 i += name.length(); // skip past the end if the property name
 
                 boolean found = false;
@@ -272,8 +276,10 @@ abstract class SessionInternal {
         if (propertiesNotFound.size() > 0) {
             throw new PersismException(Messages.QueryPropertyNamesMissingOrNotFound.message(propertiesNotFound, sql));
         }
-
-        return parsedQuery.toString();
+        String parsedSql = parsedQuery.toString();
+        log.debug("parsePropertyNames SQL: %s", parsedSql);
+        queries.put(key, parsedSql);
+        return parsedSql;
     }
 
     // todo - do it like parseParameters where we check delimiters. If there's a ":" in a column name (common with MSACCESS) - it fails.
@@ -375,7 +381,7 @@ abstract class SessionInternal {
         return value;
     }
 
-    void setParameters(PreparedStatement st, Object[] parameters) throws SQLException {
+    final void setParameters(PreparedStatement st, Object[] parameters) throws SQLException {
         if (log.isDebugEnabled()) {
             log.debug("setParameters PARAMS: %s", Arrays.asList(parameters));
         }

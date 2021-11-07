@@ -119,4 +119,11 @@ public class TestUtil extends TestCase {
         log.warn(Messages.UnknownSQLType.message(1));
         log.warn(Messages.ConverterValueTypeNotYetSupported.message(Types.InstantType.getJavaType()));
     }
+
+    class E extends  Exception {
+        @Override
+        public synchronized Throwable fillInStackTrace() {
+            return this;
+        }
+    }
 }
