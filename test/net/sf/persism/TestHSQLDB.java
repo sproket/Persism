@@ -19,6 +19,12 @@ public final class TestHSQLDB extends BaseTest {
 
     private static final Log log = Log.getLogger(TestHSQLDB.class);
 
+    public TestHSQLDB() {
+        COLUMN_FIRST_NAME = "First Name";
+        COLUMN_LAST_NAME = "Last Name";
+    }
+
+
     @Override
     public void setUp() throws Exception {
         connectionType = ConnectionTypes.HSQLDB;

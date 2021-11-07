@@ -22,6 +22,7 @@ public class AllLocalTests {
         theTestSuite.addTestSuite(TestDerby.class);
         theTestSuite.addTestSuite(TestSQLite.class);
         theTestSuite.addTestSuite(TestMSAccess.class);
+        theTestSuite.addTestSuite(TestMetaData.class); // because it uses derby
 
         return theTestSuite;
     }

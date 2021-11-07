@@ -1,5 +1,9 @@
 ## Release Notes
 
+### merge with 1.2.....
+* REVIEW ALL CHANGES
+* Fixed Tax -> Taxes (update web page)
+
 ### 1.1.0 (pending)
 
 * Added support for MSAccess with UCanAccess jdbc driver

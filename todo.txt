@@ -38,19 +38,20 @@ http://eikke.com/importing-a-git-tree-into-a-subversion-repository/
 ADD Firebird? Done.
 Add Sybase DB2 Ingres Informix hsqldb? .....
 
-TODO Handle X words Tax - Taxes, Fax - Faxes - plural rules
+DONE Handle X words Tax - Taxes, Fax - Faxes - plural rules and FIXED Holiday (not Holidaies....)
 
-todo     @Column(name = "IsCompound") - yeah we do a simple "is" check but I need to think about this. See determinePropertyInfo
+NOTHING TO DO HERE. This is fixed by looking at fields and then getter setter methods.
+DONE  @Column(name = "IsCompound") - yeah we do a simple "is" check but I need to think about this. See determinePropertyInfo
          private boolean compound; Find "Is" Columns so we don't need the annotation? OR just name the field isCompound - gets and sets seem to generate fine... BUT IT FAILS LOOKING FOR "compound" as the property name!
 
 
-TODO DOCUMENTATION Example how to implement Persistable
+DONE DOCUMENTATION Example how to implement Persistable
 
-TODO MAYBE https://github.com/JSQLParser/JSqlParser/releases/tag/jsqlparser-4.0
+NOPE https://github.com/JSQLParser/JSqlParser/releases/tag/jsqlparser-4.0
 
 DONE Support new DateTime APIs https://stackoverflow.com/questions/32548331/missed-opportunity-to-fix-jdbc-date-handling-in-java-8
 DONE https://jdbc.postgresql.org/documentation/head/8-date-time.html
-TODO https://stackoverflow.com/questions/44091688/using-zoneddatetime-with-datetimeoffset-in-sqlserver
+TODO https://stackoverflow.com/questions/44091688/using-zoneddatetime-with-datetimeoffset-in-sqlserver BETTER TO JUST DOCUMENT HOW TO USE UTC
 TODO https://www.baeldung.com/java-daylight-savings
 
 NOTE: Checks for setting for a default depend on an Object Type - will not work with primitive types.
@@ -92,7 +93,7 @@ add the query string as a key to the Column/Property Info objects? Duplicating b
 DONE SQL enum to Java enum? PostgreSQL, MySQL and H2. TODO Possible with MSSQL with CHECK constraints
 
 TODO @NotTable classes should allow getters only and we can set values through fields instead. (even normal table should allow this for read only columns)
-TODO Add support for Records
+DONE Add support for Records
 
 MAVEN:
 https://www.youtube.com/watch?v=bxP9IuJbcDQ
@@ -124,13 +125,13 @@ IN PROGRESS Session autocommit false? https://www.reddit.com/r/java/comments/lvy
 
 DONE POM still gets log4j logback and slf4j - FFS
 
-// todo org.apache.logging.log4j s/b log4j2 - no support for log4j1 but test BRIDGE 1.x
+// DONE org.apache.logging.log4j s/b log4j2 - no support for log4j1 but test BRIDGE 1.x
 // If existing components use Log4j 1.x and you want to have this logging routed to Log4j 2, then remove any log4j 1.x dependencies and add the following.
 // http://logging.apache.org/log4j/2.x/maven-artifacts.html
 
 todo see if contributors want mentions in the pom.xml see https://github.com/jahlborn/jackcess/blob/master/pom.xml
 
-
+TODO Can we use https://www.logicbig.com/tutorials/core-java-tutorial/java-9-changes/platform-logging.html to replace our logger? It doesn't seem so....
 
 https://mkyong.com/maven/maven-jacoco-code-coverage-example/
 https://duckduckgo.com/?q=maven+generate+code+coverage
@@ -151,3 +152,9 @@ https://github.com/javaee/jpa-spec/tree/master/javax.persistence-api/src/main/ja
 
 Maven code-coverage - see if we get this to work with AllTests (no container setting)
 https://stackoverflow.com/questions/36199422/how-to-make-maven-unit-test-code-coverage-work
+
+FOLLOW UP Ucanaccess bug
+https://sourceforge.net/p/ucanaccess/discussion/general/thread/52ae8bb570/
+https://sourceforge.net/p/jackcess/bugs/155/
+
+check out https://readthedocs.org/

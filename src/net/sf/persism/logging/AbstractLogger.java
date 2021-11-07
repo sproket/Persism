@@ -1,6 +1,6 @@
 package net.sf.persism.logging;
 
-public abstract class AbstractLogger {
+public abstract sealed class AbstractLogger permits JulLogger, Log4j2Logger, Log4jLogger, Slf4jLogger {
 
 	protected final LogMode logMode;
 	protected final String logName;
@@ -12,6 +12,7 @@ public abstract class AbstractLogger {
 
 	public abstract boolean isDebugEnabled();
 
+	public abstract void debug(Object message);
 	public abstract void debug(Object message, Object... params);
 
 	public abstract void info(Object message);

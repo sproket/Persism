@@ -6,6 +6,7 @@ package net.sf.persism;
  */
 // todo wrong link for now....
 // todo cache these if we do any parsing so we only parse once.
+
 public final class SQL {
 
     private final String sql;

@@ -1,10 +1,12 @@
 package net.sf.persism;
 
 import junit.framework.TestCase;
+import net.sf.persism.categories.LocalDB;
 import net.sf.persism.dao.ByteData;
 import net.sf.persism.dao.CustomerOrder;
 import net.sf.persism.dao.OracleOrder;
 import net.sf.persism.dao.records.CustomerOrderRec;
+import org.junit.experimental.categories.Category;
 
 import java.lang.annotation.Annotation;
 import java.lang.invoke.MethodHandles;
@@ -17,6 +19,7 @@ import java.util.*;
 
 import static java.lang.System.out;
 
+@Category(LocalDB.class)
 public final class TestMetaData extends TestCase {
 
     private static final Log log = Log.getLogger(TestMetaData.class);
@@ -67,8 +70,8 @@ public final class TestMetaData extends TestCase {
             session.insert(new TestDerby());
         } catch (PersismException e) {
             failed = true;
-            assertEquals("Message s/b 'Could not determine a table for type: net.sf.persism.TestDerby Guesses were: [TestDerby, TestDerbies, Test Derby, Test_Derby, Test Derbies, Test_Derbies] and we found multiple matching: [TEST_DERBY, TESTDERBY]'",
-                    "Could not determine a table for type: net.sf.persism.TestDerby Guesses were: [TestDerby, TestDerbies, Test Derby, Test_Derby, Test Derbies, Test_Derbies] and we found multiple matching: [TEST_DERBY, TESTDERBY]",
+            assertEquals("Message s/b 'Could not determine a table for type: net.sf.persism.TestDerby Guesses were: [TestDerby, TestDerbies, Test Derby, Test_Derby, Test Derbies, Test_Derbies, Test Derbys, Test_Derbys] and we found multiple matching: [TEST_DERBY, TESTDERBY]'",
+                    "Could not determine a table for type: net.sf.persism.TestDerby Guesses were: [TestDerby, TestDerbies, TestDerbys, Test Derby, Test_Derby, Test Derbies, Test_Derbies, Test Derbys, Test_Derbys] and we found multiple matching: [TEST_DERBY, TESTDERBY]",
                     e.getMessage());
         }
         assertTrue(failed);

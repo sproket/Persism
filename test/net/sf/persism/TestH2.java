@@ -5,7 +5,6 @@ import net.sf.persism.dao.*;
 import org.junit.experimental.categories.Category;
 
 import java.io.File;
-import java.math.BigDecimal;
 import java.nio.file.Files;
 import java.sql.*;
 import java.time.Instant;
@@ -328,7 +327,31 @@ to the database URL (example: jdbc:h2:~/test;IGNORECASE=TRUE).
 
         executeCommand(sql, con);
 
+        // Test for Y ending table who's plural isn't ies....
+        if (isTableInDatabase("CorporateHolidays", con)) {
+            executeCommand("DROP TABLE CorporateHolidays", con);
+        }
+        sql = """
+                CREATE TABLE CorporateHolidays (
+                    ID varchar(10),
+                    NAME varchar(40),
+                    DATE date
+                    )
+                """;
+        executeCommand(sql, con);
 
+    }
+
+    public void testHolidays() {
+        CorporateHoliday holiday = new CorporateHoliday("1", "Christmas", LocalDate.of(2021, 12, 25));
+        session.insert(holiday);
+
+        holiday = new CorporateHoliday("2", "Halloween", LocalDate.of(2021, 10, 31));
+        session.insert(holiday);
+
+        List<CorporateHoliday> holidays = session.query(CorporateHoliday.class);
+        assertTrue(holidays.size() > 0);
+        log.info(holidays);
     }
 
     public void testUser() {

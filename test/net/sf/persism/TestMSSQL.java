@@ -1219,4 +1219,57 @@ public class TestMSSQL extends BaseTest {
     public void testAllDates() {
         super.testAllDates();
     }
+
+    public void testCheckConstaints() throws SQLException {
+        String sql;
+        if (isTableInDatabase("Sizes", con)) {
+            executeCommand("DROP TABLE Sizes", con);
+        }
+        sql = """
+                 CREATE TABLE Sizes
+                 (
+                     name varchar(10) NOT NULL CHECK (name IN('small', 'medium', 'large'))
+                 )          
+                """;
+        executeCommand(sql, con);
+
+
+        String[] tableTypes = {"TABLE"};
+
+        DatabaseMetaData dmd;
+        ResultSetMetaData rsmd;
+        ResultSet rs;
+
+        dmd = con.getMetaData();
+        // get attributes
+        //rs = dmd.getAttributes("", "", "", "");
+        List<String> tables = new ArrayList<>(32);
+        rs = dmd.getTables(null, session.getMetaData().getConnectionType().getSchemaPattern(), "Sizes", tableTypes);
+        rsmd = rs.getMetaData();
+        while (rs.next()) {
+            for (int i = 1; i <= rsmd.getColumnCount(); i++) {
+                System.out.println(rsmd.getColumnName(i) + " = " + rs.getObject(i));
+            }
+            tables.add(rs.getString("TABLE_NAME"));
+            System.out.println("----------");
+        }
+
+        for (String table : tables) {
+            System.out.println("Table " + table + " COLUMN INFO");
+            // rs = dmd.getColumns(null, session.getMetaData().getConnectionType().getSchemaPattern(), table, null);
+            // rs = dmd.getIndexInfo(null, null, table, false, false);
+            rs = dmd.getAttributes(null, null, "", null);
+            rsmd = rs.getMetaData();
+            while (rs.next()) {
+                for (int i = 1; i <= rsmd.getColumnCount(); i++) {
+                    System.out.println(rsmd.getColumnName(i) + " = " + rs.getObject(i));
+                }
+                System.out.println("----------");
+            }
+
+        }
+
+
+    }
+
 }
