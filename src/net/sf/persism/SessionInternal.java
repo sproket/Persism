@@ -282,64 +282,6 @@ abstract sealed class SessionInternal permits Session {
         return parsedSql;
     }
 
-    // todo - do it like parseParameters where we check delimiters. If there's a ":" in a column name (common with MSACCESS) - it fails.
-    final String XparsePropertyNames(String sql, Class<?> objectClass, Connection connection) {
-        sql += " "; // add a space for if a property name is the last part of the string otherwise parser skips it
-
-        // look for ":"
-        Scanner scanner = new Scanner(sql);
-        List<MatchResult> matchResults = scanner.findAll(":").toList();
-        Set<String> propertyNames = new LinkedHashSet<>();
-        Set<String> propertiesNotFound = new LinkedHashSet<>();
-
-        if (matchResults.size() > 0) {
-            log.debug("Parse properties -> SQL before: %s", sql);
-            for (MatchResult result : matchResults) {
-                String sub = sql.substring(result.start());
-                int n = 0;
-                for (int j = result.start() + 1; j < sql.length(); j++) {
-                    char c = sql.charAt(j);
-                    if (Character.isJavaIdentifierPart(c)) {
-                        n++;
-                    } else {
-                        propertyNames.add(sub.substring(0, n + 1));
-                        break;
-                    }
-                }
-            }
-
-            Map<String, PropertyInfo> properties;
-            properties = metaData.getTableColumnsPropertyInfo(objectClass, connection);
-            String sd = metaData.getConnectionType().getKeywordStartDelimiter();
-            String ed = metaData.getConnectionType().getKeywordEndDelimiter();
-
-            String repl = sql;
-            for (String propertyName : propertyNames) {
-                String pname = propertyName.substring(1); // remove :
-                boolean found = false;
-                for (String column : properties.keySet()) {
-                    PropertyInfo info = properties.get(column);
-                    if (info.propertyName.equalsIgnoreCase(pname)) {
-                        found = true;
-                        String col = sd + column + ed;
-                        repl = repl.replace(propertyName, col);
-                        break;
-                    }
-                }
-                if (!found) {
-                    propertiesNotFound.add(pname);
-                }
-            }
-            log.debug("Parse properties -> SQL after : %s", repl);
-            sql = repl;
-        }
-        if (propertiesNotFound.size() > 0) {
-            throw new PersismException(Messages.QueryPropertyNamesMissingOrNotFound.message(propertiesNotFound, sql));
-        }
-        return sql;
-    }
-
-
     final void checkIfOkForWriteOperation(Object object, String operation) {
         Class<?> objectClass = object.getClass();
         if (objectClass.getAnnotation(View.class) != null) {

@@ -211,40 +211,10 @@ final class Reader {
             }
         }
 
-
-        if (log.isDebugEnabled()) {
-            int x = 0;
-            for (Constructor<?> constructor : constructors) {
-                log.debug("CON " + (x++) + " " + constructor.equals(selectedConstructor) + " -> " + debugConstructor(constructor));
-            }
-            log.debug(Arrays.asList(constructors));
-            log.debug("INDEX: " + Arrays.asList(constructors).indexOf(selectedConstructor));
-            log.debug("findConstructor selected: %s", debugConstructor(selectedConstructor));
-        }
-
-
         if (selectedConstructor == null) {
             throw new PersismException(Messages.CouldNotFindConstructorForRecord.message(objectClass, propertyNames));
         }
         return selectedConstructor;
-    }
-
-    private String debugConstructor(Constructor<?> constructor) {
-        if (constructor == null) {
-            return null;
-        }
-        TestDescription desc = constructor.getAnnotation(TestDescription.class);
-        if (desc != null) {
-            return desc.value();
-        }
-        StringBuilder sb = new StringBuilder();
-        String sep = "";
-        for (Parameter p : constructor.getParameters()) {
-            sb.append(sep).append(p.getName());
-            sep = ",";
-        }
-
-        return "" + constructor + " names: " + sb;
     }
 
     // https://stackoverflow.com/questions/1075656/simple-way-to-find-if-two-different-lists-contain-exactly-the-same-elements

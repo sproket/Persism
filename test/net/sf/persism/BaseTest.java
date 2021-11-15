@@ -6,6 +6,7 @@ import net.sf.persism.dao.records.*;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Parameter;
 import java.lang.reflect.RecordComponent;
 import java.math.BigDecimal;
 import java.sql.Date;
@@ -431,9 +432,14 @@ public abstract class BaseTest extends TestCase {
         log.info(results);
         assertEquals("size should be 4", 4, results.size());
 
-        getCanonicalConstructor(CustomerOrderRec.class);
+        Constructor<?> c = getCanonicalConstructor(CustomerOrderRec.class);
+        log.info("RECORD: " + debugConstructor(c));
+
+        c = getCanonicalConstructor(CustomerOrder.class);
+        log.info("OBJECT: " + debugConstructor(c));
 
         CustomerOrderRec cor = new CustomerOrderRec("1", "name", "desc", 123L, LocalDateTime.now(), null, false);
+        log.info(cor);
 
         // ORDER 1 s/b paid = true others paid = false
         for (CustomerOrderRec customerOrder : results) {
@@ -1639,14 +1645,56 @@ public abstract class BaseTest extends TestCase {
 
     // https://stackoverflow.com/questions/67126109/is-there-a-way-to-recognise-a-java-16-records-canonical-constructor-via-reflect
     // Can't be used with Java 8
-    private static <T> Constructor<T> getCanonicalConstructor(Class<T> recordClass)
+    static <T> Constructor<T> getCanonicalConstructor(Class<T> recordClass)
             throws NoSuchMethodException, SecurityException {
 
         var components = recordClass.getRecordComponents();
+        if (components == null) {
+            log.warn("why are you calling this on a non-record?");
+            return null;
+        }
         Class<?>[] componentTypes = Arrays.stream(components)
                 .map(RecordComponent::getType)
                 .toArray(Class<?>[]::new);
         return recordClass.getDeclaredConstructor(componentTypes);
+    }
+
+    // todo clean up for findConstructor call in Reader.
+    final void TODOtestConstructors() {
+        List<Constructor<?>> constructors = new ArrayList<>();
+        Constructor<?> selectedConstructor = null;
+        if (log.isDebugEnabled()) {
+            int x = 0;
+            for (Constructor<?> constructor : constructors) {
+                log.debug("CON " + (x++) + " " + constructor.equals(selectedConstructor) + " -> " + debugConstructor(constructor));
+            }
+            log.debug(Arrays.asList(constructors));
+            log.debug("INDEX: " + Arrays.asList(constructors).indexOf(selectedConstructor));
+            log.debug("findConstructor selected: %s", debugConstructor(selectedConstructor));
+        }
+
+    }
+
+    final String debugConstructor(Constructor<?> constructor) {
+
+        if (constructor == null) {
+            return null;
+        }
+        TestDescription annotation = constructor.getAnnotation(TestDescription.class);
+        String tag = "";
+
+        if (annotation != null) {
+            tag = annotation.value();
+        }
+
+        StringBuilder sb = new StringBuilder();
+        String sep = "";
+        for (Parameter p : constructor.getParameters()) {
+            sb.append(sep).append(p.getName());
+            sep = ",";
+        }
+
+        return tag + " " + constructor + " names: " + sb;
     }
 
 
