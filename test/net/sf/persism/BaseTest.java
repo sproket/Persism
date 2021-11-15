@@ -1680,7 +1680,7 @@ public abstract class BaseTest extends TestCase {
         if (constructor == null) {
             return null;
         }
-        TestDescription annotation = constructor.getAnnotation(TestDescription.class);
+        ConstructorTag annotation = constructor.getAnnotation(ConstructorTag.class);
         String tag = "";
 
         if (annotation != null) {
