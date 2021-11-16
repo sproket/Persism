@@ -1344,7 +1344,7 @@ public abstract class BaseTest extends TestCase {
 
             // METHOD TWO: call setParameters which does some checking
             // Fails the local DBs H2, HSQLDB, Derby and also Firebird
-            session.setParameters(st, params.toArray());
+            session.helper.setParameters(st, params.toArray());
 
             // METHOD THREE: What I do normally which is to pass through convert and then use setParameters
             // I guess if we ever support a general execute method we could either leave this up to the user

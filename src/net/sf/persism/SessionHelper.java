@@ -14,19 +14,19 @@ import static net.sf.persism.Parameters.params;
 import static net.sf.persism.SQL.where;
 
 // Non-public code Session uses.
-abstract sealed class SessionInternal permits Session {
+final class SessionHelper {
 
     // leave this using the Session.class for logging
     private static final Log log = Log.getLogger(Session.class);
 
-    Connection connection;
-    MetaData metaData;
-    Reader reader;
-    Converter converter;
-    Joiner joiner;
+    private final Session session;
+
+    public SessionHelper(Session session) {
+        this.session = session;
+    }
 
 
-    final JDBCResult executeQuery(Class<?> objectClass, SQL sql, Parameters parameters) throws SQLException {
+    JDBCResult executeQuery(Class<?> objectClass, SQL sql, Parameters parameters) throws SQLException {
 
         JDBCResult result = new JDBCResult();
         String sqlQuery = sql.toString();
@@ -45,14 +45,14 @@ abstract sealed class SessionInternal permits Session {
         } else if (parameters.areKeys) {
             // convert parameters - usually it's the UUID type that may need a conversion to byte[16]
             // Probably we don't want to auto-convert here since it's inconsistent. DO WE? YES.
-            List<String> keys = metaData.getPrimaryKeys(objectClass, connection);
+            List<String> keys = session.metaData.getPrimaryKeys(objectClass, session.connection);
             if (keys.size() == 1) {
-                Map<String, ColumnInfo> columns = metaData.getColumns(objectClass, connection);
+                Map<String, ColumnInfo> columns = session.metaData.getColumns(objectClass, session.connection);
                 String key = keys.get(0);
                 ColumnInfo columnInfo = columns.get(key);
                 for (int j = 0; j < parameters.size(); j++) {
                     if (parameters.get(j) != null) {
-                        parameters.set(j, converter.convert(parameters.get(j), columnInfo.columnType.getJavaType(), columnInfo.columnName));
+                        parameters.set(j, session.converter.convert(parameters.get(j), columnInfo.columnType.getJavaType(), columnInfo.columnName));
                     }
                 }
             }
@@ -62,8 +62,8 @@ abstract sealed class SessionInternal permits Session {
             if (objectClass.getAnnotation(NotTable.class) != null) {
                 throw new PersismException(Messages.WhereNotSupportedForNotTableQueries.message());
             }
-            String select = metaData.getSelectStatement(objectClass, connection);
-            sqlQuery = select + " " + parsePropertyNames(sqlQuery, objectClass, connection);
+            String select = session.metaData.getSelectStatement(objectClass, session.connection);
+            sqlQuery = select + " " + parsePropertyNames(sqlQuery, objectClass, session.connection);
         } else {
             checkIfStoredProcOrSQL(objectClass, sql);
         }
@@ -77,14 +77,14 @@ abstract sealed class SessionInternal permits Session {
         return result;
     }
 
-    final void exec(JDBCResult result, String sql, Object... parameters) throws SQLException {
+    void exec(JDBCResult result, String sql, Object... parameters) throws SQLException {
         try {
             if (isSelect(sql)) {
-                if (metaData.getConnectionType() == ConnectionTypes.Firebird) {
+                if (session.metaData.getConnectionType() == ConnectionTypes.Firebird) {
                     // https://stackoverflow.com/questions/935511/how-can-i-avoid-resultset-is-closed-exception-in-java
-                    result.st = connection.prepareStatement(sql, ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY, ResultSet.HOLD_CURSORS_OVER_COMMIT);
+                    result.st = session.connection.prepareStatement(sql, ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY, ResultSet.HOLD_CURSORS_OVER_COMMIT);
                 } else {
-                    result.st = connection.prepareStatement(sql, ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
+                    result.st = session.connection.prepareStatement(sql, ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
                 }
 
                 PreparedStatement pst = (PreparedStatement) result.st;
@@ -95,7 +95,7 @@ abstract sealed class SessionInternal permits Session {
                     sql = "{call " + sql + "} ";
                 }
                 // Don't need If Firebird here. Firebird would call a selectable stored proc with SELECT anyway
-                result.st = connection.prepareCall(sql, ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY, ResultSet.HOLD_CURSORS_OVER_COMMIT);
+                result.st = session.connection.prepareCall(sql, ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY, ResultSet.HOLD_CURSORS_OVER_COMMIT);
 
                 CallableStatement cst = (CallableStatement) result.st;
                 setParameters(cst, parameters);
@@ -109,7 +109,7 @@ abstract sealed class SessionInternal permits Session {
     }
 
     // For unit tests only for now.
-    final boolean execute(String sql, Object... parameters) {
+    boolean execute(String sql, Object... parameters) {
 
         log.debug("execute: %s params: %s", sql, Arrays.asList(parameters));
 
@@ -117,17 +117,17 @@ abstract sealed class SessionInternal permits Session {
         try {
 
             if (parameters.length == 0) {
-                st = connection.createStatement();
+                st = session.connection.createStatement();
                 return st.execute(sql);
             } else {
-                st = connection.prepareStatement(sql);
+                st = session.connection.prepareStatement(sql);
                 PreparedStatement pst = (PreparedStatement) st;
                 setParameters(pst, parameters);
                 return pst.execute();
             }
 
         } catch (Exception e) {
-            Util.rollback(connection);
+            Util.rollback(session.connection);
             throw new PersismException(e.getMessage(), e);
         } finally {
             Util.cleanup(st, null);
@@ -142,7 +142,7 @@ abstract sealed class SessionInternal permits Session {
      * @param paramMap map to hold parameter-index mappings
      * @return the parsed query
      */
-    final String parseParameters(char delim, String sql, Map<String, List<Integer>> paramMap) {
+    String parseParameters(char delim, String sql, Map<String, List<Integer>> paramMap) {
         log.debug("parseParameters using " + delim);
 
         int length = sql.length();
@@ -152,16 +152,16 @@ abstract sealed class SessionInternal permits Session {
         startDelims.add('"');
         startDelims.add('\'');
 
-        if (Util.isNotEmpty(metaData.getConnectionType().getKeywordStartDelimiter())) {
-            startDelims.add(metaData.getConnectionType().getKeywordStartDelimiter().charAt(0));
+        if (Util.isNotEmpty(session.metaData.getConnectionType().getKeywordStartDelimiter())) {
+            startDelims.add(session.metaData.getConnectionType().getKeywordStartDelimiter().charAt(0));
         }
 
         Set<Character> endDelims = new HashSet<>(4);
         endDelims.add('"');
         endDelims.add('\'');
 
-        if (Util.isNotEmpty(metaData.getConnectionType().getKeywordEndDelimiter())) {
-            endDelims.add(metaData.getConnectionType().getKeywordEndDelimiter().charAt(0));
+        if (Util.isNotEmpty(session.metaData.getConnectionType().getKeywordEndDelimiter())) {
+            endDelims.add(session.metaData.getConnectionType().getKeywordEndDelimiter().charAt(0));
         }
 
         boolean inDelimiter = false;
@@ -199,20 +199,20 @@ abstract sealed class SessionInternal permits Session {
         return parsedQuery.toString();
     }
 
-    final String parsePropertyNames(String sql, Class<?> objectClass, Connection connection) {
+    String parsePropertyNames(String sql, Class<?> objectClass, Connection connection) {
         log.debug("parsePropertyNames using : with SQL: %s", sql);
 
         int length = sql.length();
         StringBuilder parsedQuery = new StringBuilder(length);
 
-        String sd = metaData.getConnectionType().getKeywordStartDelimiter();
-        String ed = metaData.getConnectionType().getKeywordEndDelimiter();
+        String sd = session.metaData.getConnectionType().getKeywordStartDelimiter();
+        String ed = session.metaData.getConnectionType().getKeywordEndDelimiter();
 
         Set<Character> startDelims = new HashSet<>(4);
         startDelims.add('"');
         startDelims.add('\'');
 
-        if (Util.isNotEmpty(metaData.getConnectionType().getKeywordStartDelimiter())) {
+        if (Util.isNotEmpty(session.metaData.getConnectionType().getKeywordStartDelimiter())) {
             startDelims.add(sd.charAt(0));
         }
 
@@ -220,11 +220,11 @@ abstract sealed class SessionInternal permits Session {
         endDelims.add('"');
         endDelims.add('\'');
 
-        if (Util.isNotEmpty(metaData.getConnectionType().getKeywordEndDelimiter())) {
+        if (Util.isNotEmpty(session.metaData.getConnectionType().getKeywordEndDelimiter())) {
             endDelims.add(ed.charAt(0));
         }
 
-        Map<String, PropertyInfo> properties = metaData.getTableColumnsPropertyInfo(objectClass, connection);
+        Map<String, PropertyInfo> properties = session.metaData.getTableColumnsPropertyInfo(objectClass, connection);
 
         Set<String> propertiesNotFound = new LinkedHashSet<>();
 
@@ -276,7 +276,7 @@ abstract sealed class SessionInternal permits Session {
         return parsedSql;
     }
 
-    final void checkIfOkForWriteOperation(Object object, String operation) {
+    void checkIfOkForWriteOperation(Object object, String operation) {
         Class<?> objectClass = object.getClass();
         if (objectClass.getAnnotation(View.class) != null) {
             throw new PersismException(Messages.OperationNotSupportedForView.message(objectClass, operation));
@@ -289,7 +289,7 @@ abstract sealed class SessionInternal permits Session {
         }
     }
 
-    final Object getTypedValueReturnedFromGeneratedKeys(Class<?> objectClass, ResultSet rs) throws SQLException {
+    Object getTypedValueReturnedFromGeneratedKeys(Class<?> objectClass, ResultSet rs) throws SQLException {
 
         Object value = null;
         Types type = Types.getType(objectClass);
@@ -317,7 +317,7 @@ abstract sealed class SessionInternal permits Session {
         return value;
     }
 
-    final void setParameters(PreparedStatement st, Object[] parameters) throws SQLException {
+    void setParameters(PreparedStatement st, Object[] parameters) throws SQLException {
         if (log.isDebugEnabled()) {
             log.debug("setParameters PARAMS: %s", Arrays.asList(parameters));
         }
@@ -401,14 +401,14 @@ abstract sealed class SessionInternal permits Session {
                         break;
 
                     case LocalTimeType:
-                        value = converter.convert(param, Time.class, "Parameter " + n);
+                        value = session.converter.convert(param, Time.class, "Parameter " + n);
                         st.setObject(n, value);
                         break;
 
                     case UtilDateType:
                     case LocalDateType:
                     case LocalDateTimeType:
-                        value = converter.convert(param, Timestamp.class, "Parameter " + n);
+                        value = session.converter.convert(param, Timestamp.class, "Parameter " + n);
                         st.setObject(n, value);
                         break;
 
@@ -436,7 +436,7 @@ abstract sealed class SessionInternal permits Session {
                         break;
 
                     case EnumType:
-                        if (metaData.getConnectionType() == ConnectionTypes.PostgreSQL) {
+                        if (session.metaData.getConnectionType() == ConnectionTypes.PostgreSQL) {
                             st.setObject(n, param.toString(), java.sql.Types.OTHER);
                         } else {
                             st.setString(n, param.toString());
@@ -444,7 +444,7 @@ abstract sealed class SessionInternal permits Session {
                         break;
 
                     case UUIDType:
-                        if (metaData.getConnectionType() == ConnectionTypes.PostgreSQL) {
+                        if (session.metaData.getConnectionType() == ConnectionTypes.PostgreSQL) {
                             // PostgreSQL does work with setObject but not setString unless you set the connection property stringtype=unspecified todo document this
                             st.setObject(n, param);
                         } else {
@@ -463,7 +463,7 @@ abstract sealed class SessionInternal permits Session {
 
             } else {
                 // param is null
-                if (metaData.getConnectionType() == ConnectionTypes.UCanAccess) {
+                if (session.metaData.getConnectionType() == ConnectionTypes.UCanAccess) {
                     st.setNull(n, java.sql.Types.OTHER);
                 } else {
                     st.setObject(n, param);
@@ -474,12 +474,209 @@ abstract sealed class SessionInternal permits Session {
         }
     }
 
-    final boolean isSelect(String sql) {
+
+    void handleJoins(Object parent, Class<?> objectClass) throws IllegalAccessException, InvocationTargetException {
+        // todo how will handleJoins work with Records? I guess we have to assume we have a modifiable list. Also we'd need to add to this this since we don't have a setter - handle joins won't work with a single join
+        List<PropertyInfo> joinProperties = MetaData.getPropertyInfo(objectClass).stream().filter(PropertyInfo::isJoin).collect(Collectors.toList());
+        for (PropertyInfo joinProperty : joinProperties) {
+            Join joinAnnotation = (Join) joinProperty.getAnnotation(Join.class);
+            String[] parentPropertyNames = joinAnnotation.onProperties().split(",");
+            String[] childPropertyNames = joinAnnotation.toProperties().split(",");
+            if (parentPropertyNames.length != childPropertyNames.length) {
+                throw new PersismException("how would I match these?");
+            }
+            Util.trimArray(parentPropertyNames);
+            Util.trimArray(childPropertyNames);
+            // todo test these properties exist and fail otherwise
+
+            boolean caseSensitive = joinAnnotation.caseSensitive();
+
+            Class<?> childClass = joinAnnotation.to();
+
+            boolean parentIsAQuery = Collection.class.isAssignableFrom(parent.getClass());
+            if (parentIsAQuery) {
+                // this method should not be called if the list parent list is empty
+                assert ((Collection<?>) parent).size() > 0;
+                // where parent is a query collect parent values for each foreign property name
+                // construct a WHERE IN query
+                // execute once
+                // match results to parent record by parent values
+                log.info("called from a query? " + parent.getClass() + " of class " + objectClass);
+            }
+
+            Collection<PropertyInfo> parentProperties = MetaData.getPropertyInfo(objectClass); // todo parentClassProperties
+
+            Map<String, Set<Object>> parentPropertyValuesMap = new HashMap<>();
+            List<Object> parentPropertyValues = new ArrayList<>();
+
+            for (int j = 0; j < parentPropertyNames.length; j++) {
+                var propertyName = parentPropertyNames[j];
+                //parentPropertyValuesMap.put(propertyName)
+
+                Optional<PropertyInfo> propertyInfo = parentProperties.stream().filter(p -> p.propertyName.equals(propertyName)).findFirst();
+                if (propertyInfo.isPresent()) {
+                    propertyInfo.get().field.setAccessible(true);
+                    if (parentIsAQuery) {
+                        List<?> list = (List<?>) parent;
+                        for (Object pojo : list) {
+                            parentPropertyValues.add(propertyInfo.get().field.get(pojo));
+                        }
+                    } else {
+                        parentPropertyValues.add(propertyInfo.get().field.get(parent)); // here the object is a list of POJOS. FAIL.
+                    }
+                    propertyInfo.get().field.setAccessible(false);
+                } else {
+                    throw new PersismException("COULD NOT FIND " + propertyName);
+                }
+                parentPropertyValuesMap.put(propertyName, new LinkedHashSet<>(parentPropertyValues));
+                parentPropertyValues.clear();
+            }
+
+            String sep = "";
+            String inSep = "";
+            StringBuilder where = new StringBuilder();
+            for (int j = 0; j < parentPropertyNames.length; j++) {
+                Set<Object> values = parentPropertyValuesMap.get(parentPropertyNames[j]);
+                String inOrEqualsStart;
+                String inOrEqualsEnd;
+                if (values == null) {
+                    throw new PersismException("Could not find toProperty: " + parentPropertyNames[j]);
+                }
+                if (values.size() > 1) {
+                    inOrEqualsStart = " IN (";
+                    inOrEqualsEnd = ") ";
+                } else {
+                    inOrEqualsStart = " = ";
+                    inOrEqualsEnd = " ";
+                }
+
+                where.append(sep).append(":").append(childPropertyNames[j]).append(inOrEqualsStart);
+                for (Object val : values) {
+                    where.append(inSep).append("?");
+                    inSep = ", ";
+                }
+                where.append(inOrEqualsEnd);
+                sep = " AND ";
+                inSep = "";
+            }
+
+            // https://stackoverflow.com/questions/47224319/flatten-lists-in-map-into-single-list
+            List<Object> params = parentPropertyValuesMap.values().stream().flatMap(Set::stream).toList();
+
+            Collection<PropertyInfo> childProperties = MetaData.getPropertyInfo(childClass);
+
+            if (Collection.class.isAssignableFrom(joinProperty.field.getType())) {
+                // query
+                log.info("IN WHERE? " + where);
+                var result = session.query(childClass, where(where.toString()), params(params.toArray()));
+                if (parentIsAQuery) {
+                    List<?> parentList = (List<?>) parent;
+                    // loop and find id for each parent and set the setter after matching IDs....
+                    for (Object parentObject : parentList) {
+                        List<?> list = result.stream().filter(childObject ->
+                                        extracted(parentPropertyNames, childPropertyNames, parentProperties, childProperties, parentObject, childObject, caseSensitive)).
+                                collect(Collectors.toList());
+
+                        // no null test - the object should have some List initialized.
+                        List<?> joinedList = (List<?>) joinProperty.getter.invoke(parentObject);
+
+                        if (joinedList == null) {
+                            throw new PersismException("Cannot join to null for property: " + joinProperty.propertyName + ". Instantiate the property as ArrayList<T> in your constructor.");
+                        }
+                        joinedList.clear();
+                        joinedList.addAll((List) list);
+                    }
+
+                } else {
+
+                    List<?> joinedList = (List<?>) joinProperty.getter.invoke(parent);
+                    if (joinedList == null) {
+                        throw new PersismException("Cannot join to null for property: " + joinProperty.propertyName + ". Instantiate the property as ArrayList<T> in your constructor.");
+                    }
+                    joinedList.clear();
+                    joinedList.addAll((List) result);
+                }
+            } else {
+                // single object property
+
+                // fetch
+                var result = session.query(childClass, where(where.toString()), params(params.toArray()));
+
+                if (parentIsAQuery) {
+                    List<?> parentList = (List<?>) parent;
+                    // loop and find id for each parent and set the setter after matching IDs....
+                    for (Object parentObject : parentList) {
+                        var opt = result.stream().filter(childObject ->
+                                        extracted(parentPropertyNames, childPropertyNames, parentProperties, childProperties, parentObject, childObject, caseSensitive)).
+                                findFirst();
+
+                        if (opt.isPresent()) {
+                            joinProperty.setter.invoke(parentObject, opt.get());
+                        }
+                    }
+                } else {
+                    // TODO currently can't work with record? Nope. We'd need to work in reverse order or something. Wait for refactor of this method.
+                    if (result.size() > 0) {
+                        joinProperty.setter.invoke(parent, result.get(0));
+                    }
+                    if (result.size() > 1) {
+                        log.warn("why do I have more than 1?");
+                    }
+                }
+            }
+
+        }
+    }
+
+    private boolean extracted(String[] parentPropertyNames, String[] childPropertyNames, Collection<PropertyInfo> parentProperties, Collection<PropertyInfo> childProperties, Object parentObject, Object childObject, boolean caseSensitive) {
+        for (int j = 0; j < parentPropertyNames.length; j++) {
+            final int index = j;
+
+            var parentPropertyInfo = parentProperties.stream().filter(p -> p.propertyName.equals(parentPropertyNames[index])).findFirst();
+            var childPropertyInfo = childProperties.stream().filter(p -> p.propertyName.equals(childPropertyNames[index])).findFirst();
+
+            if (parentPropertyInfo.isPresent() && childPropertyInfo.isPresent()) {
+
+                // Allow join on null values? I guess so...
+                // https://bertwagner.com/posts/joining-on-nulls/
+                try {
+                    var parentValue = parentPropertyInfo.get().getter.invoke(parentObject);
+                    var childValue = childPropertyInfo.get().getter.invoke(childObject);
+
+                    if (parentValue == null) {
+                        if (childValue != null) {
+                            return false;
+                        }
+                    }
+
+                    if (caseSensitive) {
+                        if (parentValue != null && !parentValue.equals(childValue)) {
+                            return false;
+                        }
+
+                    } else {
+                        // todo the problem with this is you could have a string = "null"
+                        if (parentValue != null && !parentValue.toString().equalsIgnoreCase("" + childValue)) {
+                            return false;
+                        }
+
+                    }
+
+                } catch (IllegalAccessException | InvocationTargetException e) {
+                    throw new PersismException(e.getMessage(), e);
+                }
+            }
+        }
+        return true;
+    }
+
+
+    boolean isSelect(String sql) {
         assert sql != null;
         return sql.trim().substring(0, 7).trim().equalsIgnoreCase("select");
     }
 
-    final boolean isStoredProc(String sql) {
+    boolean isStoredProc(String sql) {
         return !isSelect(sql);
     }
 

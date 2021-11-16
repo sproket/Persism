@@ -355,15 +355,12 @@ to the database URL (example: jdbc:h2:~/test;IGNORECASE=TRUE).
     }
 
     public void testUser() {
-        //session.execute("DELETE FROM USERS");
-
         User user = new User();
         user.setName("TEST 1");
         user.setUserName("login");
         user.setTypeOfUser("X");
         session.insert(user);
         assertTrue(user.getId() > 0);
-
     }
 
     public void testDontGetMetaFirstOnQuery() throws Exception {

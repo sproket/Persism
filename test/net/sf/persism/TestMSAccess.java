@@ -131,7 +131,7 @@ public class TestMSAccess extends TestCase {
                 WHERE City = @city AND `Contact : / @ # Name` = @contact
                 """;
 
-        assertTrue(session.isSelect(query));
+        assertTrue(session.helper.isSelect(query));
 
         customers = session.query(Customer.class, sql(query), params(Map.of("city", "MTL", "contact", "Fred")));
         log.info(customers.size());

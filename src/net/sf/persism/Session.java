@@ -25,9 +25,17 @@ import static net.sf.persism.Util.isRecord;
  * @author Dan Howard
  * @since 1/8/2021
  */
-public final class Session extends SessionInternal implements AutoCloseable {
+public final class Session implements AutoCloseable {
 
     private static final Log log = Log.getLogger(Session.class);
+
+    final SessionHelper helper;
+
+    Connection connection;
+    MetaData metaData;
+    Reader reader;
+    Converter converter;
+    Joiner joiner;
 
     /**
      * @param connection db connection
@@ -35,6 +43,7 @@ public final class Session extends SessionInternal implements AutoCloseable {
      */
     public Session(Connection connection) throws PersismException {
         this.connection = connection;
+        helper = new SessionHelper(this);
         init(connection, null);
     }
 
@@ -62,6 +71,7 @@ public final class Session extends SessionInternal implements AutoCloseable {
      */
     public Session(Connection connection, String sessionKey) throws PersismException {
         this.connection = connection;
+        helper = new SessionHelper(this);
         init(connection, sessionKey);
     }
 
@@ -149,11 +159,11 @@ public final class Session extends SessionInternal implements AutoCloseable {
                 }
             }
 
-            exec(JDBCResult, sql, params.toArray());
+            helper.exec(JDBCResult, sql, params.toArray());
 
             if (JDBCResult.rs.next()) {
                 reader.readObject(object, JDBCResult.rs);
-                handleJoins(object, objectClass);
+                helper.handleJoins(object, objectClass);
                 return true;
             }
             return false;
@@ -225,18 +235,18 @@ public final class Session extends SessionInternal implements AutoCloseable {
 
         JDBCResult result = JDBCResult.DEFAULT;
         try {
-            result = executeQuery(objectClass, sql, parameters);
+            result = helper.executeQuery(objectClass, sql, parameters);
             if (result.rs.next()) {
                 if (isRecord) {
                     // todo how will this work with join? Works if it's a list but not a 1-1 POJO
                     var ret = reader.readRecord(objectClass, result.rs);
-                    handleJoins(ret, objectClass);
+                    helper.handleJoins(ret, objectClass);
                     return ret;
 
                 } else if (isPOJO) {
                     T t = objectClass.getDeclaredConstructor().newInstance();
                     var ret = reader.readObject(t, result.rs);
-                    handleJoins(ret, objectClass);
+                    helper.handleJoins(ret, objectClass);
                     return ret;
 
                 } else {
@@ -392,7 +402,7 @@ public final class Session extends SessionInternal implements AutoCloseable {
 
         JDBCResult result = JDBCResult.DEFAULT;
         try {
-            result = executeQuery(objectClass, sql, parameters);
+            result = helper.executeQuery(objectClass, sql, parameters);
 
             while (result.rs.next()) {
                 if (isRecord) {
@@ -406,7 +416,7 @@ public final class Session extends SessionInternal implements AutoCloseable {
             }
 
             if (list.size() > 0) {
-                handleJoins(list, objectClass);
+                helper.handleJoins(list, objectClass);
             }
 
         } catch (Exception e) {
@@ -442,7 +452,7 @@ public final class Session extends SessionInternal implements AutoCloseable {
      * @throws PersismException Indicating the upcoming robot uprising.
      */
     public <T> Result<T> update(T object) throws PersismException {
-        checkIfOkForWriteOperation(object, "UPDATE");
+        helper.checkIfOkForWriteOperation(object, "UPDATE");
 
         List<String> primaryKeys = metaData.getPrimaryKeys(object.getClass(), connection);
         if (primaryKeys.size() == 0) {
@@ -499,7 +509,7 @@ public final class Session extends SessionInternal implements AutoCloseable {
                     params.set(j, converter.convert(params.get(j), columnInfos.get(j).columnType.getJavaType(), columnInfos.get(j).columnName));
                 }
             }
-            setParameters(st, params.toArray());
+            helper.setParameters(st, params.toArray());
             int ret = st.executeUpdate();
 
             if (object instanceof Persistable<?> pojo) {
@@ -528,7 +538,7 @@ public final class Session extends SessionInternal implements AutoCloseable {
      * @throws PersismException When planet of the apes starts happening.
      */
     public <T> Result<T> insert(T object) throws PersismException {
-        checkIfOkForWriteOperation(object, "INSERT");
+        helper.checkIfOkForWriteOperation(object, "INSERT");
 
         String insertStatement = metaData.getInsertStatement(object, connection);
         log.debug(insertStatement);
@@ -610,7 +620,7 @@ public final class Session extends SessionInternal implements AutoCloseable {
                 }
             }
 
-            setParameters(st, params.toArray());
+            helper.setParameters(st, params.toArray());
             st.execute();
             int ret = st.getUpdateCount();
 
@@ -628,11 +638,11 @@ public final class Session extends SessionInternal implements AutoCloseable {
                         Method setter = propertyInfo.setter;
                         Object value;
                         if (setter != null) {
-                            value = getTypedValueReturnedFromGeneratedKeys(setter.getParameterTypes()[0], rs);
+                            value = helper.getTypedValueReturnedFromGeneratedKeys(setter.getParameterTypes()[0], rs);
                             setter.invoke(object, value);
                         } else {
                             // Set read-only property by field ONLY FOR NON-RECORDS.
-                            value = getTypedValueReturnedFromGeneratedKeys(propertyInfo.field.getType(), rs);
+                            value = helper.getTypedValueReturnedFromGeneratedKeys(propertyInfo.field.getType(), rs);
                             if (!isRecord(object.getClass())) {
                                 propertyInfo.field.setAccessible(true);
                                 propertyInfo.field.set(object, value);
@@ -686,7 +696,7 @@ public final class Session extends SessionInternal implements AutoCloseable {
      */
     public <T> Result<T> delete(T object) throws PersismException {
 
-        checkIfOkForWriteOperation(object, "DELETE");
+        helper.checkIfOkForWriteOperation(object, "DELETE");
 
         List<String> primaryKeys = metaData.getPrimaryKeys(object.getClass(), connection);
         if (primaryKeys.size() == 0) {
@@ -715,7 +725,7 @@ public final class Session extends SessionInternal implements AutoCloseable {
                     params.set(j, converter.convert(params.get(j), columnInfos.get(j).columnType.getJavaType(), columnInfos.get(j).columnName));
                 }
             }
-            setParameters(st, params.toArray());
+            helper.setParameters(st, params.toArray());
             int rows = st.executeUpdate();
             return new Result<>(rows, object);
 
@@ -737,7 +747,7 @@ public final class Session extends SessionInternal implements AutoCloseable {
      * @throws PersismException If this table has no primary keys or some SQL error.
      */
     public <T> Result<T> upsert(T object) throws PersismException {
-        checkIfOkForWriteOperation(object, "UPSERT");
+        helper.checkIfOkForWriteOperation(object, "UPSERT");
 
         List<String> primaryKeys = metaData.getPrimaryKeys(object.getClass(), connection);
         if (primaryKeys.size() == 0) {
@@ -840,202 +850,6 @@ public final class Session extends SessionInternal implements AutoCloseable {
 
     Connection getConnection() {
         return connection;
-    }
-
-
-    final void handleJoins(Object parent, Class<?> objectClass) throws IllegalAccessException, InvocationTargetException {
-        // todo how will handleJoins work with Records? I guess we have to assume we have a modifiable list. Also we'd need to add to this this since we don't have a setter - handle joins won't work with a single join
-        List<PropertyInfo> joinProperties = MetaData.getPropertyInfo(objectClass).stream().filter(PropertyInfo::isJoin).collect(Collectors.toList());
-        for (PropertyInfo joinProperty : joinProperties) {
-            Join joinAnnotation = (Join) joinProperty.getAnnotation(Join.class);
-            String[] parentPropertyNames = joinAnnotation.onProperties().split(",");
-            String[] childPropertyNames = joinAnnotation.toProperties().split(",");
-            if (parentPropertyNames.length != childPropertyNames.length) {
-                throw new PersismException("how would I match these?");
-            }
-            Util.trimArray(parentPropertyNames);
-            Util.trimArray(childPropertyNames);
-            // todo test these properties exist and fail otherwise
-
-            boolean caseSensitive = joinAnnotation.caseSensitive();
-
-            Class<?> childClass = joinAnnotation.to();
-
-            boolean parentIsAQuery = Collection.class.isAssignableFrom(parent.getClass());
-            if (parentIsAQuery) {
-                // this method should not be called if the list parent list is empty
-                assert ((Collection<?>) parent).size() > 0;
-                // where parent is a query collect parent values for each foreign property name
-                // construct a WHERE IN query
-                // execute once
-                // match results to parent record by parent values
-                log.info("called from a query? " + parent.getClass() + " of class " + objectClass);
-            }
-
-            Collection<PropertyInfo> parentProperties = MetaData.getPropertyInfo(objectClass); // todo parentClassProperties
-
-            Map<String, Set<Object>> parentPropertyValuesMap = new HashMap<>();
-            List<Object> parentPropertyValues = new ArrayList<>();
-
-            for (int j = 0; j < parentPropertyNames.length; j++) {
-                var propertyName = parentPropertyNames[j];
-                //parentPropertyValuesMap.put(propertyName)
-
-                Optional<PropertyInfo> propertyInfo = parentProperties.stream().filter(p -> p.propertyName.equals(propertyName)).findFirst();
-                if (propertyInfo.isPresent()) {
-                    propertyInfo.get().field.setAccessible(true);
-                    if (parentIsAQuery) {
-                        List<?> list = (List<?>) parent;
-                        for (Object pojo : list) {
-                            parentPropertyValues.add(propertyInfo.get().field.get(pojo));
-                        }
-                    } else {
-                        parentPropertyValues.add(propertyInfo.get().field.get(parent)); // here the object is a list of POJOS. FAIL.
-                    }
-                    propertyInfo.get().field.setAccessible(false);
-                } else {
-                    throw new PersismException("COULD NOT FIND " + propertyName);
-                }
-                parentPropertyValuesMap.put(propertyName, new LinkedHashSet<>(parentPropertyValues));
-                parentPropertyValues.clear();
-            }
-
-            String sep = "";
-            String inSep = "";
-            StringBuilder where = new StringBuilder();
-            for (int j = 0; j < parentPropertyNames.length; j++) {
-                Set<Object> values = parentPropertyValuesMap.get(parentPropertyNames[j]);
-                String inOrEqualsStart;
-                String inOrEqualsEnd;
-                if (values == null) {
-                    throw new PersismException("Could not find toProperty: " + parentPropertyNames[j]);
-                }
-                if (values.size() > 1) {
-                    inOrEqualsStart = " IN (";
-                    inOrEqualsEnd = ") ";
-                } else {
-                    inOrEqualsStart = " = ";
-                    inOrEqualsEnd = " ";
-                }
-
-                where.append(sep).append(":").append(childPropertyNames[j]).append(inOrEqualsStart);
-                for (Object val : values) {
-                    where.append(inSep).append("?");
-                    inSep = ", ";
-                }
-                where.append(inOrEqualsEnd);
-                sep = " AND ";
-                inSep = "";
-            }
-
-            // https://stackoverflow.com/questions/47224319/flatten-lists-in-map-into-single-list
-            List<Object> params = parentPropertyValuesMap.values().stream().flatMap(Set::stream).toList();
-
-            Collection<PropertyInfo> childProperties = MetaData.getPropertyInfo(childClass);
-
-            if (Collection.class.isAssignableFrom(joinProperty.field.getType())) {
-                // query
-                log.info("IN WHERE? " + where);
-                var result = query(childClass, where(where.toString()), params(params.toArray()));
-                if (parentIsAQuery) {
-                    List<?> parentList = (List<?>) parent;
-                    // loop and find id for each parent and set the setter after matching IDs....
-                    for (Object parentObject : parentList) {
-                        List<?> list = result.stream().filter(childObject ->
-                                        extracted(parentPropertyNames, childPropertyNames, parentProperties, childProperties, parentObject, childObject, caseSensitive)).
-                                collect(Collectors.toList());
-
-                        // no null test - the object should have some List initialized.
-                        List<?> joinedList = (List<?>) joinProperty.getter.invoke(parentObject);
-
-                        if (joinedList == null) {
-                            throw new PersismException("Cannot join to null for property: " + joinProperty.propertyName + ". Instantiate the property as ArrayList<T> in your constructor.");
-                        }
-                        joinedList.clear();
-                        joinedList.addAll((List) list);
-                    }
-
-                } else {
-
-                    List<?> joinedList = (List<?>) joinProperty.getter.invoke(parent);
-                    if (joinedList == null) {
-                        throw new PersismException("Cannot join to null for property: " + joinProperty.propertyName + ". Instantiate the property as ArrayList<T> in your constructor.");
-                    }
-                    joinedList.clear();
-                    joinedList.addAll((List) result);
-                }
-            } else {
-                // single object property
-
-                // fetch
-                var result = query(childClass, where(where.toString()), params(params.toArray()));
-
-                if (parentIsAQuery) {
-                    List<?> parentList = (List<?>) parent;
-                    // loop and find id for each parent and set the setter after matching IDs....
-                    for (Object parentObject : parentList) {
-                        var opt = result.stream().filter(childObject ->
-                                        extracted(parentPropertyNames, childPropertyNames, parentProperties, childProperties, parentObject, childObject, caseSensitive)).
-                                findFirst();
-
-                        if (opt.isPresent()) {
-                            joinProperty.setter.invoke(parentObject, opt.get());
-                        }
-                    }
-                } else {
-                    // TODO currently can't work with record? Nope. We'd need to work in reverse order or something. Wait for refactor of this method.
-                    if (result.size() > 0) {
-                        joinProperty.setter.invoke(parent, result.get(0));
-                    }
-                    if (result.size() > 1) {
-                        log.warn("why do I have more than 1?");
-                    }
-                }
-            }
-
-        }
-    }
-
-    private boolean extracted(String[] parentPropertyNames, String[] childPropertyNames, Collection<PropertyInfo> parentProperties, Collection<PropertyInfo> childProperties, Object parentObject, Object childObject, boolean caseSensitive) {
-        for (int j = 0; j < parentPropertyNames.length; j++) {
-            final int index = j;
-
-            var parentPropertyInfo = parentProperties.stream().filter(p -> p.propertyName.equals(parentPropertyNames[index])).findFirst();
-            var childPropertyInfo = childProperties.stream().filter(p -> p.propertyName.equals(childPropertyNames[index])).findFirst();
-
-            if (parentPropertyInfo.isPresent() && childPropertyInfo.isPresent()) {
-
-                // Allow join on null values? I guess so...
-                // https://bertwagner.com/posts/joining-on-nulls/
-                try {
-                    var parentValue = parentPropertyInfo.get().getter.invoke(parentObject);
-                    var childValue = childPropertyInfo.get().getter.invoke(childObject);
-
-                    if (parentValue == null) {
-                        if (childValue != null) {
-                            return false;
-                        }
-                    }
-
-                    if (caseSensitive) {
-                        if (parentValue != null && !parentValue.equals(childValue)) {
-                            return false;
-                        }
-
-                    } else {
-                        // todo the problem with this is you could have a string = "null"
-                        if (parentValue != null && !parentValue.toString().equalsIgnoreCase("" + childValue)) {
-                            return false;
-                        }
-
-                    }
-
-                } catch (IllegalAccessException | InvocationTargetException e) {
-                    throw new PersismException(e.getMessage(), e);
-                }
-            }
-        }
-        return true;
     }
 
 

@@ -764,7 +764,7 @@ public class TestMSSQL extends BaseTest {
                 "[Address], [City], [Region], [Postal_Code], [Country], [Phone], " +
                 "[Fax], [STATUS], [Date_Of_Last_Order]) VALUES ( ? ,  ? ,  ? ,  ? ,  ? ,  ? ,  ? ,  ? ,  ? ,  ? ,  ? ,  ? ,  ? )";
 
-        session.execute(sql, "X", "Name", "Contact", "Title", "Address", "City", "NOTAREGION", "CODe", "CA", "1", "2", "3", null);
+        session.helper.execute(sql, "X", "Name", "Contact", "Title", "Address", "City", "NOTAREGION", "CODe", "CA", "1", "2", "3", null);
 
         boolean failed = false;
         try {
