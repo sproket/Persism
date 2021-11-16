@@ -1,11 +1,15 @@
 package net.sf.persism;
 
+import java.util.Scanner;
+import java.util.regex.Pattern;
+
 /**
  * Simple wrapper for SQL String. Mainly to allow for overloads to fetch/query methods.
+ *
  * @see <a href="https://sproket.github.io/Persism/manual.html">Using the new Query/Fetch methods</a>
  */
 // todo wrong link for now....
-// todo cache these if we do any parsing so we only parse once.
+
 public final class SQL {
 
     private final String sql;
@@ -14,6 +18,28 @@ public final class SQL {
     boolean storedProc; // indicates this is a stored proc rather than an SQL statement
 
     SQL(String sql) {
+        sql = sql.trim();
+
+        if (sql.startsWith("--") || sql.startsWith("/*")) {
+            // trim comments
+
+            // line comments
+            StringBuilder sb = new StringBuilder();
+            try (Scanner scanner = new Scanner(sql)) {
+                while (scanner.hasNextLine()) {
+                    String line = scanner.nextLine().trim();
+                    if (!line.startsWith("--")) {
+                        sb.append(line).append("\n");
+                    }
+                }
+            }
+            sql = sb.toString();
+
+            // /* */ comments
+            Pattern commentPattern = Pattern.compile("/\\*.*?\\*/", Pattern.DOTALL);
+            sql = commentPattern.matcher(sql).replaceAll("").trim();
+        }
+
         this.sql = sql;
     }
 

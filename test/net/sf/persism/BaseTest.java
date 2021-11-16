@@ -64,23 +64,6 @@ public abstract class BaseTest extends TestCase {
         super.tearDown();
     }
 
-    public void testComments() throws SQLException {
-        String sql = """
-                -- works?
-                /* how about this? */
-                /*
-                HOW 
-                ABOUT 
-                THIS?
-                */
-                SELECT * FROM RecordTest2
-                """;
-
-        try (Statement st = con.createStatement(); ResultSet rs = st.executeQuery(sql)) {
-            log.info("comments worked " + session.metaData.getConnectionType());
-        }
-    }
-
     public void testDates() {
         List<Customer> list = session.query(Customer.class, sql("select * from Customers"), none());
         log.info(list);

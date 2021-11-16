@@ -77,6 +77,29 @@ public final class TestMetaData extends TestCase {
         assertTrue(failed);
     }
 
+    public void testComments() {
+        String sql = """
+                -- works?
+                /* how about this? */
+                /*
+                HOW 
+                ABOUT 
+                THIS?
+                */
+                   -- hello?
+                SELECT * FROM RecordTest2 -- what about this?
+                """;
+
+        SQL sql1 = new SQL(sql);
+
+        log.info("before: [" + sql + "]");
+        log.info("after: " + sql1);
+
+        // the comment after is fine.
+        assertEquals("s/b 'SELECT * FROM RecordTest2 -- what about this?'", "SELECT * FROM RecordTest2 -- what about this?", sql1.toString());
+        log.info("-------");
+    }
+
     public void testDeterminePropertyInfo() {
         Collection<PropertyInfo> propertyInfo = MetaData.getPropertyInfo(ByteData.class);
         log.warn(propertyInfo.size());

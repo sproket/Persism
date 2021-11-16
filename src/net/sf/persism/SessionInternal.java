@@ -6,17 +6,12 @@ import net.sf.persism.annotations.View;
 import java.math.BigDecimal;
 import java.sql.*;
 import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.regex.MatchResult;
 
 // Non-public code Session uses.
 abstract sealed class SessionInternal permits Session {
 
     // leave this using the Session.class for logging
     private static final Log log = Log.getLogger(Session.class);
-
-    // todo maybe cache SQL objects with "parsed" property so we don't reparse. Also could cache the Parameter Map and not parse again for parameters
-    private static final Map<String, String> queries = new ConcurrentHashMap<>(32);
 
     Connection connection;
     MetaData metaData;
@@ -201,12 +196,6 @@ abstract sealed class SessionInternal permits Session {
     final String parsePropertyNames(String sql, Class<?> objectClass, Connection connection) {
         log.debug("parsePropertyNames using : with SQL: %s", sql);
 
-        String key = metaData.getConnectionType() + " : " + objectClass.getName() + " : " + sql;
-        log.debug("parsePropertyNames: query cache key: %s", key);
-        if (queries.containsKey(key)) {
-            return queries.get(key);
-        }
-
         int length = sql.length();
         StringBuilder parsedQuery = new StringBuilder(length);
 
@@ -278,7 +267,6 @@ abstract sealed class SessionInternal permits Session {
         }
         String parsedSql = parsedQuery.toString();
         log.debug("parsePropertyNames SQL: %s", parsedSql);
-        queries.put(key, parsedSql);
         return parsedSql;
     }
 
@@ -482,7 +470,6 @@ abstract sealed class SessionInternal permits Session {
 
     final boolean isSelect(String sql) {
         assert sql != null;
-        // todo figure out removing possible starting comments
         return sql.trim().substring(0, 7).trim().equalsIgnoreCase("select");
     }
 
