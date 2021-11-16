@@ -46,11 +46,11 @@ final class Reader {
             properties = metaData.getQueryColumnsPropertyInfo(objectClass, rs);
         }
 
-        // Test if all properties have column mapping and throw PersismException if not
+        // Test if all properties have column mapping (skipping joins) and throw PersismException if not
         // This block verifies that the object is fully initialized.
         // Any properties not marked by NotColumn should have been set (or if they have a getter only)
         // If not throw a PersismException
-        Collection<PropertyInfo> allProperties = MetaData.getPropertyInfo(objectClass);
+        Collection<PropertyInfo> allProperties = MetaData.getPropertyInfo(objectClass).stream().filter(p -> !p.isJoin()).collect(Collectors.toList());
         if (properties.values().size() < allProperties.size()) {
             Set<PropertyInfo> missing = new HashSet<>(allProperties.size());
             missing.addAll(allProperties);
@@ -216,41 +216,12 @@ final class Reader {
             }
         }
 
-
-        if (log.isDebugEnabled()) {
-            int x = 0;
-            for (Constructor<?> constructor : constructors) {
-                log.debug("CON " + (x++) + " " + constructor.equals(selectedConstructor) + " -> " + debugConstructor(constructor));
-            }
-
-            log.debug(Arrays.asList(constructors));
-            log.debug("INDEX: " + Arrays.asList(constructors).indexOf(selectedConstructor));
-//selectedConstructor.getParameters()[1].getName();
-            log.debug("findConstructor selected: %s", debugConstructor(selectedConstructor));
-        }
         if (selectedConstructor == null) {
             throw new PersismException(Messages.CouldNotFindConstructorForRecord.message(objectClass, propertyNames));
         }
         return selectedConstructor;
     }
 
-    private String debugConstructor(Constructor<?> constructor) {
-        if (constructor == null) {
-            return null;
-        }
-        TestDescription desc = constructor.getAnnotation(TestDescription.class);
-        if (desc != null) {
-            return desc.value();
-        }
-        StringBuilder sb = new StringBuilder();
-        String sep = "";
-        for (Parameter p : constructor.getParameters()) {
-            sb.append(sep).append(p.getName());
-            sep = ",";
-        }
-
-        return "" + constructor + " names: " + sb;
-    }
 
     // https://stackoverflow.com/questions/1075656/simple-way-to-find-if-two-different-lists-contain-exactly-the-same-elements
     private static <T> boolean listEqualsIgnoreOrder(List<T> list1, List<T> list2) {

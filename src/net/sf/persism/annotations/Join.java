@@ -14,4 +14,11 @@ public @interface Join {
     String onProperties();
 
     String toProperties();
+
+    // innerorouter? or CROSS JOIN?
+
+    // alias to use if you want to reference the child class properties in a WHERE clause. OOF FORGET IT
+    //String alias() default "";
+
+    boolean caseSensitive() default false;
 }

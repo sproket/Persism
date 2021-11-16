@@ -128,7 +128,7 @@ public final class TestHSQLDB extends BaseTest {
                 " Paid BIT NOT NULL, " +
                 " Price NUMERIC(7,3) NOT NULL, " +
                 " ActualPrice NUMERIC(7,3) NOT NULL, " +
-                " Status INT DEFAULT 1, " +
+                " Status CHAR(1) DEFAULT '1', " +
                 " Created TIMESTAMP DEFAULT NOW(), " + // make read-only in Invoice Object
                 " Quantity NUMERIC(10) NOT NULL, " +
                 //" Total NUMERIC(10,3) NOT NULL, " +
@@ -153,8 +153,8 @@ public final class TestHSQLDB extends BaseTest {
         sql = "CREATE VIEW CustomerInvoice AS\n" +
                 " SELECT c.Customer_ID, c.Company_Name, i.Invoice_ID, i.Status, i.Created AS DateCreated, i.PAID, i.Quantity\n" +
                 "       FROM Invoices i\n" +
-                "       JOIN Customers c ON i.Customer_ID = c.Customer_ID\n" +
-                "       WHERE i.Status = 1\n";
+                "       JOIN Customers c ON i.Customer_ID = c.Customer_ID";
+               // "       WHERE i.Status = 1\n";
         executeCommand(sql, con);
 
         sql = "CREATE TABLE TABLEMULTIPRIMARY ( " +

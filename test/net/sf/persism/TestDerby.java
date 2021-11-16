@@ -122,7 +122,7 @@ public final class TestDerby extends BaseTest {
                 " Customer_ID varchar(10) NOT NULL, " +
                 " Paid BOOLEAN NOT NULL, " +
                 " Created TIMESTAMP DEFAULT CURRENT_TIMESTAMP, " + // make read-only in Invoice Object
-                " Status INT DEFAULT 1, " +
+                " Status CHAR(1) DEFAULT '1', " +
                 " Price NUMERIC(7,3) NOT NULL, " +
                 " ACTUALPRICE NUMERIC(7,3) NOT NULL, " +
                 " Quantity INT NOT NULL, " +
@@ -134,8 +134,9 @@ public final class TestDerby extends BaseTest {
         sql = "CREATE VIEW CustomerInvoice AS\n" +
                 " SELECT c.Customer_ID, c.Company_Name, i.Invoice_ID, i.Status, i.Created AS DateCreated, i.PAID, i.Quantity\n" +
                 "       FROM Invoices i\n" +
-                "       JOIN Customers c ON i.Customer_ID = c.Customer_ID\n" +
-                "       WHERE i.Status = 1\n";
+                "       JOIN Customers c ON i.Customer_ID = c.Customer_ID\n";
+//                "       WHERE i.Status = 1\n";
+
         commands.add(sql);
         if (isTableInDatabase("TABLEMULTIPRIMARY", con)) {
             commands.add("DROP TABLE TABLEMULTIPRIMARY");

@@ -1,9 +1,9 @@
 package net.sf.persism;
 
 import junit.framework.TestCase;
-import net.sf.persism.dao.Customer;
 import net.sf.persism.dao.Regions;
 import net.sf.persism.dao.access.Contact;
+import net.sf.persism.dao.access.Customer;
 import net.ucanaccess.complex.Attachment;
 
 import javax.imageio.ImageIO;

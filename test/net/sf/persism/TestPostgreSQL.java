@@ -143,8 +143,8 @@ public class TestPostgreSQL extends BaseTest {
         sql = "CREATE VIEW CustomerInvoice AS\n" +
                 " SELECT c.Customer_ID, c.Company_Name, i.Invoice_ID, i.Status, i.Created AS DateCreated, i.PAID, i.Quantity\n" +
                 "       FROM Invoices i\n" +
-                "       JOIN Customers c ON i.Customer_ID = c.Customer_ID\n" +
-                "       WHERE i.Status = 1\n";
+                "       JOIN Customers c ON i.Customer_ID = c.Customer_ID";
+//                "       WHERE i.Status = 1\n";
         commands.add(sql);
 
         if (isTableInDatabase("TABLEMULTIPRIMARY", con)) {

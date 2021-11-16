@@ -139,7 +139,7 @@ to the database URL (example: jdbc:h2:~/test;IGNORECASE=TRUE).
                 " Paid BIT NOT NULL, " +
                 " Price NUMERIC(7,3) NOT NULL, " +
                 " ActualPrice NUMERIC(7,3) NOT NULL, " +
-                " Status INT DEFAULT 1, " +
+                " Status CHAR(1) DEFAULT '1', " +
                 " Created DateTime default current_timestamp, " + // make read-only in Invoice Object
                 " Quantity NUMERIC(10) NOT NULL, " +
                 " Discount NUMERIC(10,3) NOT NULL " +
@@ -151,8 +151,8 @@ to the database URL (example: jdbc:h2:~/test;IGNORECASE=TRUE).
                     SELECT c.Customer_ID, c.Company_Name, i.Invoice_ID, i.Status, i.Created AS DateCreated, i.PAID, i.Quantity
                     FROM Invoices i
                     JOIN Customers c ON i.Customer_ID = c.Customer_ID
-                    WHERE i.Status = 1
                 """;
+//                     WHERE i.Status = 1 changed to char fails with Data conversion error converting
         commands.add(sql);
 
 
@@ -512,6 +512,15 @@ to the database URL (example: jdbc:h2:~/test;IGNORECASE=TRUE).
         assertEquals("Country should be US", "US", customer.getCountry());
     }
 
+    @Override
+    public void testJoinsParentFetch() throws SQLException {
+        super.testJoinsParentFetch();
+    }
+
+    @Override
+    public void testJoinsParentQuery() throws SQLException {
+        super.testJoinsParentQuery();
+    }
 
     // ResultSetMetaData can't determine types if there is no result? where 1=0 ?
     public void testTypes() {

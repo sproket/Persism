@@ -1,13 +1,17 @@
 package net.sf.persism;
 
+import net.sf.persism.annotations.Join;
 import net.sf.persism.annotations.NotTable;
 import net.sf.persism.annotations.View;
 
+import java.lang.reflect.InvocationTargetException;
 import java.math.BigDecimal;
 import java.sql.*;
 import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.regex.MatchResult;
+import java.util.stream.Collectors;
+
+import static net.sf.persism.Parameters.params;
+import static net.sf.persism.SQL.where;
 
 // Non-public code Session uses.
 abstract sealed class SessionInternal permits Session {
@@ -15,17 +19,14 @@ abstract sealed class SessionInternal permits Session {
     // leave this using the Session.class for logging
     private static final Log log = Log.getLogger(Session.class);
 
-    // todo maybe cache SQL objects with "parsed" property so we don't reparse. Also could cache the Parameter Map and not parse again for parameters
-    private static final Map<String, String> queries = new ConcurrentHashMap<>(32);
-
     Connection connection;
     MetaData metaData;
     Reader reader;
     Converter converter;
+    Joiner joiner;
+
 
     final JDBCResult executeQuery(Class<?> objectClass, SQL sql, Parameters parameters) throws SQLException {
-
-//        boolean isPOJO = Types.getType(objectClass) == null;
 
         JDBCResult result = new JDBCResult();
         String sqlQuery = sql.toString();
@@ -201,12 +202,6 @@ abstract sealed class SessionInternal permits Session {
     final String parsePropertyNames(String sql, Class<?> objectClass, Connection connection) {
         log.debug("parsePropertyNames using : with SQL: %s", sql);
 
-        String key = metaData.getConnectionType() + " : " + objectClass.getName() + " : " + sql;
-        log.debug("parsePropertyNames: query cache key: %s", key);
-        if (queries.containsKey(key)) {
-            return queries.get(key);
-        }
-
         int length = sql.length();
         StringBuilder parsedQuery = new StringBuilder(length);
 
@@ -278,67 +273,8 @@ abstract sealed class SessionInternal permits Session {
         }
         String parsedSql = parsedQuery.toString();
         log.debug("parsePropertyNames SQL: %s", parsedSql);
-        queries.put(key, parsedSql);
         return parsedSql;
     }
-
-    // todo - do it like parseParameters where we check delimiters. If there's a ":" in a column name (common with MSACCESS) - it fails.
-    final String XparsePropertyNames(String sql, Class<?> objectClass, Connection connection) {
-        sql += " "; // add a space for if a property name is the last part of the string otherwise parser skips it
-
-        // look for ":"
-        Scanner scanner = new Scanner(sql);
-        List<MatchResult> matchResults = scanner.findAll(":").toList();
-        Set<String> propertyNames = new LinkedHashSet<>();
-        Set<String> propertiesNotFound = new LinkedHashSet<>();
-
-        if (matchResults.size() > 0) {
-            log.debug("Parse properties -> SQL before: %s", sql);
-            for (MatchResult result : matchResults) {
-                String sub = sql.substring(result.start());
-                int n = 0;
-                for (int j = result.start() + 1; j < sql.length(); j++) {
-                    char c = sql.charAt(j);
-                    if (Character.isJavaIdentifierPart(c)) {
-                        n++;
-                    } else {
-                        propertyNames.add(sub.substring(0, n + 1));
-                        break;
-                    }
-                }
-            }
-
-            Map<String, PropertyInfo> properties;
-            properties = metaData.getTableColumnsPropertyInfo(objectClass, connection);
-            String sd = metaData.getConnectionType().getKeywordStartDelimiter();
-            String ed = metaData.getConnectionType().getKeywordEndDelimiter();
-
-            String repl = sql;
-            for (String propertyName : propertyNames) {
-                String pname = propertyName.substring(1); // remove :
-                boolean found = false;
-                for (String column : properties.keySet()) {
-                    PropertyInfo info = properties.get(column);
-                    if (info.propertyName.equalsIgnoreCase(pname)) {
-                        found = true;
-                        String col = sd + column + ed;
-                        repl = repl.replace(propertyName, col);
-                        break;
-                    }
-                }
-                if (!found) {
-                    propertiesNotFound.add(pname);
-                }
-            }
-            log.debug("Parse properties -> SQL after : %s", repl);
-            sql = repl;
-        }
-        if (propertiesNotFound.size() > 0) {
-            throw new PersismException(Messages.QueryPropertyNamesMissingOrNotFound.message(propertiesNotFound, sql));
-        }
-        return sql;
-    }
-
 
     final void checkIfOkForWriteOperation(Object object, String operation) {
         Class<?> objectClass = object.getClass();
@@ -540,7 +476,6 @@ abstract sealed class SessionInternal permits Session {
 
     final boolean isSelect(String sql) {
         assert sql != null;
-        // todo figure out removing possible starting comments
         return sql.trim().substring(0, 7).trim().equalsIgnoreCase("select");
     }
 

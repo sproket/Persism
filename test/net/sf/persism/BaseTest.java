@@ -6,6 +6,7 @@ import net.sf.persism.dao.records.*;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Parameter;
 import java.lang.reflect.RecordComponent;
 import java.math.BigDecimal;
 import java.sql.Date;
@@ -61,23 +62,6 @@ public abstract class BaseTest extends TestCase {
             con.close();
         }
         super.tearDown();
-    }
-
-    public void testComments() throws SQLException {
-        String sql = """
-                -- works?
-                /* how about this? */
-                /*
-                HOW 
-                ABOUT 
-                THIS?
-                */
-                SELECT * FROM RecordTest2
-                """;
-
-        try (Statement st = con.createStatement(); ResultSet rs = st.executeQuery(sql)) {
-            log.info("comments worked " + session.metaData.getConnectionType());
-        }
     }
 
     public void testDates() {
@@ -397,6 +381,47 @@ public abstract class BaseTest extends TestCase {
         assertTrue(fail);
     }
 
+    public void testJoinsParentFetch() throws SQLException {
+
+        // todo test where column names are different between classes
+        // todo test adding a Join to a String or int property etc... Should fail spectacularly
+
+        queryDataSetup();
+
+        var customer = session.fetch(Customer.class, where(":customerId = ?"), params("123"));
+        assertNotNull(customer);
+
+        var invoices = customer.getInvoices();
+        assertEquals(1, invoices.size());
+
+        var customerRec = session.fetch(CustomerRec.class, where(":customerId = ?"), params("123"));
+        assertNotNull(customerRec);
+
+        invoices = customerRec.invoices();
+        assertEquals(1, invoices.size());
+    }
+
+    public void testJoinsParentQuery() throws SQLException {
+        queryDataSetup();
+
+        var list1 = session.query(Customer.class);
+
+        assertEquals(2, list1.size());
+        assertEquals(1, list1.get(0).getInvoices().size());
+        assertEquals(0, list1.get(1).getInvoices().size());
+
+        var list2 = session.query(CustomerRec.class);
+
+        assertEquals(2, list2.size());
+        assertEquals(1, list2.get(0).invoices().size());
+        assertEquals(0, list2.get(1).invoices().size());
+
+        // todo parse for child property name if there's an alias. The "i" needs to match the alias specified in the annotation THIS WONT REALLY WORK
+        // session.query(Customer.class, where(":contactName=? and (:i.quantity > ? or :city=?)"), params("Fred", 10, "MTL"));
+
+
+    }
+
     public void testSelectMultipleByPrimaryKey() throws SQLException {
         queryDataSetup();
         List<Order> orders = session.query(Order.class);
@@ -431,9 +456,14 @@ public abstract class BaseTest extends TestCase {
         log.info(results);
         assertEquals("size should be 4", 4, results.size());
 
-        getCanonicalConstructor(CustomerOrderRec.class);
+        Constructor<?> c = getCanonicalConstructor(CustomerOrderRec.class);
+        log.info("RECORD: " + debugConstructor(c));
+
+        c = getCanonicalConstructor(CustomerOrder.class);
+        log.info("OBJECT: " + debugConstructor(c));
 
         CustomerOrderRec cor = new CustomerOrderRec("1", "name", "desc", 123L, LocalDateTime.now(), null, false);
+        log.info(cor);
 
         // ORDER 1 s/b paid = true others paid = false
         for (CustomerOrderRec customerOrder : results) {
@@ -521,12 +551,16 @@ public abstract class BaseTest extends TestCase {
 
         Invoice invoice = new Invoice();
         invoice.setCustomerId("123");
-        invoice.setStatus(1);
         invoice.setPaid(true);
         invoice.setPrice(10.0f);
         invoice.setActualPrice(BigDecimal.TEN);
         invoice.setQuantity(10);
+        invoice.setStatus('x');
         session.insert(invoice);
+
+        // todo refactor customer to use the UUID to connect Customer to Contact. Contact name isn't great because we are matching exact.
+        Contact contact = new Contact();
+        contact.setContactName("fred flintstone");
 
         Customer c1 = new Customer();
         c1.setCustomerId("123");
@@ -537,7 +571,7 @@ public abstract class BaseTest extends TestCase {
         Customer c2 = new Customer();
         c2.setCustomerId("456");
         c2.setCompanyName("XYZ INC");
-        c2.setStatus('2');
+        c2.setStatus('x');
         session.insert(c2);
 
         Order order;
@@ -712,7 +746,7 @@ public abstract class BaseTest extends TestCase {
         invoice.setQuantity(10);
         invoice.setPrice(10.23f);
         invoice.setActualPrice(BigDecimal.valueOf(9.99d));
-        invoice.setStatus(1);
+        invoice.setStatus((char) 1);
         session.insert(invoice);
         Customer customer1 = session.fetch(Customer.class, "SELECT * FROM Customers WHERE Company_Name = ?", "ABC Inc");
         assertNotNull(customer1);
@@ -779,7 +813,7 @@ public abstract class BaseTest extends TestCase {
         invoice.setQuantity(10);
         invoice.setPrice(10.23f);
         invoice.setActualPrice(BigDecimal.valueOf(9.99d));
-        invoice.setStatus(1);
+        invoice.setStatus((char) 1);
         session.insert(invoice);
 
         customerInvoice = session.fetch(CustomerInvoice.class, where(":companyName = ?"), params("ABC Inc"));
@@ -1639,14 +1673,56 @@ public abstract class BaseTest extends TestCase {
 
     // https://stackoverflow.com/questions/67126109/is-there-a-way-to-recognise-a-java-16-records-canonical-constructor-via-reflect
     // Can't be used with Java 8
-    private static <T> Constructor<T> getCanonicalConstructor(Class<T> recordClass)
+    static <T> Constructor<T> getCanonicalConstructor(Class<T> recordClass)
             throws NoSuchMethodException, SecurityException {
 
         var components = recordClass.getRecordComponents();
+        if (components == null) {
+            log.warn("why are you calling this on a non-record?");
+            return null;
+        }
         Class<?>[] componentTypes = Arrays.stream(components)
                 .map(RecordComponent::getType)
                 .toArray(Class<?>[]::new);
         return recordClass.getDeclaredConstructor(componentTypes);
+    }
+
+    // todo clean up for findConstructor call in Reader.
+    final void TODOtestConstructors() {
+        List<Constructor<?>> constructors = new ArrayList<>();
+        Constructor<?> selectedConstructor = null;
+        if (log.isDebugEnabled()) {
+            int x = 0;
+            for (Constructor<?> constructor : constructors) {
+                log.debug("CON " + (x++) + " " + constructor.equals(selectedConstructor) + " -> " + debugConstructor(constructor));
+            }
+            log.debug(Arrays.asList(constructors));
+            log.debug("INDEX: " + Arrays.asList(constructors).indexOf(selectedConstructor));
+            log.debug("findConstructor selected: %s", debugConstructor(selectedConstructor));
+        }
+
+    }
+
+    final String debugConstructor(Constructor<?> constructor) {
+
+        if (constructor == null) {
+            return null;
+        }
+        ConstructorTag annotation = constructor.getAnnotation(ConstructorTag.class);
+        String tag = "";
+
+        if (annotation != null) {
+            tag = annotation.value();
+        }
+
+        StringBuilder sb = new StringBuilder();
+        String sep = "";
+        for (Parameter p : constructor.getParameters()) {
+            sb.append(sep).append(p.getName());
+            sep = ",";
+        }
+
+        return tag + " " + constructor + " names: " + sb;
     }
 
 

@@ -1,7 +1,7 @@
 package net.sf.persism.dao.records;
 
 // TODO import net.sf.persism.annotations.NotColumn;
-import net.sf.persism.TestDescription;
+import net.sf.persism.ConstructorTag;
 import net.sf.persism.annotations.NotColumn;
 import net.sf.persism.annotations.NotTable;
 
@@ -24,12 +24,12 @@ public record CustomerOrderGarbage(String customerId,
 
     private static int extraFieldShouldBeIgnoredBecauseStatic;
 
-    @TestDescription("Canonical")
+    @ConstructorTag("Canonical")
     public CustomerOrderGarbage {
     }
 
     // WTF extra - statics ignored...
-    @TestDescription("String customerId, String junk, int missing, Time whatTimeIsIt, int extraFieldShouldBeIgnoredBecauseStatic")
+    @ConstructorTag("String customerId, String junk, int missing, Time whatTimeIsIt, int extraFieldShouldBeIgnoredBecauseStatic")
     public CustomerOrderGarbage(String customerId, String junk, int missing, Time whatTimeIsIt, int extraFieldShouldBeIgnoredBecauseStatic) {
         this(customerId, junk, missing, whatTimeIsIt);
         this.extraFieldShouldBeIgnoredBecauseStatic = extraFieldShouldBeIgnoredBecauseStatic;
@@ -40,7 +40,7 @@ public record CustomerOrderGarbage(String customerId,
     }
 
     // Selecting for only this works as long as we have a constructor
-    @TestDescription("custid only")
+    @ConstructorTag("custid only")
     public CustomerOrderGarbage(String customerId) {
         this(customerId, null, 0, null);
     }

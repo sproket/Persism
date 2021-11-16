@@ -101,5 +101,12 @@ final class Util {
         return false;
     }
 
+    public static void trimArray(String[] arr) {
+        // forget regex....
+        for (int j = 0; j < arr.length; j++) {
+            arr[j] = arr[j].trim();
+        }
+    }
+
 
 }

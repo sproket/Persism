@@ -11,7 +11,7 @@ import java.time.LocalDateTime;
  * Date: 12-05-15
  * Time: 4:43 PM
  */
-public class Invoice {
+public final class Invoice {
 
     private Integer invoiceId;
     private String customerId;
@@ -27,7 +27,7 @@ public class Invoice {
     private boolean paid;
 
     // Used as a primitive to test for warning about using primitives on columns with defaults
-    private int status;
+    private Character status;
 
     public String getCustomerId() {
         return customerId;
@@ -93,11 +93,11 @@ public class Invoice {
         return created;
     }
 
-    public int getStatus() {
+    public Character getStatus() {
         return status;
     }
 
-    public void setStatus(int status) {
+    public void setStatus(Character status) {
         this.status = status;
     }
 
@@ -108,6 +108,7 @@ public class Invoice {
     public void setActualPrice(BigDecimal actualPrice) {
         this.actualPrice = actualPrice;
     }
+
 
     @Override
     public String toString() {

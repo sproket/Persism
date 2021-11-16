@@ -19,7 +19,7 @@ public final class CustomerInvoiceTestView {
     private long invoiceId;
     private Date dateCreated;
     private boolean paid;
-    private short status;
+    private Character status;
     private int quantity;
 
     public String getCustomerId() {
@@ -42,7 +42,7 @@ public final class CustomerInvoiceTestView {
         return paid;
     }
 
-    public short getStatus() {
+    public Character getStatus() {
         return status;
     }
 

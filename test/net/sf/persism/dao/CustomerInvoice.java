@@ -10,14 +10,15 @@ import java.util.Date;
  */
 @View()
 public final class CustomerInvoice {
-    @Column(primary = true) // todo wtf does this mean?
+
+    @Column(primary = true) // wtf does this mean? Nothing. We can't do anything about primaries in a View or NotTable todo ignore or warn?
     private String customerId;
 
     private String companyName;
     private long invoiceId;
     private Date dateCreated;
     private boolean paid;
-    private short status;
+    private Character status;
     private int quantity;
 
     public String getCustomerId() {
@@ -40,7 +41,7 @@ public final class CustomerInvoice {
         return paid;
     }
 
-    public short getStatus() {
+    public Character getStatus() {
         return status;
     }
 

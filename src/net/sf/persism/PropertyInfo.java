@@ -19,10 +19,11 @@ final class PropertyInfo {
     Method setter;
     Field field;
     boolean readOnly;
+    boolean isJoin;
 
     Map<Class<? extends Annotation>, Annotation> annotations = new HashMap<>(4);
 
-    Annotation getAnnotation(Class<? extends  Annotation> annotationClass) {
+    Annotation getAnnotation(Class<? extends Annotation> annotationClass) {
         return annotations.get(annotationClass);
     }
 
@@ -43,8 +44,12 @@ final class PropertyInfo {
         return field;
     }
 
-    boolean readOnly() {
+    boolean isReadOnly() {
         return readOnly;
+    }
+
+    boolean isJoin() {
+        return isJoin;
     }
 
     Map<Class<? extends Annotation>, Annotation> annotations() {

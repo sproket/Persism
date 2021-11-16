@@ -436,6 +436,7 @@ final class MetaData {
             }
 
             propertyInfo.readOnly = propertyInfo.setter == null;
+            propertyInfo.isJoin = propertyInfo.getAnnotation(Join.class) != null;
             propertyInfos.put(propertyName.toLowerCase(), propertyInfo);
         }
 

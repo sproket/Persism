@@ -1,13 +1,14 @@
-package net.sf.persism.dao;
+package net.sf.persism.dao.access;
 
 import net.sf.persism.annotations.Column;
 import net.sf.persism.annotations.Join;
 import net.sf.persism.annotations.NotColumn;
+import net.sf.persism.dao.Invoice;
+import net.sf.persism.dao.Regions;
 
 import java.sql.Timestamp;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -16,7 +17,7 @@ import java.util.List;
  * @author Dan Howard
  * @since 5/23/12 10:40 AM
  */
-public final class Customer {
+public class Customer {
     private String customerId;
     private String companyName;
     private String contactName;
@@ -35,17 +36,12 @@ public final class Customer {
 
     private LocalDateTime dateOfLastOrder;
 
-    // TODO DOCUMENT: Joins must be a modifiable list and must be instantiated. We use the
-    // TODO properties are case sensitive - make a FailCustomer class or something to test that
-    @Join(to = Invoice.class, onProperties = " customerId , status ", toProperties = "customerId , status ")
-    private List<Invoice> invoices = new ArrayList<>();
-
-    //@NotColumn
-    @Join(to=Contact.class, onProperties = "contactName", toProperties = "contactName")
-    private Contact contact;
-
     private LocalDate testLocalDate;
     private LocalDateTime testLocalDateTime;
+
+    // todo maybe test this for Access
+//    @Join(to = Contact.class, onProperties = "x?", toProperties = "y?")
+//    private Contact contact;
 
     public String getCustomerId() {
         return customerId;
@@ -151,13 +147,13 @@ public final class Customer {
         this.dateOfLastOrder = dateOfLastOrder;
     }
 
-    public Contact getContact() {
-        return contact;
-    }
-
-    public void setContact(Contact contact) {
-        this.contact = contact;
-    }
+    //    public java.sql.Date getDateOfLastOrder() {
+//        return dateOfLastOrder;
+//    }
+//
+//    public void setDateOfLastOrder(java.sql.Date dateOfLastOrder) {
+//        this.dateOfLastOrder = dateOfLastOrder;
+//    }
 
     public Character getStatus() {
         return status;
@@ -183,14 +179,6 @@ public final class Customer {
         this.testLocalDateTime = testLocalDateTime;
     }
 
-    public List<Invoice> getInvoices() {
-        return invoices;
-    }
-
-    public void setInvoices(List<Invoice> invoices) {
-        this.invoices = invoices;
-    }
-
     @Override
     public String toString() {
         return "Customer{" +
@@ -207,7 +195,6 @@ public final class Customer {
                 ", fax='" + fax + '\'' +
                 ", dateRegistered=" + dateRegistered +
                 ", dateOfLastOrder=" + dateOfLastOrder +
-                ", status=" + status +
                 '}';
     }
 }

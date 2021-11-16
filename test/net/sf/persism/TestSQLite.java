@@ -129,7 +129,7 @@ public final class TestSQLite extends BaseTest {
                 " Paid BIT NOT NULL, " +
                 " Price REAL NOT NULL, " +
                 " ActualPrice REAL NOT NULL, " +
-                " Status INT DEFAULT 1, " +
+                " Status CHAR(1) DEFAULT '1', " +
                 " Created DateTime default (datetime('now','localtime')), " + // make read-only in Invoice Object
                 " Quantity INTEGER NOT NULL, " +
                 //" Total REAL NOT NULL, " +
@@ -244,8 +244,8 @@ public final class TestSQLite extends BaseTest {
                     SELECT c.Customer_ID, c.Company_Name, i.Invoice_ID, i.Status, i.Created AS DateCreated, i.PAID, i.Quantity
                     FROM Invoices i
                     JOIN Customers c ON i.Customer_ID = c.Customer_ID
-                    WHERE i.Status = 1
                 """;
+//         WHERE i.Status = 1
         executeCommand(sql, con);
 
     }
