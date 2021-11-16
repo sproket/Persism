@@ -265,9 +265,9 @@ public class TestNorthwind extends TestCase {
 // remove orders and details for 'MOO'
                 List<Order> orders = session.query(Order.class, sql("select * from orders where customerID=?"), params("MOO"));
                 for (Order order : orders) {
-                    session.helper.execute("DELETE FROM \"ORDER Details\" WHERE OrderID=?", order.getOrderId());
+                    assertTrue(session.helper.execute("DELETE FROM \"ORDER Details\" WHERE OrderID=?", order.getOrderId()));
                 }
-                session.helper.execute("DELETE FROM ORDERS WHERE CustomerID=?", "MOO");
+                assertTrue(session.helper.execute("DELETE FROM ORDERS WHERE CustomerID=?", "MOO"));
             }
             log.warn("DATE? " + customer.getDateOfLastResort());
             session.fetch(customer);
@@ -359,7 +359,7 @@ public class TestNorthwind extends TestCase {
 
         log.info("testQueryWithSpecificColumnsWhereCaseDoesNotMatch with : " + con.getMetaData().getURL());
 
-        session.helper.execute("DELETE FROM ORDERS WHERE CustomerID='MOO'");
+        assertTrue(session.helper.execute("DELETE FROM ORDERS WHERE CustomerID='MOO'"));
 
         Customer customer = new Customer();
         customer.setCompanyName("TEST");

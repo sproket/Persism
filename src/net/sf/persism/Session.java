@@ -1,22 +1,18 @@
 package net.sf.persism;
 
-import net.sf.persism.annotations.Join;
 import net.sf.persism.annotations.NotTable;
 import net.sf.persism.annotations.View;
 
-import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.*;
-import java.util.stream.Collectors;
 
 import static net.sf.persism.Parameters.none;
 import static net.sf.persism.Parameters.params;
 import static net.sf.persism.SQL.sql;
-import static net.sf.persism.SQL.where;
 import static net.sf.persism.Util.isRecord;
 
 /**
@@ -35,7 +31,6 @@ public final class Session implements AutoCloseable {
     MetaData metaData;
     Reader reader;
     Converter converter;
-    Joiner joiner;
 
     /**
      * @param connection db connection
@@ -99,7 +94,6 @@ public final class Session implements AutoCloseable {
 
         converter = new Converter();
         reader = new Reader(this);
-        joiner = new Joiner(this);
     }
 
 

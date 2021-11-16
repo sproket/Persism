@@ -299,21 +299,11 @@ final class SessionHelper {
             return rs.getObject(1);
         }
 
-        switch (type) {
-
-            case integerType:
-            case IntegerType:
-                value = rs.getInt(1);
-                break;
-
-            case longType:
-            case LongType:
-                value = rs.getLong(1);
-                break;
-
-            default:
-                value = rs.getObject(1);
-        }
+        value = switch (type) {
+            case integerType, IntegerType -> rs.getInt(1);
+            case longType, LongType -> rs.getLong(1);
+            default -> rs.getObject(1);
+        };
         return value;
     }
 
@@ -474,140 +464,55 @@ final class SessionHelper {
         }
     }
 
+    // parent is a POJO or a List of POJOs
+    void handleJoins(Object parent, Class<?> parentClass) throws IllegalAccessException, InvocationTargetException {
 
-    void handleJoins(Object parent, Class<?> objectClass) throws IllegalAccessException, InvocationTargetException {
-        // todo how will handleJoins work with Records? I guess we have to assume we have a modifiable list. Also we'd need to add to this this since we don't have a setter - handle joins won't work with a single join
-        List<PropertyInfo> joinProperties = MetaData.getPropertyInfo(objectClass).stream().filter(PropertyInfo::isJoin).collect(Collectors.toList());
+        List<PropertyInfo> joinProperties = MetaData.getPropertyInfo(parentClass).stream().filter(PropertyInfo::isJoin).collect(Collectors.toList());
+
         for (PropertyInfo joinProperty : joinProperties) {
             Join joinAnnotation = (Join) joinProperty.getAnnotation(Join.class);
-            String[] parentPropertyNames = joinAnnotation.onProperties().split(",");
-            String[] childPropertyNames = joinAnnotation.toProperties().split(",");
-            if (parentPropertyNames.length != childPropertyNames.length) {
-                throw new PersismException("how would I match these?");
-            }
-            Util.trimArray(parentPropertyNames);
-            Util.trimArray(childPropertyNames);
-            // todo test these properties exist and fail otherwise
+            JoinInfo joinInfo = new JoinInfo(parent, parentClass, joinAnnotation);
 
-            boolean caseSensitive = joinAnnotation.caseSensitive();
-
-            Class<?> childClass = joinAnnotation.to();
-
-            boolean parentIsAQuery = Collection.class.isAssignableFrom(parent.getClass());
-            if (parentIsAQuery) {
-                // this method should not be called if the list parent list is empty
+            if (joinInfo.parentIsAQuery) {
                 assert ((Collection<?>) parent).size() > 0;
-                // where parent is a query collect parent values for each foreign property name
-                // construct a WHERE IN query
-                // execute once
-                // match results to parent record by parent values
-                log.info("called from a query? " + parent.getClass() + " of class " + objectClass);
             }
 
-            Collection<PropertyInfo> parentProperties = MetaData.getPropertyInfo(objectClass); // todo parentClassProperties
+            Map<String, Set<Object>> parentPropertyValuesMap = initParentPropertyValuesMap(parent, joinInfo);
 
-            Map<String, Set<Object>> parentPropertyValuesMap = new HashMap<>();
-            List<Object> parentPropertyValues = new ArrayList<>();
-
-            for (int j = 0; j < parentPropertyNames.length; j++) {
-                var propertyName = parentPropertyNames[j];
-                //parentPropertyValuesMap.put(propertyName)
-
-                Optional<PropertyInfo> propertyInfo = parentProperties.stream().filter(p -> p.propertyName.equals(propertyName)).findFirst();
-                if (propertyInfo.isPresent()) {
-                    propertyInfo.get().field.setAccessible(true);
-                    if (parentIsAQuery) {
-                        List<?> list = (List<?>) parent;
-                        for (Object pojo : list) {
-                            parentPropertyValues.add(propertyInfo.get().field.get(pojo));
-                        }
-                    } else {
-                        parentPropertyValues.add(propertyInfo.get().field.get(parent)); // here the object is a list of POJOS. FAIL.
-                    }
-                    propertyInfo.get().field.setAccessible(false);
-                } else {
-                    throw new PersismException("COULD NOT FIND " + propertyName);
-                }
-                parentPropertyValuesMap.put(propertyName, new LinkedHashSet<>(parentPropertyValues));
-                parentPropertyValues.clear();
-            }
-
-            String sep = "";
-            String inSep = "";
-            StringBuilder where = new StringBuilder();
-            for (int j = 0; j < parentPropertyNames.length; j++) {
-                Set<Object> values = parentPropertyValuesMap.get(parentPropertyNames[j]);
-                String inOrEqualsStart;
-                String inOrEqualsEnd;
-                if (values == null) {
-                    throw new PersismException("Could not find toProperty: " + parentPropertyNames[j]);
-                }
-                if (values.size() > 1) {
-                    inOrEqualsStart = " IN (";
-                    inOrEqualsEnd = ") ";
-                } else {
-                    inOrEqualsStart = " = ";
-                    inOrEqualsEnd = " ";
-                }
-
-                where.append(sep).append(":").append(childPropertyNames[j]).append(inOrEqualsStart);
-                for (Object val : values) {
-                    where.append(inSep).append("?");
-                    inSep = ", ";
-                }
-                where.append(inOrEqualsEnd);
-                sep = " AND ";
-                inSep = "";
-            }
+            String whereClause = getChildWhereClause(joinInfo, parentPropertyValuesMap);
 
             // https://stackoverflow.com/questions/47224319/flatten-lists-in-map-into-single-list
             List<Object> params = parentPropertyValuesMap.values().stream().flatMap(Set::stream).toList();
 
-            Collection<PropertyInfo> childProperties = MetaData.getPropertyInfo(childClass);
-
             if (Collection.class.isAssignableFrom(joinProperty.field.getType())) {
                 // query
-                log.info("IN WHERE? " + where);
-                var result = session.query(childClass, where(where.toString()), params(params.toArray()));
-                if (parentIsAQuery) {
+                var result = session.query(joinInfo.childClass, where(whereClause), params(params.toArray()));
+                if (joinInfo.parentIsAQuery) {
                     List<?> parentList = (List<?>) parent;
                     // loop and find id for each parent and set the setter after matching IDs....
                     for (Object parentObject : parentList) {
-                        List<?> list = result.stream().filter(childObject ->
-                                        extracted(parentPropertyNames, childPropertyNames, parentProperties, childProperties, parentObject, childObject, caseSensitive)).
+                        List<?> list = result.stream().
+                                filter(childObject -> filterChildData(joinInfo, parentObject, childObject)).
                                 collect(Collectors.toList());
 
-                        // no null test - the object should have some List initialized.
-                        List<?> joinedList = (List<?>) joinProperty.getter.invoke(parentObject);
-
-                        if (joinedList == null) {
-                            throw new PersismException("Cannot join to null for property: " + joinProperty.propertyName + ". Instantiate the property as ArrayList<T> in your constructor.");
-                        }
-                        joinedList.clear();
-                        joinedList.addAll((List) list);
+                        assignJoinedList(joinProperty, parentObject, list);
                     }
 
                 } else {
-
-                    List<?> joinedList = (List<?>) joinProperty.getter.invoke(parent);
-                    if (joinedList == null) {
-                        throw new PersismException("Cannot join to null for property: " + joinProperty.propertyName + ". Instantiate the property as ArrayList<T> in your constructor.");
-                    }
-                    joinedList.clear();
-                    joinedList.addAll((List) result);
+                    assignJoinedList(joinProperty, parent, result);
                 }
             } else {
                 // single object property
 
                 // fetch
-                var result = session.query(childClass, where(where.toString()), params(params.toArray()));
+                var result = session.query(joinInfo.childClass, where(whereClause), params(params.toArray()));
 
-                if (parentIsAQuery) {
+                if (joinInfo.parentIsAQuery) {
                     List<?> parentList = (List<?>) parent;
                     // loop and find id for each parent and set the setter after matching IDs....
                     for (Object parentObject : parentList) {
-                        var opt = result.stream().filter(childObject ->
-                                        extracted(parentPropertyNames, childPropertyNames, parentProperties, childProperties, parentObject, childObject, caseSensitive)).
+                        var opt = result.stream().
+                                filter(childObject -> filterChildData(joinInfo, parentObject, childObject)).
                                 findFirst();
 
                         if (opt.isPresent()) {
@@ -628,12 +533,85 @@ final class SessionHelper {
         }
     }
 
-    private boolean extracted(String[] parentPropertyNames, String[] childPropertyNames, Collection<PropertyInfo> parentProperties, Collection<PropertyInfo> childProperties, Object parentObject, Object childObject, boolean caseSensitive) {
-        for (int j = 0; j < parentPropertyNames.length; j++) {
+    private void assignJoinedList(PropertyInfo joinProperty, Object parentObject, List list) throws IllegalAccessException, InvocationTargetException {
+
+        // no null test - the object should have some List initialized.
+
+        List joinedList = (List) joinProperty.getter.invoke(parentObject);
+        if (joinedList == null) {
+            throw new PersismException("Cannot join to null for property: " + joinProperty.propertyName + ". Instantiate the property as ArrayList<T> in your constructor.");
+        }
+        joinedList.clear();
+        joinedList.addAll(list);
+    }
+
+    private String getChildWhereClause(JoinInfo joinInfo, Map<String, Set<Object>> parentPropertyValuesMap) {
+        String sep = "";
+        String inSep = "";
+        StringBuilder where = new StringBuilder();
+        for (int j = 0; j < joinInfo.parentPropertyNames.length; j++) {
+            Set<Object> values = parentPropertyValuesMap.get(joinInfo.parentPropertyNames[j]);
+            String inOrEqualsStart;
+            String inOrEqualsEnd;
+            if (values == null) {
+                throw new PersismException("Could not find toProperty: " + joinInfo.parentPropertyNames[j]);
+            }
+            if (values.size() > 1) {
+                inOrEqualsStart = " IN (";
+                inOrEqualsEnd = ") ";
+            } else {
+                inOrEqualsStart = " = ";
+                inOrEqualsEnd = " ";
+            }
+
+            where.append(sep).append(":").append(joinInfo.childPropertyNames[j]).append(inOrEqualsStart);
+            for (Object val : values) {
+                where.append(inSep).append("?");
+                inSep = ", ";
+            }
+            where.append(inOrEqualsEnd);
+            sep = " AND ";
+            inSep = "";
+        }
+        return where.toString();
+    }
+
+    // return map of property names of primary keys and values used for the child query where clause
+    private Map<String, Set<Object>> initParentPropertyValuesMap(Object parent, JoinInfo joinInfo) throws IllegalAccessException {
+
+        Map<String, Set<Object>> parentPropertyValuesMap = new HashMap<>();
+
+        List<Object> parentPropertyValues = new ArrayList<>();
+        for (int j = 0; j < joinInfo.parentPropertyNames.length; j++) {
+            var propertyName = joinInfo.parentPropertyNames[j];
+            Optional<PropertyInfo> propertyInfo = joinInfo.parentProperties.stream().filter(p -> p.propertyName.equals(propertyName)).findFirst();
+            if (propertyInfo.isPresent()) {
+                propertyInfo.get().field.setAccessible(true);
+                if (joinInfo.parentIsAQuery) {
+                    List<?> list = (List<?>) parent;
+                    for (Object pojo : list) {
+                        parentPropertyValues.add(propertyInfo.get().field.get(pojo));
+                    }
+                } else {
+                    parentPropertyValues.add(propertyInfo.get().field.get(parent)); // here the object is a list of POJOS. FAIL.
+                }
+                propertyInfo.get().field.setAccessible(false);
+            } else {
+                throw new PersismException("COULD NOT FIND " + propertyName);
+            }
+            parentPropertyValuesMap.put(propertyName, new LinkedHashSet<>(parentPropertyValues));
+            parentPropertyValues.clear();
+        }
+
+        return parentPropertyValuesMap;
+    }
+
+    private boolean filterChildData(JoinInfo joinInfo, Object parentObject, Object childObject) {
+        for (int j = 0; j < joinInfo.parentPropertyNames.length; j++) {
             final int index = j;
 
-            var parentPropertyInfo = parentProperties.stream().filter(p -> p.propertyName.equals(parentPropertyNames[index])).findFirst();
-            var childPropertyInfo = childProperties.stream().filter(p -> p.propertyName.equals(childPropertyNames[index])).findFirst();
+            var parentPropertyInfo = joinInfo.parentProperties.stream().filter(p -> p.propertyName.equals(joinInfo.parentPropertyNames[index])).findFirst();
+            var childPropertyInfo = joinInfo.childProperties.stream().filter(p -> p.propertyName.equals(joinInfo.childPropertyNames[index])).findFirst();
 
             if (parentPropertyInfo.isPresent() && childPropertyInfo.isPresent()) {
 
@@ -649,7 +627,7 @@ final class SessionHelper {
                         }
                     }
 
-                    if (caseSensitive) {
+                    if (joinInfo.caseSensitive) {
                         if (parentValue != null && !parentValue.equals(childValue)) {
                             return false;
                         }
