@@ -158,3 +158,6 @@ https://sourceforge.net/p/ucanaccess/discussion/general/thread/52ae8bb570/
 https://sourceforge.net/p/jackcess/bugs/155/
 
 check out https://readthedocs.org/
+
+TODO The incoming request has too many parameters. The server supports a maximum of 2100 parameters. SQL SERVER DOCUMENT THIS
+This is a Persism Limitation on how I do joins.

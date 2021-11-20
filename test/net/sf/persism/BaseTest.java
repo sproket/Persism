@@ -392,29 +392,47 @@ public abstract class BaseTest extends TestCase {
         assertNotNull(customer);
 
         var invoices = customer.getInvoices();
-        assertEquals(1, invoices.size());
+        assertEquals(2, invoices.size());
 
         var customerRec = session.fetch(CustomerRec.class, where(":customerId = ?"), params("123"));
         assertNotNull(customerRec);
 
         invoices = customerRec.invoices();
         assertEquals(1, invoices.size());
+
+        InvoiceLineItem invoiceLineItem = session.fetch(InvoiceLineItem.class, params(1));
+        log.info(invoiceLineItem);
+
+        assertNotNull(invoiceLineItem);
+        assertNotNull(invoiceLineItem.getProduct());
+
+        // this should fail miserably
+        boolean fail = false;
+        try {
+            InvoiceLineItemRec invoiceLineItemRec = session.fetch(InvoiceLineItemRec.class, params(1));
+        } catch (PersismException e) {
+            fail = true;
+            assertEquals("msg s/b ?", "No Setter for product in class net.sf.persism.dao.records.InvoiceLineItemRec", e.getMessage());
+        }
+        assertTrue(fail);
     }
 
     public void testJoinsParentQuery() throws SQLException {
         queryDataSetup();
 
-        var list1 = session.query(Customer.class);
+        var list1 = session.query(Customer.class, where(":status = ?"), params('x'));
 
         assertEquals(2, list1.size());
-        assertEquals(1, list1.get(0).getInvoices().size());
+        assertEquals(2, list1.get(0).getInvoices().size());
         assertEquals(0, list1.get(1).getInvoices().size());
 
         var list2 = session.query(CustomerRec.class);
 
         assertEquals(2, list2.size());
-        assertEquals(1, list2.get(0).invoices().size());
+        assertEquals(2, list2.get(0).invoices().size());
         assertEquals(0, list2.get(1).invoices().size());
+
+        assertNotNull(list1.get(0).getInvoices().get(0).getLineItems().get(0).getProduct());
 
         // todo parse for child property name if there's an alias. The "i" needs to match the alias specified in the annotation THIS WONT REALLY WORK
         // session.query(Customer.class, where(":contactName=? and (:i.quantity > ? or :city=?)"), params("Fred", 10, "MTL"));
@@ -549,18 +567,46 @@ public abstract class BaseTest extends TestCase {
 
     private void queryDataSetup() throws SQLException {
 
-        Invoice invoice = new Invoice();
-        invoice.setCustomerId("123");
-        invoice.setPaid(true);
-        invoice.setPrice(10.0f);
-        invoice.setActualPrice(BigDecimal.TEN);
-        invoice.setQuantity(10);
-        invoice.setStatus('x');
-        session.insert(invoice);
+        Invoice invoice1 = new Invoice();
+        invoice1.setCustomerId("123");
+        invoice1.setPaid(true);
+        invoice1.setPrice(10.0f);
+        invoice1.setActualPrice(BigDecimal.TEN);
+        invoice1.setQuantity(10);
+        invoice1.setStatus('x');
+        session.insert(invoice1);
 
-        // todo refactor customer to use the UUID to connect Customer to Contact. Contact name isn't great because we are matching exact.
-        Contact contact = new Contact();
-        contact.setContactName("fred flintstone");
+        Invoice invoice2 = new Invoice();
+        invoice2.setCustomerId("123");
+        invoice2.setPaid(true);
+        invoice2.setPrice(20.0f);
+        invoice2.setActualPrice(BigDecimal.valueOf(20));
+        invoice2.setQuantity(20);
+        invoice2.setStatus('x');
+        session.insert(invoice2);
+
+        Product product;
+        product = new Product(1, "prod 1", 10.25);
+        session.insert(product);
+
+        product = new Product(2, "prod 2", 17.25);
+        session.insert(product);
+
+        product = new Product(3, "prod 3", 9.75);
+        session.insert(product);
+
+        InvoiceLineItem invoiceLineItem;
+        invoiceLineItem = new InvoiceLineItem(invoice1.getInvoiceId(), 1, 10);
+        session.insert(invoiceLineItem);
+        assertTrue(invoiceLineItem.getId() > 0);
+
+        invoiceLineItem = new InvoiceLineItem(invoice1.getInvoiceId(), 2, 20);
+        session.insert(invoiceLineItem);
+        assertTrue(invoiceLineItem.getId() > 0);
+
+        invoiceLineItem = new InvoiceLineItem(invoice1.getInvoiceId(), 3, 5);
+        session.insert(invoiceLineItem);
+        assertTrue(invoiceLineItem.getId() > 0);
 
         Customer c1 = new Customer();
         c1.setCustomerId("123");
@@ -861,7 +907,7 @@ public abstract class BaseTest extends TestCase {
 
         fail = false;
         try {
-            session.upsert(customerInvoiceTestView);
+            session.insert(customerInvoiceTestView);
         } catch (PersismException e) {
             log.info(e.getMessage());
             assertEquals("s/b Operation not supported for Views.", Messages.OperationNotSupportedForView.message(customerInvoiceTestView.getClass(), "Upsert"), e.getMessage());
@@ -1405,7 +1451,7 @@ public abstract class BaseTest extends TestCase {
         invoice.setPaid(true);
         invoice.setActualPrice(new BigDecimal("10.23"));
 
-        assertEquals("s/b 1", 1, session.upsert(invoice).rows());
+        assertEquals("s/b 1", 1, session.insert(invoice).rows());
 
 
         assertTrue("Invoice ID > 0", invoice.getInvoiceId() > 0);

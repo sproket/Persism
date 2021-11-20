@@ -1,9 +1,12 @@
 package net.sf.persism.dao;
 
+import net.sf.persism.annotations.Join;
 import net.sf.persism.annotations.NotColumn;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Created with IntelliJ IDEA.
@@ -28,6 +31,9 @@ public final class Invoice {
 
     // Used as a primitive to test for warning about using primitives on columns with defaults
     private Character status;
+
+    @Join(to = InvoiceLineItem.class, onProperties = "invoiceId", toProperties = "invoiceId")
+    private List<InvoiceLineItem> lineItems = new ArrayList<>();
 
     public String getCustomerId() {
         return customerId;
@@ -80,6 +86,14 @@ public final class Invoice {
 
     public void setDiscount(double discount) {
         this.discount = discount;
+    }
+
+    public List<InvoiceLineItem> getLineItems() {
+        return lineItems;
+    }
+
+    public void setLineItems(List<InvoiceLineItem> lineItems) {
+        this.lineItems = lineItems;
     }
 
     // calculated property

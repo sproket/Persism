@@ -37,10 +37,10 @@ public final class Customer {
 
     // TODO DOCUMENT: Joins must be a modifiable list and must be instantiated. We use the
     // TODO properties are case sensitive - make a FailCustomer class or something to test that
-    @Join(to = Invoice.class, onProperties = " customerId , status ", toProperties = "customerId , status ")
+    //@Join(to = Invoice.class, onProperties = " customerId , status ", toProperties = "customerId , status ")
+    @Join(to = Invoice.class, onProperties = " customerId  ", toProperties = "customerId  ")
     private List<Invoice> invoices = new ArrayList<>();
 
-    //@NotColumn
     @Join(to=Contact.class, onProperties = "contactName", toProperties = "contactName")
     private Contact contact;
 

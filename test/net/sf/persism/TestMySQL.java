@@ -12,6 +12,7 @@ import java.util.Properties;
 
 import static net.sf.persism.Parameters.params;
 import static net.sf.persism.SQL.sql;
+import static net.sf.persism.UtilsForTests.isTableInDatabase;
 
 /**
  * @author Dan Howard
@@ -197,6 +198,31 @@ public class TestMySQL extends BaseTest {
                 "PRICE DECIMAL(10), " +
                 "CREATED_ON TIMESTAMP DEFAULT CURRENT_TIMESTAMP" +
                 ") ";
+        executeCommand(sql, con);
+
+        if (isTableInDatabase("InvoiceLineItems", con)) {
+            executeCommand("DROP TABLE InvoiceLineItems", con);
+        }
+        sql = """
+                CREATE TABLE InvoiceLineItems (
+                    ID INT NOT NULL AUTO_INCREMENT, PRIMARY KEY(ID),
+                    INVOICE_ID int,
+                    Product_ID int,
+                    Quantity int
+                    )
+                """;
+        executeCommand(sql, con);
+
+        if (isTableInDatabase("Products", con)) {
+            executeCommand("DROP TABLE Products", con);
+        }
+        sql = """
+                CREATE TABLE Products (
+                    ID int,
+                    Description VARCHAR(50),
+                    COST NUMERIC(10,3)
+                    )
+                """;
         executeCommand(sql, con);
 
     }

@@ -8,7 +8,9 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 
 import static net.sf.persism.Parameters.none;
 import static net.sf.persism.Parameters.params;
@@ -157,7 +159,7 @@ public final class Session implements AutoCloseable {
 
             if (JDBCResult.rs.next()) {
                 reader.readObject(object, JDBCResult.rs);
-                helper.handleJoins(object, objectClass);
+                helper.handleJoins(object, objectClass, sql, params);
                 return true;
             }
             return false;
@@ -234,13 +236,13 @@ public final class Session implements AutoCloseable {
                 if (isRecord) {
                     // todo how will this work with join? Works if it's a list but not a 1-1 POJO
                     var ret = reader.readRecord(objectClass, result.rs);
-                    helper.handleJoins(ret, objectClass);
+                    helper.handleJoins(ret, objectClass, sql.toString(), parameters);
                     return ret;
 
                 } else if (isPOJO) {
                     T t = objectClass.getDeclaredConstructor().newInstance();
                     var ret = reader.readObject(t, result.rs);
-                    helper.handleJoins(ret, objectClass);
+                    helper.handleJoins(ret, objectClass, sql.toString(), parameters);
                     return ret;
 
                 } else {
@@ -398,6 +400,8 @@ public final class Session implements AutoCloseable {
         try {
             result = helper.executeQuery(objectClass, sql, parameters);
 
+            long now = System.currentTimeMillis();
+
             while (result.rs.next()) {
                 if (isRecord) {
                     list.add(reader.readRecord(objectClass, result.rs));
@@ -409,9 +413,14 @@ public final class Session implements AutoCloseable {
                 }
             }
 
+            log.debug("TIME TO READ " + objectClass + " " + (System.currentTimeMillis() - now) + " SIZE " + list.size());
+
             if (list.size() > 0) {
-                helper.handleJoins(list, objectClass);
+                now = System.currentTimeMillis();
+                helper.handleJoins(list, objectClass, sql.toString(), parameters);
             }
+
+            log.debug("TIME TO handleJoins " + objectClass + " " + (System.currentTimeMillis() - now), new Throwable());
 
         } catch (Exception e) {
             Util.rollback(connection);
@@ -733,70 +742,6 @@ public final class Session implements AutoCloseable {
     }
 
     /**
-     * Performs an Insert or Update depending on whether the primary key is defined by the object parameter.
-     *
-     * @param object the data object to insert or update.
-     * @param <T>    Type of the returning data object in Result.
-     * @return Result object containing rows changed (usually 1 to indicate rows changed via JDBC) and the data object itself which may have been changed by auto-inc or column defaults.
-     * @throws PersismException If this table has no primary keys or some SQL error.
-     */
-    public <T> Result<T> upsert(T object) throws PersismException {
-        helper.checkIfOkForWriteOperation(object, "UPSERT");
-
-        List<String> primaryKeys = metaData.getPrimaryKeys(object.getClass(), connection);
-        if (primaryKeys.size() == 0) {
-            throw new PersismException(Messages.TableHasNoPrimaryKeys.message("UPSERT", metaData.getTableName(object.getClass())));
-        }
-
-        try {
-            Map<String, PropertyInfo> properties = metaData.getTableColumnsPropertyInfo(object.getClass(), connection);
-            Map<String, ColumnInfo> columns = metaData.getColumns(object.getClass(), connection);
-            List<Object> params = new ArrayList<>(primaryKeys.size());
-            boolean isInsert = false;
-
-            if (primaryKeys.size() == 1 && columns.get(primaryKeys.get(0)).autoIncrement) {
-                // If this is a single auto inc - we don't have to fetch back to the DB to decide
-                PropertyInfo propertyInfo = properties.get(primaryKeys.get(0));
-                Class<?> returnType = propertyInfo.getter.getReturnType();
-                Object value = propertyInfo.getter.invoke(object);
-                if (value == null || (returnType.isPrimitive() && value == Types.getDefaultValue(returnType))) {
-                    isInsert = true;
-                }
-            } else {
-                List<ColumnInfo> columnInfos = new ArrayList<>();
-                // Multiple primaries or the key(s) are set by the user - need to fetch to see if this is an insert or update
-                for (String key : primaryKeys) {
-                    PropertyInfo propertyInfo = properties.get(key);
-                    Object value = propertyInfo.getter.invoke(object);
-                    params.add(value);
-                    columnInfos.add(metaData.getColumns(object.getClass(), connection).get(key));
-                }
-
-                for (int j = 0; j < params.size(); j++) {
-                    if (params.get(j) != null) {
-                        params.set(j, converter.convert(params.get(j), columnInfos.get(j).columnType.getJavaType(), columnInfos.get(j).columnName));
-                    }
-                }
-
-                Parameters parameters = params(params.toArray());
-
-                Object pojo = fetch(object.getClass(), parameters);
-                isInsert = pojo == null;
-            }
-
-            if (isInsert) {
-                return insert(object);
-            } else {
-                return update(object);
-            }
-        } catch (PersismException e) {
-            throw e; // todo see how this works. do we lose information?
-        } catch (Exception e) {
-            throw new PersismException(e.getMessage(), e);
-        }
-    }
-
-    /**
      * Function block of database operations to group together in one transaction.
      * This method will set autocommit to false then execute the function, commit and set autocommit back to true.
      * <pre>{@code
@@ -845,8 +790,6 @@ public final class Session implements AutoCloseable {
     Connection getConnection() {
         return connection;
     }
-
-
 
 
 }

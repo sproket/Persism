@@ -24,6 +24,9 @@ public @interface Table {
      * Table Name
      * @return Table Name
      */
-    String value();
+    String value() default "";
 
+    String schema() default "";
+
+    String name() default "";
 }

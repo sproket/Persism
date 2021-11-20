@@ -18,6 +18,8 @@ public final class SQL {
     boolean whereOnly; // flags this as WHERE only - we add the SELECT part.
     boolean storedProc; // indicates this is a stored proc rather than an SQL statement
 
+    String processedSQL = null;
+
     SQL(String sql) {
         sql = sql.trim();
 
@@ -101,6 +103,10 @@ public final class SQL {
      */
     @Override
     public String toString() {
+        // todo broken! the SQL is changed by where properties etc... we really need the after parse properties and named params SQL
+        if (processedSQL != null) {
+            return processedSQL;
+        }
         return sql;
     }
 }

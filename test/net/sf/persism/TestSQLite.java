@@ -248,6 +248,31 @@ public final class TestSQLite extends BaseTest {
 //         WHERE i.Status = 1
         executeCommand(sql, con);
 
+        if (isTableInDatabase("InvoiceLineItems", con)) {
+            executeCommand("DROP TABLE InvoiceLineItems", con);
+        }
+        sql = """
+                CREATE TABLE InvoiceLineItems (
+                    ID INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT UNIQUE,
+                    INVOICE_ID int,
+                    Product_ID int,
+                    Quantity int
+                    )
+                """;
+        executeCommand(sql, con);
+
+        if (isTableInDatabase("Products", con)) {
+            executeCommand("DROP TABLE Products", con);
+        }
+        sql = """
+                CREATE TABLE Products (
+                    ID int,
+                    Description VARCHAR(50),
+                    COST NUMERIC(10,3)
+                    )
+                """;
+        executeCommand(sql, con);
+
     }
 
     @Override

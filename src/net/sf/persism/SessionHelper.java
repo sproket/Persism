@@ -10,7 +10,6 @@ import java.sql.*;
 import java.util.*;
 import java.util.stream.Collectors;
 
-import static net.sf.persism.Parameters.params;
 import static net.sf.persism.SQL.where;
 
 // Non-public code Session uses.
@@ -24,7 +23,6 @@ final class SessionHelper {
     public SessionHelper(Session session) {
         this.session = session;
     }
-
 
     JDBCResult executeQuery(Class<?> objectClass, SQL sql, Parameters parameters) throws SQLException {
 
@@ -64,20 +62,26 @@ final class SessionHelper {
             }
             String select = session.metaData.getSelectStatement(objectClass, session.connection);
             sqlQuery = select + " " + parsePropertyNames(sqlQuery, objectClass, session.connection);
+            sql.processedSQL = sqlQuery;
         } else {
             checkIfStoredProcOrSQL(objectClass, sql);
         }
 
+        long now = System.currentTimeMillis();
+
         if (log.isDebugEnabled()) {
-            log.debug("executeQuery: %s params: %s", sqlQuery, parameters);
+            log.debug("executeQuery: " + sqlQuery + " params: " + parameters);
         }
 
         exec(result, sqlQuery, parameters.toArray());
+
+        log.debug("QUERY EXECUTED " + (System.currentTimeMillis() - now));
 
         return result;
     }
 
     void exec(JDBCResult result, String sql, Object... parameters) throws SQLException {
+        log.warn(sql + " params: " + Arrays.asList(parameters));
         try {
             if (isSelect(sql)) {
                 if (session.metaData.getConnectionType() == ConnectionTypes.Firebird) {
@@ -464,14 +468,14 @@ final class SessionHelper {
         }
     }
 
-    // parent is a POJO or a List of POJOs
-    void handleJoins(Object parent, Class<?> parentClass) throws IllegalAccessException, InvocationTargetException {
 
+    // parent is a POJO or a List of POJOs
+    void handleJoins(Object parent, Class<?> parentClass, String parentSql, Parameters parentParams) throws IllegalAccessException, InvocationTargetException {
         List<PropertyInfo> joinProperties = MetaData.getPropertyInfo(parentClass).stream().filter(PropertyInfo::isJoin).collect(Collectors.toList());
 
         for (PropertyInfo joinProperty : joinProperties) {
             Join joinAnnotation = (Join) joinProperty.getAnnotation(Join.class);
-            JoinInfo joinInfo = new JoinInfo(parent, parentClass, joinAnnotation);
+            JoinInfo joinInfo = new JoinInfo(joinAnnotation, joinProperty, parent, parentClass);
 
             if (joinInfo.parentIsAQuery) {
                 assert ((Collection<?>) parent).size() > 0;
@@ -479,57 +483,114 @@ final class SessionHelper {
 
             Map<String, Set<Object>> parentPropertyValuesMap = initParentPropertyValuesMap(parent, joinInfo);
 
-            String whereClause = getChildWhereClause(joinInfo, parentPropertyValuesMap);
+            String parentWhere;
+            if (parentSql.contains(" WHERE ")) { // todo case of WHERE?
+                parentWhere = parentSql.substring(parentSql.indexOf(" WHERE ") + 7);
+            } else {
+                parentWhere = "";
+            }
+            String whereClause = getChildWhereClause(joinInfo, parentPropertyValuesMap, parentWhere);
 
             // https://stackoverflow.com/questions/47224319/flatten-lists-in-map-into-single-list
-            List<Object> params = parentPropertyValuesMap.values().stream().flatMap(Set::stream).toList();
+//            List<Object> params = new ArrayList<>(parentPropertyValuesMap.values().stream().flatMap(Set::stream).toList());
+//            params.addAll(parentParams.parameters);
 
             if (Collection.class.isAssignableFrom(joinProperty.field.getType())) {
                 // query
-                var result = session.query(joinInfo.childClass, where(whereClause), params(params.toArray()));
+                List<?> childList;
+                childList = session.query(joinInfo.childClass, where(whereClause), parentParams);
+
                 if (joinInfo.parentIsAQuery) {
                     List<?> parentList = (List<?>) parent;
-                    // loop and find id for each parent and set the setter after matching IDs....
-                    for (Object parentObject : parentList) {
-                        List<?> list = result.stream().
-                                filter(childObject -> filterChildData(joinInfo, parentObject, childObject)).
-                                collect(Collectors.toList());
-
-                        assignJoinedList(joinProperty, parentObject, list);
-                    }
-
+                    stitch(joinInfo, parentList, childList);
                 } else {
-                    assignJoinedList(joinProperty, parent, result);
+                    assignJoinedList(joinProperty, parent, childList);
                 }
             } else {
                 // single object property
 
                 // fetch
-                var result = session.query(joinInfo.childClass, where(whereClause), params(params.toArray()));
+                List<?> childList;
+                childList = session.query(joinInfo.childClass, where(whereClause), parentParams);
 
                 if (joinInfo.parentIsAQuery) {
-                    List<?> parentList = (List<?>) parent;
-                    // loop and find id for each parent and set the setter after matching IDs....
-                    for (Object parentObject : parentList) {
-                        var opt = result.stream().
-                                filter(childObject -> filterChildData(joinInfo, parentObject, childObject)).
-                                findFirst();
 
-                        if (opt.isPresent()) {
-                            joinProperty.setter.invoke(parentObject, opt.get());
-                        }
-                    }
+                    stitch(joinInfo, (List<?>) parent, childList);
+
                 } else {
                     // TODO currently can't work with record? Nope. We'd need to work in reverse order or something. Wait for refactor of this method.
-                    if (result.size() > 0) {
-                        joinProperty.setter.invoke(parent, result.get(0));
+                    if (childList.size() > 0) {
+                        if (joinProperty.setter != null) {
+                            joinProperty.setter.invoke(parent, childList.get(0));
+                        } else {
+                            throw new PersismException("No Setter for " + joinProperty.propertyName + " in " + parentClass);
+                        }
                     }
-                    if (result.size() > 1) {
+                    if (childList.size() > 1) {
                         log.warn("why do I have more than 1?");
                     }
                 }
             }
 
+        }
+    }
+
+    private void stitch(JoinInfo joinInfo, List<?> parentList, List<?> childList) throws InvocationTargetException, IllegalAccessException {
+
+        Map<Object, Object> parentMap;
+        if (joinInfo.parentProperties.size() == 1 && joinInfo.childProperties.size() == 1) {
+            PropertyInfo propertyInfo = joinInfo.parentProperties.get(0);
+            PropertyInfo childPropertyInfo = joinInfo.childProperties.get(0);
+
+            // todo this parent map is created for each join. Maybe only do it once?
+            // https://stackoverflow.com/questions/32312876/ignore-duplicates-when-producing-map-using-streams
+            parentMap = parentList.stream().collect(Collectors.toMap(o -> propertyInfo.getValue(o), o -> o, (o1, o2) -> o1));
+
+            for (Object child : childList) {
+                Object parent = parentMap.get(childPropertyInfo.getValue(child));
+                if (Collection.class.isAssignableFrom(joinInfo.joinProperty.field.getType())) {
+                    var list = (Collection) joinInfo.joinProperty.getValue(parent);
+                    if (list == null) {
+                        log.warn("list should be instantiated? ");
+                    }
+                    list.add(child);
+
+                } else {
+                    joinInfo.joinProperty.setter.invoke(parent, child);
+                }
+            }
+        } else {
+            // todo test this junk
+            parentMap = parentList.stream().
+                    collect(Collectors.
+                            toMap(o -> {
+                                List<Object> values = new ArrayList<>();
+                                for (int j = 0; j < joinInfo.parentProperties.size(); j++) {
+                                    values.add(joinInfo.parentProperties.get(j).getValue(o));
+                                }
+                                return new KeyBox(values.toArray(), joinInfo.caseSensitive);
+                            }, o -> o, (o1, o2) -> o1));
+
+
+            for (Object child : childList) {
+                List<Object> values = new ArrayList<>();
+                for (int j = 0; j < joinInfo.childProperties.size(); j++) {
+                    values.add(joinInfo.childProperties.get(j).getValue(child));
+                }
+
+                Object parent = parentMap.get(new KeyBox(values.toArray(), joinInfo.caseSensitive));
+                if (Collection.class.isAssignableFrom(joinInfo.joinProperty.field.getType())) {
+                    var list = (Collection) joinInfo.joinProperty.getValue(parent);
+                    if (list == null) {
+                        log.warn("list should be instantiated? ");
+                    }
+                    list.add(child);
+
+                } else {
+                    joinInfo.joinProperty.setter.invoke(parent, child);
+                }
+
+            }
         }
     }
 
@@ -545,7 +606,7 @@ final class SessionHelper {
         joinedList.addAll(list);
     }
 
-    private String getChildWhereClause(JoinInfo joinInfo, Map<String, Set<Object>> parentPropertyValuesMap) {
+    private String getChildWhereClauseOLD(JoinInfo joinInfo, Map<String, Set<Object>> parentPropertyValuesMap) {
         String sep = "";
         String inSep = "";
         StringBuilder where = new StringBuilder();
@@ -572,6 +633,58 @@ final class SessionHelper {
             where.append(inOrEqualsEnd);
             sep = " AND ";
             inSep = "";
+        }
+        return where.toString();
+    }
+
+
+    private String getChildWhereClause(JoinInfo joinInfo, Map<String, Set<Object>> parentPropertyValuesMap, String parentWhere) {
+        String sep = "";
+        StringBuilder where = new StringBuilder();
+
+
+        Map<String, PropertyInfo> properties = session.metaData.getTableColumnsPropertyInfo(joinInfo.parentClass, session.connection);
+
+        for (int j = 0; j < joinInfo.parentPropertyNames.length; j++) {
+            int index = j;
+            String parentColumnName = null;
+
+            for (String key : properties.keySet()) {
+                if (properties.get(key).propertyName.equals(joinInfo.parentPropertyNames[index])) {
+                    parentColumnName = key;
+                    break;
+                }
+            }
+
+            assert parentColumnName != null;
+
+            String parentTable = session.metaData.getTableName(joinInfo.parentClass);
+
+            Set<Object> values = parentPropertyValuesMap.get(joinInfo.parentPropertyNames[j]);
+            String inOrEqualsStart;
+            String inOrEqualsEnd;
+            if (values == null) {
+                throw new PersismException("Could not find toProperty: " + joinInfo.parentPropertyNames[j]);
+            }
+            if (values.size() > 1) {
+                inOrEqualsStart = " IN (";
+                inOrEqualsEnd = ") ";
+            } else {
+                inOrEqualsStart = " = ";
+                inOrEqualsEnd = " ";
+            }
+
+            where.append(sep).append(":").append(joinInfo.childPropertyNames[j]).append(inOrEqualsStart);
+            if (values.size() > 1) {
+                where.append("SELECT ").append(parentColumnName).append(" FROM ").append(parentTable);
+                if (!parentWhere.isEmpty()) {
+                    where.append(" WHERE ").append(parentWhere);
+                }
+            } else {
+                where.append("?");
+            }
+            where.append(inOrEqualsEnd);
+            sep = " AND ";
         }
         return where.toString();
     }
@@ -671,4 +784,5 @@ final class SessionHelper {
             }
         }
     }
+
 }

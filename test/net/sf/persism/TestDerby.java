@@ -238,6 +238,32 @@ public final class TestDerby extends BaseTest {
                 ") ";
         executeCommand(sql, con);
 
+        if (isTableInDatabase("InvoiceLineItems", con)) {
+            executeCommand("DROP TABLE InvoiceLineItems", con);
+        }
+        sql = """
+                CREATE TABLE InvoiceLineItems (
+                    ID INTEGER NOT NULL GENERATED ALWAYS AS IDENTITY (START WITH 1, INCREMENT BY 1),
+                    INVOICE_ID int,
+                    Product_ID int,
+                    Quantity int
+                    )
+                """;
+        executeCommand(sql, con);
+
+        if (isTableInDatabase("Products", con)) {
+            executeCommand("DROP TABLE Products", con);
+        }
+        sql = """
+                CREATE TABLE Products (
+                    ID int,
+                    Description VARCHAR(50),
+                    COST NUMERIC(10,3)
+                    )
+                """;
+        executeCommand(sql, con);
+
+
     }
 
     public void testTypes() {

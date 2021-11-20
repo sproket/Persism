@@ -139,6 +139,11 @@ public class TestUtil extends TestCase {
         String s = null;
         System.out.println(s);
         System.out.println("" + s);
+
+        String s3 = null;
+        String s4 = null;
+
+        log.warn(Objects.equals(s3, s4));
     }
 
     List<String> stringList = new ArrayList<String>();

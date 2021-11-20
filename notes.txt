@@ -42,3 +42,6 @@ Options:
 3 Change return for insert (others?) to return Object containing the new Record + the int count of rows changed?
 4 Add a new insertRecord method (and updateRecord) etc....
 
+
+
+ mvn install -Dmaven.test.skip

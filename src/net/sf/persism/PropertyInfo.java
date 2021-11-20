@@ -2,6 +2,7 @@ package net.sf.persism;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.Map;
@@ -51,6 +52,16 @@ final class PropertyInfo {
     boolean isJoin() {
         return isJoin;
     }
+
+    // Convenience getter with runtime exception for functional
+    Object getValue(Object object) {
+        try {
+            return getter.invoke(object);
+        } catch (IllegalAccessException | InvocationTargetException e) {
+            throw new PersismException(e.getMessage(), e);
+        }
+    }
+
 
     Map<Class<? extends Annotation>, Annotation> annotations() {
         return annotations;
