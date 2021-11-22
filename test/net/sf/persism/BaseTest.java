@@ -1039,7 +1039,7 @@ public abstract class BaseTest extends TestCase {
                 params(Map.of("name", "Fred", "last", "Flintstone")));
         log.info(contacts);
 
-        // Fetch?
+        // Fetch? TEST REUSING THE SAME sql Object after processing the prior query
         contact = session.fetch(Contact.class, sql, params(Map.of("name", "Fred", "last", "Flintstone")));
         assertNotNull(contact);
 
