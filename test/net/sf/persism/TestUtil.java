@@ -146,6 +146,21 @@ public class TestUtil extends TestCase {
         log.warn(Objects.equals(s3, s4));
     }
 
+    public void testKeyBox() {
+        Map<KeyBox, String> map = new HashMap<>();
+        KeyBox keyBox1 = new KeyBox(false, 1, 2);
+        KeyBox keyBox2 = new KeyBox(false, 1, 3);
+        KeyBox keyBox3 = new KeyBox(false, 2, 4);
+
+        map.put(keyBox1, "keybox1");
+        map.put(keyBox2, "keybox2");
+        map.put(keyBox3, "keybox3");
+
+        assertNotNull(map.get(new KeyBox(false, 1, 3)));
+        assertNull(map.get(new KeyBox(false, 9, 9)));
+
+    }
+
     List<String> stringList = new ArrayList<String>();
     List<Integer> integerList = new ArrayList<Integer>();
     List<Customer> custList = new ArrayList<Customer>();

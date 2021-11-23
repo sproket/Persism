@@ -1,6 +1,5 @@
 package net.sf.persism;
 
-import java.util.Locale;
 import java.util.Scanner;
 import java.util.regex.Pattern;
 
@@ -13,7 +12,7 @@ import java.util.regex.Pattern;
 // todo cache these if we do any parsing so we only parse once.
 public final class SQL {
 
-    private final String sql;
+    final String sql;
 
     boolean whereOnly; // flags this as WHERE only - we add the SELECT part.
     boolean storedProc; // indicates this is a stored proc rather than an SQL statement
@@ -103,7 +102,6 @@ public final class SQL {
      */
     @Override
     public String toString() {
-        // todo broken! the SQL is changed by where properties etc... we really need the after parse properties and named params SQL
         if (processedSQL != null) {
             return processedSQL;
         }

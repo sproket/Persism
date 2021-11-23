@@ -26,6 +26,7 @@ import static net.sf.persism.Util.isRecord;
 public final class Session implements AutoCloseable {
 
     private static final Log log = Log.getLogger(Session.class);
+    private static final Log blog = Log.getLogger("net.sf.persism.Benchmarks");
 
     final SessionHelper helper;
 
@@ -413,14 +414,17 @@ public final class Session implements AutoCloseable {
                 }
             }
 
-            log.debug("TIME TO READ " + objectClass + " " + (System.currentTimeMillis() - now) + " SIZE " + list.size());
+            //blog.debug("TIME TO READ " + objectClass + " " + (System.currentTimeMillis() - now) + " SIZE " + list.size());
+            blog.debug("READ time: %s SIZE: %s %s", (System.currentTimeMillis() - now), list.size(), objectClass);
 
             if (list.size() > 0) {
                 now = System.currentTimeMillis();
                 helper.handleJoins(list, objectClass, sql.toString(), parameters);
             }
 
-            log.debug("TIME TO handleJoins " + objectClass + " " + (System.currentTimeMillis() - now), new Throwable());
+            if (blog.isDebugEnabled()) {
+                blog.debug("handleJoins TIME:  " + (System.currentTimeMillis() - now) + " " + objectClass, new Throwable());
+            }
 
         } catch (Exception e) {
             Util.rollback(connection);
@@ -549,8 +553,6 @@ public final class Session implements AutoCloseable {
         PreparedStatement st = null;
         ResultSet rs = null;
 
-        Object returnObject = object;
-
         try {
             // These keys should always be in sorted order.
             Map<String, PropertyInfo> properties = metaData.getTableColumnsPropertyInfo(object.getClass(), connection);
@@ -664,7 +666,9 @@ public final class Session implements AutoCloseable {
                 refreshAfterInsert = true;
             }
 
+            Object returnObject = null;
             if (refreshAfterInsert) {
+                // these 2 fetches need a fetchAfterInsert flag
                 // Read the full object back to update any properties which had defaults
                 if (isRecord(object.getClass())) {
                     SQL sql = new SQL(metaData.getDefaultSelectStatement(object.getClass(), connection));
@@ -673,6 +677,8 @@ public final class Session implements AutoCloseable {
                     fetch(object);
                     returnObject = object;
                 }
+            } else {
+                returnObject = object;
             }
 
             if (object instanceof Persistable<?> pojo) {

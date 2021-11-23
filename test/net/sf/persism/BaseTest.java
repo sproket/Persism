@@ -398,7 +398,7 @@ public abstract class BaseTest extends TestCase {
         assertNotNull(customerRec);
 
         invoices = customerRec.invoices();
-        assertEquals(1, invoices.size());
+        assertEquals(2, invoices.size());
 
         InvoiceLineItem invoiceLineItem = session.fetch(InvoiceLineItem.class, params(1));
         log.info(invoiceLineItem);

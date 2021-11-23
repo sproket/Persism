@@ -3,11 +3,11 @@ package net.sf.persism;
 import java.util.Arrays;
 
 // wrapper class for when you join on multiple columns
-public final class KeyBox {
+final class KeyBox {
 
     Object[] keyValues;
 
-    public KeyBox(Object[] keyValues, boolean caseSensitive) {
+    public KeyBox(boolean caseSensitive, Object... keyValues) {
         this.keyValues = keyValues;
 
         // If not case-sensitive then make String values upper case
@@ -36,5 +36,12 @@ public final class KeyBox {
     @Override
     public int hashCode() {
         return Arrays.hashCode(keyValues);
+    }
+
+    @Override
+    public String toString() {
+        return "KeyBox{" +
+                "keyValues=" + Arrays.toString(keyValues) +
+                '}';
     }
 }
