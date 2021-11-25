@@ -5,7 +5,7 @@ import java.util.Arrays;
 // wrapper class for when you join on multiple columns
 final class KeyBox {
 
-    Object[] keyValues;
+    final Object[] keyValues;
 
     public KeyBox(boolean caseSensitive, Object... keyValues) {
         this.keyValues = keyValues;
@@ -15,7 +15,7 @@ final class KeyBox {
             for (int j = 0; j < keyValues.length; j++) {
                 if (keyValues[j] instanceof String s) {
                     s = s.toUpperCase();
-                    keyValues[j] = s;
+                    this.keyValues[j] = s;
                 }
             }
         }

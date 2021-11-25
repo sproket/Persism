@@ -457,7 +457,7 @@ final class SessionHelper {
                 if (session.metaData.getConnectionType() == ConnectionTypes.UCanAccess) {
                     st.setNull(n, java.sql.Types.OTHER);
                 } else {
-                    st.setObject(n, param);
+                    st.setObject(n, null);
                 }
             }
 
@@ -484,11 +484,20 @@ final class SessionHelper {
             if (parentSql.toUpperCase().contains(" WHERE ")) {
                 parentWhere = parentSql.substring(parentSql.toUpperCase().indexOf(" WHERE ") + 7);
             } else {
-                parentWhere = ""; // todo test this condition
+                parentWhere = "";
             }
             String whereClause = getChildWhereClause(joinInfo, parentWhere);
+            List<Object> params = new ArrayList<>(parentParams.parameters);
 
-            List<Object> params = parentParams.parameters;
+            if (params.size() > 0) {
+                // normalize params to ? since we may have repeated the SELECT IN query
+                long qmCount = whereClause.chars().filter(ch -> ch == '?').count();
+                int index = 0;
+                while (qmCount > params.size()) {
+                    params.add(params.get(index));
+                    index++;
+                }
+            }
 
             if (Collection.class.isAssignableFrom(joinProperty.field.getType())) {
                 // query
@@ -529,7 +538,9 @@ final class SessionHelper {
         }
     }
 
+    @SuppressWarnings({"rawtypes", "unchecked"})
     private void stitch(JoinInfo joinInfo, List<?> parentList, List<?> childList) throws InvocationTargetException, IllegalAccessException {
+        blog.debug("STITCH " + joinInfo);
 
         long now = System.currentTimeMillis();
 
@@ -547,7 +558,7 @@ final class SessionHelper {
                 if (Collection.class.isAssignableFrom(joinInfo.joinProperty.field.getType())) {
                     var list = (Collection) joinInfo.joinProperty.getValue(parent);
                     if (list == null) {
-                        log.warn("list should be instantiated? ");
+                        throw new PersismException("Cannot join to null for property: " + joinInfo.joinProperty.propertyName + ". Instantiate the property as ArrayList<T> in your constructor.");
                     }
                     list.add(child);
 
@@ -580,7 +591,7 @@ final class SessionHelper {
                 if (Collection.class.isAssignableFrom(joinInfo.joinProperty.field.getType())) {
                     var list = (Collection) joinInfo.joinProperty.getValue(parent);
                     if (list == null) {
-                        log.warn("list should be instantiated? ");
+                        throw new PersismException("Cannot join to null for property: " + joinInfo.joinProperty.propertyName + ". Instantiate the property as ArrayList<T> in your constructor.");
                     }
                     list.add(child);
 
@@ -594,6 +605,7 @@ final class SessionHelper {
         log.debug("stitch Time: " + (System.currentTimeMillis() - now));
     }
 
+    @SuppressWarnings({"rawtypes", "unchecked"})
     private void assignJoinedList(PropertyInfo joinProperty, Object parentObject, List list) throws IllegalAccessException, InvocationTargetException {
 
         // no null test - the object should have some List initialized.
@@ -609,7 +621,13 @@ final class SessionHelper {
     private String getChildWhereClause(JoinInfo joinInfo, String parentWhere) {
         String sep = "";
         StringBuilder where = new StringBuilder();
+        String sd = session.metaData.getConnectionType().getKeywordStartDelimiter();
+        String ed = session.metaData.getConnectionType().getKeywordEndDelimiter();
 
+        int n = parentWhere.toUpperCase().indexOf("ORDER BY");
+        if (n > -1) {
+            parentWhere = parentWhere.substring(0, n);
+        }
 
         Map<String, PropertyInfo> properties = session.metaData.getTableColumnsPropertyInfo(joinInfo.parentClass, session.connection);
 
@@ -624,6 +642,8 @@ final class SessionHelper {
             }
 
             assert parentColumnName != null;
+
+            parentColumnName = sd + parentColumnName + ed;
 
             String parentTable = session.metaData.getTableName(joinInfo.parentClass);
 

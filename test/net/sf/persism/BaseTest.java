@@ -388,23 +388,28 @@ public abstract class BaseTest extends TestCase {
 
         queryDataSetup();
 
-        var customer = session.fetch(Customer.class, where(":customerId = ?"), params("123"));
+        // reuse params object - it should not be modified
+        var params = params("123");
+        var customer = session.fetch(Customer.class, where(":customerId = ?"), params);
         assertNotNull(customer);
 
         var invoices = customer.getInvoices();
         assertEquals(2, invoices.size());
 
-        var customerRec = session.fetch(CustomerRec.class, where(":customerId = ?"), params("123"));
+        // reuse params
+        var customerRec = session.fetch(CustomerRec.class, where(":customerId = ?"), params);
         assertNotNull(customerRec);
 
         invoices = customerRec.invoices();
         assertEquals(2, invoices.size());
+
 
         InvoiceLineItem invoiceLineItem = session.fetch(InvoiceLineItem.class, params(1));
         log.info(invoiceLineItem);
 
         assertNotNull(invoiceLineItem);
         assertNotNull(invoiceLineItem.getProduct());
+
 
         // this should fail miserably
         boolean fail = false;
@@ -446,12 +451,13 @@ public abstract class BaseTest extends TestCase {
         log.info(orders);
 
         assertEquals("should be 4 ", 4, orders.size());
-
         orders = session.query(Order.class, params(1, 4));
 
         log.info(orders);
 
         assertEquals("should be 2 ", 2, orders.size());
+
+
     }
 
     public void testQueryResultRecord() throws Exception {
