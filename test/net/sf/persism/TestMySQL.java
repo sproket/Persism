@@ -13,6 +13,7 @@ import java.util.Properties;
 import static net.sf.persism.Parameters.params;
 import static net.sf.persism.SQL.sql;
 import static net.sf.persism.UtilsForTests.isTableInDatabase;
+import static net.sf.persism.UtilsForTests.isViewInDatabase;
 
 /**
  * @author Dan Howard
@@ -62,6 +63,11 @@ public class TestMySQL extends BaseTest {
             commands.add("DROP TABLE Orders");
         }
 
+        // view first
+        if (isViewInDatabase("CustomerInvoice", con)) {
+            commands.add("DROP VIEW CustomerInvoice");
+        }
+
         commands.add("CREATE TABLE Customers ( " +
                 " Customer_ID varchar(10) PRIMARY KEY NOT NULL, " +
                 " Company_Name VARCHAR(30) NULL, " +
@@ -106,7 +112,7 @@ public class TestMySQL extends BaseTest {
                 " Paid BIT NOT NULL, " +
                 " Price NUMERIC(7,3) NOT NULL, " +
                 " ActualPrice NUMERIC(7,3) NOT NULL, " +
-                " Status INT DEFAULT 1, " +
+                " Status CHAR(1) DEFAULT '1', " +
                 " Created TIMESTAMP DEFAULT CURRENT_TIMESTAMP, " + // make read-only in Invoice Object
                 " Quantity NUMERIC(10) NOT NULL, " +
                 //" Total NUMERIC(10,3) NOT NULL, " +
@@ -114,6 +120,14 @@ public class TestMySQL extends BaseTest {
 
         executeCommand(sql, con);
 
+
+        sql = """
+                CREATE VIEW CustomerInvoice AS
+                    SELECT c.Customer_ID, c.Company_Name, i.Invoice_ID, i.Status, i.Created AS DateCreated, i.PAID, i.Quantity
+                    FROM Invoices i
+                    JOIN Customers c ON i.Customer_ID = c.Customer_ID
+                """;
+        executeCommand(sql, con);
 
         if (UtilsForTests.isTableInDatabase("Contacts", con)) {
             executeCommand("DROP TABLE Contacts", con);

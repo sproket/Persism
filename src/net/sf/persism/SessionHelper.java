@@ -110,7 +110,7 @@ final class SessionHelper {
     }
 
     // For unit tests only for now.
-    boolean execute(String sql, Object... parameters) {
+    void execute(String sql, Object... parameters) {
 
         log.debug("execute: %s params: %s", sql, Arrays.asList(parameters));
 
@@ -119,12 +119,12 @@ final class SessionHelper {
 
             if (parameters.length == 0) {
                 st = session.connection.createStatement();
-                return st.execute(sql);
+                 st.execute(sql);
             } else {
                 st = session.connection.prepareStatement(sql);
                 PreparedStatement pst = (PreparedStatement) st;
                 setParameters(pst, parameters);
-                return pst.execute();
+                pst.execute();
             }
 
         } catch (Exception e) {
@@ -376,7 +376,8 @@ final class SessionHelper {
 
                     case characterType:
                     case CharacterType:
-                        st.setObject(n, "" + param);
+                        st.setObject(n, ""+param); // todo informix (or others) see character as numeric so toString will fail with chars like 'x' s/b setCharacter
+                        //st.setByte(n, (Byte) param);
                         break;
 
                     case SQLDateType:
@@ -567,7 +568,6 @@ final class SessionHelper {
                 }
             }
         } else {
-            // todo test this junk
             parentMap = parentList.stream().
                     collect(Collectors.
                             toMap(o -> {

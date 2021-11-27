@@ -131,7 +131,7 @@ public class TestPostgreSQL extends BaseTest {
                 " Invoice_ID SERIAL PRIMARY KEY, " +
                 " Customer_ID varchar(10) NOT NULL, " +
                 " Paid BOOLEAN NOT NULL, " +
-                " Status INT, " +
+                " Status CHAR(1) DEFAULT '1' NOT NULL, " +
                 " Created TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL, " + // make read-only in Invoice Object
                 " Price NUMERIC(7,3) NOT NULL, " +
                 " ACTUALPRICE NUMERIC(7,3) NOT NULL, " +

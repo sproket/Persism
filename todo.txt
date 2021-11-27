@@ -159,5 +159,9 @@ https://sourceforge.net/p/jackcess/bugs/155/
 
 check out https://readthedocs.org/
 
-TODO The incoming request has too many parameters. The server supports a maximum of 2100 parameters. SQL SERVER DOCUMENT THIS
-This is a Persism Limitation on how I do joins.
+FIXED The incoming request has too many parameters. The server supports a maximum of 2100 parameters. SQL SERVER DOCUMENT THIS
+This WAS a Persism Limitation on how I do joins. :)
+
+for 2.1 remove JTDS but ask on redddit and github
+
+Add handling for schema. When I have this I should include it in the SQL. select e.g. * from [dbo].[CustomerInvoice]

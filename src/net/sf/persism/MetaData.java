@@ -52,6 +52,7 @@ final class MetaData {
 
     // list of tables in the DB
     private Set<String> tableNames = new TreeSet<>(String.CASE_INSENSITIVE_ORDER);
+    private Map<String, TableInfo> tableInfos = new HashMap<>();
 
     // list of views in the DB
     private Set<String> viewNames = new TreeSet<>(String.CASE_INSENSITIVE_ORDER);
@@ -489,7 +490,13 @@ final class MetaData {
 
             rs = con.getMetaData().getTables(null, connectionType.getSchemaPattern(), null, tableTypes);
             while (rs.next()) {
-                tableNames.add(rs.getString("TABLE_NAME"));
+                String name = rs.getString("TABLE_NAME");
+                tableNames.add(name);
+                log.error("TABLE_NAME " + name);
+                log.error("TABLE_SCHEM " + rs.getString("TABLE_SCHEM"));
+                log.error("TABLE_CAT " + rs.getString("TABLE_CAT"));
+
+                tableInfos.put(name, new TableInfo(name, rs.getString("TABLE_SCHEM")));
             }
 
             rs = con.getMetaData().getTables(null, connectionType.getSchemaPattern(), null, viewTypes);

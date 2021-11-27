@@ -13,7 +13,7 @@ import java.time.ZoneId;
 import java.util.List;
 import java.util.Properties;
 
-import static net.sf.persism.Parameters.*;
+import static net.sf.persism.Parameters.params;
 import static net.sf.persism.SQL.sql;
 
 
@@ -262,12 +262,30 @@ public class TestNorthwind extends TestCase {
             } else {
                 customer.setDateOfLastResort(new Date(System.currentTimeMillis()));
                 session.update(customer);
+
+                Employee employee = session.fetch(Employee.class, sql("SELECT * FROM Employees WHERE LastName=? and FirstName=?"), params("Leverling", "Janet"));
+                assertNotNull(employee);
+
+
+                Shipper shipper = session.fetch(Shipper.class, sql("SELECT * FROM Shippers WHERE CompanyName=?"), params("Speedy Express"));
+                assertNotNull(shipper);
+
+
+                Order orderx = new Order();
+                orderx.setCustomerId("Moo");
+                orderx.setOrderId(1);
+                orderx.setShipName("place");
+                orderx.setEmployeeId(employee.getEmployeeId());
+                orderx.setShipVia(shipper.getShipperId());
+                session.insert(orderx);
+
 // remove orders and details for 'MOO'
                 List<Order> orders = session.query(Order.class, sql("select * from orders where customerID=?"), params("MOO"));
+                assertTrue(orders.size() > 0);
                 for (Order order : orders) {
-                    assertTrue(session.helper.execute("DELETE FROM \"ORDER Details\" WHERE OrderID=?", order.getOrderId()));
+                    session.helper.execute("DELETE FROM \"ORDER Details\" WHERE OrderID=?", order.getOrderId());
                 }
-                assertTrue(session.helper.execute("DELETE FROM ORDERS WHERE CustomerID=?", "MOO"));
+                session.helper.execute("DELETE FROM ORDERS WHERE CustomerID=?", "MOO");
             }
             log.warn("DATE? " + customer.getDateOfLastResort());
             session.fetch(customer);
@@ -359,7 +377,7 @@ public class TestNorthwind extends TestCase {
 
         log.info("testQueryWithSpecificColumnsWhereCaseDoesNotMatch with : " + con.getMetaData().getURL());
 
-        assertTrue(session.helper.execute("DELETE FROM ORDERS WHERE CustomerID='MOO'"));
+        session.helper.execute("DELETE FROM ORDERS WHERE CustomerID='MOO'");
 
         Customer customer = new Customer();
         customer.setCompanyName("TEST");

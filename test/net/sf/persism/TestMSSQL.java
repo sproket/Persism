@@ -37,7 +37,7 @@ public class TestMSSQL extends BaseTest {
         if (BaseTest.mssqlmode) {
             connectionType = ConnectionTypes.MSSQL;
         } else {
-            connectionType = ConnectionTypes.JTDS;
+            connectionType = ConnectionTypes.JTDS; // TODO GET RID OF JTDS
         }
         super.setUp();
 
@@ -110,6 +110,11 @@ public class TestMSSQL extends BaseTest {
 
         commands.add("ALTER TABLE [dbo].[Orders] ADD  CONSTRAINT [DF_Orders_CREATED]  DEFAULT (getdate()) FOR [CREATED]");
 
+        // view first
+        if (isViewInDatabase("CustomerInvoice", con)) {
+            commands.add("DROP VIEW CustomerInvoice");
+        }
+
         if (isTableInDatabase("Customers", con)) {
             commands.add("DROP TABLE Customers");
         }
@@ -126,7 +131,7 @@ public class TestMSSQL extends BaseTest {
                 " Country VARCHAR(2) DEFAULT 'US', " +
                 " Phone VARCHAR(30) NULL, " +
                 " Fax VARCHAR(30) NULL, " +
-                " STATUS VARCHAR(1) NULL, " +
+                " STATUS CHAR(1) DEFAULT '1', " +
                 " Date_Registered datetime  default current_timestamp, " +
                 " Date_Of_Last_Order DATE, " +
                 " TestLocalDate datetime, " +
@@ -143,13 +148,21 @@ public class TestMSSQL extends BaseTest {
                 " Paid BIT NOT NULL, " +
                 " Price NUMERIC(7,3) NOT NULL, " +
                 " ACTUAL_Price NUMERIC(7,3) NOT NULL, " +
-                " Status INT DEFAULT 1, " +
+                " Status CHAR(1) DEFAULT '1', " +
                 " Created DateTime default current_timestamp, " + // make read-only in Invoice Object
                 " Quantity NUMERIC(10) NOT NULL, " +
                 //" Total NUMERIC(10,3) NOT NULL, " +
                 " Discount NUMERIC(10,3) NOT NULL " +
                 ") ");
 
+
+        String sql = """
+                CREATE VIEW CustomerInvoice AS
+                    SELECT c.Customer_ID, c.Company_Name, i.Invoice_ID, i.Status, i.Created AS DateCreated, i.PAID, i.Quantity
+                    FROM Invoices i
+                    JOIN Customers c ON i.Customer_ID = c.Customer_ID
+                """;
+        commands.add(sql);
 
         if (isTableInDatabase("TABLENOPRIMARY", con)) {
             commands.add("DROP TABLE TABLENOPRIMARY");
@@ -175,7 +188,7 @@ public class TestMSSQL extends BaseTest {
             commands.add("DROP TABLE Contacts");
         }
 
-        String sql = "CREATE TABLE Contacts ( " +
+        sql = "CREATE TABLE Contacts ( " +
                 "   [identity] [uniqueidentifier] NOT NULL, " +
                 "   [PartnerID] [uniqueidentifier] NULL, " +
                 "   [Type] [char](2) NOT NULL, " +
@@ -211,6 +224,8 @@ public class TestMSSQL extends BaseTest {
 
         sql = "ALTER TABLE [dbo].[Contacts] ADD  CONSTRAINT [DF_Contacts_identity]  DEFAULT (newid()) FOR [identity]";
         commands.add(sql);
+
+
 
         if (isTableInDatabase("EXAMCODE", con)) {
             commands.add("DROP TABLE EXAMCODE");
@@ -788,7 +803,7 @@ public class TestMSSQL extends BaseTest {
                 "[Address], [City], [Region], [Postal_Code], [Country], [Phone], " +
                 "[Fax], [STATUS], [Date_Of_Last_Order]) VALUES ( ? ,  ? ,  ? ,  ? ,  ? ,  ? ,  ? ,  ? ,  ? ,  ? ,  ? ,  ? ,  ? )";
 
-        assertTrue(session.helper.execute(sql, "X", "Name", "Contact", "Title", "Address", "City", "NOTAREGION", "CODe", "CA", "1", "2", "3", null));
+        session.helper.execute(sql, "X", "Name", "Contact", "Title", "Address", "City", "NOTAREGION", "CODe", "CA", "1", "2", "3", null);
 
         boolean failed = false;
         try {

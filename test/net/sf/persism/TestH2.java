@@ -412,6 +412,18 @@ to the database URL (example: jdbc:h2:~/test;IGNORECASE=TRUE).
 
         Contact contact = getContactForTest();
         String sql = session.getMetaData().getDefaultSelectStatement(contact.getClass(), con);
+
+        String sql2 = """
+                SELECT "IDENTITY", "PARTNERID", "TYPE", "FIRSTNAME", "LASTNAME", "CONTACTNAME", "COMPANY", "DIVISION", "EMAIL", 
+                "ADDRESS1", "ADDRESS2", "CITY", "STATUS", "STATEPROVINCE", "ZIPPOSTALCODE", "COUNTRY", "DATEADDED", 
+                "LASTMODIFIED", "NOTES", "AMOUNTOWED", "BIGINT", "SOME_DATE", "WHATMITEISIT", 
+                "WHATTIMEISIT" FROM "PUBLIC"."CONTACTS"                
+                """;
+
+        log.error(sql2);
+        Statement st = con.createStatement();
+        st.execute(sql2);
+
         log.info("testContactTable SQL for : " + Contact.class + " " + sql);
         // this works
         Contact other = new Contact();

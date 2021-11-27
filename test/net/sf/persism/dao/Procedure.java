@@ -14,7 +14,7 @@ import java.util.Date;
  * Date: 9/8/11
  * Time: 6:16 AM
  */
-@Table(name = "EXAMCODE", schema = "ass")
+@Table("EXAMCODE")
 public final class Procedure extends PersistableObject<Procedure> {
 
     @Column(name = "ExamCode_No")

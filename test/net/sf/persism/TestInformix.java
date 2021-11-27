@@ -106,7 +106,7 @@ public class TestInformix extends BaseTest {
                 " Paid CHAR(1) NOT NULL, " +
                 " Price NUMERIC(7,3) NOT NULL, " +
                 " ActualPrice NUMERIC(7,3) NOT NULL, " +
-                " Status INT DEFAULT 1, " +
+                " Status CHAR(1) DEFAULT '1', " +
                 " Created datetime year to fraction(5) DEFAULT current YEAR TO fraction(5) NOT NULL, " +
                 " Quantity NUMERIC(10) NOT NULL, " +
                 " Discount NUMERIC(10,3) NOT NULL " +

@@ -149,7 +149,7 @@ public class TestFirebird extends BaseTest {
                 " Paid BOOLEAN NOT NULL, " +
                 " Price NUMERIC(7,3) NOT NULL, " +
                 " ACTUALPRICE NUMERIC(7,3) NOT NULL, " +
-                " Status INT DEFAULT 1, " +
+                " Status CHAR(1) DEFAULT '1', " +
                 " Created TIMESTAMP default 'NOW', " + // make read-only in Invoice Object
                 " Quantity NUMERIC(10) NOT NULL, " +
                 //" Total NUMERIC(10,3) NOT NULL, " +

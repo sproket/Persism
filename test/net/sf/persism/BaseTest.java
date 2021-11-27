@@ -425,7 +425,8 @@ public abstract class BaseTest extends TestCase {
     public void testJoinsParentQuery() throws SQLException {
         queryDataSetup();
 
-        var list1 = session.query(Customer.class, where(":status = ?"), params('x'));
+        var list1 = session.query(Customer.class, where(":status = ?"), params('1'));
+        Customer x = list1.stream().filter(customer -> {return true;}).findFirst().orElseThrow();
 
         assertEquals(2, list1.size());
         assertEquals(2, list1.get(0).getInvoices().size());
@@ -579,7 +580,7 @@ public abstract class BaseTest extends TestCase {
         invoice1.setPrice(10.0f);
         invoice1.setActualPrice(BigDecimal.TEN);
         invoice1.setQuantity(10);
-        invoice1.setStatus('x');
+        invoice1.setStatus('1');
         session.insert(invoice1);
 
         Invoice invoice2 = new Invoice();
@@ -588,7 +589,7 @@ public abstract class BaseTest extends TestCase {
         invoice2.setPrice(20.0f);
         invoice2.setActualPrice(BigDecimal.valueOf(20));
         invoice2.setQuantity(20);
-        invoice2.setStatus('x');
+        invoice2.setStatus('1');
         session.insert(invoice2);
 
         Product product;
@@ -617,13 +618,13 @@ public abstract class BaseTest extends TestCase {
         Customer c1 = new Customer();
         c1.setCustomerId("123");
         c1.setCompanyName("ABC INC");
-        c1.setStatus('x');
+        c1.setStatus('1');
         session.insert(c1);
 
         Customer c2 = new Customer();
         c2.setCustomerId("456");
         c2.setCompanyName("XYZ INC");
-        c2.setStatus('x');
+        c2.setStatus('1');
         session.insert(c2);
 
         Order order;

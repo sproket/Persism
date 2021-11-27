@@ -28,5 +28,5 @@ public @interface Table {
 
     String schema() default "";
 
-    String name() default "";
+    String name() default ""; // todo if we use this form - need to get tableName from name() or value()
 }
