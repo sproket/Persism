@@ -51,9 +51,24 @@ session.insert(customer);
 // Inserted and new autoinc value assigned 
 assert customer.getCustomerId() > 0
 
-// Updates
+// Update
 customer.setCustomerName("Barney");
-sesion.update(customer); // Update Customer   
+sesion.update(customer); // Update Customer
+
+// Delete
+session.delete(customer);
+
+// Handles transactions
+session.withTransaction(() -> {
+    Contact contact = getContactFromSomewhere();
+    contact.setIdentity(randomUUID);
+    session.insert(contact);
+    
+    contact.setContactName("Wilma Flintstone");
+    
+    session.update(contact);
+    session.fetch(contact);
+});   
 ```
 ## Simple
 
