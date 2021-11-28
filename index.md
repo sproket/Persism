@@ -2,6 +2,8 @@
 
 Persism is a wood simple, auto-discovery, auto-configuration, and convention over configuration ORM (Object Relational Mapping) library for Java.
 
+###[Get Started!](/manual2.md)
+
 ## Simple
 
 The API for Persism is small. Mostly you just need a Connection and a persism Session object, and you're good to go. 
