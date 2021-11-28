@@ -45,3 +45,19 @@ Options:
 
 
  mvn install -Dmaven.test.skip
+
+CREATE TABLE Customers (
+    Customer_ID varchar(10) PRIMARY KEY UNIQUE NOT NULL,
+    Company_Name VARCHAR(30) NULL,
+    Contact_Name VARCHAR(30) NULL,
+    Contact_Title VARCHAR(10) NULL,
+    Address VARCHAR(40) NULL,
+    City VARCHAR(30) NULL,
+    Region VARCHAR(10) NULL,
+    Postal_Code VARCHAR(10) NULL,
+    Country VARCHAR(2) DEFAULT 'US',
+    Phone VARCHAR(30) NULL,
+    STATUS CHAR(1) NULL,
+    Fax VARCHAR(30) NULL,
+    Date_Of_Last_Order DATE
+)

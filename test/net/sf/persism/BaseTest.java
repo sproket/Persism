@@ -584,6 +584,7 @@ public abstract class BaseTest extends TestCase {
         invoice1.setQuantity(10);
         invoice1.setStatus('1');
         session.insert(invoice1);
+        assertTrue(invoice1.getInvoiceId() > 0);
 
         Invoice invoice2 = new Invoice();
         invoice2.setCustomerId("123");
