@@ -131,7 +131,7 @@ public class TestPostgreSQL extends BaseTest {
                 " Invoice_ID SERIAL PRIMARY KEY, " +
                 " Customer_ID varchar(10) NOT NULL, " +
                 " Paid BOOLEAN NOT NULL, " +
-                " Status INT, " +
+                " Status CHAR(1) DEFAULT '1' NOT NULL, " +
                 " Created TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL, " + // make read-only in Invoice Object
                 " Price NUMERIC(7,3) NOT NULL, " +
                 " ACTUALPRICE NUMERIC(7,3) NOT NULL, " +
@@ -143,8 +143,8 @@ public class TestPostgreSQL extends BaseTest {
         sql = "CREATE VIEW CustomerInvoice AS\n" +
                 " SELECT c.Customer_ID, c.Company_Name, i.Invoice_ID, i.Status, i.Created AS DateCreated, i.PAID, i.Quantity\n" +
                 "       FROM Invoices i\n" +
-                "       JOIN Customers c ON i.Customer_ID = c.Customer_ID\n" +
-                "       WHERE i.Status = 1\n";
+                "       JOIN Customers c ON i.Customer_ID = c.Customer_ID";
+//                "       WHERE i.Status = 1\n";
         commands.add(sql);
 
         if (isTableInDatabase("TABLEMULTIPRIMARY", con)) {
@@ -246,6 +246,32 @@ public class TestPostgreSQL extends BaseTest {
                 "CREATED_ON TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL" +
                 ") ";
         executeCommand(sql, con);
+
+        if (isTableInDatabase("InvoiceLineItems", con)) {
+            executeCommand("DROP TABLE InvoiceLineItems", con);
+        }
+        sql = """
+                CREATE TABLE InvoiceLineItems (
+                    ID SERIAL PRIMARY KEY,
+                    INVOICE_ID int,
+                    Product_ID int,
+                    Quantity int
+                    )
+                """;
+        executeCommand(sql, con);
+
+        if (isTableInDatabase("Products", con)) {
+            executeCommand("DROP TABLE Products", con);
+        }
+        sql = """
+                CREATE TABLE Products (
+                    ID int,
+                    Description VARCHAR(50),
+                    COST NUMERIC(10,3)
+                    )
+                """;
+        executeCommand(sql, con);
+
 
     }
 

@@ -11,6 +11,6 @@ public record CustomerInvoiceRec(
         long invoiceId,
         Date dateCreated,
         boolean paid,
-        short status,
+        Character status,
         int quantity) {
 }

@@ -1,7 +1,7 @@
 package net.sf.persism;
 
 /**
- * Result of an insert
+ * Result of an insert, update or delete. Contains the rows affected returned by JDBC and the original copy of the data object.
  */
 public final class Result<T> {
     private final int rows;

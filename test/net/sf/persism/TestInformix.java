@@ -106,7 +106,7 @@ public class TestInformix extends BaseTest {
                 " Paid CHAR(1) NOT NULL, " +
                 " Price NUMERIC(7,3) NOT NULL, " +
                 " ActualPrice NUMERIC(7,3) NOT NULL, " +
-                " Status INT DEFAULT 1, " +
+                " Status CHAR(1) DEFAULT '1', " +
                 " Created datetime year to fraction(5) DEFAULT current YEAR TO fraction(5) NOT NULL, " +
                 " Quantity NUMERIC(10) NOT NULL, " +
                 " Discount NUMERIC(10,3) NOT NULL " +
@@ -115,8 +115,8 @@ public class TestInformix extends BaseTest {
         sql = "CREATE VIEW CustomerInvoice AS\n" +
                 " SELECT c.Customer_ID, c.Company_Name, i.Invoice_ID, i.Status, i.Created AS DateCreated, i.PAID, i.Quantity\n" +
                 "       FROM Invoices i\n" +
-                "       JOIN Customers c ON i.Customer_ID = c.Customer_ID\n" +
-                "       WHERE i.Status = 1\n";
+                "       JOIN Customers c ON i.Customer_ID = c.Customer_ID\n";
+//                "       WHERE i.Status = 1\n";
 
         executeCommand(sql, con);
 
@@ -268,6 +268,32 @@ public class TestInformix extends BaseTest {
                 "CREATED_ON DATE default TODAY" + // was datetime..... might need it to be...
                 ") ";
         executeCommand(sql, con);
+
+        if (isTableInDatabase("InvoiceLineItems", con)) {
+            executeCommand("DROP TABLE InvoiceLineItems", con);
+        }
+        sql = """
+                CREATE TABLE InvoiceLineItems (
+                    ID SERIAL PRIMARY KEY,
+                    INVOICE_ID int,
+                    Product_ID int,
+                    Quantity int
+                    )
+                """;
+        executeCommand(sql, con);
+
+        if (isTableInDatabase("Products", con)) {
+            executeCommand("DROP TABLE Products", con);
+        }
+        sql = """
+                CREATE TABLE Products (
+                    ID int,
+                    Description VARCHAR(50),
+                    COST NUMERIC(10,3)
+                    )
+                """;
+        executeCommand(sql, con);
+
 
     }
 

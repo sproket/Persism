@@ -1,29 +1,35 @@
 package net.sf.persism;
 
+import net.sf.persism.annotations.Join;
 import net.sf.persism.annotations.NotTable;
 import net.sf.persism.annotations.View;
 
+import java.lang.reflect.InvocationTargetException;
 import java.math.BigDecimal;
 import java.sql.*;
 import java.util.*;
+import java.util.stream.Collectors;
+
+import static net.sf.persism.Parameters.params;
+import static net.sf.persism.SQL.where;
 
 // Non-public code Session uses.
-abstract sealed class SessionInternal permits Session {
+final class SessionHelper {
 
     // leave this using the Session.class for logging
     private static final Log log = Log.getLogger(Session.class);
+    private static final Log blog = Log.getLogger("net.sf.persism.Benchmarks");
 
-    Connection connection;
-    MetaData metaData;
-    Reader reader;
-    Converter converter;
+    private final Session session;
 
-    final JDBCResult executeQuery(Class<?> objectClass, SQL sql, Parameters parameters) throws SQLException {
+    public SessionHelper(Session session) {
+        this.session = session;
+    }
 
-//        boolean isPOJO = Types.getType(objectClass) == null;
+    JDBCResult executeQuery(Class<?> objectClass, SQL sql, Parameters parameters) throws SQLException {
 
         JDBCResult result = new JDBCResult();
-        String sqlQuery = sql.toString();
+        String sqlQuery = sql.sql;
         sql.storedProc = !sql.whereOnly && isStoredProc(sqlQuery);
 
         if (parameters.areNamed) {
@@ -39,14 +45,14 @@ abstract sealed class SessionInternal permits Session {
         } else if (parameters.areKeys) {
             // convert parameters - usually it's the UUID type that may need a conversion to byte[16]
             // Probably we don't want to auto-convert here since it's inconsistent. DO WE? YES.
-            List<String> keys = metaData.getPrimaryKeys(objectClass, connection);
+            List<String> keys = session.metaData.getPrimaryKeys(objectClass, session.connection);
             if (keys.size() == 1) {
-                Map<String, ColumnInfo> columns = metaData.getColumns(objectClass, connection);
+                Map<String, ColumnInfo> columns = session.metaData.getColumns(objectClass, session.connection);
                 String key = keys.get(0);
                 ColumnInfo columnInfo = columns.get(key);
                 for (int j = 0; j < parameters.size(); j++) {
                     if (parameters.get(j) != null) {
-                        parameters.set(j, converter.convert(parameters.get(j), columnInfo.columnType.getJavaType(), columnInfo.columnName));
+                        parameters.set(j, session.converter.convert(parameters.get(j), columnInfo.columnType.getJavaType(), columnInfo.columnName));
                     }
                 }
             }
@@ -56,29 +62,27 @@ abstract sealed class SessionInternal permits Session {
             if (objectClass.getAnnotation(NotTable.class) != null) {
                 throw new PersismException(Messages.WhereNotSupportedForNotTableQueries.message());
             }
-            String select = metaData.getSelectStatement(objectClass, connection);
-            sqlQuery = select + " " + parsePropertyNames(sqlQuery, objectClass, connection);
+            String select = session.metaData.getSelectStatement(objectClass, session.connection);
+            sqlQuery = select + " " + parsePropertyNames(sqlQuery, objectClass, session.connection);
+            sql.processedSQL = sqlQuery;
         } else {
             checkIfStoredProcOrSQL(objectClass, sql);
         }
 
-        if (log.isDebugEnabled()) {
-            log.debug("executeQuery: %s params: %s", sqlQuery, parameters);
-        }
-
         exec(result, sqlQuery, parameters.toArray());
-
         return result;
     }
 
-    final void exec(JDBCResult result, String sql, Object... parameters) throws SQLException {
+    void exec(JDBCResult result, String sql, Object... parameters) throws SQLException {
+        long now = System.currentTimeMillis();
+
         try {
             if (isSelect(sql)) {
-                if (metaData.getConnectionType() == ConnectionTypes.Firebird) {
+                if (session.metaData.getConnectionType() == ConnectionTypes.Firebird) {
                     // https://stackoverflow.com/questions/935511/how-can-i-avoid-resultset-is-closed-exception-in-java
-                    result.st = connection.prepareStatement(sql, ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY, ResultSet.HOLD_CURSORS_OVER_COMMIT);
+                    result.st = session.connection.prepareStatement(sql, ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY, ResultSet.HOLD_CURSORS_OVER_COMMIT);
                 } else {
-                    result.st = connection.prepareStatement(sql, ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
+                    result.st = session.connection.prepareStatement(sql, ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
                 }
 
                 PreparedStatement pst = (PreparedStatement) result.st;
@@ -89,7 +93,7 @@ abstract sealed class SessionInternal permits Session {
                     sql = "{call " + sql + "} ";
                 }
                 // Don't need If Firebird here. Firebird would call a selectable stored proc with SELECT anyway
-                result.st = connection.prepareCall(sql, ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY, ResultSet.HOLD_CURSORS_OVER_COMMIT);
+                result.st = session.connection.prepareCall(sql, ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY, ResultSet.HOLD_CURSORS_OVER_COMMIT);
 
                 CallableStatement cst = (CallableStatement) result.st;
                 setParameters(cst, parameters);
@@ -97,13 +101,16 @@ abstract sealed class SessionInternal permits Session {
             }
 
         } catch (SQLException e) {
-            throw new SQLException(e.getMessage() + " SQL: " + sql, e);
+            throw new SQLException(e.getMessage() + " SQL: " + sql + " params: " + Arrays.asList(parameters), e);
+        } finally {
+            if (blog.isDebugEnabled()) {
+                blog.debug("exec Time: " + (System.currentTimeMillis() - now) + " " + sql + " params: " + Arrays.asList(parameters));
+            }
         }
-
     }
 
     // For unit tests only for now.
-    final boolean execute(String sql, Object... parameters) {
+    void execute(String sql, Object... parameters) {
 
         log.debug("execute: %s params: %s", sql, Arrays.asList(parameters));
 
@@ -111,17 +118,17 @@ abstract sealed class SessionInternal permits Session {
         try {
 
             if (parameters.length == 0) {
-                st = connection.createStatement();
-                return st.execute(sql);
+                st = session.connection.createStatement();
+                 st.execute(sql);
             } else {
-                st = connection.prepareStatement(sql);
+                st = session.connection.prepareStatement(sql);
                 PreparedStatement pst = (PreparedStatement) st;
                 setParameters(pst, parameters);
-                return pst.execute();
+                pst.execute();
             }
 
         } catch (Exception e) {
-            Util.rollback(connection);
+            Util.rollback(session.connection);
             throw new PersismException(e.getMessage(), e);
         } finally {
             Util.cleanup(st, null);
@@ -136,7 +143,7 @@ abstract sealed class SessionInternal permits Session {
      * @param paramMap map to hold parameter-index mappings
      * @return the parsed query
      */
-    final String parseParameters(char delim, String sql, Map<String, List<Integer>> paramMap) {
+    String parseParameters(char delim, String sql, Map<String, List<Integer>> paramMap) {
         log.debug("parseParameters using " + delim);
 
         int length = sql.length();
@@ -146,16 +153,16 @@ abstract sealed class SessionInternal permits Session {
         startDelims.add('"');
         startDelims.add('\'');
 
-        if (Util.isNotEmpty(metaData.getConnectionType().getKeywordStartDelimiter())) {
-            startDelims.add(metaData.getConnectionType().getKeywordStartDelimiter().charAt(0));
+        if (Util.isNotEmpty(session.metaData.getConnectionType().getKeywordStartDelimiter())) {
+            startDelims.add(session.metaData.getConnectionType().getKeywordStartDelimiter().charAt(0));
         }
 
         Set<Character> endDelims = new HashSet<>(4);
         endDelims.add('"');
         endDelims.add('\'');
 
-        if (Util.isNotEmpty(metaData.getConnectionType().getKeywordEndDelimiter())) {
-            endDelims.add(metaData.getConnectionType().getKeywordEndDelimiter().charAt(0));
+        if (Util.isNotEmpty(session.metaData.getConnectionType().getKeywordEndDelimiter())) {
+            endDelims.add(session.metaData.getConnectionType().getKeywordEndDelimiter().charAt(0));
         }
 
         boolean inDelimiter = false;
@@ -193,20 +200,20 @@ abstract sealed class SessionInternal permits Session {
         return parsedQuery.toString();
     }
 
-    final String parsePropertyNames(String sql, Class<?> objectClass, Connection connection) {
+    String parsePropertyNames(String sql, Class<?> objectClass, Connection connection) {
         log.debug("parsePropertyNames using : with SQL: %s", sql);
 
         int length = sql.length();
         StringBuilder parsedQuery = new StringBuilder(length);
 
-        String sd = metaData.getConnectionType().getKeywordStartDelimiter();
-        String ed = metaData.getConnectionType().getKeywordEndDelimiter();
+        String sd = session.metaData.getConnectionType().getKeywordStartDelimiter();
+        String ed = session.metaData.getConnectionType().getKeywordEndDelimiter();
 
         Set<Character> startDelims = new HashSet<>(4);
         startDelims.add('"');
         startDelims.add('\'');
 
-        if (Util.isNotEmpty(metaData.getConnectionType().getKeywordStartDelimiter())) {
+        if (Util.isNotEmpty(session.metaData.getConnectionType().getKeywordStartDelimiter())) {
             startDelims.add(sd.charAt(0));
         }
 
@@ -214,11 +221,11 @@ abstract sealed class SessionInternal permits Session {
         endDelims.add('"');
         endDelims.add('\'');
 
-        if (Util.isNotEmpty(metaData.getConnectionType().getKeywordEndDelimiter())) {
+        if (Util.isNotEmpty(session.metaData.getConnectionType().getKeywordEndDelimiter())) {
             endDelims.add(ed.charAt(0));
         }
 
-        Map<String, PropertyInfo> properties = metaData.getTableColumnsPropertyInfo(objectClass, connection);
+        Map<String, PropertyInfo> properties = session.metaData.getTableColumnsPropertyInfo(objectClass, connection);
 
         Set<String> propertiesNotFound = new LinkedHashSet<>();
 
@@ -270,7 +277,7 @@ abstract sealed class SessionInternal permits Session {
         return parsedSql;
     }
 
-    final void checkIfOkForWriteOperation(Object object, String operation) {
+    void checkIfOkForWriteOperation(Object object, String operation) {
         Class<?> objectClass = object.getClass();
         if (objectClass.getAnnotation(View.class) != null) {
             throw new PersismException(Messages.OperationNotSupportedForView.message(objectClass, operation));
@@ -283,7 +290,7 @@ abstract sealed class SessionInternal permits Session {
         }
     }
 
-    final Object getTypedValueReturnedFromGeneratedKeys(Class<?> objectClass, ResultSet rs) throws SQLException {
+    Object getTypedValueReturnedFromGeneratedKeys(Class<?> objectClass, ResultSet rs) throws SQLException {
 
         Object value = null;
         Types type = Types.getType(objectClass);
@@ -293,25 +300,15 @@ abstract sealed class SessionInternal permits Session {
             return rs.getObject(1);
         }
 
-        switch (type) {
-
-            case integerType:
-            case IntegerType:
-                value = rs.getInt(1);
-                break;
-
-            case longType:
-            case LongType:
-                value = rs.getLong(1);
-                break;
-
-            default:
-                value = rs.getObject(1);
-        }
+        value = switch (type) {
+            case integerType, IntegerType -> rs.getInt(1);
+            case longType, LongType -> rs.getLong(1);
+            default -> rs.getObject(1);
+        };
         return value;
     }
 
-    final void setParameters(PreparedStatement st, Object[] parameters) throws SQLException {
+    void setParameters(PreparedStatement st, Object[] parameters) throws SQLException {
         if (log.isDebugEnabled()) {
             log.debug("setParameters PARAMS: %s", Arrays.asList(parameters));
         }
@@ -379,7 +376,8 @@ abstract sealed class SessionInternal permits Session {
 
                     case characterType:
                     case CharacterType:
-                        st.setObject(n, "" + param);
+                        st.setObject(n, ""+param); // todo informix (or others) see character as numeric so toString will fail with chars like 'x' s/b setCharacter
+                        //st.setByte(n, (Byte) param);
                         break;
 
                     case SQLDateType:
@@ -395,14 +393,14 @@ abstract sealed class SessionInternal permits Session {
                         break;
 
                     case LocalTimeType:
-                        value = converter.convert(param, Time.class, "Parameter " + n);
+                        value = session.converter.convert(param, Time.class, "Parameter " + n);
                         st.setObject(n, value);
                         break;
 
                     case UtilDateType:
                     case LocalDateType:
                     case LocalDateTimeType:
-                        value = converter.convert(param, Timestamp.class, "Parameter " + n);
+                        value = session.converter.convert(param, Timestamp.class, "Parameter " + n);
                         st.setObject(n, value);
                         break;
 
@@ -430,7 +428,7 @@ abstract sealed class SessionInternal permits Session {
                         break;
 
                     case EnumType:
-                        if (metaData.getConnectionType() == ConnectionTypes.PostgreSQL) {
+                        if (session.metaData.getConnectionType() == ConnectionTypes.PostgreSQL) {
                             st.setObject(n, param.toString(), java.sql.Types.OTHER);
                         } else {
                             st.setString(n, param.toString());
@@ -438,7 +436,7 @@ abstract sealed class SessionInternal permits Session {
                         break;
 
                     case UUIDType:
-                        if (metaData.getConnectionType() == ConnectionTypes.PostgreSQL) {
+                        if (session.metaData.getConnectionType() == ConnectionTypes.PostgreSQL) {
                             // PostgreSQL does work with setObject but not setString unless you set the connection property stringtype=unspecified todo document this
                             st.setObject(n, param);
                         } else {
@@ -457,10 +455,10 @@ abstract sealed class SessionInternal permits Session {
 
             } else {
                 // param is null
-                if (metaData.getConnectionType() == ConnectionTypes.UCanAccess) {
+                if (session.metaData.getConnectionType() == ConnectionTypes.UCanAccess) {
                     st.setNull(n, java.sql.Types.OTHER);
                 } else {
-                    st.setObject(n, param);
+                    st.setObject(n, null);
                 }
             }
 
@@ -468,18 +466,215 @@ abstract sealed class SessionInternal permits Session {
         }
     }
 
-    final boolean isSelect(String sql) {
+
+    // parent is a POJO or a List of POJOs
+    void handleJoins(Object parent, Class<?> parentClass, String parentSql, Parameters parentParams) throws IllegalAccessException, InvocationTargetException {
+        // todo maybe we could add a check for fetch after insert. In those cases there's no need to query for child lists - BUT we do need query for child SINGLES
+
+        List<PropertyInfo> joinProperties = MetaData.getPropertyInfo(parentClass).stream().filter(PropertyInfo::isJoin).collect(Collectors.toList());
+
+        for (PropertyInfo joinProperty : joinProperties) {
+            Join joinAnnotation = (Join) joinProperty.getAnnotation(Join.class);
+            JoinInfo joinInfo = new JoinInfo(joinAnnotation, joinProperty, parent, parentClass);
+
+            if (joinInfo.parentIsAQuery) {
+                assert ((Collection<?>) parent).size() > 0;
+            }
+
+            String parentWhere;
+            if (parentSql.toUpperCase().contains(" WHERE ")) {
+                parentWhere = parentSql.substring(parentSql.toUpperCase().indexOf(" WHERE ") + 7);
+            } else {
+                parentWhere = "";
+            }
+            String whereClause = getChildWhereClause(joinInfo, parentWhere);
+            List<Object> params = new ArrayList<>(parentParams.parameters);
+
+            if (params.size() > 0) {
+                // normalize params to ? since we may have repeated the SELECT IN query
+                long qmCount = whereClause.chars().filter(ch -> ch == '?').count();
+                int index = 0;
+                while (qmCount > params.size()) {
+                    params.add(params.get(index));
+                    index++;
+                }
+            }
+
+            if (Collection.class.isAssignableFrom(joinProperty.field.getType())) {
+                // query
+                List<?> childList;
+                childList = session.query(joinInfo.childClass, where(whereClause), params(params.toArray()));
+
+                if (joinInfo.parentIsAQuery) {
+                    List<?> parentList = (List<?>) parent;
+                    stitch(joinInfo, parentList, childList);
+                } else {
+                    assignJoinedList(joinProperty, parent, childList);
+                }
+            } else {
+                // single object property
+
+                // fetch
+                List<?> childList;
+                childList = session.query(joinInfo.childClass, where(whereClause), params(params.toArray()));
+
+                if (joinInfo.parentIsAQuery) {
+
+                    stitch(joinInfo, (List<?>) parent, childList);
+
+                } else {
+                    // TODO currently can't work with record? Nope. We'd need to work in reverse order or something. Wait for refactor of this method.
+                    if (childList.size() > 0) {
+                        if (joinProperty.setter != null) {
+                            joinProperty.setter.invoke(parent, childList.get(0));
+                        } else {
+                            throw new PersismException("No Setter for " + joinProperty.propertyName + " in " + parentClass);
+                        }
+                    }
+                    if (childList.size() > 1) {
+                        log.warn("why do I have more than 1?");
+                    }
+                }
+            }
+        }
+    }
+
+    @SuppressWarnings({"rawtypes", "unchecked"})
+    private void stitch(JoinInfo joinInfo, List<?> parentList, List<?> childList) throws InvocationTargetException, IllegalAccessException {
+        blog.debug("STITCH " + joinInfo);
+
+        long now = System.currentTimeMillis();
+
+        Map<Object, Object> parentMap;
+        if (joinInfo.parentProperties.size() == 1 && joinInfo.childProperties.size() == 1) {
+            PropertyInfo propertyInfo = joinInfo.parentProperties.get(0);
+            PropertyInfo childPropertyInfo = joinInfo.childProperties.get(0);
+
+            // todo this parent map is created for each join. Maybe only do it once?
+            // https://stackoverflow.com/questions/32312876/ignore-duplicates-when-producing-map-using-streams
+            parentMap = parentList.stream().collect(Collectors.toMap(o -> propertyInfo.getValue(o), o -> o, (o1, o2) -> o1));
+
+            for (Object child : childList) {
+                Object parent = parentMap.get(childPropertyInfo.getValue(child));
+                if (Collection.class.isAssignableFrom(joinInfo.joinProperty.field.getType())) {
+                    var list = (Collection) joinInfo.joinProperty.getValue(parent);
+                    if (list == null) {
+                        throw new PersismException("Cannot join to null for property: " + joinInfo.joinProperty.propertyName + ". Instantiate the property as ArrayList<T> in your constructor.");
+                    }
+                    list.add(child);
+
+                } else {
+                    joinInfo.joinProperty.setter.invoke(parent, child);
+                }
+            }
+        } else {
+            parentMap = parentList.stream().
+                    collect(Collectors.
+                            toMap(o -> {
+                                List<Object> values = new ArrayList<>();
+                                for (int j = 0; j < joinInfo.parentProperties.size(); j++) {
+                                    values.add(joinInfo.parentProperties.get(j).getValue(o));
+                                }
+                                return new KeyBox(joinInfo.caseSensitive, values.toArray());
+                            }, o -> o, (o1, o2) -> o1));
+
+
+            for (Object child : childList) {
+                List<Object> values = new ArrayList<>();
+                for (int j = 0; j < joinInfo.childProperties.size(); j++) {
+                    values.add(joinInfo.childProperties.get(j).getValue(child));
+                }
+
+                KeyBox keyBox = new KeyBox(joinInfo.caseSensitive, values.toArray());
+
+                Object parent = parentMap.get(keyBox);
+                if (Collection.class.isAssignableFrom(joinInfo.joinProperty.field.getType())) {
+                    var list = (Collection) joinInfo.joinProperty.getValue(parent);
+                    if (list == null) {
+                        throw new PersismException("Cannot join to null for property: " + joinInfo.joinProperty.propertyName + ". Instantiate the property as ArrayList<T> in your constructor.");
+                    }
+                    list.add(child);
+
+                } else {
+                    joinInfo.joinProperty.setter.invoke(parent, child);
+                }
+
+            }
+        }
+
+        log.debug("stitch Time: " + (System.currentTimeMillis() - now));
+    }
+
+    @SuppressWarnings({"rawtypes", "unchecked"})
+    private void assignJoinedList(PropertyInfo joinProperty, Object parentObject, List list) throws IllegalAccessException, InvocationTargetException {
+
+        // no null test - the object should have some List initialized.
+
+        List joinedList = (List) joinProperty.getter.invoke(parentObject);
+        if (joinedList == null) {
+            throw new PersismException("Cannot join to null for property: " + joinProperty.propertyName + ". Instantiate the property as ArrayList<T> in your constructor.");
+        }
+        joinedList.clear();
+        joinedList.addAll(list);
+    }
+
+    private String getChildWhereClause(JoinInfo joinInfo, String parentWhere) {
+        String sep = "";
+        StringBuilder where = new StringBuilder();
+        String sd = session.metaData.getConnectionType().getKeywordStartDelimiter();
+        String ed = session.metaData.getConnectionType().getKeywordEndDelimiter();
+
+        int n = parentWhere.toUpperCase().indexOf("ORDER BY");
+        if (n > -1) {
+            parentWhere = parentWhere.substring(0, n);
+        }
+
+        Map<String, PropertyInfo> properties = session.metaData.getTableColumnsPropertyInfo(joinInfo.parentClass, session.connection);
+
+        for (int j = 0; j < joinInfo.parentPropertyNames.length; j++) {
+            String parentColumnName = null;
+
+            for (String key : properties.keySet()) {
+                if (properties.get(key).propertyName.equals(joinInfo.parentPropertyNames[j])) {
+                    parentColumnName = key;
+                    break;
+                }
+            }
+
+            assert parentColumnName != null;
+
+            parentColumnName = sd + parentColumnName + ed;
+
+            String parentTable = session.metaData.getTableName(joinInfo.parentClass);
+
+            String inOrEqualsStart;
+            String inOrEqualsEnd;
+
+            inOrEqualsStart = " IN (";
+            inOrEqualsEnd = ") ";
+
+            where.append(sep).append(":").append(joinInfo.childPropertyNames[j]).append(inOrEqualsStart);
+            where.append("SELECT ").append(parentColumnName).append(" FROM ").append(parentTable);
+            if (!parentWhere.isEmpty()) {
+                where.append(" WHERE ").append(parentWhere);
+            }
+            where.append(inOrEqualsEnd);
+            sep = " AND ";
+        }
+        return where.toString();
+    }
+
+    boolean isSelect(String sql) {
         assert sql != null;
         return sql.trim().substring(0, 7).trim().equalsIgnoreCase("select");
     }
 
-    final boolean isStoredProc(String sql) {
+    boolean isStoredProc(String sql) {
         return !isSelect(sql);
     }
 
-
     private <T> void checkIfStoredProcOrSQL(Class<T> objectClass, SQL sql) {
-        boolean startsWithSelect = isSelect(sql.toString());
+        boolean startsWithSelect = isSelect(sql.sql);
         if (sql.storedProc) {
             if (startsWithSelect) {
                 log.warnNoDuplicates(Messages.InappropriateMethodUsedForSQLTypeInstance.message(objectClass, "sql()", "a stored proc", "proc()"));
@@ -490,4 +685,5 @@ abstract sealed class SessionInternal permits Session {
             }
         }
     }
+
 }

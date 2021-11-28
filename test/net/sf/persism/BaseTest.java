@@ -381,18 +381,86 @@ public abstract class BaseTest extends TestCase {
         assertTrue(fail);
     }
 
+    public void testJoinsParentFetch() throws SQLException {
+
+        // todo test where column names are different between classes
+        // todo test adding a Join to a String or int property etc... Should fail spectacularly
+
+        queryDataSetup();
+
+        // reuse params object - it should not be modified
+        var params = params("123");
+        var customer = session.fetch(Customer.class, where(":customerId = ?"), params);
+        assertNotNull(customer);
+
+        var invoices = customer.getInvoices();
+        assertEquals(2, invoices.size());
+
+        // reuse params
+        var customerRec = session.fetch(CustomerRec.class, where(":customerId = ?"), params);
+        assertNotNull(customerRec);
+
+        invoices = customerRec.invoices();
+        assertEquals(2, invoices.size());
+
+
+        InvoiceLineItem invoiceLineItem = session.fetch(InvoiceLineItem.class, params(1));
+        log.info(invoiceLineItem);
+
+        assertNotNull(invoiceLineItem);
+        assertNotNull(invoiceLineItem.getProduct());
+
+
+        // this should fail miserably
+        boolean fail = false;
+        try {
+            InvoiceLineItemRec invoiceLineItemRec = session.fetch(InvoiceLineItemRec.class, params(1));
+        } catch (PersismException e) {
+            fail = true;
+            assertEquals("msg s/b ?", "No Setter for product in class net.sf.persism.dao.records.InvoiceLineItemRec", e.getMessage());
+        }
+        assertTrue(fail);
+    }
+
+    public void testJoinsParentQuery() throws SQLException {
+        queryDataSetup();
+
+        var list1 = session.query(Customer.class, where(":status = ?"), params('1'));
+        Customer x = list1.stream().filter(customer -> {
+            return true;
+        }).findFirst().orElseThrow();
+
+        assertEquals(2, list1.size());
+        assertEquals(2, list1.get(0).getInvoices().size());
+        assertEquals(0, list1.get(1).getInvoices().size());
+
+        var list2 = session.query(CustomerRec.class);
+
+        assertEquals(2, list2.size());
+        assertEquals(2, list2.get(0).invoices().size());
+        assertEquals(0, list2.get(1).invoices().size());
+
+        assertNotNull(list1.get(0).getInvoices().get(0).getLineItems().get(0).getProduct());
+
+        // todo parse for child property name if there's an alias. The "i" needs to match the alias specified in the annotation THIS WONT REALLY WORK
+        // session.query(Customer.class, where(":contactName=? and (:i.quantity > ? or :city=?)"), params("Fred", 10, "MTL"));
+
+
+    }
+
     public void testSelectMultipleByPrimaryKey() throws SQLException {
         queryDataSetup();
         List<Order> orders = session.query(Order.class);
         log.info(orders);
 
         assertEquals("should be 4 ", 4, orders.size());
-
         orders = session.query(Order.class, params(1, 4));
 
         log.info(orders);
 
         assertEquals("should be 2 ", 2, orders.size());
+
+
     }
 
     public void testQueryResultRecord() throws Exception {
@@ -508,25 +576,57 @@ public abstract class BaseTest extends TestCase {
 
     private void queryDataSetup() throws SQLException {
 
-        Invoice invoice = new Invoice();
-        invoice.setCustomerId("123");
-        invoice.setStatus(1);
-        invoice.setPaid(true);
-        invoice.setPrice(10.0f);
-        invoice.setActualPrice(BigDecimal.TEN);
-        invoice.setQuantity(10);
-        session.insert(invoice);
+        Invoice invoice1 = new Invoice();
+        invoice1.setCustomerId("123");
+        invoice1.setPaid(true);
+        invoice1.setPrice(10.0f);
+        invoice1.setActualPrice(BigDecimal.TEN);
+        invoice1.setQuantity(10);
+        invoice1.setStatus('1');
+        session.insert(invoice1);
+
+        Invoice invoice2 = new Invoice();
+        invoice2.setCustomerId("123");
+        invoice2.setPaid(true);
+        invoice2.setPrice(20.0f);
+        invoice2.setActualPrice(BigDecimal.valueOf(20));
+        invoice2.setQuantity(20);
+        invoice2.setStatus('1');
+        session.insert(invoice2);
+
+        Product product;
+        product = new Product(1, "prod 1", 10.25);
+        session.insert(product);
+
+        product = new Product(2, "prod 2", 17.25);
+        session.insert(product);
+
+        product = new Product(3, "prod 3", 9.75);
+        session.insert(product);
+
+        InvoiceLineItem invoiceLineItem;
+        invoiceLineItem = new InvoiceLineItem(invoice1.getInvoiceId(), 1, 10);
+        session.insert(invoiceLineItem);
+        assertTrue(invoiceLineItem.getId() > 0);
+
+        invoiceLineItem = new InvoiceLineItem(invoice1.getInvoiceId(), 2, 20);
+        session.insert(invoiceLineItem);
+        assertTrue(invoiceLineItem.getId() > 0);
+
+        invoiceLineItem = new InvoiceLineItem(invoice1.getInvoiceId(), 3, 5);
+        session.insert(invoiceLineItem);
+        assertTrue(invoiceLineItem.getId() > 0);
 
         Customer c1 = new Customer();
         c1.setCustomerId("123");
         c1.setCompanyName("ABC INC");
-        c1.setStatus('x');
+        c1.setStatus('1');
         session.insert(c1);
 
         Customer c2 = new Customer();
         c2.setCustomerId("456");
         c2.setCompanyName("XYZ INC");
-        c2.setStatus('2');
+        c2.setStatus('1');
         session.insert(c2);
 
         Order order;
@@ -701,7 +801,7 @@ public abstract class BaseTest extends TestCase {
         invoice.setQuantity(10);
         invoice.setPrice(10.23f);
         invoice.setActualPrice(BigDecimal.valueOf(9.99d));
-        invoice.setStatus(1);
+        invoice.setStatus((char) 1);
         session.insert(invoice);
         Customer customer1 = session.fetch(Customer.class, "SELECT * FROM Customers WHERE Company_Name = ?", "ABC Inc");
         assertNotNull(customer1);
@@ -768,7 +868,7 @@ public abstract class BaseTest extends TestCase {
         invoice.setQuantity(10);
         invoice.setPrice(10.23f);
         invoice.setActualPrice(BigDecimal.valueOf(9.99d));
-        invoice.setStatus(1);
+        invoice.setStatus((char) 1);
         session.insert(invoice);
 
         customerInvoice = session.fetch(CustomerInvoice.class, where(":companyName = ?"), params("ABC Inc"));
@@ -816,7 +916,7 @@ public abstract class BaseTest extends TestCase {
 
         fail = false;
         try {
-            session.upsert(customerInvoiceTestView);
+            session.insert(customerInvoiceTestView);
         } catch (PersismException e) {
             log.info(e.getMessage());
             assertEquals("s/b Operation not supported for Views.", Messages.OperationNotSupportedForView.message(customerInvoiceTestView.getClass(), "Upsert"), e.getMessage());
@@ -1039,7 +1139,7 @@ public abstract class BaseTest extends TestCase {
                 params(Map.of("name", "Fred", "last", "Flintstone")));
         log.info(contacts);
 
-        // Fetch? TEST REUSING THE SAME sql Object after processing the prior query
+        // Fetch?
         contact = session.fetch(Contact.class, sql, params(Map.of("name", "Fred", "last", "Flintstone")));
         assertNotNull(contact);
 
@@ -1081,6 +1181,46 @@ public abstract class BaseTest extends TestCase {
         }
         assertTrue(failed);
 
+    }
+
+    public void testReuse() {
+        // Because we modify SQL and Params depending on the situation test what happens if we reuse them.
+
+        Contact contact = getContactForTest();
+        session.insert(contact);
+
+        SQL sql = where("(:firstname = @name OR :company = @name) and :lastname = @last");
+        log.info("SQL before: " + sql);
+
+        Parameters params = params(Map.of("name", "Fred", "last", "Flintstone"));
+        log.info("Params before: " + params);
+
+        List<Contact> contacts = session.query(Contact.class, sql, params);
+
+        log.debug(contacts);
+
+        log.info("SQL after: " + sql);
+        log.info("Params after: " + params);
+
+        contacts = session.query(Contact.class, sql, params);
+        log.debug(contacts);
+
+        // new sql same params object
+        sql = where("(:firstname = @name OR :company = @name) and :lastname = @last");
+        contacts = session.query(Contact.class, sql, params);
+        log.info("SQL after 2: " + sql);
+        log.info("Params after 2: " + params);
+
+        log.debug(contacts);
+
+        // new params changed SQL
+        params = params(Map.of("name", "Fred", "last", "Flintstone"));
+
+        contacts = session.query(Contact.class, sql, params);
+        log.info("SQL after 3: " + sql);
+        log.info("Params after 3: " + params);
+
+        log.debug(contacts);
     }
 
     public void testNamedParameters() {
@@ -1299,7 +1439,7 @@ public abstract class BaseTest extends TestCase {
 
             // METHOD TWO: call setParameters which does some checking
             // Fails the local DBs H2, HSQLDB, Derby and also Firebird
-            session.setParameters(st, params.toArray());
+            session.helper.setParameters(st, params.toArray());
 
             // METHOD THREE: What I do normally which is to pass through convert and then use setParameters
             // I guess if we ever support a general execute method we could either leave this up to the user
@@ -1360,7 +1500,7 @@ public abstract class BaseTest extends TestCase {
         invoice.setPaid(true);
         invoice.setActualPrice(new BigDecimal("10.23"));
 
-        assertEquals("s/b 1", 1, session.upsert(invoice).rows());
+        assertEquals("s/b 1", 1, session.insert(invoice).rows());
 
 
         assertTrue("Invoice ID > 0", invoice.getInvoiceId() > 0);

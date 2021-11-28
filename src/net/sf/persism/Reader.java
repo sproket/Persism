@@ -7,7 +7,10 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.StringWriter;
-import java.lang.reflect.*;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Parameter;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.sql.*;
@@ -21,8 +24,10 @@ final class Reader {
     private Connection connection;
     private MetaData metaData;
     private Converter converter;
+    private Session session;
 
     Reader(Session session) {
+        this.session = session;
         this.connection = session.getConnection();
         this.metaData = session.getMetaData();
         this.converter = session.getConverter();
@@ -41,11 +46,11 @@ final class Reader {
             properties = metaData.getQueryColumnsPropertyInfo(objectClass, rs);
         }
 
-        // Test if all properties have column mapping and throw PersismException if not
+        // Test if all properties have column mapping (skipping joins) and throw PersismException if not
         // This block verifies that the object is fully initialized.
         // Any properties not marked by NotColumn should have been set (or if they have a getter only)
         // If not throw a PersismException
-        Collection<PropertyInfo> allProperties = MetaData.getPropertyInfo(objectClass);
+        Collection<PropertyInfo> allProperties = MetaData.getPropertyInfo(objectClass).stream().filter(p -> !p.isJoin()).collect(Collectors.toList());
         if (properties.values().size() < allProperties.size()) {
             Set<PropertyInfo> missing = new HashSet<>(allProperties.size());
             missing.addAll(allProperties);
@@ -132,7 +137,7 @@ final class Reader {
 
         Constructor<?> selectedConstructor = findConstructor(objectClass, propertyNames);
 
-        // now read results by property order
+        // now read resultset by property order
         Map<String, PropertyInfo> propertyInfoByConstructorOrder = new LinkedHashMap<>(selectedConstructor.getParameterCount());
 
         for (String paramName : propertyNames) {
@@ -169,7 +174,7 @@ final class Reader {
         }
 
         try {
-            // Select the constructor to double-check we have the correct one
+            // Select the constructor to double check we have the correct one
             // This would be a double check on the types rather than just the names
             Constructor<?> constructor = objectClass.getConstructor(constructorTypes.toArray(new Class<?>[0]));
             //noinspection unchecked
@@ -216,6 +221,7 @@ final class Reader {
         }
         return selectedConstructor;
     }
+
 
     // https://stackoverflow.com/questions/1075656/simple-way-to-find-if-two-different-lists-contain-exactly-the-same-elements
     private static <T> boolean listEqualsIgnoreOrder(List<T> list1, List<T> list2) {

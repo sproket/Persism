@@ -7,10 +7,13 @@
 package net.sf.persism;
 
 import junit.framework.TestCase;
+import net.sf.persism.dao.Customer;
 import net.sf.persism.dao.Invoice;
 import net.sf.persism.dao.Postman;
 import org.junit.Test;
 
+import java.lang.reflect.Field;
+import java.lang.reflect.ParameterizedType;
 import java.util.*;
 
 public class TestUtil extends TestCase {
@@ -73,7 +76,9 @@ public class TestUtil extends TestCase {
         stringList.add("c");
 
         stringList.stream().forEach(str -> {
-            if (str.equals("b")) return; // only skips this iteration.
+            if (str.equals("b")) {
+                return; // only skips this iteration.
+            }
 
             System.out.println(str);
         });
@@ -96,9 +101,9 @@ public class TestUtil extends TestCase {
         double y = 2.0d;
         int z = 3;
 
-        System.out.println((int)x);
-        System.out.println((int)y);
-        System.out.println((int)z);
+        System.out.println((int) x);
+        System.out.println((int) y);
+        System.out.println((int) z);
     }
 
     @Test
@@ -120,7 +125,67 @@ public class TestUtil extends TestCase {
         log.warn(Messages.ConverterValueTypeNotYetSupported.message(Types.InstantType.getJavaType()));
     }
 
-    class E extends  Exception {
+    public void testStringToArray() {
+        String s1 = "1,2,3";
+        String s2 = "dan";
+
+        String[] a1 = s1.split(",");
+        log.info(Arrays.asList(a1));
+
+        String[] a2 = s2.split(",");
+        log.info(Arrays.asList(a2));
+
+
+        String s = null;
+        System.out.println(s);
+        System.out.println("" + s);
+
+        String s3 = null;
+        String s4 = null;
+
+        log.warn(Objects.equals(s3, s4));
+    }
+
+    public void testKeyBox() {
+        Map<KeyBox, String> map = new HashMap<>();
+        KeyBox keyBox1 = new KeyBox(false, 1, 2);
+        KeyBox keyBox2 = new KeyBox(false, 1, 3);
+        KeyBox keyBox3 = new KeyBox(false, 2, 4);
+
+        map.put(keyBox1, "keybox1");
+        map.put(keyBox2, "keybox2");
+        map.put(keyBox3, "keybox3");
+
+        assertNotNull(map.get(new KeyBox(false, 1, 3)));
+        assertNull(map.get(new KeyBox(false, 9, 9)));
+
+    }
+
+    List<String> stringList = new ArrayList<String>();
+    List<Integer> integerList = new ArrayList<Integer>();
+    List<Customer> custList = new ArrayList<Customer>();
+
+    public void testGeneric() throws NoSuchFieldException {
+
+        // this is neat but won't work for me.
+
+        Field stringListField = getClass().getDeclaredField("stringList");
+        ParameterizedType stringListType = (ParameterizedType) stringListField.getGenericType();
+        Class<?> stringListClass = (Class<?>) stringListType.getActualTypeArguments()[0];
+        System.out.println(stringListClass); // class java.lang.String.
+
+        Field integerListField = getClass().getDeclaredField("integerList");
+        ParameterizedType integerListType = (ParameterizedType) integerListField.getGenericType();
+        Class<?> integerListClass = (Class<?>) integerListType.getActualTypeArguments()[0];
+        System.out.println(integerListClass); // class java.lang.Integer.
+
+        Field custListField = getClass().getDeclaredField("custList");
+        ParameterizedType custListType = (ParameterizedType) custListField.getGenericType();
+        Class<?> custListClass = (Class<?>) custListType.getActualTypeArguments()[0];
+        System.out.println(custListClass); // ?
+    }
+
+    class E extends Exception {
         @Override
         public synchronized Throwable fillInStackTrace() {
             return this;

@@ -1,9 +1,12 @@
 package net.sf.persism.dao;
 
+import net.sf.persism.annotations.Join;
 import net.sf.persism.annotations.NotColumn;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Created with IntelliJ IDEA.
@@ -11,7 +14,7 @@ import java.time.LocalDateTime;
  * Date: 12-05-15
  * Time: 4:43 PM
  */
-public class Invoice {
+public final class Invoice {
 
     private Integer invoiceId;
     private String customerId;
@@ -27,7 +30,10 @@ public class Invoice {
     private boolean paid;
 
     // Used as a primitive to test for warning about using primitives on columns with defaults
-    private int status;
+    private Character status;
+
+    @Join(to = InvoiceLineItem.class, onProperties = "invoiceId", toProperties = "invoiceId")
+    private List<InvoiceLineItem> lineItems = new ArrayList<>();
 
     public String getCustomerId() {
         return customerId;
@@ -82,6 +88,14 @@ public class Invoice {
         this.discount = discount;
     }
 
+    public List<InvoiceLineItem> getLineItems() {
+        return lineItems;
+    }
+
+    public void setLineItems(List<InvoiceLineItem> lineItems) {
+        this.lineItems = lineItems;
+    }
+
     // calculated property
     public String getJunk1() {
         return junk1 + " " + created;
@@ -93,11 +107,11 @@ public class Invoice {
         return created;
     }
 
-    public int getStatus() {
+    public Character getStatus() {
         return status;
     }
 
-    public void setStatus(int status) {
+    public void setStatus(Character status) {
         this.status = status;
     }
 
@@ -108,6 +122,7 @@ public class Invoice {
     public void setActualPrice(BigDecimal actualPrice) {
         this.actualPrice = actualPrice;
     }
+
 
     @Override
     public String toString() {

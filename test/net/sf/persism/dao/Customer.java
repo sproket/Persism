@@ -1,11 +1,13 @@
 package net.sf.persism.dao;
 
 import net.sf.persism.annotations.Column;
+import net.sf.persism.annotations.Join;
 import net.sf.persism.annotations.NotColumn;
 
 import java.sql.Timestamp;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -14,7 +16,7 @@ import java.util.List;
  * @author Dan Howard
  * @since 5/23/12 10:40 AM
  */
-public class Customer {
+public final class Customer {
     private String customerId;
     private String companyName;
     private String contactName;
@@ -28,19 +30,20 @@ public class Customer {
     private String fax;
     private Character status;
 
-    @Column (hasDefault = true)
+    @Column(hasDefault = true)
     private Timestamp dateRegistered;
 
-    //private java.sql.Date dateOfLastOrder;
     private LocalDateTime dateOfLastOrder;
 
-//    //@Column(collectionType = Invoice.class, foreignPropertyName = "customerId")
-//    // parentKeys = "x,y" childKeys = "a,b"
-//    @Join(to = Invoice.class, onProperties = "customerId", toProperties = "customerId")
-//    private List<Invoice> invoices;
-//
-//    @NotColumn // for now
-//    private Contact contact;
+    // TODO DOCUMENT: Joins must be a modifiable list and must be instantiated. We use the
+    // TODO properties are case sensitive - make a FailCustomer class or something to test that
+    @Join(to = Invoice.class, onProperties = " customerId , status ", toProperties = "customerId , status ")
+    //@Join(to = Invoice.class, onProperties = " customerId  ", toProperties = "customerId  ")
+    private List<Invoice> invoices = new ArrayList<>();
+
+    //@Join(to=Contact.class, onProperties = "contactName", toProperties = "contactName")
+    @NotColumn
+    private Contact contact;
 
     private LocalDate testLocalDate;
     private LocalDateTime testLocalDateTime;
@@ -149,13 +152,13 @@ public class Customer {
         this.dateOfLastOrder = dateOfLastOrder;
     }
 
-    //    public java.sql.Date getDateOfLastOrder() {
-//        return dateOfLastOrder;
-//    }
-//
-//    public void setDateOfLastOrder(java.sql.Date dateOfLastOrder) {
-//        this.dateOfLastOrder = dateOfLastOrder;
-//    }
+    public Contact getContact() {
+        return contact;
+    }
+
+    public void setContact(Contact contact) {
+        this.contact = contact;
+    }
 
     public Character getStatus() {
         return status;
@@ -181,6 +184,14 @@ public class Customer {
         this.testLocalDateTime = testLocalDateTime;
     }
 
+    public List<Invoice> getInvoices() {
+        return invoices;
+    }
+
+    public void setInvoices(List<Invoice> invoices) {
+        this.invoices = invoices;
+    }
+
     @Override
     public String toString() {
         return "Customer{" +
@@ -197,6 +208,7 @@ public class Customer {
                 ", fax='" + fax + '\'' +
                 ", dateRegistered=" + dateRegistered +
                 ", dateOfLastOrder=" + dateOfLastOrder +
+                ", status=" + status +
                 '}';
     }
 }

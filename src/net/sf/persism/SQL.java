@@ -9,13 +9,15 @@ import java.util.regex.Pattern;
  * @see <a href="https://sproket.github.io/Persism/manual.html">Using the new Query/Fetch methods</a>
  */
 // todo wrong link for now....
-
+// todo cache these if we do any parsing so we only parse once.
 public final class SQL {
 
-    private final String sql;
+    final String sql;
 
     boolean whereOnly; // flags this as WHERE only - we add the SELECT part.
     boolean storedProc; // indicates this is a stored proc rather than an SQL statement
+
+    String processedSQL = null;
 
     SQL(String sql) {
         sql = sql.trim();
@@ -100,6 +102,9 @@ public final class SQL {
      */
     @Override
     public String toString() {
+        if (processedSQL != null) {
+            return processedSQL;
+        }
         return sql;
     }
 }

@@ -1,9 +1,9 @@
 package net.sf.persism;
 
 import junit.framework.TestCase;
-import net.sf.persism.dao.Customer;
 import net.sf.persism.dao.Regions;
 import net.sf.persism.dao.access.Contact;
+import net.sf.persism.dao.access.Customer;
 import net.ucanaccess.complex.Attachment;
 
 import javax.imageio.ImageIO;
@@ -20,9 +20,8 @@ import java.time.LocalDateTime;
 import java.util.*;
 
 import static net.sf.persism.BaseTest.executeCommand;
-import static net.sf.persism.Parameters.params;
-import static net.sf.persism.SQL.sql;
-import static net.sf.persism.SQL.where;
+import static net.sf.persism.Parameters.*;
+import static net.sf.persism.SQL.*;
 import static net.sf.persism.UtilsForTests.isTableInDatabase;
 
 public class TestMSAccess extends TestCase {
@@ -131,7 +130,7 @@ public class TestMSAccess extends TestCase {
                 WHERE City = @city AND `Contact : / @ # Name` = @contact
                 """;
 
-        assertTrue(session.isSelect(query));
+        assertTrue(session.helper.isSelect(query));
 
         customers = session.query(Customer.class, sql(query), params(Map.of("city", "MTL", "contact", "Fred")));
         log.info(customers.size());

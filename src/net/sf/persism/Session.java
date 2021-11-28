@@ -23,9 +23,17 @@ import static net.sf.persism.Util.isRecord;
  * @author Dan Howard
  * @since 1/8/2021
  */
-public final class Session extends SessionInternal implements AutoCloseable {
+public final class Session implements AutoCloseable {
 
     private static final Log log = Log.getLogger(Session.class);
+    private static final Log blog = Log.getLogger("net.sf.persism.Benchmarks");
+
+    final SessionHelper helper;
+
+    Connection connection;
+    MetaData metaData;
+    Reader reader;
+    Converter converter;
 
     /**
      * @param connection db connection
@@ -33,6 +41,7 @@ public final class Session extends SessionInternal implements AutoCloseable {
      */
     public Session(Connection connection) throws PersismException {
         this.connection = connection;
+        helper = new SessionHelper(this);
         init(connection, null);
     }
 
@@ -60,6 +69,7 @@ public final class Session extends SessionInternal implements AutoCloseable {
      */
     public Session(Connection connection, String sessionKey) throws PersismException {
         this.connection = connection;
+        helper = new SessionHelper(this);
         init(connection, sessionKey);
     }
 
@@ -146,10 +156,11 @@ public final class Session extends SessionInternal implements AutoCloseable {
                 }
             }
 
-            exec(JDBCResult, sql, params.toArray());
+            helper.exec(JDBCResult, sql, params.toArray());
 
             if (JDBCResult.rs.next()) {
                 reader.readObject(object, JDBCResult.rs);
+                helper.handleJoins(object, objectClass, sql, params);
                 return true;
             }
             return false;
@@ -221,13 +232,20 @@ public final class Session extends SessionInternal implements AutoCloseable {
 
         JDBCResult result = JDBCResult.DEFAULT;
         try {
-            result = executeQuery(objectClass, sql, parameters);
+            result = helper.executeQuery(objectClass, sql, parameters);
             if (result.rs.next()) {
                 if (isRecord) {
-                    return reader.readRecord(objectClass, result.rs);
+                    // todo how will this work with join? Works if it's a list but not a 1-1 POJO
+                    var ret = reader.readRecord(objectClass, result.rs);
+                    helper.handleJoins(ret, objectClass, sql.toString(), parameters);
+                    return ret;
+
                 } else if (isPOJO) {
                     T t = objectClass.getDeclaredConstructor().newInstance();
-                    return reader.readObject(t, result.rs);
+                    var ret = reader.readObject(t, result.rs);
+                    helper.handleJoins(ret, objectClass, sql.toString(), parameters);
+                    return ret;
+
                 } else {
                     return reader.readColumn(result.rs, 1, objectClass);
                 }
@@ -381,7 +399,9 @@ public final class Session extends SessionInternal implements AutoCloseable {
 
         JDBCResult result = JDBCResult.DEFAULT;
         try {
-            result = executeQuery(objectClass, sql, parameters);
+            result = helper.executeQuery(objectClass, sql, parameters);
+
+            long now = System.currentTimeMillis();
 
             while (result.rs.next()) {
                 if (isRecord) {
@@ -394,6 +414,18 @@ public final class Session extends SessionInternal implements AutoCloseable {
                 }
             }
 
+            //blog.debug("TIME TO READ " + objectClass + " " + (System.currentTimeMillis() - now) + " SIZE " + list.size());
+            blog.debug("READ time: %s SIZE: %s %s", (System.currentTimeMillis() - now), list.size(), objectClass);
+
+            if (list.size() > 0) {
+                now = System.currentTimeMillis();
+                helper.handleJoins(list, objectClass, sql.toString(), parameters);
+            }
+
+            if (blog.isDebugEnabled()) {
+                blog.debug("handleJoins TIME:  " + (System.currentTimeMillis() - now) + " " + objectClass, new Throwable());
+            }
+
         } catch (Exception e) {
             Util.rollback(connection);
             throw new PersismException(e.getMessage(), e);
@@ -402,7 +434,6 @@ public final class Session extends SessionInternal implements AutoCloseable {
         }
 
         return list;
-
     }
 
     /**
@@ -428,7 +459,7 @@ public final class Session extends SessionInternal implements AutoCloseable {
      * @throws PersismException Indicating the upcoming robot uprising.
      */
     public <T> Result<T> update(T object) throws PersismException {
-        checkIfOkForWriteOperation(object, "UPDATE");
+        helper.checkIfOkForWriteOperation(object, "UPDATE");
 
         List<String> primaryKeys = metaData.getPrimaryKeys(object.getClass(), connection);
         if (primaryKeys.size() == 0) {
@@ -485,7 +516,7 @@ public final class Session extends SessionInternal implements AutoCloseable {
                     params.set(j, converter.convert(params.get(j), columnInfos.get(j).columnType.getJavaType(), columnInfos.get(j).columnName));
                 }
             }
-            setParameters(st, params.toArray());
+            helper.setParameters(st, params.toArray());
             int ret = st.executeUpdate();
 
             if (object instanceof Persistable<?> pojo) {
@@ -514,15 +545,13 @@ public final class Session extends SessionInternal implements AutoCloseable {
      * @throws PersismException When planet of the apes starts happening.
      */
     public <T> Result<T> insert(T object) throws PersismException {
-        checkIfOkForWriteOperation(object, "INSERT");
+        helper.checkIfOkForWriteOperation(object, "INSERT");
 
         String insertStatement = metaData.getInsertStatement(object, connection);
         log.debug(insertStatement);
 
         PreparedStatement st = null;
         ResultSet rs = null;
-
-        Object returnObject = object;
 
         try {
             // These keys should always be in sorted order.
@@ -596,7 +625,7 @@ public final class Session extends SessionInternal implements AutoCloseable {
                 }
             }
 
-            setParameters(st, params.toArray());
+            helper.setParameters(st, params.toArray());
             st.execute();
             int ret = st.getUpdateCount();
 
@@ -614,11 +643,11 @@ public final class Session extends SessionInternal implements AutoCloseable {
                         Method setter = propertyInfo.setter;
                         Object value;
                         if (setter != null) {
-                            value = getTypedValueReturnedFromGeneratedKeys(setter.getParameterTypes()[0], rs);
+                            value = helper.getTypedValueReturnedFromGeneratedKeys(setter.getParameterTypes()[0], rs);
                             setter.invoke(object, value);
                         } else {
                             // Set read-only property by field ONLY FOR NON-RECORDS.
-                            value = getTypedValueReturnedFromGeneratedKeys(propertyInfo.field.getType(), rs);
+                            value = helper.getTypedValueReturnedFromGeneratedKeys(propertyInfo.field.getType(), rs);
                             if (!isRecord(object.getClass())) {
                                 propertyInfo.field.setAccessible(true);
                                 propertyInfo.field.set(object, value);
@@ -637,7 +666,9 @@ public final class Session extends SessionInternal implements AutoCloseable {
                 refreshAfterInsert = true;
             }
 
+            Object returnObject = null;
             if (refreshAfterInsert) {
+                // these 2 fetches need a fetchAfterInsert flag
                 // Read the full object back to update any properties which had defaults
                 if (isRecord(object.getClass())) {
                     SQL sql = new SQL(metaData.getDefaultSelectStatement(object.getClass(), connection));
@@ -646,6 +677,8 @@ public final class Session extends SessionInternal implements AutoCloseable {
                     fetch(object);
                     returnObject = object;
                 }
+            } else {
+                returnObject = object;
             }
 
             if (object instanceof Persistable<?> pojo) {
@@ -672,7 +705,7 @@ public final class Session extends SessionInternal implements AutoCloseable {
      */
     public <T> Result<T> delete(T object) throws PersismException {
 
-        checkIfOkForWriteOperation(object, "DELETE");
+        helper.checkIfOkForWriteOperation(object, "DELETE");
 
         List<String> primaryKeys = metaData.getPrimaryKeys(object.getClass(), connection);
         if (primaryKeys.size() == 0) {
@@ -701,7 +734,7 @@ public final class Session extends SessionInternal implements AutoCloseable {
                     params.set(j, converter.convert(params.get(j), columnInfos.get(j).columnType.getJavaType(), columnInfos.get(j).columnName));
                 }
             }
-            setParameters(st, params.toArray());
+            helper.setParameters(st, params.toArray());
             int rows = st.executeUpdate();
             return new Result<>(rows, object);
 
@@ -711,70 +744,6 @@ public final class Session extends SessionInternal implements AutoCloseable {
 
         } finally {
             Util.cleanup(st, null);
-        }
-    }
-
-    /**
-     * Performs an Insert or Update depending on whether the primary key is defined by the object parameter.
-     *
-     * @param object the data object to insert or update.
-     * @param <T>    Type of the returning data object in Result.
-     * @return Result object containing rows changed (usually 1 to indicate rows changed via JDBC) and the data object itself which may have been changed by auto-inc or column defaults.
-     * @throws PersismException If this table has no primary keys or some SQL error.
-     */
-    public <T> Result<T> upsert(T object) throws PersismException {
-        checkIfOkForWriteOperation(object, "UPSERT");
-
-        List<String> primaryKeys = metaData.getPrimaryKeys(object.getClass(), connection);
-        if (primaryKeys.size() == 0) {
-            throw new PersismException(Messages.TableHasNoPrimaryKeys.message("UPSERT", metaData.getTableName(object.getClass())));
-        }
-
-        try {
-            Map<String, PropertyInfo> properties = metaData.getTableColumnsPropertyInfo(object.getClass(), connection);
-            Map<String, ColumnInfo> columns = metaData.getColumns(object.getClass(), connection);
-            List<Object> params = new ArrayList<>(primaryKeys.size());
-            boolean isInsert = false;
-
-            if (primaryKeys.size() == 1 && columns.get(primaryKeys.get(0)).autoIncrement) {
-                // If this is a single auto inc - we don't have to fetch back to the DB to decide
-                PropertyInfo propertyInfo = properties.get(primaryKeys.get(0));
-                Class<?> returnType = propertyInfo.getter.getReturnType();
-                Object value = propertyInfo.getter.invoke(object);
-                if (value == null || (returnType.isPrimitive() && value == Types.getDefaultValue(returnType))) {
-                    isInsert = true;
-                }
-            } else {
-                List<ColumnInfo> columnInfos = new ArrayList<>();
-                // Multiple primaries or the key(s) are set by the user - need to fetch to see if this is an insert or update
-                for (String key : primaryKeys) {
-                    PropertyInfo propertyInfo = properties.get(key);
-                    Object value = propertyInfo.getter.invoke(object);
-                    params.add(value);
-                    columnInfos.add(metaData.getColumns(object.getClass(), connection).get(key));
-                }
-
-                for (int j = 0; j < params.size(); j++) {
-                    if (params.get(j) != null) {
-                        params.set(j, converter.convert(params.get(j), columnInfos.get(j).columnType.getJavaType(), columnInfos.get(j).columnName));
-                    }
-                }
-
-                Parameters parameters = params(params.toArray());
-
-                Object pojo = fetch(object.getClass(), parameters);
-                isInsert = pojo == null;
-            }
-
-            if (isInsert) {
-                return insert(object);
-            } else {
-                return update(object);
-            }
-        } catch (PersismException e) {
-            throw e; // todo see how this works. do we lose information?
-        } catch (Exception e) {
-            throw new PersismException(e.getMessage(), e);
         }
     }
 
@@ -827,5 +796,6 @@ public final class Session extends SessionInternal implements AutoCloseable {
     Connection getConnection() {
         return connection;
     }
+
 
 }

@@ -1,12 +1,7 @@
 package net.sf.persism;
 
 
-import net.sf.persism.logging.AbstractLogger;
-import net.sf.persism.logging.LogMode;
-import net.sf.persism.logging.JulLogger;
-import net.sf.persism.logging.Log4j2Logger;
-import net.sf.persism.logging.Log4jLogger;
-import net.sf.persism.logging.Slf4jLogger;
+import net.sf.persism.logging.*;
 
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
@@ -75,7 +70,7 @@ final class Log {
         }
     }
 
-    public static Log getLogger(Class logName) {
+    public static Log getLogger(Class<?> logName) {
         return getLogger(logName.getName());
     }
 

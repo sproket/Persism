@@ -1,20 +1,54 @@
 ## Release Notes
 
-### merge with 1.2.....
-* REVIEW ALL CHANGES
-* Fixed Tax -> Taxes (update web page)
+### 2.0.0
+ 
+* Set baseline to be Java 17 (see the 1.x branch for Java 8+)
+* Added SQL type wrapper for String 
+* Added Parameters type wrapper for parameters array
+* Added better type safe query and fetch methods
+* Added SQL where method (shorthand where Persism knows the columns) which supports property names as well as column names 
+* Added SQL proc method to indicate the query is a call to a stored proc rather than a SELECT statement
+* Added support for named parameters
 
-### 1.1.0 (pending)
+### 1.2.0
 
-* Added support for MSAccess with UCanAccess jdbc driver
-* Added new method withTransaction() to Session - simplifying multiple operations in a single database transaction 
+* Added support for Views
+* Added query 'select *' method to session
+* Finalized support for Informix (Tests added)
+* Changed query statements to make explicit forward only and read only
+* Improve readRecord performance
+* Added BIT column to byte property conversion
+
+### Breaking changes
+
+* Update/Delete now also return a typed Result object containing the rows changed and modified data object.
+
+### 1.1.0
+
+* Added support for Records! (Java 16)
+* Added preliminary support for Informix (looking for help to set up a vbox vm)
+* Fixed UPDATE statement using columns in alphabetical order (All Persism generated SQL should be in column order)
+* Fixed support for MSAccess with UCanAccess jdbc driver in Java 16
+* Fixed issue with Queries cached with missing columns
+* Fixed @Table name case sensitivity
+* Added warnings if Persism doesn't have results when querying for DatabaseMetaData
+* Added new constructor for Session to supply a fake URL for situations where the Connection metadata url returns null
+
+### Breaking changes
+
+* Insert now returns a typed Result object containing the rows changed and modified data object for cases when you insert a Record and there are defaults or autoincs to assign.
+
+### 1.0.3
+
+* Added support for MSAccess with UCanAccess jdbc driver (seems to be broken under Java 16 right now #13)
+* Added new method withTransaction() to Session - simplifying multiple operations in a single database transaction
 * Added automatic module name sproket.github.io.persism for 9+ support
 * Added support for Log4j 2
 
 ### Breaking changes
 
 * Property discovery now sees properties with getters only as possible columns (considered read-only columns). You will need to use the @NotColumn annotation to avoid the "<table/query> was not properly initialized." Runtime exception. (this was done for future support for Records)
-* Persistable interface was changed. Renamed getOriginalValue method to readOriginalValue to avoid possible collision with read-only properties. 
+* Persistable interface was changed. Renamed getOriginalValue method to readOriginalValue to avoid possible collision with read-only properties.
 
 
 ### 1.0.2
@@ -44,7 +78,7 @@
 * Fixed issue where objects using Persistable interface would have all columns updated in some cases
 
 
-### 1.0.0 
+### 1.0.0
 
 Initial release
 

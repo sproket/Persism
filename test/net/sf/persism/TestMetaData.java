@@ -99,7 +99,6 @@ public final class TestMetaData extends TestCase {
         assertEquals("s/b 'SELECT * FROM RecordTest2 -- what about this?'", "SELECT * FROM RecordTest2 -- what about this?", sql1.toString());
         log.info("-------");
     }
-
     public void testDeterminePropertyInfo() {
         Collection<PropertyInfo> propertyInfo = MetaData.getPropertyInfo(ByteData.class);
         log.warn(propertyInfo.size());
