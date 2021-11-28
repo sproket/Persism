@@ -39,7 +39,7 @@ at runtime - SLF4J, LOG4J or JUL.
 
 ### Other documentation
 
-[Getting Started](/manual.md)
+[Getting Started](/manual2.md)
 
 [Cookbook: Implementing Persistable interface](cookbook-persistable.md)
 

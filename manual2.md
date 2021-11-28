@@ -1,6 +1,6 @@
 ## Getting started
 
-If you are looking for Persism 1.x then go [here](manual.md).
+If you are looking for Persism 1.x then go [here](manual1.md).
 
 Download Persism [here](https://github.com/sproket/Persism/releases) and add it your project.
 
