@@ -1,4 +1,4 @@
-![](logo1.png) [Release notes](release-notes.md)
+![](logo1.png) [Release notes](release-notes.md) [Getting Started Guide](https://sproket.github.io/Persism/manual2.html)
 
 # Welcome
 
