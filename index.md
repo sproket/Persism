@@ -2,7 +2,7 @@
 
 Persism is a wood simple, auto-discovery, auto-configuration, and convention over configuration ORM (Object Relational Mapping) library for Java.
 
-###[Get Started!](/manual2.md)
+[**Get Started!**](/manual2.md)
 
 ## Simple
 
