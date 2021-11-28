@@ -31,9 +31,9 @@ at runtime - SLF4J, LOG4J or JUL.
 
 [SBOM Report - No vulnerable components found! :)](https://sbom.lift.sonatype.com/report/T1-0ff0976f7f21c391f20f-66b418a0fe091-1629666944-60f874cf7a3d4f2db5a553c6fed9b9be)
 
-[Javadoc](/javadoc/index.html)
+[Javadoc For Version 2.x](/javadoc/persism2/index.html) - [Javadoc For Version 1.x](/javadoc/persism1/index.html)
 
-[Code Coverage](/coverage/index.html)
+[Code Coverage For Version 2.x](/coverage/persism2/index.html) - [Code Coverage For Version 1.x](/coverage/persism1/index.html)
 
 [Release Notes](/release-notes.md)
 

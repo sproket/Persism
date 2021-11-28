@@ -1,6 +1,6 @@
 ## Getting started
 
-If you are looking for Persism 2.0 then go [here](manual2.md).
+If you are looking for Persism 1.x then go [here](manual.md).
 
 Download Persism [here](https://github.com/sproket/Persism/releases) and add it your project.
 
@@ -9,10 +9,38 @@ If you are using Maven:
 <dependency>
     <groupId>io.github.sproket</groupId>
     <artifactId>persism</artifactId>
-    <version>1.2.0</version>
+    <version>2.0.0</version>
 </dependency>
 ```
+### Upgrading from 1.x
 
+If you used one of Persism 1.x versions. You may get compile errors if you referenced the
+return value from the methods insert() update() and delete() this is because these methods 
+now return a Result object rather than just an int. 
+
+Additionally, the fetch and query methods using String and Object... parameters are marked 
+for deprecation. They still work, but you will get warnings about their use.
+
+To fix these warnings add static imports for the new SQL and Parameters classes like so:
+
+```
+import static net.sf.persism.Parameters.*;
+import static net.sf.persism.SQL.*;
+```
+
+Then change your code like this:
+
+```
+// OLD way
+session.query(Customer.class, "select * from Customers where name = ?", "Fred");
+
+// NEW way
+session.query(Customer.class, sql("select * from Customers where name = ?"), params("Fred"));
+
+```
+
+
+## Examples
 Persism uses a standard Connection object so all you need to do is create the Session object 
 passing in the Connection.
 
@@ -38,9 +66,12 @@ Session session = new Session(con);
 
 With the session object you can then run queries to retrieve lists of objects:
 ```
-List<Customer> list = session.query(Customer.class,"select * from Customers where name = ?", "Fred");
+import static net.sf.persism.Parameters.*;
+import static net.sf.persism.SQL.*;
+
+List<Customer> list = session.query(Customer.class, sql("select * from Customers where name = ?"), params("Fred"));
 // or
-List<Customer> list = session.query(Customer.class, "sp_FindCustomers(?)", "Fred");
+List<Customer> list = session.query(Customer.class, proc("sp_FindCustomers(?)"), params("Fred"));
 ```
 
 **Note:** Generics are in place here. If you try querying for a list of a mismatched type, 
@@ -50,9 +81,13 @@ parameterized queries, and you can also use stored procedures instead of query s
 You can also read a single object with a query string like this:
 
 ```
+import static net.sf.persism.Parameters.*;
+import static net.sf.persism.SQL.*;
+
 Customer customer;
-customer = session.fetch(Customer.class, "select * from Customers where name = ?", "Fred");
-// or   customer = session.fetch(Customer.class, "sp_FindCustomer(?)", "Fred");
+customer = session.fetch(Customer.class, sql("select * from Customers where name = ?"), params("Fred"));
+// or   
+customer = session.fetch(Customer.class, proc("sp_FindCustomer(?)"), params("Fred"));
 if (customer != null) {
     // etc...
 }
@@ -72,7 +107,20 @@ This method returns true to indicate the object was found and initialized. Note 
 by pre-instantiating your object first. This allows you to control memory usage of your objects, 
 so you can re-use the same object if you need to run multiple queries.
 
-You may also use a simpler form of the query method to return all rows from the database. **best used for smaller tables**
+You can also use query passing only the class and parameters.    
+
+```
+List<Country> countries = session.query(Country.class, params("US", "CA"));
+```
+
+The parameter values are assumed to be the primary keys resulting in the following SQL: 
+
+```
+SELECT * FROM Countries WHERE CODE IN ('US', 'CA')
+```
+
+
+You can also use a simpler form of the query method to return all rows from the database. **Best used for smaller tables**
 
 ```
 List<Country> countries = session.query(Country.class);
@@ -80,12 +128,12 @@ List<Country> countries = session.query(Country.class);
 
 The query can also return primitive Java types by simply using them directly.
 ```
-String result = session.fetch(String.class, "select Name from Customers where ID = ?", 10);
+String result = session.fetch(String.class, sql("select Name from Customers where ID = ?"), params(10));
 
-int count = session.fetch(int.class, "select count(*) from Customers where Region = ?", Region.West);
+int count = session.fetch(int.class, sql("select count(*) from Customers where Region = ?"), params(Region.West));
 // Note Enums are supported 
 
-List<String> names = session.query(String.class, "select Name from Customers Order By Name");
+List<String> names = session.query(String.class, sql("select Name from Customers Order By Name"));
 ```
 
 **Note:** Use the query method for lists, and the fetch method for single results.
@@ -399,8 +447,8 @@ We annotate these as *@NotColumn* so they'll be ignored by the SQL query. Then y
 ```
 Customer customer;
 List<Order> orders;
-customer = session.fetch(Customer.class, "select * from Customers where name = ?", "Fred");
-orders = session.query(Order.class, "select * from orders where customerId = ", customer.getCustomerId());
+customer = session.fetch(Customer.class, sql("select * from Customers where name = ?"), params("Fred"));
+orders = session.query(Order.class, sql("select * from orders where customerId = ?"), params(customer.getCustomerId()));
 customer.setOrders(orders);
 // etc...
 ```

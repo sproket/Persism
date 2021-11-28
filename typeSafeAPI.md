@@ -14,30 +14,32 @@ This version still exists but is deprecated?
 
 
 ### New Query Methods
+
+Query to return all results. Useful for small tables.
+
 ```
 <T> List<T> query(Class<T> objectClass)
 ```
 
-Query to return all results. Useful for small tables.
+Query to return any results matching the primary key values provided.
 
 
 ```
 <T> List<T> query(Class<T> objectClass, Parameters parameters)
 ```
 
-Query to return any results matching the primary key values provided.
+Query for any arbitrary SQL statement.
 
 ``` 
 <T> List<T> query(Class<T> objectClass, SQL sql)
 ```
 
-Query for any arbitrary SQL statement.
+Query for a list of objects of the specified class using the specified SQL query and parameters.
 
 ```  
 <T> List<T> query(Class<T> objectClass, SQL sql, Parameters parameters)
 ```
 
-Query for a list of objects of the specified class using the specified SQL query and parameters.
 
 ## SQL Class
 
