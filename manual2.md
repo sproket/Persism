@@ -1,4 +1,4 @@
-## Getting started
+## ![](img/logo2.png) Getting started
 
 If you are looking for Persism 1.x then go [here](manual1.md).
 
@@ -134,6 +134,29 @@ int count = session.fetch(int.class, sql("select count(*) from Customers where R
 // Note Enums are supported 
 
 List<String> names = session.query(String.class, sql("select Name from Customers Order By Name"));
+```
+### NEW Where Clause
+You can now use the ```SQL.where()``` method for tables and views since Persism knows the column names.
+```
+List<Customer> list = session.query(Customer.class, where("CUST_NAME = ?"), params("Fred"));
+```
+
+You can reference the property names instead of the column names - just use :propertyName
+```
+List<Customer> list = session.query(Customer.class, where(":name = ?"), params("Fred"));
+```
+
+Order by is also supported with where() method
+```
+List<Customer> list = session.query(Customer.class, where(":name = ? ORDER BY :lastUpdated"), params("Fred")); 
+```
+
+### NEW Named Parameters
+
+Named parameters are also supported - just use @name
+```
+SQL sql = where("(:firstname = @name OR :company = @name) and :lastname = @last");
+customer = session.fetch(Customer.class, sql, params(Map.of("name", "Fred", "last", "Flintstone")));
 ```
 
 **Note:** Use the query method for lists, and the fetch method for single results.

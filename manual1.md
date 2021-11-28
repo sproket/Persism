@@ -1,4 +1,4 @@
-## Getting started
+## ![](img/logo2.png) Getting started
 
 If you are looking for Persism 2.0 then go [here](manual2.md).
 
