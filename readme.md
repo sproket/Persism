@@ -5,6 +5,8 @@
 Persism is a wood simple, auto discovery, auto-configuration, and convention
 over configuration ORM (Object Relational Mapping) library for Java 17 or later.
 
+For Java 8 see the 1.x branch https://github.com/sproket/Persism/tree/persism1
+
 ```
 <dependency>
     <groupId>io.github.sproket</groupId>
