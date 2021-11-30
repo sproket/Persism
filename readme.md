@@ -121,7 +121,7 @@ No problem. No need to annotate for that. Persism uses annotations as a fall bac
 something is outside the conventions.
 
 ## Tiny
-Persism is under 70k. Yeah, fit it on a floppy if you want. Persism has Zero dependencies however it will
+Persism is under 100k. Yeah, fit it on a floppy if you want. Persism has Zero dependencies however it will
 utilize logging based on whatever is available at runtime - SLF4J, LOG4J or JUL.
 
 [Have a look here for the getting started guide, code coverage and Javadoc](https://sproket.github.io/Persism/)
