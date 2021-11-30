@@ -14,7 +14,7 @@ If you are using Maven:
 ```
 ### Upgrading from 1.x
 
-If you used one of Persism 1.x versions. You may get compile errors if you referenced the
+If you used Persism 1.x, you may get compile errors if you referenced the
 return value from the methods insert() update() and delete() this is because these methods 
 now return a Result object rather than just an int. 
 
