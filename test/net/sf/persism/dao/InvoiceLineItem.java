@@ -1,7 +1,6 @@
 package net.sf.persism.dao;
 
 import net.sf.persism.annotations.Join;
-import net.sf.persism.annotations.NotColumn;
 
 public final class InvoiceLineItem {
     private int id;

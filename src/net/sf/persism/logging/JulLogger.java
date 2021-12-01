@@ -3,6 +3,9 @@ package net.sf.persism.logging;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+/**
+ * @hidden
+ */
 public final class JulLogger extends AbstractLogger {
 
     public JulLogger(String logName) {

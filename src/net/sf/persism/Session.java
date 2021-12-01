@@ -498,7 +498,7 @@ public final class Session implements AutoCloseable {
                 ColumnInfo columnInfo = columns.get(column);
 
                 if (primaryKeys.contains(column)) {
-                    log.info("Session update: skipping column " + column);
+                    log.debug("Session update: skipping column %s",  column);
                 } else {
                     Object value = allProperties.get(column).getter.invoke(object);
                     params.add(value);

@@ -1,9 +1,10 @@
 package net.sf.persism.logging;
 
-import net.sf.persism.logging.AbstractLogger;
-import net.sf.persism.logging.LogMode;
 import org.apache.logging.log4j.LogManager;
 
+/**
+ * @hidden
+ */
 public final class Log4j2Logger extends AbstractLogger {
 
     public Log4j2Logger(String logName) {

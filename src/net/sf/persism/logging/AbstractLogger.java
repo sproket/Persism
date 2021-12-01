@@ -1,5 +1,8 @@
 package net.sf.persism.logging;
 
+/**
+ * @hidden
+ */
 public abstract sealed class AbstractLogger permits JulLogger, Log4j2Logger, Log4jLogger, Slf4jLogger {
 
 	protected final LogMode logMode;

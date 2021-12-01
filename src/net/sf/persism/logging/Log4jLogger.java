@@ -2,6 +2,10 @@ package net.sf.persism.logging;
 
 import org.apache.log4j.Logger;
 
+
+/**
+ * @hidden
+ */
 public final class Log4jLogger extends AbstractLogger {
 
     public Log4jLogger(String logName) {

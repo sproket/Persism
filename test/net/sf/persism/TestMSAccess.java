@@ -20,9 +20,8 @@ import java.time.LocalDateTime;
 import java.util.*;
 
 import static net.sf.persism.BaseTest.executeCommand;
-import static net.sf.persism.Parameters.params;
-import static net.sf.persism.SQL.sql;
-import static net.sf.persism.SQL.where;
+import static net.sf.persism.Parameters.*;
+import static net.sf.persism.SQL.*;
 import static net.sf.persism.UtilsForTests.isTableInDatabase;
 
 public class TestMSAccess extends TestCase {

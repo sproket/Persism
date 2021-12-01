@@ -147,7 +147,8 @@
     <url>https://github.com/sproket/Persism</url>
 
     <properties>
-        <java.version>1.8</java.version>
+        <java.version>17</java.version>
+        <maven.compiler.release>17</maven.compiler.release>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
 
@@ -260,6 +261,9 @@
                                 <goals>
                                     <goal>jar</goal>
                                 </goals>
+                                <configuration>
+                                    <release>17</release>
+                                </configuration>
                             </execution>
                         </executions>
                     </plugin>

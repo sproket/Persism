@@ -32,7 +32,8 @@ public final class Invoice {
     // Used as a primitive to test for warning about using primitives on columns with defaults
     private Character status;
 
-    @Join(to = InvoiceLineItem.class, onProperties = "invoiceId", toProperties = "invoiceId")
+    // query(Customer.class, where(":name = ? and :i.quantity > ?"),.,..
+    @Join(to = InvoiceLineItem.class, onProperties = "invoiceId", toProperties = "invoiceId", alias = "i", where = ":quantity > 100 ORDER BY :invoiceId")
     private List<InvoiceLineItem> lineItems = new ArrayList<>();
 
     public String getCustomerId() {

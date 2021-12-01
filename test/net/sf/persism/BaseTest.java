@@ -379,6 +379,16 @@ public abstract class BaseTest extends TestCase {
                     e.getMessage());
         }
         assertTrue(fail);
+
+        List<CustomerRec> customerRecs = session.query(CustomerRec.class);
+        assertTrue(customerRecs.size() > 0);
+
+        CustomerRec crec = session.fetch(CustomerRec.class, params(customerRecs.get(0).customerId()));
+        assertNotNull(crec);
+
+        CustomerRec crec2 = new CustomerRec(crec.customerId(), crec.companyName(), crec.contactName(), 'x');
+        Result<CustomerRec> res = session.update(crec2);
+        log.warn(res);
     }
 
     public void testJoinsParentFetch() throws SQLException {
@@ -426,7 +436,9 @@ public abstract class BaseTest extends TestCase {
         queryDataSetup();
 
         var list1 = session.query(Customer.class, where(":status = ?"), params('1'));
-        Customer x = list1.stream().filter(customer -> {return true;}).findFirst().orElseThrow();
+        Customer x = list1.stream().filter(customer -> {
+            return true;
+        }).findFirst().orElseThrow();
 
         assertEquals(2, list1.size());
         assertEquals(2, list1.get(0).getInvoices().size());
@@ -582,6 +594,7 @@ public abstract class BaseTest extends TestCase {
         invoice1.setQuantity(10);
         invoice1.setStatus('1');
         session.insert(invoice1);
+        assertTrue(invoice1.getInvoiceId() > 0);
 
         Invoice invoice2 = new Invoice();
         invoice2.setCustomerId("123");
@@ -1179,6 +1192,46 @@ public abstract class BaseTest extends TestCase {
         }
         assertTrue(failed);
 
+    }
+
+    public void testReuse() {
+        // Because we modify SQL and Params depending on the situation test what happens if we reuse them.
+
+        Contact contact = getContactForTest();
+        session.insert(contact);
+
+        SQL sql = where("(:firstname = @name OR :company = @name) and :lastname = @last");
+        log.info("SQL before: " + sql);
+
+        Parameters params = params(Map.of("name", "Fred", "last", "Flintstone"));
+        log.info("Params before: " + params);
+
+        List<Contact> contacts = session.query(Contact.class, sql, params);
+
+        log.debug(contacts);
+
+        log.info("SQL after: " + sql);
+        log.info("Params after: " + params);
+
+        contacts = session.query(Contact.class, sql, params);
+        log.debug(contacts);
+
+        // new sql same params object
+        sql = where("(:firstname = @name OR :company = @name) and :lastname = @last");
+        contacts = session.query(Contact.class, sql, params);
+        log.info("SQL after 2: " + sql);
+        log.info("Params after 2: " + params);
+
+        log.debug(contacts);
+
+        // new params changed SQL
+        params = params(Map.of("name", "Fred", "last", "Flintstone"));
+
+        contacts = session.query(Contact.class, sql, params);
+        log.info("SQL after 3: " + sql);
+        log.info("Params after 3: " + params);
+
+        log.debug(contacts);
     }
 
     public void testNamedParameters() {

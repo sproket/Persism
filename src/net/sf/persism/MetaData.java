@@ -492,10 +492,10 @@ final class MetaData {
             while (rs.next()) {
                 String name = rs.getString("TABLE_NAME");
                 tableNames.add(name);
-                log.error("TABLE_NAME " + name);
-                log.error("TABLE_SCHEM " + rs.getString("TABLE_SCHEM"));
-                log.error("TABLE_CAT " + rs.getString("TABLE_CAT"));
-
+//                log.error("TABLE_NAME " + name);
+//                log.error("TABLE_SCHEM " + rs.getString("TABLE_SCHEM"));
+//                log.error("TABLE_CAT " + rs.getString("TABLE_CAT"));
+// todo schema names
                 tableInfos.put(name, new TableInfo(name, rs.getString("TABLE_SCHEM")));
             }
 
@@ -806,7 +806,7 @@ final class MetaData {
             String column = it.next();
             ColumnInfo columnInfo = columns.get(column);
             if (columnInfo.autoIncrement || columnInfo.primary) {
-                log.info("buildUpdateString: skipping " + column);
+                log.debug("buildUpdateString: skipping " + column);
             } else {
                 sb.append(sep).append(sd).append(column).append(ed).append(" = ?");
                 sep = ", ";

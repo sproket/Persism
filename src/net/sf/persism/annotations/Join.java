@@ -1,5 +1,7 @@
 package net.sf.persism.annotations;
 
+import net.sf.persism.Parameters;
+
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -15,10 +17,10 @@ public @interface Join {
 
     String toProperties();
 
-    // innerorouter? or CROSS JOIN?
+    //TODO Child where clause to apply
+    String where() default "";
 
-    // alias to use if you want to reference the child class properties in a WHERE clause. OOF FORGET IT
-    //String alias() default "";
+    String alias() default "";
 
     boolean caseSensitive() default false;
 }

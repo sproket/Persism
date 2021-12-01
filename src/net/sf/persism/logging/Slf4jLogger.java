@@ -2,6 +2,9 @@ package net.sf.persism.logging;
 
 import org.slf4j.LoggerFactory;
 
+/**
+ * @hidden
+ */
 public final class Slf4jLogger extends AbstractLogger {
 
     public Slf4jLogger(String logName) {
