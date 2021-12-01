@@ -5,7 +5,7 @@ If you are looking for Persism 1.x then go [here](manual1.md).
 Download Persism [here](https://github.com/sproket/Persism/releases) and add it your project.
 
 If you are using Maven:
-```
+```xml
 <dependency>
     <groupId>io.github.sproket</groupId>
     <artifactId>persism</artifactId>
@@ -23,14 +23,14 @@ for deprecation. They still work, but you will get warnings about their use.
 
 To fix these warnings add static imports for the new SQL and Parameters classes like so:
 
-```
+```java 
 import static net.sf.persism.Parameters.*;
 import static net.sf.persism.SQL.*;
 ```
 
 Then change your code like this:
 
-```
+```java 
 // OLD way
 session.query(Customer.class, "select * from Customers where name = ?", "Fred");
 
@@ -45,7 +45,7 @@ Persism uses a standard Connection object so all you need to do is create the Se
 passing in the Connection.
 
 Here's a common method to do this:
-```
+```java 
 Properties props = new Properties();
 props.load(getClass().getResourceAsStream("/mydb.properties"));
 
@@ -65,7 +65,7 @@ Session session = new Session(con);
 ## Querying Data
 
 With the session object you can then run queries to retrieve lists of objects:
-```
+```java 
 import static net.sf.persism.Parameters.*;
 import static net.sf.persism.SQL.*;
 
@@ -80,7 +80,7 @@ parameterized queries, and you can also use stored procedures instead of query s
 
 You can also read a single object with a query string like this:
 
-```
+```java 
 import static net.sf.persism.Parameters.*;
 import static net.sf.persism.SQL.*;
 
@@ -96,7 +96,7 @@ This method returns null if the customer was not found.
 
 You can also quickly initialize an Object from the database by specifying the Object's primary key. This way you do not need any SQL statement.
 
-```
+```java 
 Customer customer = new Customer();
 customer.setCustomerId(123);
 if (session.fetch(customer)) {
@@ -109,7 +109,7 @@ so you can re-use the same object if you need to run multiple queries.
 
 You can also use query passing only the class and parameters.    
 
-```
+```java 
 List<Country> countries = session.query(Country.class, params("US", "CA"));
 ```
 
@@ -122,12 +122,12 @@ SELECT * FROM Countries WHERE CODE IN ('US', 'CA')
 
 You can also use a simpler form of the query method to return all rows from the database. **Best used for smaller tables**
 
-```
+```java 
 List<Country> countries = session.query(Country.class);
 ```
 
 The query can also return primitive Java types by simply using them directly.
-```
+```java 
 String result = session.fetch(String.class, sql("select Name from Customers where ID = ?"), params(10));
 
 int count = session.fetch(int.class, sql("select count(*) from Customers where Region = ?"), params(Region.West));
@@ -137,24 +137,24 @@ List<String> names = session.query(String.class, sql("select Name from Customers
 ```
 ### NEW Where Clause
 You can now use the ```SQL.where()``` method for tables and views since Persism knows the column names.
-```
+```java 
 List<Customer> list = session.query(Customer.class, where("CUST_NAME = ?"), params("Fred"));
 ```
 
 You can reference the property names instead of the column names - just use :propertyName
-```
+```java 
 List<Customer> list = session.query(Customer.class, where(":name = ?"), params("Fred"));
 ```
 
 Order by is also supported with where() method
-```
+```java 
 List<Customer> list = session.query(Customer.class, where(":name = ? ORDER BY :lastUpdated"), params("Fred")); 
 ```
 
 ### NEW Named Parameters
 
 Named parameters are also supported - just use @name
-```
+```java 
 SQL sql = where("(:firstname = @name OR :company = @name) and :lastname = @last");
 customer = session.fetch(Customer.class, sql, params(Map.of("name", "Fred", "last", "Flintstone")));
 ```
@@ -174,11 +174,9 @@ With the session object you can perform inserts, updates and deletes with data o
 These methods return a Result object of your POJO type containing the original object
 and the number of rows affected returned by JDBC
 
-
-
 To perform an operation simply use the appropriate method.
 ### Insert
-```
+```java 
 Customer customer = new Customer();
 customer.setCustomerId(123);
 customer.setCustomerName("Fred");
@@ -203,7 +201,7 @@ assert customer.getCustomerId() > 0
 before inserting into the DB - avoiding a DB Truncation error. Persism will log a warning when that occurs. 
 
 ### Update
-```
+```java 
 customer.setCustomerName("Barney");
 sesion.update(customer); // Update Customer   
 ```
@@ -215,7 +213,7 @@ be used in the update statement.
 before updating the DB - avoiding a DB Truncation error. Persism will log a warning when that occurs.
 
 ### Delete
-```
+```java 
 session.delete(customer); // Delete Customer
 ```
 
@@ -227,7 +225,7 @@ for you if it's an autoincrement when you do an insert.
 Session implements AutoCloseable so if you're using connection pooling you 
 can use this form:
 
-```
+```java 
 try (Session session = new Session(dataSource.getConnection())) {
   customer.setCustomerName("Barney");
   sesion.update(customer); 
@@ -251,7 +249,7 @@ multiple operations into a single transaction. This will set autocommit to false
 operations, commit and set autocommit back to true. If something goes wrong Persism will rollback 
 and throw ```PersismException```.
 
-``` 
+```java  
 session.withTransaction(() -> {
     Contact contact = getContactFromSomewhere();
 
@@ -277,7 +275,7 @@ Let's take the Categories table from Northwind:
 ![](img/nwcategories.png)
 
 Here's the class for this:
-```
+```java 
 public class Category {
 
     private int categoryId;
@@ -305,7 +303,7 @@ Here's another example from Northwind:
 
 Here's the class for this:
 
-```
+```java 
 public class OrderDetail {
 
     private int orderId;
@@ -322,7 +320,7 @@ public class OrderDetail {
 
 You could also specify your types with doubles or floats like this:
 
-```
+```java 
 public class OrderDetail {
 
     private int orderId;
@@ -352,7 +350,7 @@ Let's look at the PUBS database for this:
 
 Hmm, some funny names here. Here's a class for that:
 
-```
+```java 
 @Table("authors") // not really required in this case
 public class Author {
 
@@ -403,7 +401,7 @@ The name parameter is required, the other 3 parameters are optional.
 A somewhat common but misguided way to model data is to have POJO type objects inside other POJOs.
 
 example:
-```
+```java 
 public class Customer {
     private String customerId;
     private String companyName;
@@ -439,7 +437,7 @@ You'll usually see much better performance.
 You can read about the N+1 select problem [here](https://stackoverflow.com/questions/97197/what-is-the-n1-selects-problem-in-orm-object-relational-mapping).
 
 This is how you can do it though if you need to:
-```
+```java 
 public class Customer {
     private String customerId;
     private String companyName;
@@ -467,7 +465,7 @@ public class Order {
 }
 ```
 We annotate these as *@NotColumn* so they'll be ignored by the SQL query. Then you can define these yourself as required:
-```
+```java 
 Customer customer;
 List<Order> orders;
 customer = session.fetch(Customer.class, sql("select * from Customers where name = ?"), params("Fred"));
@@ -603,7 +601,7 @@ a date type is ```yyyy-MM-dd hh:mm:ss``` for DateTime types and ```yyyy-MM-dd```
 
 Here's an example logback configuration for logging with Persism:
 
-```
+```xml
 <?xml version="1.0" encoding="UTF-8"?>
 
 <!-- For assistance related to logback-translator or configuration  -->
