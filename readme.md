@@ -7,14 +7,14 @@ over configuration ORM (Object Relational Mapping) library for Java 17 or later.
 
 For Java 8 see the 1.x branch https://github.com/sproket/Persism/tree/persism1
 
-```xml
+```xml 
 <dependency>
     <groupId>io.github.sproket</groupId>
     <artifactId>persism</artifactId>
     <version>2.0.0</version>
 </dependency>
 ```
-```java
+```Java 
 import static net.sf.persism.Parameters.*;
 import static net.sf.persism.SQL.*;
 
