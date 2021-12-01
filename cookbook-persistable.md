@@ -5,7 +5,7 @@ changes occur in your POJOs to only include changed columns in the SQL update st
 database concurrency when you have a large numbers of users.
 
 Let's take an example:
-```
+```java 
 public class Contact {
 
     private int id;
@@ -20,7 +20,7 @@ public class Contact {
 
 We'll fetch one from our database and change the company name.
 
-```
+```java 
 Contact contact = new Contact();
 contact.setId(1);
 session.fetch(contact);
@@ -32,7 +32,7 @@ session.update(contact);
 
 This would produce the following update statement in the database:
 
-```
+```sql 
 UPDATE Contacts SET 
     FIRST_NAME = 'Fred', 
     LAST_NAME = 'Flintstone', 
@@ -45,7 +45,7 @@ columns in the update statement.
 
 Like this:
 
-```
+```sql 
 UPDATE Contacts SET 
     COMPANY = 'Cyberdyne Systems' 
     WHERE ID = 1       
@@ -58,7 +58,7 @@ When your database only updates the changed columns it will perform better with 
 
 Inherit PersistableObject
 
-```
+```java 
 public class Contact extends PersistableObject<Contact> {
 
     private int id;
@@ -85,7 +85,7 @@ readOriginalValue with getOriginalValue in the examples below.
 
 Step 1
 
-```
+```java 
 public class Contact implements Persistable<Contact> {
 
     private int id;
@@ -102,7 +102,7 @@ Step 2
 For the interface you'll need to implement the 2 methods: *saveReadState* - which is used to keep a copy of your POJO 
 in its initial state and *readOriginalValue* - which returns this object to Persism to compare to at appropriate times.
 
-```
+```java 
 public class Contact implements Persistable<Contact> {
 
     private int id;
@@ -127,7 +127,7 @@ To implement *readOriginalValue* you'll need a field to store the POJO instance.
 to use the *@NotColumn* annotation on the field to prevent "Contact was not properly initialized. Some properties not 
 initialized in the queried columns" exception.
 
-```
+```java 
 public class Contact implements Persistable<Contact> {
 
     private int id;
@@ -155,7 +155,7 @@ public class Contact implements Persistable<Contact> {
 To implement *saveReadState* the Persistable interface extends Cloneable which is an easy way 
 to copy a POJO though you may also use other ways of doing that if you want to. 
 
-```
+```java 
 public class Contact implements Persistable<Contact> {
 
     private int id;

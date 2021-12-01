@@ -12,7 +12,7 @@ data classes with little ceremony.
 ### Reading records:
 
 Suppose we have some query we want to get results for: 
-```
+```sql 
 SELECT c.Customer_ID, c.Company_Name, o.ID Order_ID, o.Name AS Description, 
         o.Date_Paid, o.Created AS DateCreated, o.PAID      
     FROM Orders o
@@ -20,7 +20,7 @@ SELECT c.Customer_ID, c.Company_Name, o.ID Order_ID, o.Name AS Description,
 ```
 
 We can write a record now to represent this result. 
-```
+```java 
 @NotTable
 public record CustomerOrder(String customerId, 
                             String companyName, 
@@ -37,7 +37,7 @@ records are immutable.
 You can also supply other constructors for queries. Let's assume you have another query and want to use this same record
 but maybe without the Date_Paid, DateCreated and PAID columns. OK.
 
-```
+```java 
 @NotTable
 public record CustomerOrder(String customerId, 
                             String companyName, 
@@ -57,7 +57,7 @@ public record CustomerOrder(String customerId,
 ```
 Now this same record can be used with a different query:
 
-```
+```sql 
 SELECT c.Customer_ID, c.Company_Name, o.ID Order_ID, o.Name AS Description 
     FROM Orders o
     JOIN Customers c ON o.Customer_ID = c.Customer_ID
@@ -82,7 +82,7 @@ You can insert a record the same way you would with a normal POJO. The only thin
 can't modify the original afterward if you had auto increment or other columns with defaults. The insert method now
 returns a Result object containing the row change count (as before) and the updated record object.
 
-```
+```java 
 Result<Invoice> result = session.insert(invoice);
 
 assertTrue("rows s/b > 0", result.rows() > 0);
@@ -94,7 +94,7 @@ assertNotNull("Created s/b not null", result.dataObject().dateCreated());
 
 Since you can't modify a record, if you want to make changes you need to instantiate a new record and call
 the session update method as usual.
-```
+```java 
 Invoice oldInvoice...
 
 Invoice invoice = new Invoice(oldInvoice.id(), oldInvoice.custId(), etc....)
@@ -116,7 +116,7 @@ The @Column and @NotColumn annotation are supported. Not sure why you'd need @No
 
 Adding calculated fields is easy with Records!
 
-```
+```java 
 public record OrderItem(int orderId, String description, int qty, double price) {
 
     // calculated field
