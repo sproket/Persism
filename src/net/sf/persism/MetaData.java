@@ -518,7 +518,7 @@ final class MetaData {
             if (changes.size() == 0) {
                 throw new NoChangesDetectedForUpdateException();
             }
-            // Note we don't not add Persistable updates to updateStatementsMap since they will be different each time.
+            // Note we don't add Persistable updates to updateStatementsMap since they will be different each time.
             String sql = buildUpdateString(object, changes.keySet().iterator(), connection);
             if (log.isDebugEnabled()) {
                 log.debug("getUpdateStatement for %s for changed fields is %s", object.getClass(), sql);
@@ -799,7 +799,7 @@ final class MetaData {
             String column = it.next();
             ColumnInfo columnInfo = columns.get(column);
             if (columnInfo.autoIncrement || columnInfo.primary) {
-                log.info("buildUpdateString: skipping " + column);
+                log.debug("buildUpdateString: skipping " + column);
             } else {
                 sb.append(sep).append(sd).append(column).append(ed).append(" = ?");
                 sep = ", ";

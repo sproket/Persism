@@ -379,6 +379,16 @@ public abstract class BaseTest extends TestCase {
                     e.getMessage());
         }
         assertTrue(fail);
+
+        List<CustomerRec> customerRecs = session.query(CustomerRec.class);
+        assertTrue(customerRecs.size() > 0);
+
+        CustomerRec crec = session.fetch(CustomerRec.class, params(customerRecs.get(0).customerId()));
+        assertNotNull(crec);
+
+        CustomerRec crec2 = new CustomerRec(crec.customerId(), crec.companyName(), crec.contactName(), 'x');
+        Result<CustomerRec> res = session.update(crec2);
+        log.warn(res);
     }
 
     public void testJoinsParentFetch() throws SQLException {

@@ -248,7 +248,6 @@ public class TestMySQL extends BaseTest {
     }
 
     public void testSomething() {
-        // move to base class
         Customer customer = new Customer();
         customer.setCustomerId("123");
         customer.setContactName("Fred");
