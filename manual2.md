@@ -197,8 +197,6 @@ log.info(result.dataObject());
 // Inserted and new autoinc value assigned
 assert customer.getCustomerId() > 0
 ```
-**Note:**  Persism detects if a String is longer than the specified width in the database and will trim it 
-before inserting into the DB - avoiding a DB Truncation error. Persism will log a warning when that occurs. 
 
 ### Update
 ```java 
