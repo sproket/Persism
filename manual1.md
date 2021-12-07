@@ -138,9 +138,6 @@ sesion.update(customer); // Update Customer
 **Note:** If your POJO extends *PersistableObject* or implements *Persistable* then only the changed columns will 
 be used in the update statement.
 
-**Note:**  Persism detects if a String is longer than the specified width in the database and will trim it
-before updating the DB - avoiding a DB Truncation error. Persism will log a warning when that occurs.
-
 ### Delete
 ```java 
 session.delete(customer); // Delete Customer
