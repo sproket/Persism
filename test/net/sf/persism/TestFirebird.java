@@ -111,7 +111,12 @@ public class TestFirebird extends BaseTest {
 
         if (isTableInDatabase("CUSTOMERS", con)) {
             executeCommand("DROP TABLE CUSTOMERS;", con);
+        }
+
+        try {
             executeCommand("DROP GENERATOR GEN_CUSTOMER_ID;", con);
+        } catch (SQLException e) {
+            log.warn(e.getMessage(), e);
         }
 
         sql = "CREATE GENERATOR GEN_CUSTOMER_ID; ";
@@ -120,6 +125,7 @@ public class TestFirebird extends BaseTest {
 
         sql = "CREATE TABLE CUSTOMERS ( " +
                 "  CUSTOMER_ID VARCHAR(10) NOT NULL, " +
+                " GROUP_ID INT, " +
                 "  COMPANY_NAME VARCHAR(30) NOT NULL, " +
                 "  CONTACT_NAME VARCHAR(30), " +
                 "  CONTACT_TITLE VARCHAR(10), " +

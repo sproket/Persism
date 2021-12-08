@@ -12,6 +12,7 @@ import java.util.Map;
  * User: DHoward
  * Date: 9/8/11
  * Time: 8:09 AM
+ * todo encapsulate this class better
  */
 final class PropertyInfo {
 
@@ -57,6 +58,20 @@ final class PropertyInfo {
     Object getValue(Object object) {
         try {
             return getter.invoke(object);
+        } catch (IllegalAccessException | InvocationTargetException e) {
+            throw new PersismException(e.getMessage(), e);
+        }
+    }
+
+    void setValue(Object object, Object value) {
+        try {
+            if (setter != null) {
+                setter.invoke(object, value);
+            } else {
+                field.setAccessible(true);
+                field.set(object, value);
+                field.setAccessible(false);
+            }
         } catch (IllegalAccessException | InvocationTargetException e) {
             throw new PersismException(e.getMessage(), e);
         }

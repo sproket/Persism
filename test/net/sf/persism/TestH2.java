@@ -112,6 +112,7 @@ to the database URL (example: jdbc:h2:~/test;IGNORECASE=TRUE).
 
         commands.add("CREATE TABLE Customers ( " +
                 " Customer_ID varchar(10) PRIMARY KEY NOT NULL, " +
+                " GROUP_ID INT NULL, " +
                 " Company_Name VARCHAR(30) NULL, " +
                 " Contact_Name VARCHAR(30) NULL, " +
                 " Contact_Title VARCHAR(10) NULL, " +
@@ -119,7 +120,7 @@ to the database URL (example: jdbc:h2:~/test;IGNORECASE=TRUE).
                 " City VARCHAR(30) NULL, " +
                 " Region ENUM('North', 'South', 'East', 'West'), " +
                 " Postal_Code VARCHAR(10) NULL, " +
-                " Country VARCHAR(2) NOT NULL DEFAULT 'US', " +
+                " Country VARCHAR(2) DEFAULT 'US', " +
                 " Phone VARCHAR(30) NULL, " +
                 " Fax VARCHAR(30) NULL, " +
                 " Status CHAR(1) NULL, " +

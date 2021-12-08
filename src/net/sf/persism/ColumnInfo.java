@@ -15,7 +15,7 @@ final class ColumnInfo {
     // H2 - BIT - comes back NULL
     Types columnType;
 
-    // Currently just kept for possible future use
+    // kept for possible future use
     int sqlColumnType;
     String sqlColumnTypeName;
 

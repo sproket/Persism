@@ -84,15 +84,9 @@ final class Reader {
 
                 if (value != null) {
                     try {
-                        if (columnProperty.readOnly) {
-                            // set the value on the field directly
-                            columnProperty.field.setAccessible(true);
-                            columnProperty.field.set(object, value);
-                            columnProperty.field.setAccessible(false);
-                        } else {
-                            columnProperty.setter.invoke(object, value);
-                        }
+                        columnProperty.setValue(object, value);
                     } catch (IllegalArgumentException e) {
+                        // A IllegalArgumentException (which is a RuntimeException) occurs if we're setting an unmatched ENUM
                         throw new PersismException(Messages.IllegalArgumentReadingColumn.message(columnProperty.propertyName, objectClass, columnName, returnType, value.getClass(), value), e);
                     }
                 }
@@ -367,7 +361,7 @@ final class Reader {
             }
 
         } else {
-            log.warn(Messages.ColumnTypeNotKnownForSQLType.message(sqlColumnType), new Throwable());
+            log.warnNoDuplicates(Messages.ColumnTypeNotKnownForSQLType.message(sqlColumnType, columnName));
             value = rs.getObject(column);
         }
 

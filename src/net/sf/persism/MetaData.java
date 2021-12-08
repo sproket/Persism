@@ -11,7 +11,6 @@ import java.text.MessageFormat;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
-import static java.text.MessageFormat.format;
 import static net.sf.persism.Util.*;
 
 /**
@@ -69,6 +68,7 @@ final class MetaData {
     // for non alpha-numeric characters in column names. We'll just use a static set.
     private static final String EXTRA_NAME_CHARACTERS = "`~!@#$%^&*()-+=/|\\{}[]:;'\".,<>*";
     private static final String SELECT_FOR_COLUMNS = "SELECT * FROM {0}{1}{2} WHERE 1=0";
+    private static final String SELECT_FOR_COLUMNS_WITH_SCHEMA = "SELECT * FROM {0}{1}{2}.{3}{4}{5} WHERE 1=0";
 
     private MetaData(Connection con, String sessionKey) throws SQLException {
 
@@ -104,13 +104,19 @@ final class MetaData {
 
         String sd = connectionType.getKeywordStartDelimiter();
         String ed = connectionType.getKeywordEndDelimiter();
+        String schema = tableInfos.get(tableName).schema();
 
         ResultSet rs = null;
         Statement st = null;
         try {
             st = connection.createStatement();
             // gives us real column names with case.
-            String sql = MessageFormat.format(SELECT_FOR_COLUMNS, sd, tableName, ed);
+            String sql;
+            if (isEmpty(schema)) {
+                sql = MessageFormat.format(SELECT_FOR_COLUMNS, sd, tableName, ed);
+            } else {
+                sql = MessageFormat.format(SELECT_FOR_COLUMNS_WITH_SCHEMA, sd, schema, ed, sd, tableName, ed);
+            }
             if (log.isDebugEnabled()) {
                 log.debug("determineColumns: %s", sql);
             }
@@ -147,7 +153,7 @@ final class MetaData {
                 }
                 PropertyInfo foundProperty = null;
                 for (PropertyInfo propertyInfo : properties) {
-                    String checkName = propertyInfo.propertyName.toLowerCase().replace("_", "");
+                    String checkName = propertyInfo.propertyName().toLowerCase().replace("_", "");
                     if (checkName.equalsIgnoreCase(columnName)) {
                         foundProperty = propertyInfo;
                         break;
@@ -165,7 +171,7 @@ final class MetaData {
 
                 if (foundProperty != null) {
                     columns.put(realColumnName, foundProperty);
-                    propertyNames.add(foundProperty.propertyName);
+                    propertyNames.add(foundProperty.propertyName());
                 } else {
                     log.warn(Messages.NoPropertyFoundForColumn.message(realColumnName, objectClass));
                 }
@@ -200,14 +206,22 @@ final class MetaData {
 
         Statement st = null;
         ResultSet rs = null;
+
         Map<String, PropertyInfo> properties = getTableColumnsPropertyInfo(objectClass, connection);
+
         String sd = connectionType.getKeywordStartDelimiter();
         String ed = connectionType.getKeywordEndDelimiter();
+        String schema = tableInfos.get(tableName).schema();
 
         try {
 
             st = connection.createStatement();
-            String sql = format("SELECT * FROM {0}{1}{2} WHERE 1=0", sd, tableName, ed);
+            String sql;
+            if (isEmpty(schema)) {
+                sql = MessageFormat.format(SELECT_FOR_COLUMNS, sd, tableName, ed);
+            } else {
+                sql = MessageFormat.format(SELECT_FOR_COLUMNS_WITH_SCHEMA, sd, schema, ed, sd, tableName, ed);
+            }
             log.debug("determineColumnInfo %s", sql);
             rs = st.executeQuery(sql);
 
@@ -270,8 +284,13 @@ final class MetaData {
 
             if (objectClass.getAnnotation(View.class) == null) {
 
+                if (isEmpty(schema)) {
+                    rs = dmd.getPrimaryKeys(null, connectionType.getSchemaPattern(), tableName);
+                } else {
+                    rs = dmd.getPrimaryKeys(null, schema, tableName);
+                }
+
                 // Iterate primary keys and update column infos
-                rs = dmd.getPrimaryKeys(null, connectionType.getSchemaPattern(), tableName);
                 int primaryKeysCount = 0;
                 while (rs.next()) {
                     ColumnInfo columnInfo = map.get(rs.getString("COLUMN_NAME"));
@@ -492,16 +511,14 @@ final class MetaData {
             while (rs.next()) {
                 String name = rs.getString("TABLE_NAME");
                 tableNames.add(name);
-//                log.error("TABLE_NAME " + name);
-//                log.error("TABLE_SCHEM " + rs.getString("TABLE_SCHEM"));
-//                log.error("TABLE_CAT " + rs.getString("TABLE_CAT"));
-// todo schema names
                 tableInfos.put(name, new TableInfo(name, rs.getString("TABLE_SCHEM")));
             }
 
             rs = con.getMetaData().getTables(null, connectionType.getSchemaPattern(), null, viewTypes);
             while (rs.next()) {
-                viewNames.add(rs.getString("TABLE_NAME"));
+                String name = rs.getString("TABLE_NAME");
+                viewNames.add(name);
+                tableInfos.put(name, new TableInfo(name, rs.getString("TABLE_SCHEM"))); // why do we seperate 2 lists?
             }
 
         } catch (SQLException e) {
@@ -525,7 +542,7 @@ final class MetaData {
             if (changes.size() == 0) {
                 throw new NoChangesDetectedForUpdateException();
             }
-            // Note we don't not add Persistable updates to updateStatementsMap since they will be different each time.
+            // Note we don't add Persistable updates to updateStatementsMap since they will be different each time.
             String sql = buildUpdateString(object, changes.keySet().iterator(), connection);
             if (log.isDebugEnabled()) {
                 log.debug("getUpdateStatement for %s for changed fields is %s", object.getClass(), sql);
@@ -589,14 +606,20 @@ final class MetaData {
 
         try {
             String tableName = getTableName(object.getClass(), connection);
+            String schema = tableInfos.get(tableName).schema();
+
             String sd = connectionType.getKeywordStartDelimiter();
             String ed = connectionType.getKeywordEndDelimiter();
 
             Map<String, ColumnInfo> columns = getColumns(object.getClass(), connection);
             Map<String, PropertyInfo> properties = getTableColumnsPropertyInfo(object.getClass(), connection);
 
-            StringBuilder sbi = new StringBuilder();
-            sbi.append("INSERT INTO ").append(sd).append(tableName).append(ed).append(" (");
+            StringBuilder sb = new StringBuilder();
+            sb.append("INSERT INTO ");
+            if (isNotEmpty(schema)) {
+                sb.append(sd).append(schema).append(ed).append(".");
+            }
+            sb.append(sd).append(tableName).append(ed).append(" (");
 
             StringBuilder sbp = new StringBuilder();
             sbp.append(") VALUES (");
@@ -613,22 +636,22 @@ final class MetaData {
 
                         // Do not include if this column has a default and no value has been
                         // set on it's associated property.
-                        if (properties.get(column.columnName).getter.invoke(object) == null) {
+                        if (properties.get(column.columnName).getValue(object) == null) {
                             continue;
                         }
 
                     }
 
-                    sbi.append(sep).append(sd).append(column.columnName).append(ed);
+                    sb.append(sep).append(sd).append(column.columnName).append(ed);
                     sbp.append(sep).append("?");
                     sep = ", ";
                 }
             }
 
-            sbi.append(sbp).append(") ");
+            sb.append(sbp).append(") ");
 
             String insertStatement;
-            insertStatement = sbi.toString();
+            insertStatement = sb.toString();
 
             if (log.isDebugEnabled()) {
                 log.debug("determineInsertStatement for %s is %s", object.getClass(), insertStatement);
@@ -662,13 +685,20 @@ final class MetaData {
         }
 
         String tableName = getTableName(object.getClass(), connection);
+        String schema = tableInfos.get(tableName).schema();
+
         String sd = connectionType.getKeywordStartDelimiter();
         String ed = connectionType.getKeywordEndDelimiter();
 
         List<String> primaryKeys = getPrimaryKeys(object.getClass(), connection);
 
         StringBuilder sb = new StringBuilder();
-        sb.append("DELETE FROM ").append(sd).append(tableName).append(ed).append(" WHERE ");
+        sb.append("DELETE FROM ");
+        if (isNotEmpty(schema)) {
+            sb.append(sd).append(schema).append(ed).append(".");
+        }
+        sb.append(sd).append(tableName).append(ed).append(" WHERE ");
+
         String sep = "";
         for (String column : primaryKeys) {
             sb.append(sep).append(sd).append(column).append(ed).append(" = ?");
@@ -764,6 +794,7 @@ final class MetaData {
         String ed = connectionType.getKeywordEndDelimiter();
 
         String tableName = getTableName(objectClass, connection);
+        String schema = tableInfos.get(tableName).schema();
 
         StringBuilder sb = new StringBuilder();
         sb.append("SELECT ");
@@ -776,7 +807,11 @@ final class MetaData {
             sb.append(sep).append(sd).append(columnInfo.columnName).append(ed);
             sep = ", ";
         }
-        sb.append(" FROM ").append(sd).append(tableName).append(ed);
+        sb.append(" FROM ");
+        if (isNotEmpty(schema)) {
+            sb.append(sd).append(schema).append(ed).append('.');
+        }
+        sb.append(sd).append(tableName).append(ed);
 
 
         String selectStatement = sb.toString();
@@ -791,14 +826,23 @@ final class MetaData {
     }
 
     private String buildUpdateString(Object object, Iterator<String> it, Connection connection) throws PersismException {
+
+        // todo maybe we should exclude columns where there is no setter? Unless it's a record?
         String tableName = getTableName(object.getClass(), connection);
+        String schema = tableInfos.get(tableName).schema();
+
         String sd = connectionType.getKeywordStartDelimiter();
         String ed = connectionType.getKeywordEndDelimiter();
 
         List<String> primaryKeys = getPrimaryKeys(object.getClass(), connection);
 
         StringBuilder sb = new StringBuilder();
-        sb.append("UPDATE ").append(sd).append(tableName).append(ed).append(" SET ");
+        sb.append("UPDATE ");
+        if (isNotEmpty(schema)) {
+            sb.append(sd).append(schema).append(ed).append(".");
+        }
+        sb.append(sd).append(tableName).append(ed).append(" SET ");
+
         String sep = "";
 
         Map<String, ColumnInfo> columns = getColumns(object.getClass(), connection);
@@ -839,8 +883,8 @@ final class MetaData {
 
                     Object newValue = null;
                     Object orgValue = null;
-                    newValue = propertyInfo.getter.invoke(persistable);
-                    orgValue = propertyInfo.getter.invoke(original);
+                    newValue = propertyInfo.getValue(persistable);
+                    orgValue = propertyInfo.getValue(original);
 
                     if (newValue != null && !newValue.equals(orgValue) || orgValue != null && !orgValue.equals(newValue)) {
                         changedColumns.put(column, propertyInfo);

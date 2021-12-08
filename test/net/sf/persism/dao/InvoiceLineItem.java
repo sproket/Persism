@@ -56,9 +56,9 @@ public final class InvoiceLineItem {
         return product;
     }
 
-    public void setProduct(Product product) {
-        this.product = product;
-    }
+//    public void setProduct(Product product) {
+//        this.product = product;
+//    }
 
     @Override
     public String toString() {

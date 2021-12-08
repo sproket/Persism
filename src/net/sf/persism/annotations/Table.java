@@ -24,9 +24,9 @@ public @interface Table {
      * Table Name
      * @return Table Name
      */
-    String value() default "";
+    String value() default ""; // todo for schema we can document schema.tablename for the value
 
-    String schema() default "";
-
-    String name() default ""; // todo if we use this form - need to get tableName from name() or value()
+//    String schema() default "";
+//
+//    String name() default ""; // if we use this form - need to get tableName from name() or value()
 }

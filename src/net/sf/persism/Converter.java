@@ -196,7 +196,7 @@ final class Converter {
                     returnValue = dval.toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime();
 
                 } else if (targetType.isEnum()) {
-                    // If this is an enum do a case insensitive comparison
+                    // If this is an enum do a case-insensitive comparison
                     Object[] enumConstants = targetType.getEnumConstants();
                     for (Object element : enumConstants) {
                         if (("" + value).equalsIgnoreCase(element.toString())) {

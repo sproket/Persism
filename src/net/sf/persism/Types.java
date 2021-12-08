@@ -160,14 +160,7 @@ enum Types {
         }
 
         if (result == null) {
-            // Need this for converter
-            // https://stackoverflow.com/questions/36405320/using-the-datetimeoffset-datatype-with-jtds
-            if (sqlType == -155) {
-                // MSSQL type for DateTimeOffset
-                result = TimestampType;
-            } else {
-                log.warn(Messages.UnknownSQLType.message(sqlType), new Throwable());
-            }
+            log.warnNoDuplicates(Messages.UnknownSQLType.message(sqlType));
         }
 
         return result;

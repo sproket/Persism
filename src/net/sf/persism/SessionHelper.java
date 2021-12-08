@@ -119,7 +119,7 @@ final class SessionHelper {
 
             if (parameters.length == 0) {
                 st = session.connection.createStatement();
-                 st.execute(sql);
+                st.execute(sql);
             } else {
                 st = session.connection.prepareStatement(sql);
                 PreparedStatement pst = (PreparedStatement) st;
@@ -376,7 +376,7 @@ final class SessionHelper {
 
                     case characterType:
                     case CharacterType:
-                        st.setObject(n, ""+param); // todo informix (or others) see character as numeric so toString will fail with chars like 'x' s/b setCharacter
+                        st.setObject(n, "" + param); // todo informix (or others) see character as numeric so toString will fail with chars like 'x' s/b setCharacter
                         //st.setByte(n, (Byte) param);
                         break;
 
@@ -469,7 +469,8 @@ final class SessionHelper {
 
     // parent is a POJO or a List of POJOs
     void handleJoins(Object parent, Class<?> parentClass, String parentSql, Parameters parentParams) throws IllegalAccessException, InvocationTargetException {
-        // todo maybe we could add a check for fetch after insert. In those cases there's no need to query for child lists - BUT we do need query for child SINGLES
+        // maybe we could add a check for fetch after insert. In those cases there's no need to query for child lists - BUT we do need query for child SINGLES
+        // NOT really important. At most 1 extra query per type will be run (and no child queries after that)
 
         List<PropertyInfo> joinProperties = MetaData.getPropertyInfo(parentClass).stream().filter(PropertyInfo::isJoin).collect(Collectors.toList());
 
@@ -477,7 +478,8 @@ final class SessionHelper {
             Join joinAnnotation = (Join) joinProperty.getAnnotation(Join.class);
             JoinInfo joinInfo = new JoinInfo(joinAnnotation, joinProperty, parent, parentClass);
 
-            if (joinInfo.parentIsAQuery) {
+            if (joinInfo.parentIsAQuery()) {
+                // We expect this method not to be called if the result query has 0 rows.
                 assert ((Collection<?>) parent).size() > 0;
             }
 
@@ -500,105 +502,89 @@ final class SessionHelper {
                 }
             }
 
+            // join to a collection
             if (Collection.class.isAssignableFrom(joinProperty.field.getType())) {
                 // query
-                List<?> childList;
-                childList = session.query(joinInfo.childClass, where(whereClause), params(params.toArray()));
+                List<?> childList = session.query(joinInfo.childClass(), where(whereClause), params(params.toArray()));
 
-                if (joinInfo.parentIsAQuery) {
+                if (joinInfo.parentIsAQuery()) {
+                    // many to many
                     List<?> parentList = (List<?>) parent;
                     stitch(joinInfo, parentList, childList);
                 } else {
+                    // one to many
                     assignJoinedList(joinProperty, parent, childList);
                 }
-            } else {
-                // single object property
 
-                // fetch
-                List<?> childList;
-                childList = session.query(joinInfo.childClass, where(whereClause), params(params.toArray()));
+            } else { // join to single object
 
-                if (joinInfo.parentIsAQuery) {
-
-                    stitch(joinInfo, (List<?>) parent, childList);
+                if (joinInfo.parentIsAQuery()) {
+                    // many to one
+                    List<?> childList = session.query(joinInfo.childClass(), where(whereClause), params(params.toArray()));
+                    stitch(joinInfo.swapParentAndChild(), childList, (List<?>) parent);
 
                 } else {
-                    // TODO currently can't work with record? Nope. We'd need to work in reverse order or something. Wait for refactor of this method.
-                    if (childList.size() > 0) {
-                        if (joinProperty.setter != null) {
-                            joinProperty.setter.invoke(parent, childList.get(0));
-                        } else {
-                            throw new PersismException("No Setter for " + joinProperty.propertyName + " in " + parentClass);
-                        }
-                    }
-                    if (childList.size() > 1) {
-                        log.warn("why do I have more than 1?");
+                    // one to one
+                    Object child = session.fetch(joinInfo.childClass(), where(whereClause), params(params.toArray()));
+                    if (child != null) {
+                        joinProperty.setValue(parent, child);
                     }
                 }
             }
         }
     }
 
-    @SuppressWarnings({"rawtypes", "unchecked"})
-    private void stitch(JoinInfo joinInfo, List<?> parentList, List<?> childList) throws InvocationTargetException, IllegalAccessException {
+    private void stitch(JoinInfo joinInfo, List<?> parentList, List<?> childList) {
         blog.debug("STITCH " + joinInfo);
 
+        if (childList.size() == 0) {
+            return;
+        }
         long now = System.currentTimeMillis();
 
         Map<Object, Object> parentMap;
-        if (joinInfo.parentProperties.size() == 1 && joinInfo.childProperties.size() == 1) {
-            PropertyInfo propertyInfo = joinInfo.parentProperties.get(0);
-            PropertyInfo childPropertyInfo = joinInfo.childProperties.get(0);
+        if (joinInfo.parentProperties().size() == 1 && joinInfo.childProperties().size() == 1) {
 
-            // todo this parent map is created for each join. Maybe only do it once?
+            PropertyInfo parentPropertyInfo = joinInfo.parentProperties().get(0);
+            PropertyInfo childPropertyInfo = joinInfo.childProperties().get(0);
+
             // https://stackoverflow.com/questions/32312876/ignore-duplicates-when-producing-map-using-streams
-            parentMap = parentList.stream().collect(Collectors.toMap(o -> propertyInfo.getValue(o), o -> o, (o1, o2) -> o1));
+            parentMap = parentList.stream().collect(Collectors.
+                    toMap(obj -> {
+                        // todo code coverage for not case sensitive strings for map
+                        Object value = parentPropertyInfo.getValue(obj);
+                        if (!joinInfo.caseSensitive() && value instanceof String s) {
+                            return s.toUpperCase();
+                        }
+                        return value;
+                    }, o -> o, (o1, o2) -> o1));
 
             for (Object child : childList) {
                 Object parent = parentMap.get(childPropertyInfo.getValue(child));
-                if (Collection.class.isAssignableFrom(joinInfo.joinProperty.field.getType())) {
-                    var list = (Collection) joinInfo.joinProperty.getValue(parent);
-                    if (list == null) {
-                        throw new PersismException("Cannot join to null for property: " + joinInfo.joinProperty.propertyName + ". Instantiate the property as ArrayList<T> in your constructor.");
-                    }
-                    list.add(child);
-
-                } else {
-                    joinInfo.joinProperty.setter.invoke(parent, child);
-                }
+                setPropertyFromJoinInfo(joinInfo, parent, child);
             }
+
         } else {
-            parentMap = parentList.stream().
-                    collect(Collectors.
-                            toMap(o -> {
-                                List<Object> values = new ArrayList<>();
-                                for (int j = 0; j < joinInfo.parentProperties.size(); j++) {
-                                    values.add(joinInfo.parentProperties.get(j).getValue(o));
-                                }
-                                return new KeyBox(joinInfo.caseSensitive, values.toArray());
-                            }, o -> o, (o1, o2) -> o1));
+            // todo test with reverse
+            parentMap = parentList.stream().collect(Collectors.
+                    toMap(obj -> {
+                        List<Object> values = new ArrayList<>();
+                        for (int j = 0; j < joinInfo.parentProperties().size(); j++) {
+                            values.add(joinInfo.parentProperties().get(j).getValue(obj));
+                        }
+                        return new KeyBox(joinInfo.caseSensitive(), values.toArray());
+                    }, o -> o, (o1, o2) -> o1));
 
 
             for (Object child : childList) {
                 List<Object> values = new ArrayList<>();
-                for (int j = 0; j < joinInfo.childProperties.size(); j++) {
-                    values.add(joinInfo.childProperties.get(j).getValue(child));
+                for (int j = 0; j < joinInfo.childProperties().size(); j++) {
+                    values.add(joinInfo.childProperties().get(j).getValue(child));
                 }
 
-                KeyBox keyBox = new KeyBox(joinInfo.caseSensitive, values.toArray());
-
+                KeyBox keyBox = new KeyBox(joinInfo.caseSensitive(), values.toArray());
                 Object parent = parentMap.get(keyBox);
-                if (Collection.class.isAssignableFrom(joinInfo.joinProperty.field.getType())) {
-                    var list = (Collection) joinInfo.joinProperty.getValue(parent);
-                    if (list == null) {
-                        throw new PersismException("Cannot join to null for property: " + joinInfo.joinProperty.propertyName + ". Instantiate the property as ArrayList<T> in your constructor.");
-                    }
-                    list.add(child);
-
-                } else {
-                    joinInfo.joinProperty.setter.invoke(parent, child);
-                }
-
+                setPropertyFromJoinInfo(joinInfo, parent, child);
             }
         }
 
@@ -606,11 +592,28 @@ final class SessionHelper {
     }
 
     @SuppressWarnings({"rawtypes", "unchecked"})
-    private void assignJoinedList(PropertyInfo joinProperty, Object parentObject, List list) throws IllegalAccessException, InvocationTargetException {
+    private void setPropertyFromJoinInfo(JoinInfo joinInfo, Object parent, Object child) {
+        if (Collection.class.isAssignableFrom(joinInfo.joinProperty().field.getType())) {
+            var list = (Collection) joinInfo.joinProperty().getValue(parent);
+            if (list == null) {
+                throw new PersismException("Cannot join to null for property: " + joinInfo.joinProperty().propertyName + ". Instantiate the property as ArrayList<T> in your constructor.");
+            }
+            list.add(child);
+        } else {
+            if (joinInfo.reversed()) {
+                joinInfo.joinProperty().setValue(child, parent);
+            } else {
+                joinInfo.joinProperty().setValue(parent, child);
+            }
+        }
+    }
+
+    @SuppressWarnings({"rawtypes", "unchecked"})
+    private void assignJoinedList(PropertyInfo joinProperty, Object parentObject, List list) {
 
         // no null test - the object should have some List initialized.
 
-        List joinedList = (List) joinProperty.getter.invoke(parentObject);
+        List joinedList = (List) joinProperty.getValue(parentObject);
         if (joinedList == null) {
             throw new PersismException("Cannot join to null for property: " + joinProperty.propertyName + ". Instantiate the property as ArrayList<T> in your constructor.");
         }
@@ -629,13 +632,13 @@ final class SessionHelper {
             parentWhere = parentWhere.substring(0, n);
         }
 
-        Map<String, PropertyInfo> properties = session.metaData.getTableColumnsPropertyInfo(joinInfo.parentClass, session.connection);
+        Map<String, PropertyInfo> properties = session.metaData.getTableColumnsPropertyInfo(joinInfo.parentClass(), session.connection);
 
-        for (int j = 0; j < joinInfo.parentPropertyNames.length; j++) {
+        for (int j = 0; j < joinInfo.parentPropertyNames().length; j++) {
             String parentColumnName = null;
 
             for (String key : properties.keySet()) {
-                if (properties.get(key).propertyName.equals(joinInfo.parentPropertyNames[j])) {
+                if (properties.get(key).propertyName.equals(joinInfo.parentPropertyNames()[j])) {
                     parentColumnName = key;
                     break;
                 }
@@ -645,20 +648,15 @@ final class SessionHelper {
 
             parentColumnName = sd + parentColumnName + ed;
 
-            String parentTable = session.metaData.getTableName(joinInfo.parentClass);
+            String parentTable = sd + session.metaData.getTableName(joinInfo.parentClass()) + ed;
 
-            String inOrEqualsStart;
-            String inOrEqualsEnd;
-
-            inOrEqualsStart = " IN (";
-            inOrEqualsEnd = ") ";
-
-            where.append(sep).append(":").append(joinInfo.childPropertyNames[j]).append(inOrEqualsStart);
+            where.append(sep).append(":").append(joinInfo.childPropertyNames()[j]).append(" IN (");
             where.append("SELECT ").append(parentColumnName).append(" FROM ").append(parentTable);
+
             if (!parentWhere.isEmpty()) {
                 where.append(" WHERE ").append(parentWhere);
             }
-            where.append(inOrEqualsEnd);
+            where.append(") ");
             sep = " AND ";
         }
         return where.toString();

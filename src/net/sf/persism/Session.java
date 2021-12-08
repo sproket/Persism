@@ -143,7 +143,7 @@ public final class Session implements AutoCloseable {
         try {
             for (String column : primaryKeys) {
                 PropertyInfo propertyInfo = properties.get(column);
-                params.add(propertyInfo.getter.invoke(object));
+                params.add(propertyInfo.getValue(object));
                 columnInfos.add(cols.get(column));
             }
             assert params.size() == columnInfos.size();
@@ -223,7 +223,7 @@ public final class Session implements AutoCloseable {
      * @param parameters  parameters to the query.
      * @param <T>         Return type
      * @return value read from the database of type T or null if not found
-     * @throws PersismException Well, this is a runtime exception so actually it could be anything really.
+     * @throws PersismException Well, this is a runtime exception, so it actually could be anything really.
      */
     public <T> T fetch(Class<T> objectClass, SQL sql, Parameters parameters) {
         // If we know this type it means it's a primitive type. Not a DAO so we use a different rule to read those
@@ -354,12 +354,12 @@ public final class Session implements AutoCloseable {
         String ed = metaData.getConnectionType().getKeywordEndDelimiter();
 
         String andSep = "";
-        // View should not check for WHERE we don't support @View here anyway RIGHT?
+        // TODO View should not check for WHERE we don't support @View here anyway RIGHT?
         if (objectClass.getAnnotation(View.class) == null) {
             int n = query.indexOf(" WHERE");
             query = query.substring(0, n + 7);
         } else {
-            query += " WHERE ";
+            query += " WHERE "; // not covered.....
         }
 
         StringBuilder sb = new StringBuilder(query);
@@ -500,14 +500,14 @@ public final class Session implements AutoCloseable {
                 if (primaryKeys.contains(column)) {
                     log.debug("Session update: skipping column %s",  column);
                 } else {
-                    Object value = allProperties.get(column).getter.invoke(object);
+                    Object value = allProperties.get(column).getValue(object);
                     params.add(value);
                     columnInfos.add(columnInfo);
                 }
             }
 
             for (String column : primaryKeys) {
-                params.add(allProperties.get(column).getter.invoke(object));
+                params.add(allProperties.get(column).getValue(object));
                 columnInfos.add(metaData.getColumns(object.getClass(), connection).get(column));
             }
             assert params.size() == columnInfos.size();
@@ -594,7 +594,7 @@ public final class Session implements AutoCloseable {
                             log.warnNoDuplicates(Messages.PropertyShouldBeAnObjectType.message(propertyInfo.propertyName, columnInfo.columnName, object.getClass()));
                         }
 
-                        if (propertyInfo.getter.invoke(object) == null) {
+                        if (propertyInfo.getValue(object) == null) {
 
                             if (columnInfo.primary) {
                                 // This is supported with PostgreSQL but otherwise throw this an exception
@@ -608,7 +608,7 @@ public final class Session implements AutoCloseable {
                         }
                     }
 
-                    Object value = propertyInfo.getter.invoke(object);
+                    Object value = propertyInfo.getValue(object);
 
                     params.add(value);
                     columnInfos.add(columnInfo);
@@ -725,7 +725,7 @@ public final class Session implements AutoCloseable {
             List<Object> params = new ArrayList<>(primaryKeys.size());
             List<ColumnInfo> columnInfos = new ArrayList<>(columns.size());
             for (String column : primaryKeys) {
-                params.add(columns.get(column).getter.invoke(object));
+                params.add(columns.get(column).getValue(object));
                 columnInfos.add(metaData.getColumns(object.getClass(), connection).get(column));
             }
 

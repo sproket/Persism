@@ -79,6 +79,7 @@ public class TestInformix extends BaseTest {
 
         executeCommand("CREATE TABLE Customers ( " +
                 " Customer_ID varchar(10) PRIMARY KEY NOT NULL, " +
+                " GROUP_ID INT NULL, " +
                 " Company_Name VARCHAR(30), " +
                 " Contact_Name VARCHAR(30), " +
                 " Contact_Title VARCHAR(10), " +

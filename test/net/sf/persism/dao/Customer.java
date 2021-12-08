@@ -18,6 +18,7 @@ import java.util.List;
  */
 public final class Customer {
     private String customerId;
+    private int groupId;
     private String companyName;
     private String contactName;
     private String contactTitle;
@@ -183,6 +184,14 @@ public final class Customer {
         this.testLocalDateTime = testLocalDateTime;
     }
 
+    public int getGroupId() {
+        return groupId;
+    }
+
+    public void setGroupId(int groupId) {
+        this.groupId = groupId;
+    }
+
     public List<Invoice> getInvoices() {
         return invoices;
     }
@@ -208,6 +217,7 @@ public final class Customer {
                 ", dateRegistered=" + dateRegistered +
                 ", dateOfLastOrder=" + dateOfLastOrder +
                 ", status=" + status +
+                ", group=" + groupId +
                 '}';
     }
 }

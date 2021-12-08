@@ -1,5 +1,7 @@
 ## Release Notes
 
+todo add schema names to SQL.
+
 ### merge with 1.2.....
 * REVIEW ALL CHANGES
 * Fixed Tax -> Taxes (update web page)

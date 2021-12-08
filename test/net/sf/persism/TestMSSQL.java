@@ -115,12 +115,25 @@ public class TestMSSQL extends BaseTest {
             commands.add("DROP VIEW CustomerInvoice");
         }
 
+        if (isTableInDatabase("CustomerGroup", con)) {
+            commands.add("DROP TABLE CustomerGroup");
+        }
+
+        String sql = """
+                CREATE TABLE CustomerGroup (
+                    Group_ID [int] NOT NULL,
+                    GROUP_NAme Varchar(100)
+                )
+                """;
+        commands.add(sql);
+
         if (isTableInDatabase("Customers", con)) {
             commands.add("DROP TABLE Customers");
         }
 
         commands.add("CREATE TABLE Customers ( " +
                 " Customer_ID varchar(10) PRIMARY KEY NOT NULL, " +
+                " GROUP_ID INT NULL, " +
                 " Company_Name VARCHAR(30) NULL, " +
                 " Contact_Name VARCHAR(30) NULL, " +
                 " Contact_Title VARCHAR(10) NULL, " +
@@ -156,7 +169,7 @@ public class TestMSSQL extends BaseTest {
                 ") ");
 
 
-        String sql = """
+        sql = """
                 CREATE VIEW CustomerInvoice AS
                     SELECT c.Customer_ID, c.Company_Name, i.Invoice_ID, i.Status, i.Created AS DateCreated, i.PAID, i.Quantity
                     FROM Invoices i
@@ -224,7 +237,6 @@ public class TestMSSQL extends BaseTest {
 
         sql = "ALTER TABLE [dbo].[Contacts] ADD  CONSTRAINT [DF_Contacts_identity]  DEFAULT (newid()) FOR [identity]";
         commands.add(sql);
-
 
 
         if (isTableInDatabase("EXAMCODE", con)) {
@@ -798,12 +810,25 @@ public class TestMSSQL extends BaseTest {
         log.info("Array of String has length " + sl.length + " " + Arrays.asList(sl));
     }
 
-    public void testOutsideEnum() throws Exception {
-        String sql = "INSERT INTO [Customers] ([Customer_ID], [Company_Name], [Contact_Name], [Contact_Title], " +
-                "[Address], [City], [Region], [Postal_Code], [Country], [Phone], " +
-                "[Fax], [STATUS], [Date_Of_Last_Order]) VALUES ( ? ,  ? ,  ? ,  ? ,  ? ,  ? ,  ? ,  ? ,  ? ,  ? ,  ? ,  ? ,  ? )";
+    public void testOutsideEnum() {
 
-        session.helper.execute(sql, "X", "Name", "Contact", "Title", "Address", "City", "NOTAREGION", "CODe", "CA", "1", "2", "3", null);
+        CustomerGroup customerGroup = new CustomerGroup();
+        customerGroup.setGroupId(1);
+        customerGroup.setGroupName("test group 1");
+        session.insert(customerGroup);
+
+        Customer customer = new Customer();
+        customer.setGroupId(1);
+        customer.setCustomerId("987");
+        customer.setCompanyName("abc inc");
+        customer.setContactName("fred");
+        session.insert(customer);
+
+        String sql = "INSERT INTO [Customers] ([GROUP_ID], [Customer_ID], [Company_Name], [Contact_Name], [Contact_Title], " +
+                "[Address], [City], [Region], [Postal_Code], [Country], [Phone], " +
+                "[Fax], [STATUS], [Date_Of_Last_Order]) VALUES (?,  ? ,  ? ,  ? ,  ? ,  ? ,  ? ,  ? ,  ? ,  ? ,  ? ,  ? ,  ? ,  ? )";
+
+        session.helper.execute(sql, 1, "X", "Name", "Contact", "Title", "Address", "City", "NOTAREGION", "CODe", "CA", "1", "2", "3", null);
 
         boolean failed = false;
         try {
@@ -822,6 +847,18 @@ public class TestMSSQL extends BaseTest {
         }
         assertTrue(failed);
 
+        // try a join
+        failed = false;
+        try {
+            session.fetch(CustomerGroup.class, params(1));
+        } catch (PersismException e) {
+            failed = true;
+            log.error(e.getMessage(), e);
+            assertEquals("msg s/b Illegal Argument",
+                    "Illegal Argument occurred setting property: region. Object class net.sf.persism.dao.Customer. Column: Region Type of property: class net.sf.persism.dao.Regions - Type read: class java.lang.String VALUE: NOTAREGION",
+                    e.getMessage());
+        }
+        assertTrue(failed);
     }
 
     public void testStoredProc() throws Exception {

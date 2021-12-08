@@ -55,8 +55,9 @@ final class Log {
     void warnNoDuplicates(String message) {
         String additional = "";
 
+        Throwable throwable = new Throwable("");
         // This finds the stack element for the user's package name - should be the source of the call to include in the message
-        Optional<StackTraceElement> opt = Arrays.stream(new Throwable().getStackTrace()).
+        Optional<StackTraceElement> opt = Arrays.stream(throwable.getStackTrace()).
                 filter(e -> !e.getClassName().startsWith("net.sf.persism")).findFirst();
 
         if (opt.isPresent()) {
