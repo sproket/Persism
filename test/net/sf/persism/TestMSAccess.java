@@ -110,7 +110,7 @@ public class TestMSAccess extends TestCase {
         // add to the array?
         // attachments = contact.getAttachments();
         List<Attachment> attachmentList = new ArrayList<>(Arrays.asList(attachments));
-        Attachment attachment = new Attachment(null, "test", "png", null, new Date(System.currentTimeMillis()), 0);
+        Attachment attachment = new Attachment(null, "test", "png", null, new Date(), 0);
 
         BufferedImage img = ImageIO.read(Objects.requireNonNull(getClass().getResourceAsStream("/logo1.png")));
         ByteArrayOutputStream baos = new ByteArrayOutputStream();

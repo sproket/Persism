@@ -1,5 +1,8 @@
 ## Release Notes
 
+### 1.2.1
+* Update log4j2 reference in POM to 2.15.0 
+
 ### 1.2.0
 * Added support for Views
 * Added query 'select *' method to session

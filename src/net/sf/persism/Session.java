@@ -846,7 +846,11 @@ public final class Session implements AutoCloseable {
 
             } else {
                 // param is null
-                st.setObject(n, param);
+                if (metaData.getConnectionType() == ConnectionTypes.UCanAccess) {
+                    st.setNull(n, java.sql.Types.OTHER);
+                } else {
+                    st.setObject(n, null);
+                }
             }
 
             n++;
