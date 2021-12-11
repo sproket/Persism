@@ -11,7 +11,7 @@ For Java 8 see the 1.x branch https://github.com/sproket/Persism/tree/persism1
 <dependency>
     <groupId>io.github.sproket</groupId>
     <artifactId>persism</artifactId>
-    <version>2.0.0</version>
+    <version>2.0.1</version>
 </dependency>
 ```
 ```Java 
