@@ -1,5 +1,8 @@
 ## Release Notes
 
+### 2.0.1
+* Update log4j2 reference in POM to 2.15.0
+
 ### 2.0.0
  
 * Set baseline to be Java 17 (see the 1.x branch for Java 8+)
