@@ -70,6 +70,7 @@ public class TestMySQL extends BaseTest {
 
         commands.add("CREATE TABLE Customers ( " +
                 " Customer_ID varchar(10) PRIMARY KEY NOT NULL, " +
+                " GROUP_ID INT NULL, " +
                 " Company_Name VARCHAR(30) NULL, " +
                 " Contact_Name VARCHAR(30) NULL, " +
                 " Contact_Title VARCHAR(10) NULL, " +

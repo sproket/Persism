@@ -106,6 +106,7 @@ public class TestPostgreSQL extends BaseTest {
         // Postgres error on insert - ERROR: invalid byte sequence for encoding "UTF8": 0x00 - CHAR if LEFT NULL
         commands.add("CREATE TABLE Customers ( " +
                 " Customer_ID VARCHAR(36) PRIMARY KEY DEFAULT uuid_generate_v1(), " +
+                " GROUP_ID INT NULL, " +
                 " Company_Name VARCHAR(30) NULL, " +
                 " Contact_Name VARCHAR(30) NULL, " +
                 " Contact_Title VARCHAR(10) NULL, " +

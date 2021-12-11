@@ -32,22 +32,6 @@ public final class Invoice {
     // Used as a primitive to test for warning about using primitives on columns with defaults
     private Character status;
 
-    public Invoice() {
-    }
-
-    public Invoice(Integer invoiceId, String customerId, float price, int quantity, double discount, BigDecimal actualPrice, String junk1, LocalDateTime created, boolean paid, Character status) {
-        this.invoiceId = invoiceId;
-        this.customerId = customerId;
-        this.price = price;
-        this.quantity = quantity;
-        this.discount = discount;
-        this.actualPrice = actualPrice;
-        this.junk1 = junk1;
-        this.created = created;
-        this.paid = paid;
-        this.status = status;
-    }
-
     @Join(to = InvoiceLineItem.class, onProperties = "invoiceId", toProperties = "invoiceId")
     private List<InvoiceLineItem> lineItems = new ArrayList<>();
 

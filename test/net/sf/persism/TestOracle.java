@@ -142,6 +142,7 @@ grant create trigger, create sequence to pinf;
 
         executeCommand("CREATE TABLE CUSTOMERS ( " +
                 " Customer_ID VARCHAR(10) PRIMARY KEY NOT NULL, " +
+                " GROUP_ID INT NULL, " +
                 " Company_Name VARCHAR(30) NULL, " +
                 " Contact_Name VARCHAR(30) NULL, " +
                 " Contact_Title VARCHAR(10) NULL, " +

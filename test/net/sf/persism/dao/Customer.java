@@ -18,6 +18,7 @@ import java.util.List;
  */
 public final class Customer {
     private String customerId;
+    private int groupId;
     private String companyName;
     private String contactName;
     private String contactTitle;
@@ -38,7 +39,6 @@ public final class Customer {
     // TODO DOCUMENT: Joins must be a modifiable list and must be instantiated. We use the
     // TODO properties are case sensitive - make a FailCustomer class or something to test that
     @Join(to = Invoice.class, onProperties = " customerId , status ", toProperties = "customerId , status ")
-    //@Join(to = Invoice.class, onProperties = " customerId  ", toProperties = "customerId  ")
     private List<Invoice> invoices = new ArrayList<>();
 
     //@Join(to=Contact.class, onProperties = "contactName", toProperties = "contactName")
@@ -184,6 +184,14 @@ public final class Customer {
         this.testLocalDateTime = testLocalDateTime;
     }
 
+    public int getGroupId() {
+        return groupId;
+    }
+
+    public void setGroupId(int groupId) {
+        this.groupId = groupId;
+    }
+
     public List<Invoice> getInvoices() {
         return invoices;
     }
@@ -209,6 +217,7 @@ public final class Customer {
                 ", dateRegistered=" + dateRegistered +
                 ", dateOfLastOrder=" + dateOfLastOrder +
                 ", status=" + status +
+                ", group=" + groupId +
                 '}';
     }
 }

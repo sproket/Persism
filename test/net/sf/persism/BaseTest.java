@@ -236,8 +236,8 @@ public abstract class BaseTest extends TestCase {
 
         // Make sure all columns are NOT the CASE of the ones in the DB.
         String sql = """
-                SELECT company_NAME, Date_Of_Last_ORDER, contact_title, pHone, rEGion, postal_CODE, FAX, DATE_Registered, 
-                ADDress, CUStomer_id, Contact_name, country, city, STATUS, TestLocalDate, TestLocalDateTime 
+                SELECT company_NAME, GrOUP_id, Date_Of_Last_ORDER, contact_title, pHone, rEGion, postal_CODE, FAX, DATE_Registered,
+                ADDress, CUStomer_id, Contact_name, country, city, STATUS, TestLocalDate, TestLocalDateTime
                 from Customers
                 """;
 
@@ -427,7 +427,7 @@ public abstract class BaseTest extends TestCase {
             InvoiceLineItemRec invoiceLineItemRec = session.fetch(InvoiceLineItemRec.class, params(1));
         } catch (PersismException e) {
             fail = true;
-            assertEquals("msg s/b ?", "No Setter for product in class net.sf.persism.dao.records.InvoiceLineItemRec", e.getMessage());
+            assertEquals("msg s/b ?", "Can not set final net.sf.persism.dao.Product field net.sf.persism.dao.records.InvoiceLineItemRec.product to net.sf.persism.dao.Product", e.getMessage());
         }
         assertTrue(fail);
     }
@@ -435,10 +435,7 @@ public abstract class BaseTest extends TestCase {
     public void testJoinsParentQuery() throws SQLException {
         queryDataSetup();
 
-        var list1 = session.query(Customer.class, where(":status = ?"), params('1'));
-        Customer x = list1.stream().filter(customer -> {
-            return true;
-        }).findFirst().orElseThrow();
+        var list1 = session.query(Customer.class, where(":status = ? and :groupId = ?"), params('1', 0));
 
         assertEquals(2, list1.size());
         assertEquals(2, list1.get(0).getInvoices().size());
@@ -627,6 +624,7 @@ public abstract class BaseTest extends TestCase {
         invoiceLineItem = new InvoiceLineItem(invoice1.getInvoiceId(), 3, 5);
         session.insert(invoiceLineItem);
         assertTrue(invoiceLineItem.getId() > 0);
+// todo bad test we need more lineitems to multiple products - bug where we loop child and set the product only on 1 parent rather than any parent referencing that product.
 
         Customer c1 = new Customer();
         c1.setCustomerId("123");
@@ -1425,14 +1423,14 @@ public abstract class BaseTest extends TestCase {
         for (String column : changedProperties.keySet()) {
 
             if (!primaryKeys.contains(column)) {
-                Object value = allProperties.get(column).getter.invoke(contact);
+                Object value = allProperties.get(column).getValue(contact);
 
                 params.add(value);
             }
         }
 
         for (String column : primaryKeys) {
-            params.add(allProperties.get(column).getter.invoke(contact));
+            params.add(allProperties.get(column).getValue(contact));
         }
 
         log.info(updateSQL);

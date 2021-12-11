@@ -95,6 +95,7 @@ public final class TestDerby extends BaseTest {
 
         commands.add("CREATE TABLE Customers ( " +
                 " Customer_ID varchar(10) PRIMARY KEY NOT NULL, " +
+                " GROUP_ID INT, " +
                 " Company_Name VARCHAR(30), " +
                 " Contact_Name VARCHAR(30), " +
                 " Contact_Title VARCHAR(10), " +

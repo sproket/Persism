@@ -1,7 +1,6 @@
 package net.sf.persism.dao;
 
 import net.sf.persism.annotations.Join;
-import net.sf.persism.annotations.NotColumn;
 
 public final class InvoiceLineItem {
     private int id;
@@ -57,9 +56,9 @@ public final class InvoiceLineItem {
         return product;
     }
 
-    public void setProduct(Product product) {
-        this.product = product;
-    }
+//    public void setProduct(Product product) {
+//        this.product = product;
+//    }
 
     @Override
     public String toString() {
