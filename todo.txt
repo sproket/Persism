@@ -165,3 +165,18 @@ This WAS a Persism Limitation on how I do joins. :)
 for 2.1 remove JTDS but ask on redddit and github
 
 Add handling for schema. When I have this I should include it in the SQL. select e.g. * from [dbo].[CustomerInvoice]
+
+log4j vculnerabiltuy
+DONE https://github.com/advisories/GHSA-jfh8-c2jp-5v3q
+
+TODO See if we can return multiple ResultSets from one statement. Might perform a little better.
+https://www.reddit.com/r/java/comments/re0hqn/persism_and_the_select_n1_problem/hocu4ji/?context=3
+LOCAL DBS don't seem to return the multiple. Need to check each if they support and what separators to use
+MSSSQL/PostgreSQL work with line feed and/or ";", Oracle NO, MySQL NO.
+
+
+Perf testing
+https://www.javaadvent.com/2021/12/keep-your-sql-in-check-with-flight-recorder-jmc-agent-and-jfrunit.html
+https://www.reddit.com/r/java/comments/rhzaku/ide_plugins_for_performance_testing_code/
+
+maybe add our own ConstructorProperties annotation to remove dependency on java.beans.

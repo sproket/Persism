@@ -1,5 +1,8 @@
 package net.sf.persism;
 
+import java.util.Arrays;
+import java.util.function.Function;
+
 /**
  * Information about columns used for insert, update and delete.
  * Queries do not use this object.
@@ -7,7 +10,7 @@ package net.sf.persism;
  * @author Dan Howard
  * @since 5/4/12 6:22 AM
  */
-final class ColumnInfo {
+final class ColumnInfo implements Convertable {
 
     String columnName;
 
@@ -29,6 +32,16 @@ final class ColumnInfo {
 
     int length; // for string to varchar length checking
 
+    Function converter;
+    String converterName;
+
+    @Override
+    public void setConverter(Function<?, ?> func, String name) {
+        // new Throwable().printStackTrace();
+        converter = func;
+        converterName = name;
+    }
+
     @Override
     public String toString() {
         return "ColumnInfo{" +
@@ -40,6 +53,7 @@ final class ColumnInfo {
                 ", primary=" + primary +
                 ", hasDefault=" + hasDefault +
                 ", length=" + length +
+                ", converterName=" + converterName +
                 '}';
     }
 }

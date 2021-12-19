@@ -11,6 +11,7 @@ import java.text.MessageFormat;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
+import static net.sf.persism.Conversions.*;
 import static net.sf.persism.Util.*;
 
 /**
@@ -27,19 +28,19 @@ final class MetaData {
     private static final Map<Class<?>, Collection<PropertyInfo>> propertyMap = new ConcurrentHashMap<>(32);
 
     // column to property map for each class
-    private Map<Class<?>, Map<String, PropertyInfo>> propertyInfoMap = new ConcurrentHashMap<>(32);
-    private Map<Class<?>, Map<String, ColumnInfo>> columnInfoMap = new ConcurrentHashMap<>(32);
-    private Map<Class<?>, List<String>> propertyNames = new ConcurrentHashMap<>(32); // not static since this is by column order which may vary
+    private final Map<Class<?>, Map<String, PropertyInfo>> propertyInfoMap = new ConcurrentHashMap<>(32);
+    private final Map<Class<?>, Map<String, ColumnInfo>> columnInfoMap = new ConcurrentHashMap<>(32);
+    private final Map<Class<?>, List<String>> propertyNames = new ConcurrentHashMap<>(32); // not static since this is by column order which may vary
 
     // table/view name for each class
-    private Map<Class<?>, String> tableOrViewMap = new ConcurrentHashMap<>(32);
+    private final Map<Class<?>, String> tableOrViewMap = new ConcurrentHashMap<>(32);
 
     // SQL for updates/inserts/deletes/selects for each class
-    private Map<Class<?>, String> updateStatementsMap = new ConcurrentHashMap<>(32);
-    private Map<Class<?>, String> insertStatementsMap = new ConcurrentHashMap<>(32);
-    private Map<Class<?>, String> deleteStatementsMap = new ConcurrentHashMap<>(32);
-    private Map<Class<?>, String> selectStatementsMap = new ConcurrentHashMap<>(32);
-    private Map<Class<?>, String> whereClauseMap = new ConcurrentHashMap<>(32);
+    private final Map<Class<?>, String> updateStatementsMap = new ConcurrentHashMap<>(32);
+    private final Map<Class<?>, String> insertStatementsMap = new ConcurrentHashMap<>(32);
+    private final Map<Class<?>, String> deleteStatementsMap = new ConcurrentHashMap<>(32);
+    private final Map<Class<?>, String> selectStatementsMap = new ConcurrentHashMap<>(32);
+    private final Map<Class<?>, String> whereClauseMap = new ConcurrentHashMap<>(32);
 
     // Key is SQL with named params, Value is SQL with ?
     // private Map<String, String> sqlWitNamedParams = new ConcurrentHashMap<String, String>(32);
@@ -50,18 +51,18 @@ final class MetaData {
     // private Map<Class, List<String>> primaryKeysMap = new ConcurrentHashMap<Class, List<String>>(32); // remove later maybe?
 
     // list of tables in the DB
-    private Set<String> tableNames = new TreeSet<>(String.CASE_INSENSITIVE_ORDER);
-    private Map<String, TableInfo> tableInfos = new HashMap<>();
+    private final Set<String> tableNames = new TreeSet<>(String.CASE_INSENSITIVE_ORDER);
+    private final Map<String, TableInfo> tableInfos = new HashMap<>();
 
     // list of views in the DB
-    private Set<String> viewNames = new TreeSet<>(String.CASE_INSENSITIVE_ORDER);
+    private final Set<String> viewNames = new TreeSet<>(String.CASE_INSENSITIVE_ORDER);
 
     // Map of table names + meta data
     // private Map<String, TableInfo> tableInfoMap = new ConcurrentHashMap<String, TableInfo>(32);
 
     private static final Map<String, MetaData> metaData = new ConcurrentHashMap<String, MetaData>(4);
 
-    private ConnectionTypes connectionType;
+    private final ConnectionTypes connectionType;
 
     // the "extra" characters that can be used in unquoted identifier names (those beyond a-z, A-Z, 0-9 and _)
     // Was using DatabaseMetaData getExtraNameCharacters() but some drivers don't provide these and still allow
@@ -198,6 +199,425 @@ final class MetaData {
         }
     }
 
+    // todo check NULL before calling
+    private void determineConverter(Convertable propOrColumnInfo, Types sourceType, Types targetType) {
+        if (true) {
+            return;
+        }
+        log.debug("determineConverter " + connectionType + " FOR " + propOrColumnInfo);
+
+        switch (sourceType) {
+            case booleanType:
+            case BooleanType:
+                if (targetType == Types.BooleanType || targetType == Types.booleanType) {
+                    break;
+                }
+
+            case byteType:
+            case ByteType:
+                break;
+
+            case shortType:
+            case ShortType:
+                break;
+
+            case integerType:
+            case IntegerType:
+
+                if (targetType == Types.IntegerType || targetType == Types.integerType) {
+                    break;
+                }
+
+                // int to bool
+                if (targetType == Types.BooleanType || targetType == Types.booleanType) {
+                    propOrColumnInfo.setConverter(IntToBoolean(), "intToBool");
+                    break;
+                }
+
+                if (targetType == Types.TimeType) {
+                    // SQLite when a Time is defined VIA a convert from LocalTime via Time.valueOf (see getContactForTest)
+                    propOrColumnInfo.setConverter(IntToTime(), "intToTime");
+                    break;
+                }
+
+                if (targetType == Types.LocalTimeType) {
+                    // SQLite for Time SQLite sees Long, for LocalTime it sees Integer
+                    propOrColumnInfo.setConverter(IntToLocalTime(), "intToLocalTime");
+                    break;
+                }
+
+                if (targetType == Types.ShortType || targetType == Types.shortType) {
+                    // todo where/when to warn
+//                    log.warnNoDuplicates(Messages.PossibleOverflow.message(col, "SHORT", "INT"));
+                    propOrColumnInfo.setConverter(IntToShort(), "intToShort");
+                    break;
+
+                }
+
+                if (targetType == Types.ByteType || targetType == Types.byteType) {
+                    // log.warnNoDuplicates(Messages.PossibleOverflow.message(col, "BYTE", "INT"));
+                    propOrColumnInfo.setConverter(IntToByte(), "intToByte");
+                    break;
+                }
+                break;
+
+            case longType:
+            case LongType:
+
+                if (targetType == Types.LongType || targetType == Types.longType) {
+                    break;
+                }
+
+                if (targetType == Types.SQLDateType) {
+                    propOrColumnInfo.setConverter(LongToSqlDate(), "longToSqlDate");
+                    break;
+
+                }
+
+                if (targetType == Types.UtilDateType) {
+                    propOrColumnInfo.setConverter(LongToUtilDate(), "longToUtilDate");
+                    break;
+
+                }
+
+                if (targetType == Types.TimestampType) {
+                    propOrColumnInfo.setConverter(LongToTimestamp(), "longToTimestamp");
+                    break;
+                }
+
+                if (targetType == Types.IntegerType || targetType == Types.integerType) {
+//                    log.warnNoDuplicates(Messages.PossibleOverflow.message(col, "INT", "LONG"));
+                    propOrColumnInfo.setConverter(LongToInt(), "longToInt");
+                    break;
+
+                }
+
+                if (targetType == Types.LocalDateType) {
+                    // SQLite reads long as date.....
+                    propOrColumnInfo.setConverter(LongToLocalDate(), "longToLocalDate");
+                    break;
+                }
+
+                if (targetType == Types.LocalDateTimeType) {
+                    propOrColumnInfo.setConverter(LongToLocalDateTime(), "longToLocalDateTime");
+                    break;
+                }
+
+                if (targetType == Types.TimeType) {
+                    // SQLite.... Again.....
+                    propOrColumnInfo.setConverter(LongToTime(), "longToTime");
+                    break;
+                }
+                break;
+
+            case floatType:
+            case FloatType:
+                break;
+
+            case doubleType:
+            case DoubleType:
+                if (targetType == Types.DoubleType || targetType == Types.doubleType) {
+                    break;
+                }
+
+                // float or doubles to BigDecimal
+                if (targetType == Types.BigDecimalType) {
+                    propOrColumnInfo.setConverter(DoubleToBigDecimal(), "doubleToBigDecimal");
+                    break;
+                }
+
+                if (targetType == Types.FloatType || targetType == Types.floatType) {
+//                    log.warnNoDuplicates(Messages.PossibleOverflow.message(col, "FLOAT", "DOUBLE"));
+                    propOrColumnInfo.setConverter(DoubleToFloat(), "doubleToFloat");
+                    break;
+                }
+
+                if (targetType == Types.IntegerType || targetType == Types.integerType) {
+                    // log.warnNoDuplicates(Messages.PossibleOverflow.message(col, "INT", "DOUBLE"));
+                    propOrColumnInfo.setConverter(DoubleToInt(), "doubleToInt");
+                    break;
+                }
+
+                if (targetType == Types.LongType || targetType == Types.longType) {
+                    // log.warnNoDuplicates(Messages.PossibleOverflow.message(col, "LONG", "DOUBLE"));
+                    propOrColumnInfo.setConverter(DoubleToLong(), "doubleToLong");
+                    break;
+                }
+                break;
+
+            case BigDecimalType:
+
+                if (targetType == Types.BigDecimalType) {
+                    break;
+                }
+
+                if (targetType == Types.FloatType || targetType == Types.floatType) {
+                    // log.warnNoDuplicates(Messages.PossibleOverflow.message(col, "FLOAT", "BigDecimal"));
+                    propOrColumnInfo.setConverter(BigDecimalToFloat(), "bigDecimalToFloat");
+                    break;
+                }
+
+                if (targetType == Types.DoubleType || targetType == Types.doubleType) {
+                    // log.warnNoDuplicates(Messages.PossibleOverflow.message(col, "DOUBLE", "BigDecimal"));
+                    propOrColumnInfo.setConverter(BigDecimalToDouble(), "bigDecimalToDouble");
+                    break;
+
+                } else if (targetType == Types.LongType || targetType == Types.longType) {
+                    // log.warnNoDuplicates(Messages.PossibleOverflow.message(col, "LONG", "BigDecimal"));
+                    propOrColumnInfo.setConverter(BigDecimalToLong(), "bigDecimalToLong");
+                    break;
+
+                } else if (targetType == Types.IntegerType || targetType == Types.integerType) {
+                    // log.warnNoDuplicates(Messages.PossibleOverflow.message(col, "INT", "BigDecimal"));
+                    propOrColumnInfo.setConverter(BigDecimalToInt(), "bigDecimalToInt");
+                    break;
+                }
+
+                if (targetType == Types.ShortType || targetType == Types.shortType) {
+                    // log.warnNoDuplicates(Messages.PossibleOverflow.message(col, "SHORT", "BigDecimal"));
+                    propOrColumnInfo.setConverter(BigDecimalToShort(), "bigDecimalToShort");
+                    break;
+                }
+
+                if (targetType == Types.BooleanType || targetType == Types.booleanType) {
+                    // BigDecimal to Boolean. Oracle (sigh) - Additional for a Char to Boolean as then (see TestOracle for links)
+                    // log.warnNoDuplicates(Messages.PossibleOverflow.message(col, "BOOLEAN", "BigDecimal"));
+                    propOrColumnInfo.setConverter(BigDecimalToBool(), "bigDecimalToBool");
+                    break;
+                }
+
+                if (targetType == Types.StringType) {
+                    propOrColumnInfo.setConverter(BigDecimalToString(), "bigDecimalToString");
+                    break;
+                }
+                break;
+
+            case StringType:
+                if (targetType == Types.StringType) {
+                    break;
+                }
+
+                if (targetType == Types.UtilDateType) {
+                    propOrColumnInfo.setConverter(StringToUtilDate(), "stringToUtilDate");
+                    break;
+                }
+
+                if (targetType == Types.SQLDateType) {
+                    propOrColumnInfo.setConverter(StringToSqlDate(), "stringToSqlDate");
+                    break;
+                }
+
+                if (targetType == Types.TimestampType) {
+                    propOrColumnInfo.setConverter(StringToTimestamp(), "stringToTimestamp");
+                    break;
+                }
+
+                if (targetType.getJavaType().isEnum()) {
+                    // If this is an enum do a case-insensitive comparison
+                    // todo BiFunction != Function so add maybe a enumConverter?
+                    //propertyInfo.converter = conversions.stringToEnum;
+                    propOrColumnInfo.setConverter(StringToEnum());
+                    break;
+                }
+
+                if (targetType == Types.UUIDType) {
+                    propOrColumnInfo.setConverter(StringToUUID(), "stringToUUID");
+                    break;
+                }
+
+                if (targetType == Types.BooleanType || targetType == Types.booleanType) {
+                    propOrColumnInfo.setConverter(StringToBoolean(), "stringToBoolean");
+                    break;
+                }
+
+                if (targetType == Types.BigDecimalType) {
+                    propOrColumnInfo.setConverter(StringToBigDecimal(), "stringToBigDecimal");
+                    break;
+                }
+
+                break;
+
+            case characterType:
+            case CharacterType:
+                break;
+
+            case LocalDateType:
+                propOrColumnInfo.setConverter(LocalDateToSqlDate(), "localDateToSqlDate");
+                break;
+
+            case LocalDateTimeType:
+                propOrColumnInfo.setConverter(LocalDateToTimestamp(), "localDateToTimestamp");
+                break;
+
+            case LocalTimeType:
+                propOrColumnInfo.setConverter(LocalTimeToTime(), "localTimeToTime");
+                break;
+
+            case UtilDateType:
+                if (targetType == Types.UtilDateType) {
+                    break;
+                }
+
+                if (targetType == Types.SQLDateType) {
+                    propOrColumnInfo.setConverter(UtilDateToSqlDate(), "utilDateToSqlDate");
+                    break;
+                }
+
+                if (targetType == Types.TimestampType) {
+                    propOrColumnInfo.setConverter(UtilDateToTimestamp(), "utilDateToTimestamp");
+                    break;
+                }
+
+                if (targetType == Types.LocalDateType) {
+                    propOrColumnInfo.setConverter(UtilDateToLocalDate(), "utilDateToLocalDate");
+                    break;
+                }
+
+                if (targetType == Types.LocalDateTimeType) {
+                    propOrColumnInfo.setConverter(UtilDateToLocalDateTime(), "utilDateToLocalDateTime");
+                    break;
+                }
+
+                if (targetType == Types.TimeType) {
+                    propOrColumnInfo.setConverter(UtilDateToTime(), "utilDateToTime");
+                    break;
+                }
+
+                if (targetType == Types.LocalTimeType) {
+                    propOrColumnInfo.setConverter(UtilDateToLocalTime(), "utilDateToLocalTime");
+                    break;
+                }
+                break;
+
+            case SQLDateType:
+                if (targetType == Types.SQLDateType) {
+                    break;
+                }
+
+                if (targetType == Types.UtilDateType) {
+                    propOrColumnInfo.setConverter(SqlDateToUtilDate(), "sqlDateToUtilDate");
+                    break;
+                }
+
+                if (targetType == Types.TimestampType) {
+                    propOrColumnInfo.setConverter(SqlDateToTimestamp(), "sqlDateToTimestamp");
+                    break;
+                }
+
+                if (targetType == Types.LocalDateType) {
+                    propOrColumnInfo.setConverter(SqlDateToLocalDate(), "sqlDateToLocalDate");
+                    break;
+                }
+
+                if (targetType == Types.LocalDateTimeType) {
+                    propOrColumnInfo.setConverter(SqlDateToLocalDateTime(), "sqlDateToLocalDateTime");
+                    break;
+                }
+
+                if (targetType == Types.TimeType) {
+                    propOrColumnInfo.setConverter(SqlDateToTime(), "sqlDateToTime");
+                    break;
+                }
+
+                if (targetType == Types.LocalTimeType) {
+                    propOrColumnInfo.setConverter(SqlDateToLocalTime(), "sqlDateToLocalTime");
+                    break;
+                }
+                break;
+
+            case TimestampType:
+                if (targetType == Types.TimestampType) {
+                    break;
+                }
+
+                if (targetType == Types.UtilDateType) {
+                    propOrColumnInfo.setConverter(TimestampToUtilDate(), "timestampToUtilDate");
+                    break;
+                }
+
+                if (targetType == Types.SQLDateType) {
+                    propOrColumnInfo.setConverter(TimestampToSqlDate(), "timestampToSqlDate");
+                    break;
+                }
+
+                if (targetType == Types.LocalDateType) {
+                    propOrColumnInfo.setConverter(TimestampToLocalDate(), "timestampToLocalDate");
+                    break;
+                }
+
+                if (targetType == Types.LocalDateTimeType) {
+                    propOrColumnInfo.setConverter(TimestampToLocalDateTime(), "timestampToLocalDateTime");
+                    break;
+                }
+
+                if (targetType == Types.TimeType) {
+                    propOrColumnInfo.setConverter(TimestampToTime(), "timestampToTime");
+                    break;
+                }
+
+                if (targetType == Types.LocalTimeType) {
+                    propOrColumnInfo.setConverter(TimestampToLocalTime(), "timestampToLocalTime");
+                    break;
+                }
+                break;
+
+            case TimeType:
+                if (targetType == Types.TimeType) {
+                    break;
+                }
+                if (targetType == Types.LocalTimeType) {
+                    propOrColumnInfo.setConverter(TimeToLocalTime(), "timeToLocalTime");
+                    break;
+                }
+                break;
+
+            case InstantType:
+            case OffsetDateTimeType:
+            case ZonedDateTimeType:
+                log.warn(Messages.ConverterValueTypeNotYetSupported.message(sourceType.getJavaType()), new Throwable());
+                break;
+
+            case byteArrayType:
+            case ByteArrayType:
+                if (targetType == Types.ByteArrayType) {
+                    break;
+                }
+
+                if (targetType == Types.UUIDType) {
+                    propOrColumnInfo.setConverter(ByteArrayToUUID(), "byteArrayToUUID");
+                    break;
+                }
+                break;
+
+            case ClobType:
+            case BlobType:
+                // todo we don't know which direction. If this is a column it's OK but what conversion?
+                log.warn(Messages.ConverterDoNotUseClobOrBlobAsAPropertyType.message(), new Throwable(""));
+                break;
+
+            case EnumType:
+                // No need to convert it here.
+                // If it's being used for the property setter then it's OK
+                // If it's being used by setParameters it's converted to String
+                // The String case above converts from the String to the Enum
+                log.debug("EnumType");
+                break;
+
+            case UUIDType:
+                if (targetType == Types.UUIDType) {
+                    break;
+                }
+                // todo how can blob work here?
+                if (targetType == Types.BlobType || targetType == Types.byteArrayType || targetType == Types.ByteArrayType) {
+                    propOrColumnInfo.setConverter(UUIDtoByteArray(), "UUIDtoByteArray");
+                }
+                break;
+
+            case ObjectType:
+                break;
+        }
+    }
+
     @SuppressWarnings({"JDBCExecuteWithNonConstantString", "SqlDialectInspection"})
     private synchronized <T> Map<String, ColumnInfo> determineColumnInfo(Class<T> objectClass, String tableName, Connection connection) {
         if (columnInfoMap.containsKey(objectClass)) {
@@ -304,7 +724,7 @@ final class MetaData {
                     primaryKeysCount++;
                 }
 
-                if (primaryKeysCount == 0) {
+                if (primaryKeysCount == 0 && !primaryKeysFound) {
                     log.warn(Messages.DatabaseMetaDataCouldNotFindPrimaryKeys.message(tableName));
                 }
             }
@@ -938,6 +1358,7 @@ final class MetaData {
 
     // internal version to retrieve meta information about this table's columns
     // at the same time we find the table name itself.
+    // TODO This is in a synchronized context - is it aways?
     private <T> String getTableName(Class<T> objectClass, Connection connection) {
 
         String tableName = getTableName(objectClass);
@@ -948,6 +1369,23 @@ final class MetaData {
 
         if (!propertyInfoMap.containsKey(objectClass)) {
             determinePropertyInfo(objectClass, tableName, connection);
+        }
+
+        // todo this needs to happen only once. Add to cache? synchronized?
+        // assign convertors
+        Map<String, ColumnInfo> columns = getColumns(objectClass, connection);
+        Map<String, PropertyInfo> properties = getTableColumnsPropertyInfo(objectClass, connection);
+
+        for (String col : columns.keySet()) {
+            ColumnInfo columnInfo = columns.get(col);
+            PropertyInfo propertyInfo = properties.get(col);
+
+            Types propertyType = Types.getType(propertyInfo.getter.getReturnType());
+
+            if (propertyType != null) {
+                determineConverter(columnInfo, columnInfo.columnType, propertyType);
+                determineConverter(propertyInfo, propertyType, columnInfo.columnType);
+            }
         }
         return tableName;
     }

@@ -10,7 +10,7 @@ enum Messages {
     NumberFormatException("NumberFormatException: Column: %s Type of property: %s - Type read: %s VALUE: %s"),
     DateFormatException("%s. Column: %s Target Conversion: %s - Type read: %s VALUE: %s"),
     ReadRecordColumnNotFound("readRecord: Could not find column in the SQL query for class: %s. Missing column: %s"),
-    ReadRecordCouldNotInstantiate("readRecord: Could instantiate the constructor for: %s params: %s (%s)"),
+    ReadRecordCouldNotInstantiate("readRecord: Could instantiate the constructor for: %s (%s)"),
     TableHasNoPrimaryKeys("Cannot perform %s - %s has no primary keys"),
     TableHasNoPrimaryKeysForWhere("Could not determine WHERE clause for %s. No primary keys detected"),
     ClassHasNoGetterForProperty("Class %s has no getter for property %s"),

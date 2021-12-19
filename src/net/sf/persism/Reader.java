@@ -20,6 +20,7 @@ import java.util.stream.Collectors;
 final class Reader {
 
     private static final Log log = Log.getLogger(Reader.class);
+    private static final Log blog = Log.getLogger("net.sf.persism.Benchmarks");
 
     private Connection connection;
     private MetaData metaData;
@@ -33,54 +34,25 @@ final class Reader {
         this.converter = session.getConverter();
     }
 
-    <T> T readObject(T object, ResultSet rs) throws IllegalAccessException, SQLException, InvocationTargetException, IOException {
-
+    <T> T readObject(T object, Map<String, PropertyInfo> properties, ResultSet rs) throws SQLException, IOException {
         Class<?> objectClass = object.getClass();
+
         // We should never call this method with a primitive type.
         assert Types.getType(objectClass) == null;
 
-        Map<String, PropertyInfo> properties;
-        if (objectClass.getAnnotation(NotTable.class) == null) {
-            properties = metaData.getTableColumnsPropertyInfo(objectClass, connection);
-        } else {
-            properties = metaData.getQueryColumnsPropertyInfo(objectClass, rs);
-        }
-
-        // Test if all properties have column mapping (skipping joins) and throw PersismException if not
-        // This block verifies that the object is fully initialized.
-        // Any properties not marked by NotColumn should have been set (or if they have a getter only)
-        // If not throw a PersismException
-        Collection<PropertyInfo> allProperties = MetaData.getPropertyInfo(objectClass).stream().filter(p -> !p.isJoin()).collect(Collectors.toList());
-        if (properties.values().size() < allProperties.size()) {
-            Set<PropertyInfo> missing = new HashSet<>(allProperties.size());
-            missing.addAll(allProperties);
-            missing.removeAll(properties.values());
-
-            StringBuilder sb = new StringBuilder();
-            String sep = "";
-            for (PropertyInfo prop : missing) {
-                sb.append(sep).append(prop.propertyName);
-                sep = ",";
-            }
-
-            throw new PersismException(Messages.ObjectNotProperlyInitialized.message(objectClass, sb));
-        }
-
         ResultSetMetaData rsmd = rs.getMetaData();
         int columnCount = rsmd.getColumnCount();
-        List<String> foundColumns = new ArrayList<>(columnCount);
 
         for (int j = 1; j <= columnCount; j++) {
 
             String columnName = rsmd.getColumnLabel(j);
+
             PropertyInfo columnProperty = getPropertyInfo(columnName, properties);
 
             if (columnProperty != null) {
                 Class<?> returnType = columnProperty.getter.getReturnType();
 
-                Object value = readColumn(rs, j, returnType);
-
-                foundColumns.add(columnName);
+                Object value = readColumn(rs, j, rsmd.getColumnType(j), columnName, returnType);
 
                 if (value != null) {
                     try {
@@ -93,155 +65,63 @@ final class Reader {
             }
         }
 
-        // This is doing a similar check to above but on the ResultSet itself.
-        // This tests for when a user writes their own SQL and forgets a column.
-        if (foundColumns.size() < properties.keySet().size()) {
-
-            Set<String> missing = new LinkedHashSet<>(columnCount);
-            missing.addAll(properties.keySet());
-            foundColumns.forEach(missing::remove);
-
-            throw new PersismException(Messages.ObjectNotProperlyInitializedByQuery.message(objectClass, foundColumns, missing));
-        }
-
         if (object instanceof Persistable<?> pojo) {
             // Save this object initial state to later detect changed properties
             pojo.saveReadState();
         }
-
         return (T) object;
     }
 
-    <T> T readRecord(Class<T> objectClass, ResultSet rs) throws SQLException, IOException {
-        // resultset may not have columns in the proper order
-        // resultset may not have all columns
-        // step 1 - get column order based on which properties are found
-        // read
-        // Note: We can't use this method to read Objects without default constructors using the Record styled conventions
-        //       since Java 8 does not have the constructor parameter names.
+    <T> T readRecord(RecordInfo<T> recordInfo, ResultSet rs) throws SQLException, IOException, InvocationTargetException, InstantiationException, IllegalAccessException {
 
-        Map<String, PropertyInfo> propertiesByColumn;
-        if (objectClass.getAnnotation(NotTable.class) == null) {
-            propertiesByColumn = metaData.getTableColumnsPropertyInfo(objectClass, connection);
-        } else {
-            propertiesByColumn = metaData.getQueryColumnsPropertyInfo(objectClass, rs);
-        }
-
-        List<String> propertyNames = metaData.getPropertyNames(objectClass);
-
-        Constructor<?> selectedConstructor = findConstructor(objectClass, propertyNames);
-
-        // now read resultset by property order
-        Map<String, PropertyInfo> propertyInfoByConstructorOrder = new LinkedHashMap<>(selectedConstructor.getParameterCount());
-
-        for (String paramName : propertyNames) {
-            for (String col : propertiesByColumn.keySet()) {
-                if (paramName.equals(propertiesByColumn.get(col).field.getName())) {
-                    propertyInfoByConstructorOrder.put(col, propertiesByColumn.get(col));
-                }
-            }
-        }
-
-        // now read by this order
-        List<Object> constructorParams = new ArrayList<>(12);
-        List<Class<?>> constructorTypes = new ArrayList<>(12);
+        long now;
+        now = System.nanoTime();
 
         ResultSetMetaData rsmd = rs.getMetaData();
-        Map<String, Integer> ordinals = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
-        for (int j = 1; j <= rsmd.getColumnCount(); j++) {
-            ordinals.put(rsmd.getColumnLabel(j), j);
-        }
-        for (String col : propertyInfoByConstructorOrder.keySet()) {
-            if (ordinals.containsKey(col)) {
-                Field field = propertyInfoByConstructorOrder.get(col).field;
-                Object value = readColumn(rs, ordinals.get(col), field.getType());
-                if (value == null && field.getType().isPrimitive()) {
-                    // Set null primitives to their default, otherwise the constructor will not be found
-                    value = Types.getDefaultValue(field.getType());
-                }
+        List<Object> constructorParams = new ArrayList<>(12);
 
-                constructorParams.add(value);
-                constructorTypes.add(propertyInfoByConstructorOrder.get(col).field.getType());
-            } else {
-                throw new PersismException(Messages.ReadRecordColumnNotFound.message(objectClass, col));
+        for (String col : recordInfo.propertyInfoByConstructorOrder.keySet()) {
+            Class<?> returnType = recordInfo.propertyInfoByConstructorOrder.get(col).field.getType();
+
+            int ncol = recordInfo.ordinals.get(col);
+            Object value = readColumn(rs, ncol, rsmd.getColumnType(ncol), rsmd.getColumnLabel(ncol), returnType);
+            if (value == null && returnType.isPrimitive()) {
+                // Set null primitives to their default, otherwise the constructor will not be found
+                value = Types.getDefaultValue(returnType);
             }
+
+            constructorParams.add(value);
         }
+
 
         try {
-            // Select the constructor to double check we have the correct one
-            // This would be a double check on the types rather than just the names
-            Constructor<?> constructor = objectClass.getConstructor(constructorTypes.toArray(new Class<?>[0]));
             //noinspection unchecked
-            return (T) constructor.newInstance(constructorParams.toArray());
-
-        } catch (Exception e) {
-            throw new PersismException(Messages.ReadRecordCouldNotInstantiate.message(objectClass, constructorParams, constructorTypes));
+            return (T) recordInfo.constructor.newInstance(constructorParams.toArray());
+        } finally {
+            blog.debug("time to get readRecord: %s", (System.nanoTime() - now));
         }
     }
 
-    private Constructor<?> findConstructor(Class<?> objectClass, List<String> propertyNames) {
-        Constructor<?>[] constructors = objectClass.getConstructors();
-        Constructor<?> selectedConstructor = null;
 
-        for (Constructor<?> constructor : constructors) {
-            // Check with canonical or maybe -parameters
-            List<String> parameterNames = Arrays.stream(constructor.getParameters()).
-                    map(Parameter::getName).collect(Collectors.toList());
-
-            if (listEqualsIgnoreOrder(propertyNames, parameterNames)) {
-                // re-arrange the propertyNames to match parameterNames
-                propertyNames.clear();
-                propertyNames.addAll(parameterNames);
-                selectedConstructor = constructor;
-                break;
-            }
-
-            // Check with ConstructorProperties
-            ConstructorProperties constructorProperties = constructor.getAnnotation(ConstructorProperties.class);
-            if (constructorProperties != null) {
-                parameterNames = Arrays.asList(constructorProperties.value());
-                if (listEqualsIgnoreOrder(propertyNames, parameterNames)) {
-                    // re-arrange the propertyNames to match parameterNames
-                    propertyNames.clear();
-                    propertyNames.addAll(parameterNames);
-                    selectedConstructor = constructor;
-                    break;
-                }
-            }
-        }
-
-        if (selectedConstructor == null) {
-            throw new PersismException(Messages.CouldNotFindConstructorForRecord.message(objectClass, propertyNames));
-        }
-        return selectedConstructor;
-    }
-
-
-    // https://stackoverflow.com/questions/1075656/simple-way-to-find-if-two-different-lists-contain-exactly-the-same-elements
-    private static <T> boolean listEqualsIgnoreOrder(List<T> list1, List<T> list2) {
-        return new HashSet<>(list1).equals(new HashSet<>(list2));
-    }
-
-    <T> T readColumn(ResultSet rs, int column, Class<?> returnType) throws SQLException, IOException {
-        ResultSetMetaData rsmd = rs.getMetaData();
-        int sqlColumnType = rsmd.getColumnType(column);
-        String columnName = rsmd.getColumnLabel(column);
+    Object readColumn(ResultSet rs, int column, int sqlColumnType, String columnName, Class<?> returnType) throws SQLException, IOException {
+        long now = System.nanoTime();
 
         if (returnType.isEnum()) {
             // Some DBs may read an enum type as other 1111 - we can tell it here to read it as a string.
             sqlColumnType = java.sql.Types.CHAR;
         }
 
+        Types columnType = Types.convert(sqlColumnType); // note this could be null if we can't match a type
+
         Object value = null;
 
-        Types columnType = Types.convert(sqlColumnType); // note this could be null if we can't match a type
         if (columnType != null) {
 
             switch (columnType) {
 
                 case BooleanType:
                 case booleanType:
-                    if (returnType.equals(Boolean.class) || returnType.equals(boolean.class)) {
+                    if (returnType == Boolean.class || returnType == boolean.class) {
                         value = rs.getBoolean(column);
                     } else {
                         value = rs.getByte(column);
@@ -249,7 +129,7 @@ final class Reader {
                     break;
 
                 case TimestampType:
-                    if (returnType.equals(String.class)) { // JTDS
+                    if (returnType == String.class) { // JTDS
                         value = rs.getString(column);
                     } else {
                         // work around to Oracle reading a oracle.sql.TIMESTAMP class with getObject
@@ -322,8 +202,7 @@ final class Reader {
 
                 case BigIntegerType:
                 case BigDecimalType:
-                    value = null;
-                    if (returnType.equals(BigInteger.class)) {
+                    if (returnType == BigInteger.class) {
                         BigDecimal bd = rs.getBigDecimal(column);
                         if (bd != null) {
                             value = bd.toBigInteger();
@@ -345,7 +224,7 @@ final class Reader {
 //                    break;
 
                 case StringType:
-                    if (returnType.equals(Character.class) || returnType.equals(char.class)) {
+                    if (returnType == Character.class || returnType == char.class) {
                         String s = rs.getString(column);
                         if (s != null && s.length() > 0) {
                             value = s.charAt(0);
@@ -370,12 +249,13 @@ final class Reader {
             value = converter.convert(value, returnType, columnName);
         }
 
-        return (T) value;
+        blog.debug("time to readColumn: %s", (System.nanoTime() - now));
+        return  value;
     }
 
 
-    // Poor man's case insensitive linked hash map ;)
-    private PropertyInfo getPropertyInfo(String col, Map<String, PropertyInfo> properties) {
+    // Poor man's case-insensitive linked hash map ;)
+    PropertyInfo getPropertyInfo(String col, Map<String, PropertyInfo> properties) {
         for (String key : properties.keySet()) {
             if (key.equalsIgnoreCase(col)) {
                 return properties.get(key);

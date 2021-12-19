@@ -4,8 +4,10 @@ import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.function.Function;
 
 /**
  * Created by IntelliJ IDEA.
@@ -14,7 +16,7 @@ import java.util.Map;
  * Time: 8:09 AM
  * todo encapsulate this class better
  */
-final class PropertyInfo {
+final class PropertyInfo implements Convertable {
 
     String propertyName;
     Method getter;
@@ -22,6 +24,9 @@ final class PropertyInfo {
     Field field;
     boolean readOnly;
     boolean isJoin;
+    // has to be non-generic
+    Function converter = null;
+    String converterName;
 
     Map<Class<? extends Annotation>, Annotation> annotations = new HashMap<>(4);
 
@@ -77,10 +82,17 @@ final class PropertyInfo {
         }
     }
 
+    @Override
+    public void setConverter(Function<?, ?> func, String name) {
+//        new Throwable().printStackTrace();
+        converter = func;
+        converterName = name;
+    }
 
     Map<Class<? extends Annotation>, Annotation> annotations() {
         return annotations;
     }
+
 
     @Override
     public String toString() {
@@ -90,6 +102,7 @@ final class PropertyInfo {
                 ", setter=" + setter +
                 ", annotations=" + annotations +
                 ", readOnly=" + readOnly +
+                ", converterName=" + converterName +
                 '}';
     }
 }

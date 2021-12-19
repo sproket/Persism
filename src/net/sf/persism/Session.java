@@ -3,14 +3,10 @@ package net.sf.persism;
 import net.sf.persism.annotations.NotTable;
 import net.sf.persism.annotations.View;
 
+import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
+import java.sql.*;
+import java.util.*;
 
 import static net.sf.persism.Parameters.none;
 import static net.sf.persism.Parameters.params;
@@ -139,7 +135,7 @@ public final class Session implements AutoCloseable {
 
         List<ColumnInfo> columnInfos = new ArrayList<>(properties.size());
         Map<String, ColumnInfo> cols = metaData.getColumns(objectClass, connection);
-        JDBCResult JDBCResult = new JDBCResult();
+        JDBCResult result = new JDBCResult();
         try {
             for (String column : primaryKeys) {
                 PropertyInfo propertyInfo = properties.get(column);
@@ -156,10 +152,12 @@ public final class Session implements AutoCloseable {
                 }
             }
 
-            helper.exec(JDBCResult, sql, params.toArray());
+            helper.exec(result, sql, params.toArray());
 
-            if (JDBCResult.rs.next()) {
-                reader.readObject(object, JDBCResult.rs);
+            verifyPropertyInfoForQuery(objectClass, properties, result.rs);
+
+            if (result.rs.next()) {
+                reader.readObject(object, properties, result.rs);
                 helper.handleJoins(object, objectClass, sql, params);
                 return true;
             }
@@ -169,7 +167,7 @@ public final class Session implements AutoCloseable {
             Util.rollback(connection);
             throw new PersismException(e.getMessage(), e);
         } finally {
-            Util.cleanup(JDBCResult.st, JDBCResult.rs);
+            Util.cleanup(result.st, result.rs);
         }
     }
 
@@ -233,21 +231,37 @@ public final class Session implements AutoCloseable {
         JDBCResult result = JDBCResult.DEFAULT;
         try {
             result = helper.executeQuery(objectClass, sql, parameters);
+
+            Map<String, PropertyInfo> properties = Collections.emptyMap();
+            if (isPOJO) {
+                if (objectClass.getAnnotation(NotTable.class) == null) {
+                    properties = metaData.getTableColumnsPropertyInfo(objectClass, connection);
+                } else {
+                    properties = metaData.getQueryColumnsPropertyInfo(objectClass, result.rs);
+                }
+            }
+
             if (result.rs.next()) {
                 if (isRecord) {
-                    // todo how will this work with join? Works if it's a list but not a 1-1 POJO
-                    var ret = reader.readRecord(objectClass, result.rs);
+
+                    List<String> propertyNames = metaData.getPropertyNames(objectClass);
+                    Constructor<T> selectedConstructor = helper.findConstructor(objectClass, propertyNames);
+                    RecordInfo<T> recordInfo = new RecordInfo<T>(objectClass, selectedConstructor, this, result.rs);
+                    var ret = reader.readRecord(recordInfo, result.rs);
                     helper.handleJoins(ret, objectClass, sql.toString(), parameters);
                     return ret;
 
                 } else if (isPOJO) {
                     T t = objectClass.getDeclaredConstructor().newInstance();
-                    var ret = reader.readObject(t, result.rs);
+                    verifyPropertyInfoForQuery(objectClass, properties, result.rs);
+                    var ret = reader.readObject(t, properties, result.rs);
                     helper.handleJoins(ret, objectClass, sql.toString(), parameters);
                     return ret;
 
                 } else {
-                    return reader.readColumn(result.rs, 1, objectClass);
+                    ResultSetMetaData rsmd = result.rs.getMetaData();
+                    //noinspection unchecked
+                    return (T) reader.readColumn(result.rs, 1, rsmd.getColumnType(1), rsmd.getColumnLabel(1), objectClass);
                 }
             }
 
@@ -355,6 +369,8 @@ public final class Session implements AutoCloseable {
 
         String andSep = "";
         // TODO View should not check for WHERE we don't support @View here anyway RIGHT?
+        // TODO here we could have a view only if params length = 0
+        // todo the test is call a view with Params.none()
         if (objectClass.getAnnotation(View.class) == null) {
             int n = query.indexOf(" WHERE");
             query = query.substring(0, n + 7);
@@ -401,16 +417,40 @@ public final class Session implements AutoCloseable {
         try {
             result = helper.executeQuery(objectClass, sql, parameters);
 
+
+            Map<String, PropertyInfo> properties = Collections.emptyMap();
+            if (isPOJO) {
+                if (objectClass.getAnnotation(NotTable.class) == null) {
+                    properties = metaData.getTableColumnsPropertyInfo(objectClass, connection);
+                } else {
+                    properties = metaData.getQueryColumnsPropertyInfo(objectClass, result.rs);
+                }
+            }
+
             long now = System.currentTimeMillis();
 
-            while (result.rs.next()) {
-                if (isRecord) {
-                    list.add(reader.readRecord(objectClass, result.rs));
-                } else if (isPOJO) {
+            if (isRecord) {
+                List<String> propertyNames = metaData.getPropertyNames(objectClass);
+                Constructor<T> selectedConstructor = helper.findConstructor(objectClass, propertyNames);
+
+                RecordInfo<T> recordInfo = new RecordInfo<>(objectClass, selectedConstructor, this, result.rs);
+
+                while (result.rs.next()) {
+                    var record = reader.readRecord(recordInfo, result.rs);
+                    list.add(record);
+                }
+            } else if (isPOJO) {
+                verifyPropertyInfoForQuery(objectClass, properties, result.rs);
+
+                while (result.rs.next()) {
                     T t = objectClass.getDeclaredConstructor().newInstance();
-                    list.add(reader.readObject(t, result.rs));
-                } else {
-                    list.add(reader.readColumn(result.rs, 1, objectClass));
+                    list.add(reader.readObject(t, properties, result.rs));
+                }
+            } else {
+                ResultSetMetaData rsmd = result.rs.getMetaData();
+                while (result.rs.next()) {
+                    //noinspection unchecked
+                    list.add((T) reader.readColumn(result.rs, 1, rsmd.getColumnType(1), rsmd.getColumnLabel(1), objectClass));
                 }
             }
 
@@ -434,6 +474,54 @@ public final class Session implements AutoCloseable {
         }
 
         return list;
+    }
+
+    private void verifyPropertyInfoForQuery(Class<?> objectClass, Map<String, PropertyInfo> properties, ResultSet rs) throws SQLException {
+
+        // Test if all properties have column mapping (skipping joins) and throw PersismException if not
+        // This block verifies that the object is fully initialized.
+        // Any properties not marked by NotColumn should have been set (or if they have a getter only)
+        // If not throw a PersismException
+        Collection<PropertyInfo> allProperties = MetaData.getPropertyInfo(objectClass).stream().filter(p -> !p.isJoin()).toList();
+        if (properties.values().size() < allProperties.size()) {
+            Set<PropertyInfo> missing = new HashSet<>(allProperties.size());
+            missing.addAll(allProperties);
+            missing.removeAll(properties.values());
+
+            StringBuilder sb = new StringBuilder();
+            String sep = "";
+            for (PropertyInfo prop : missing) {
+                sb.append(sep).append(prop.propertyName);
+                sep = ",";
+            }
+
+            throw new PersismException(Messages.ObjectNotProperlyInitialized.message(objectClass, sb));
+        }
+
+        ResultSetMetaData rsmd = rs.getMetaData();
+        int columnCount = rsmd.getColumnCount();
+        List<String> foundColumns = new ArrayList<>(columnCount);
+
+        for (int j = 1; j <= columnCount; j++) {
+
+            String columnName = rsmd.getColumnLabel(j);
+            PropertyInfo columnProperty = reader.getPropertyInfo(columnName, properties);
+            //ColumnInfo columnInfo = getMetaData().get
+            if (columnProperty != null) {
+                foundColumns.add(columnName);
+            }
+        }
+
+        // This tests for when a user writes their own SQL and forgets a column.
+        if (foundColumns.size() < properties.keySet().size()) {
+
+            Set<String> missing = new LinkedHashSet<>(columnCount);
+            missing.addAll(properties.keySet());
+            foundColumns.forEach(missing::remove);
+
+            throw new PersismException(Messages.ObjectNotProperlyInitializedByQuery.message(objectClass, foundColumns, missing));
+        }
+
     }
 
     /**
@@ -498,7 +586,7 @@ public final class Session implements AutoCloseable {
                 ColumnInfo columnInfo = columns.get(column);
 
                 if (primaryKeys.contains(column)) {
-                    log.debug("Session update: skipping column %s",  column);
+                    log.debug("Session update: skipping column %s", column);
                 } else {
                     Object value = allProperties.get(column).getValue(object);
                     params.add(value);
@@ -619,8 +707,18 @@ public final class Session implements AutoCloseable {
             // http://download.oracle.com/javase/1.4.2/docs/guide/jdbc/getstart/statement.html
             //int ret = st.executeUpdate(insertStatement, Statement.RETURN_GENERATED_KEYS);
             assert params.size() == columnInfos.size();
+
+            if (metaData.getConnectionType() == ConnectionTypes.SQLite) {
+                log.warn("sqlite");
+            }
+
             for (int j = 0; j < params.size(); j++) {
+                ColumnInfo columnInfo = columnInfos.get(j);
+                PropertyInfo propertyInfo = properties.get(columnInfo.columnName);
                 if (params.get(j) != null) {
+//                    if (propertyInfo.converter != null) {
+//                        params.set(j, propertyInfo.converter.apply(params.get(j)));
+//                    }
                     params.set(j, converter.convert(params.get(j), columnInfos.get(j).columnType.getJavaType(), columnInfos.get(j).columnName));
                 }
             }

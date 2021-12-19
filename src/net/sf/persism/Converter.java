@@ -12,11 +12,23 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.ZoneId;
-import java.util.*;
+import java.util.Date;
+import java.util.UUID;
 
 final class Converter {
 
     private static final Log log = Log.getLogger(Converter.class);
+
+    // https://stackoverflow.com/questions/2409657/call-to-method-of-static-java-text-dateformat-not-advisable
+    // https://www.javacodegeeks.com/2010/07/java-best-practices-dateformat-in.html
+    private static final ThreadLocal<SimpleDateFormat> DATE_FORMAT1 =
+            ThreadLocal.withInitial(() -> new SimpleDateFormat("yyyy-MM-dd hh:mm:ss"));
+
+    private static final ThreadLocal<SimpleDateFormat> DATE_FORMAT2 =
+            ThreadLocal.withInitial(() -> new SimpleDateFormat("yyyy-MM-dd"));
+
+    private static final ThreadLocal<SimpleDateFormat> DATE_FORMAT3 =
+            ThreadLocal.withInitial(() -> new SimpleDateFormat("hh:mm:ss"));
 
     // Make a sensible conversion of the value type from the DB and the property type defined
     // on the Data class - or the value type from the property to the statement parameter.
@@ -50,54 +62,87 @@ final class Converter {
 
             case integerType:
             case IntegerType:
+
+                if (targetType == Integer.class || targetType == int.class) {
+                    break;
+                }
+
                 // int to bool
-                if (targetType.equals(Boolean.class) || targetType.equals(boolean.class)) {
+                if (targetType == Boolean.class || targetType == boolean.class) {
                     returnValue = Integer.parseInt("" + value) != 0;
+                    break;
+                }
 
-                } else if (targetType.equals(Time.class)) {
-                    // SQLite when a Time is defined VIA a convert from LocalTime via Time.valueOf (see getContactForTest)
-                    returnValue = new Time(((Integer) value).longValue());
-
-                } else if (targetType.equals(LocalTime.class)) {
-                    // SQLite for Time SQLite sees Long, for LocalTime it sees Integer
-                    returnValue = new Time((Integer) value).toLocalTime();
-
-                } else if (targetType.equals(Short.class) || targetType.equals(short.class)) {
+                if (targetType == Short.class || targetType == short.class) {
                     log.warnNoDuplicates(Messages.PossibleOverflow.message(columnName, "SHORT", "INT"));
                     returnValue = Short.parseShort("" + value);
+                    break;
+                }
 
-                } else if (targetType.equals(Byte.class) || targetType.equals(byte.class)) {
+                if (targetType == Byte.class || targetType == byte.class) {
                     log.warnNoDuplicates(Messages.PossibleOverflow.message(columnName, "BYTE", "INT"));
                     returnValue = Byte.parseByte("" + value);
+                    break;
                 }
+
+                if (targetType == Time.class) {
+                    // SQLite when a Time is defined VIA a convert from LocalTime via Time.valueOf (see getContactForTest)
+                    returnValue = new Time(((Integer) value).longValue());
+                    break;
+                }
+
+                if (targetType == LocalTime.class) {
+                    // SQLite for Time SQLite sees Long, for LocalTime it sees Integer
+                    returnValue = new Time((Integer) value).toLocalTime();
+                    break;
+                }
+
                 break;
 
             case longType:
             case LongType:
+
+                if (targetType == Long.class || targetType == long.class) {
+                    break;
+                }
+
                 long lval = Long.parseLong("" + value);
-                if (targetType.equals(java.sql.Date.class)) {
+                if (targetType == java.sql.Date.class) {
                     returnValue = new java.sql.Date(lval);
+                    break;
+                }
 
-                } else if (targetType.equals(java.util.Date.class)) {
+                if (targetType == Date.class) {
                     returnValue = new java.util.Date(lval);
+                    break;
+                }
 
-                } else if (targetType.equals(Timestamp.class)) {
+                if (targetType == Timestamp.class) {
                     returnValue = new Timestamp(lval);
+                    break;
+                }
 
-                } else if (targetType.equals(Integer.class) || targetType.equals(int.class)) {
+                if (targetType == Integer.class || targetType == int.class) {
                     log.warnNoDuplicates(Messages.PossibleOverflow.message(columnName, "INT", "LONG"));
                     returnValue = Integer.parseInt("" + lval);
+                    break;
+                }
 
-                } else if (targetType.equals(LocalDate.class)) {
+                if (targetType == LocalDateTime.class) {
+                    returnValue = new Timestamp(lval).toLocalDateTime();
+                    break;
+                }
+
+                if (targetType == LocalDate.class) {
                     // SQLite reads long as date.....
                     returnValue = new Timestamp(lval).toLocalDateTime().toLocalDate();
+                    break;
+                }
 
-                } else if (targetType.equals(LocalDateTime.class)) {
-                    returnValue = new Timestamp(lval).toLocalDateTime();
-
-                } else if (targetType.equals(Time.class)) {
+                if (targetType == Time.class) {
                     // SQLite.... Again.....
                     returnValue = new Time((Long) value);
+                    break;
                 }
                 break;
 
@@ -107,68 +152,100 @@ final class Converter {
 
             case doubleType:
             case DoubleType:
+                if (targetType == Double.class || targetType == double.class) {
+                    break;
+                }
+
                 Double dbl = (Double) value;
                 // float or doubles to BigDecimal
-                if (targetType.equals(BigDecimal.class)) {
+                if (targetType == BigDecimal.class) {
                     returnValue = new BigDecimal("" + value);
+                    break;
+                }
 
-                } else if (targetType.equals(Float.class) || targetType.equals(float.class)) {
+                if (targetType == Float.class || targetType == float.class) {
                     log.warnNoDuplicates(Messages.PossibleOverflow.message(columnName, "FLOAT", "DOUBLE"));
                     returnValue = dbl.floatValue();
+                    break;
+                }
 
-                } else if (targetType.equals(Integer.class) || targetType.equals(int.class)) {
+                if (targetType == Integer.class || targetType == int.class) {
                     log.warnNoDuplicates(Messages.PossibleOverflow.message(columnName, "INT", "DOUBLE"));
                     returnValue = dbl.intValue();
+                    break;
+                }
 
-                } else if (targetType.equals(Long.class) || targetType.equals(long.class)) {
+                if (targetType == Long.class || targetType == long.class) {
                     log.warnNoDuplicates(Messages.PossibleOverflow.message(columnName, "LONG", "DOUBLE"));
                     returnValue = dbl.longValue();
+                    break;
                 }
                 break;
 
             case BigDecimalType:
-                if (targetType.equals(Float.class) || targetType.equals(float.class)) {
+                if (targetType == BigDecimal.class) {
+                    break;
+                }
+
+                if (targetType == Float.class || targetType == float.class) {
                     returnValue = ((Number) value).floatValue();
                     log.warnNoDuplicates(Messages.PossibleOverflow.message(columnName, "FLOAT", "BigDecimal"));
+                    break;
+                }
 
-                } else if (targetType.equals(Double.class) || targetType.equals(double.class)) {
+                if (targetType == Double.class || targetType == double.class) {
                     returnValue = ((Number) value).doubleValue();
                     log.warnNoDuplicates(Messages.PossibleOverflow.message(columnName, "DOUBLE", "BigDecimal"));
+                    break;
+                }
 
-                } else if (targetType.equals(Long.class) || targetType.equals(long.class)) {
+                if (targetType == Long.class || targetType == long.class) {
                     returnValue = ((Number) value).longValue();
                     log.warnNoDuplicates(Messages.PossibleOverflow.message(columnName, "LONG", "BigDecimal"));
+                    break;
+                }
 
-                } else if (targetType.equals(Integer.class) || targetType.equals(int.class)) {
+                if (targetType == String.class) {
+                    returnValue = (value).toString();
+                    break;
+                }
+
+                if (targetType == Integer.class || targetType == int.class) {
                     returnValue = ((Number) value).intValue();
                     log.warnNoDuplicates(Messages.PossibleOverflow.message(columnName, "INT", "BigDecimal"));
+                    break;
+                }
 
-                } else if (targetType.equals(Short.class) || targetType.equals(short.class)) {
+                if (targetType == Short.class || targetType == short.class) {
                     returnValue = ((Number) value).shortValue();
                     log.warnNoDuplicates(Messages.PossibleOverflow.message(columnName, "SHORT", "BigDecimal"));
+                    break;
+                }
 
-                } else if (targetType.equals(Boolean.class) || targetType.equals(boolean.class)) {
+                if (targetType == Boolean.class || targetType == boolean.class) {
                     // BigDecimal to Boolean. Oracle (sigh) - Additional for a Char to Boolean as then (see TestOracle for links)
                     returnValue = ((Number) value).intValue() == 1;
                     log.warnNoDuplicates(Messages.PossibleOverflow.message(columnName, "BOOLEAN", "BigDecimal"));
-
-                } else if (targetType.equals(String.class)) {
-                    returnValue = (value).toString();
+                    break;
                 }
+
                 break;
 
             case StringType:
-                java.util.Date dval;
-                String format;
-                if (("" + value).length() > "yyyy-MM-dd".length()) {
-                    format = "yyyy-MM-dd hh:mm:ss";
-                } else {
-                    format = "yyyy-MM-dd";
+                if (targetType == String.class) {
+                    break;
                 }
-                DateFormat df = new SimpleDateFormat(format);
+
+                java.util.Date dval;
+                DateFormat df;
+                if (("" + value).length() > "yyyy-MM-dd".length()) {
+                    df = DATE_FORMAT1.get();
+                } else {
+                    df = DATE_FORMAT2.get();
+                }
 
                 // Read a string but we want a date
-                if (targetType.equals(java.util.Date.class) || targetType.equals(java.sql.Date.class)) {
+                if (targetType == Date.class || targetType == java.sql.Date.class) {
                     // This condition occurs in SQLite when you have a datetime with default annotated
                     // the format returned is 2012-06-02 19:59:49
                     // Used for SQLite returning dates as Strings under some conditions
@@ -176,26 +253,34 @@ final class Converter {
                     // https://docs.microsoft.com/en-us/sql/t-sql/data-types/date-transact-sql?view=sql-server-ver15
                     dval = tryParseDate(value, targetType, columnName, df);
 
-                    if (targetType.equals(java.sql.Date.class)) {
+                    if (targetType == java.sql.Date.class) {
                         returnValue = new java.sql.Date(dval.getTime());
                     } else {
                         returnValue = dval;
                     }
+                    break;
+                }
 
-                } else if (targetType.equals(Timestamp.class)) {
+                if (targetType == Timestamp.class) {
                     returnValue = tryParseTimestamp(value, targetType, columnName);
+                    break;
+                }
 
-                } else if (targetType.equals(LocalDate.class)) {
+                if (targetType == LocalDate.class) {
                     // JTDS
                     dval = tryParseDate(value, targetType, columnName, df);
                     returnValue = dval.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
+                    break;
+                }
 
-                } else if (targetType.equals(LocalDateTime.class)) {
+                if (targetType == LocalDateTime.class) {
                     // JTDS
                     dval = tryParseDate(value, targetType, columnName, df);
                     returnValue = dval.toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime();
+                    break;
+                }
 
-                } else if (targetType.isEnum()) {
+                if (targetType.isEnum()) {
                     // If this is an enum do a case-insensitive comparison
                     Object[] enumConstants = targetType.getEnumConstants();
                     for (Object element : enumConstants) {
@@ -204,37 +289,49 @@ final class Converter {
                             break;
                         }
                     }
+                    break;
+                }
 
-                } else if (targetType.equals(UUID.class)) {
+                if (targetType == UUID.class) {
                     returnValue = UUID.fromString("" + value);
+                    break;
+                }
 
-                } else if (targetType.equals(Boolean.class) || targetType.equals(boolean.class)) {
+                if (targetType == Boolean.class || targetType == boolean.class) {
                     // String to Boolean - T or 1 - otherwise false (or null)
                     String bval = ("" + value).toUpperCase();
                     returnValue = bval.startsWith("T") || bval.startsWith("1");
+                    break;
+                }
 
-                } else if (targetType.equals(Time.class)) {
+                if (targetType == Time.class) {
                     // MSSQL works, JTDS returns Varchar in format below with varying decimal numbers
-                    // which won't format unless I use Exact so I chop of the milliseconds.
-                    DateFormat timeFormat = new SimpleDateFormat("hh:mm:ss");
+                    // which won't format unless I use Exact, so I chop of the milliseconds.
+                    // TODO We should not lose the ms if possible.
+                    DateFormat timeFormat = DATE_FORMAT3.get();
                     String sval = "" + value;
                     if (sval.indexOf('.') > -1) {
                         sval = sval.substring(0, sval.indexOf('.'));
                     }
                     dval = tryParseDate(sval, targetType, columnName, timeFormat);
                     returnValue = new Time(dval.getTime());
+                    break;
+                }
 
-                } else if (targetType.equals(LocalTime.class)) {
+                if (targetType == LocalTime.class) {
                     // JTDS Fails again...
                     returnValue = LocalTime.parse("" + value);
-                } else if (targetType.equals(BigDecimal.class)) {
+                    break;
+                }
+
+                if (targetType == BigDecimal.class) {
                     try {
                         returnValue = new BigDecimal("" + value);
                     } catch (NumberFormatException e) {
                         throw new PersismException(Messages.NumberFormatException.message(columnName, targetType, value.getClass(), value), e);
                     }
+                    break;
                 }
-
                 break;
 
             case characterType:
@@ -253,40 +350,131 @@ final class Converter {
                 returnValue = Time.valueOf((LocalTime) value);
                 break;
 
-            case UtilDateType: // TODO why utildate here?
-            case SQLDateType:
-            case TimestampType:
-                // TODO if they are the same type we are creating new objects here... Should we?
-                if (targetType.equals(java.util.Date.class)) {
-                    returnValue = new java.util.Date(((Date) value).getTime());
+            case UtilDateType:
+                if (targetType == Date.class) {
+                    break;
+                }
 
-                } else if (targetType.equals(java.sql.Date.class)) {
+                if (targetType == java.sql.Date.class) {
                     returnValue = new java.sql.Date(((Date) value).getTime());
+                    break;
+                }
 
-                } else if (targetType.equals(Timestamp.class)) {
+                if (targetType == Timestamp.class) {
                     returnValue = new Timestamp(((Date) value).getTime());
+                    break;
+                }
 
-                } else if (targetType.equals(LocalDate.class)) {
+                if (targetType == LocalDate.class) {
                     Date dt = new Date(((Date) value).getTime());
                     returnValue = dt.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
+                    break;
+                }
 
-                } else if (targetType.equals(LocalDateTime.class)) {
+                if (targetType == LocalDateTime.class) {
                     Date dt = new Date(((Date) value).getTime());
                     returnValue = dt.toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime();
+                    break;
+                }
 
-                } else if (targetType.equals(Time.class)) {
+                if (targetType == Time.class) {
                     // Oracle doesn't seem to have Time so we use Timestamp
                     returnValue = new Time(((Date) value).getTime());
+                    break;
+                }
 
-                } else if (targetType.equals(LocalTime.class)) {
+                if (targetType == LocalTime.class) {
                     // Oracle.... Sigh
                     Date dt = (Date) value;
                     returnValue = dt.toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime().toLocalTime();
+                    break;
+                }
+                break;
+
+            case SQLDateType:
+                if (targetType == java.sql.Date.class) {
+                    break;
+                }
+
+                if (targetType == Date.class) {
+                    returnValue = new java.util.Date(((Date) value).getTime());
+                    break;
+                }
+
+                if (targetType == Timestamp.class) {
+                    returnValue = new Timestamp(((Date) value).getTime());
+                    break;
+                }
+
+                if (targetType == LocalDate.class) {
+                    Date dt = new Date(((Date) value).getTime());
+                    returnValue = dt.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
+                    break;
+                }
+
+                if (targetType == LocalDateTime.class) {
+                    Date dt = new Date(((Date) value).getTime());
+                    returnValue = dt.toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime();
+                    break;
+                }
+
+                if (targetType == Time.class) {
+                    // Oracle doesn't seem to have Time so we use Timestamp
+                    returnValue = new Time(((Date) value).getTime());
+                    break;
+                }
+
+                if (targetType == LocalTime.class) {
+                    // Oracle.... Sigh
+                    Date dt = (Date) value;
+                    returnValue = dt.toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime().toLocalTime();
+                    break;
+                }
+                break;
+
+            case TimestampType:
+                if (targetType == Timestamp.class) {
+                    break;
+                }
+
+                if (targetType == Date.class) {
+                    returnValue = new java.util.Date(((Date) value).getTime());
+                    break;
+                }
+
+                if (targetType == java.sql.Date.class) {
+                    returnValue = new java.sql.Date(((Date) value).getTime());
+                    break;
+                }
+
+                if (targetType == LocalDate.class) {
+                    Date dt = new Date(((Date) value).getTime());
+                    returnValue = dt.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
+                    break;
+                }
+
+                if (targetType == LocalDateTime.class) {
+                    Date dt = new Date(((Date) value).getTime());
+                    returnValue = dt.toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime();
+                    break;
+                }
+
+                if (targetType == Time.class) {
+                    // Oracle doesn't seem to have Time so we use Timestamp
+                    returnValue = new Time(((Date) value).getTime());
+                    break;
+                }
+
+                if (targetType == LocalTime.class) {
+                    // Oracle.... Sigh
+                    Date dt = (Date) value;
+                    returnValue = dt.toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime().toLocalTime();
+                    break;
                 }
                 break;
 
             case TimeType:
-                if (targetType.equals(LocalTime.class)) {
+                if (targetType == LocalTime.class) {
                     returnValue = LocalTime.parse("" + value);
                 }
                 break;
@@ -299,7 +487,7 @@ final class Converter {
 
             case byteArrayType:
             case ByteArrayType:
-                if (targetType.equals(UUID.class)) {
+                if (targetType == UUID.class) {
                     returnValue = asUuid((byte[]) value);
                 }
                 break;
@@ -318,7 +506,7 @@ final class Converter {
                 break;
 
             case UUIDType:
-                if (targetType.equals(Blob.class) || targetType.equals(byte[].class) || targetType.equals(Byte[].class)) {
+                if (targetType == Blob.class || targetType == byte[].class || targetType == Byte[].class) {
                     returnValue = asBytes((UUID) value);
                 }
                 break;
@@ -340,7 +528,7 @@ final class Converter {
         }
     }
 
-    Timestamp tryParseTimestamp(Object value, Class<?> targetType, String columnName) throws PersismException {
+    static Timestamp tryParseTimestamp(Object value, Class<?> targetType, String columnName) throws PersismException {
         try {
             return Timestamp.valueOf("" + value);
         } catch (IllegalArgumentException e) {

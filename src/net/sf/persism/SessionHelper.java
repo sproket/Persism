@@ -4,7 +4,10 @@ import net.sf.persism.annotations.Join;
 import net.sf.persism.annotations.NotTable;
 import net.sf.persism.annotations.View;
 
+import java.beans.ConstructorProperties;
+import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Parameter;
 import java.math.BigDecimal;
 import java.sql.*;
 import java.util.*;
@@ -308,6 +311,49 @@ final class SessionHelper {
         return value;
     }
 
+    <T> Constructor<T> findConstructor(Class<T> objectClass, List<String> propertyNames) {
+        Constructor<?>[] constructors = objectClass.getConstructors();
+        Constructor<T> selectedConstructor = null;
+
+        for (Constructor<?> constructor : constructors) {
+            // Check with canonical or maybe -parameters
+            List<String> parameterNames = Arrays.stream(constructor.getParameters()).
+                    map(Parameter::getName).collect(Collectors.toList());
+
+            if (listEqualsIgnoreOrder(propertyNames, parameterNames)) {
+                // re-arrange the propertyNames to match parameterNames
+                propertyNames.clear();
+                propertyNames.addAll(parameterNames);
+                selectedConstructor = (Constructor<T>) constructor;
+                break;
+            }
+
+            // Check with ConstructorProperties
+            ConstructorProperties constructorProperties = constructor.getAnnotation(ConstructorProperties.class);
+            if (constructorProperties != null) {
+                parameterNames = Arrays.asList(constructorProperties.value());
+                if (listEqualsIgnoreOrder(propertyNames, parameterNames)) {
+                    // re-arrange the propertyNames to match parameterNames
+                    propertyNames.clear();
+                    propertyNames.addAll(parameterNames);
+                    selectedConstructor = (Constructor<T>) constructor;
+                    break;
+                }
+            }
+        }
+
+        if (selectedConstructor == null) {
+            throw new PersismException(Messages.CouldNotFindConstructorForRecord.message(objectClass, propertyNames));
+        }
+        return selectedConstructor;
+    }
+
+    // https://stackoverflow.com/questions/1075656/simple-way-to-find-if-two-different-lists-contain-exactly-the-same-elements
+    private static <T> boolean listEqualsIgnoreOrder(List<T> list1, List<T> list2) {
+        return new HashSet<>(list1).equals(new HashSet<>(list2));
+    }
+
+
     void setParameters(PreparedStatement st, Object[] parameters) throws SQLException {
         if (log.isDebugEnabled()) {
             log.debug("setParameters PARAMS: %s", Arrays.asList(parameters));
@@ -467,6 +513,7 @@ final class SessionHelper {
     }
 
 
+    // todo we really need a way to detect infinite loops and FAIL FAST
     // parent is a POJO or a List of POJOs
     void handleJoins(Object parent, Class<?> parentClass, String parentSql, Parameters parentParams) throws IllegalAccessException, InvocationTargetException {
         // maybe we could add a check for fetch after insert. In those cases there's no need to query for child lists - BUT we do need query for child SINGLES

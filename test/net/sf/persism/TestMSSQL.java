@@ -34,17 +34,11 @@ public class TestMSSQL extends BaseTest {
         // LIST SYSTEM PROPERTIES
         // System.getProperties().list(System.out);
 
-        if (BaseTest.mssqlmode) {
-            connectionType = ConnectionTypes.MSSQL;
-        } else {
-            connectionType = ConnectionTypes.JTDS; // TODO GET RID OF JTDS
-        }
+        connectionType = ConnectionTypes.MSSQL;
         super.setUp();
 
 
         if (getClass().equals(TestMSSQL.class)) {
-            //        BaseTest.mssqlmode = false; // to run in JTDS MODE
-            log.info("SQLMODE? " + BaseTest.mssqlmode);
             con = MSSQLDataSource.getInstance().getConnection();
             //TODO SHOULD I DO THIS ALWAYS? con.setHoldability(ResultSet.HOLD_CURSORS_OVER_COMMIT);
 

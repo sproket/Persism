@@ -32,8 +32,6 @@ public final class TestOracle extends BaseTest {
 
     @Override
     protected void setUp() throws Exception {
-        // Turn off SQLMode for next MSSQL Test so it uses JTDS
-        BaseTest.mssqlmode = false;
         connectionType = ConnectionTypes.Oracle;
         MSSQLDataSource.removeInstance();
         super.setUp();

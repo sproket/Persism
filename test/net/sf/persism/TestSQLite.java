@@ -278,20 +278,7 @@ public final class TestSQLite extends BaseTest {
 
     @Override
     public void testContactTable() throws SQLException {
-
-        LocalTime lt = Instant.ofEpochMilli(55423000l)
-                .atZone(ZoneId.systemDefault()).toLocalTime();
-
-        log.info("lt:" + lt);
-
-
-        LocalTime lt2 = Instant.ofEpochMilli(698383421107l)
-                .atZone(ZoneId.systemDefault()).toLocalTime();
-
-        log.info("lt2:" + lt2);
-
         super.testContactTable();
-        assertTrue(true);
     }
 
     public void testOrders() throws Exception {

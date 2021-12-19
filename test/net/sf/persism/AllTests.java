@@ -19,7 +19,7 @@ public class AllTests {
 
     private AllTests() {
     }
-
+// check commit
     public static Test suite() throws Exception {
 
         TestSuite theTestSuite = new TestSuite();
@@ -34,7 +34,7 @@ public class AllTests {
         theTestSuite.addTestSuite(TestInformix.class);
         theTestSuite.addTestSuite(TestMSSQL.class);
         theTestSuite.addTestSuite(TestOracle.class);
-        theTestSuite.addTestSuite(TestMSSQL.class);
+//        theTestSuite.addTestSuite(TestMSSQL.class);
         theTestSuite.addTestSuite(TestMySQL.class);
         theTestSuite.addTestSuite(TestPostgreSQL.class);
         theTestSuite.addTestSuite(TestFirebird.class);
