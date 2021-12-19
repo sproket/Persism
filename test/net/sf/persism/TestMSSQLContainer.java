@@ -38,7 +38,6 @@ public final class TestMSSQLContainer extends TestMSSQL {
 
 
         super.setUp();
-        log.info("SQLMODE? " + BaseTest.mssqlmode);
         log.info("dbContainer.getJdbcUrl(): " + DB_CONTAINER.getJdbcUrl());
         con = DriverManager.getConnection(DB_CONTAINER.getJdbcUrl(), DB_CONTAINER.getUsername(), DB_CONTAINER.getPassword());
         log.info("PRODUCT? " + con.getMetaData().getDriverName() + " - " + con.getMetaData().getDriverVersion());

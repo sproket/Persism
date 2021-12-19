@@ -28,19 +28,19 @@ final class MetaData {
     private static final Map<Class<?>, Collection<PropertyInfo>> propertyMap = new ConcurrentHashMap<>(32);
 
     // column to property map for each class
-    private Map<Class<?>, Map<String, PropertyInfo>> propertyInfoMap = new ConcurrentHashMap<>(32);
-    private Map<Class<?>, Map<String, ColumnInfo>> columnInfoMap = new ConcurrentHashMap<>(32);
-    private Map<Class<?>, List<String>> propertyNames = new ConcurrentHashMap<>(32); // not static since this is by column order which may vary
+    private final Map<Class<?>, Map<String, PropertyInfo>> propertyInfoMap = new ConcurrentHashMap<>(32);
+    private final Map<Class<?>, Map<String, ColumnInfo>> columnInfoMap = new ConcurrentHashMap<>(32);
+    private final Map<Class<?>, List<String>> propertyNames = new ConcurrentHashMap<>(32); // not static since this is by column order which may vary
 
     // table/view name for each class
-    private Map<Class<?>, String> tableOrViewMap = new ConcurrentHashMap<>(32);
+    private final Map<Class<?>, String> tableOrViewMap = new ConcurrentHashMap<>(32);
 
     // SQL for updates/inserts/deletes/selects for each class
-    private Map<Class<?>, String> updateStatementsMap = new ConcurrentHashMap<>(32);
-    private Map<Class<?>, String> insertStatementsMap = new ConcurrentHashMap<>(32);
-    private Map<Class<?>, String> deleteStatementsMap = new ConcurrentHashMap<>(32);
-    private Map<Class<?>, String> selectStatementsMap = new ConcurrentHashMap<>(32);
-    private Map<Class<?>, String> whereClauseMap = new ConcurrentHashMap<>(32);
+    private final Map<Class<?>, String> updateStatementsMap = new ConcurrentHashMap<>(32);
+    private final Map<Class<?>, String> insertStatementsMap = new ConcurrentHashMap<>(32);
+    private final Map<Class<?>, String> deleteStatementsMap = new ConcurrentHashMap<>(32);
+    private final Map<Class<?>, String> selectStatementsMap = new ConcurrentHashMap<>(32);
+    private final Map<Class<?>, String> whereClauseMap = new ConcurrentHashMap<>(32);
 
     // Key is SQL with named params, Value is SQL with ?
     // private Map<String, String> sqlWitNamedParams = new ConcurrentHashMap<String, String>(32);
@@ -51,17 +51,17 @@ final class MetaData {
     // private Map<Class, List<String>> primaryKeysMap = new ConcurrentHashMap<Class, List<String>>(32); // remove later maybe?
 
     // list of tables in the DB
-    private Set<String> tableNames = new TreeSet<>(String.CASE_INSENSITIVE_ORDER);
+    private final Set<String> tableNames = new TreeSet<>(String.CASE_INSENSITIVE_ORDER);
 
     // list of views in the DB
-    private Set<String> viewNames = new TreeSet<>(String.CASE_INSENSITIVE_ORDER);
+    private final Set<String> viewNames = new TreeSet<>(String.CASE_INSENSITIVE_ORDER);
 
     // Map of table names + meta data
     // private Map<String, TableInfo> tableInfoMap = new ConcurrentHashMap<String, TableInfo>(32);
 
     private static final Map<String, MetaData> metaData = new ConcurrentHashMap<String, MetaData>(4);
 
-    private ConnectionTypes connectionType;
+    private final ConnectionTypes connectionType;
 
     // the "extra" characters that can be used in unquoted identifier names (those beyond a-z, A-Z, 0-9 and _)
     // Was using DatabaseMetaData getExtraNameCharacters() but some drivers don't provide these and still allow
@@ -284,7 +284,7 @@ final class MetaData {
                     primaryKeysCount++;
                 }
 
-                if (primaryKeysCount == 0) {
+                if (primaryKeysCount == 0 && !primaryKeysFound) {
                     log.warn(Messages.DatabaseMetaDataCouldNotFindPrimaryKeys.message(tableName));
                 }
             }

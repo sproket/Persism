@@ -6,7 +6,6 @@ import org.apache.commons.dbcp.PoolableConnectionFactory;
 import org.apache.commons.dbcp.PoolingDataSource;
 import org.apache.commons.pool.impl.GenericObjectPool;
 
-import javax.net.ssl.SSLParameters;
 import javax.sql.DataSource;
 import java.io.InputStream;
 import java.sql.Connection;
@@ -22,17 +21,11 @@ public class MSSQLDataSource {
 
     private DataSource dataSource;
 
-    private MSSQLDataSource(boolean mssqlmode) throws Exception {
+    private MSSQLDataSource() throws Exception {
 
-        log.info("SQL MODE? " + mssqlmode);
 
         Properties props = new Properties();
-        if (mssqlmode) {
-            props.load(getClass().getResourceAsStream("/mssql.properties"));
-        } else {
-            props.load(getClass().getResourceAsStream("/jtds.properties"));
-        }
-
+        props.load(getClass().getResourceAsStream("/mssql.properties"));
 
         String driver = props.getProperty("database.driver");
         Class.forName(driver);
@@ -70,7 +63,7 @@ public class MSSQLDataSource {
 
     public static MSSQLDataSource getInstance() throws Exception {
         if (instance == null) {
-            instance = new MSSQLDataSource(BaseTest.mssqlmode);
+            instance = new MSSQLDataSource();
         }
         return instance;
     }

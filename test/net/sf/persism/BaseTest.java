@@ -40,8 +40,6 @@ public abstract class BaseTest extends TestCase {
 
     ConnectionTypes connectionType;
 
-    static boolean mssqlmode = true;
-
     static String UUID1 = "d316ad81-946d-416b-98e3-3f3b03aa73db";
     static String UUID2 = "a0d00c5a-3de6-4ae8-ba11-e3e02c2b3a83";
 
@@ -491,9 +489,11 @@ public abstract class BaseTest extends TestCase {
         assertEquals("size should be 4", 4, results.size());
 
         Constructor<?> c = getCanonicalConstructor(CustomerOrderRec.class);
+        assertNotNull(c);
         log.info("RECORD: " + debugConstructor(c));
 
         c = getCanonicalConstructor(CustomerOrder.class);
+        assertNull(c); // should be null - this is not a record
         log.info("OBJECT: " + debugConstructor(c));
 
         CustomerOrderRec cor = new CustomerOrderRec("1", "name", "desc", 123L, LocalDateTime.now(), null, false);
@@ -1536,7 +1536,7 @@ public abstract class BaseTest extends TestCase {
         assertEquals("totals/b 105.00", nf.format(105.0f), invoice.getTotal().toString());
     }
 
-    // RecordTest1 is invalid so it should fail on query and fetch
+    // RecordTest1 is invalid, so it should fail on query and fetch
     public void testRecord1() {
         UUID id = UUID.randomUUID();
         RecordTest1 rt1 = new RecordTest1(id, "test 1", 10, 4.23f, 0.0d);
@@ -1569,7 +1569,7 @@ public abstract class BaseTest extends TestCase {
         // Any fetch or query should fail - see RecordTest1 has a bad constructor
         boolean fail = false;
         try {
-            log.warn("paramValue: " + paramValue);
+            log.warn("paramValue: " + paramValue + " " + paramValue.getClass());
             //session.fetch(RecordTest1.class, params((Object) Converter.asBytes(id)));
             session.fetch(RecordTest1.class, params(paramValue));
         } catch (PersismException e) {
@@ -1622,14 +1622,41 @@ public abstract class BaseTest extends TestCase {
 
         } catch (PersismException e) {
             fail = true;
-            assertEquals("s/b 'readRecord: could not find column in the sql query for class: class net.sf.persism.dao.records.recordTest2. Missing column: CREATED_ON'".toLowerCase(),
-                    "readRecord: could not find column in the sql query for class: class net.sf.persism.dao.records.recordTest2. Missing column: CREATED_ON".toLowerCase(),
+            // todo this should be the common object message instead defined by Messages.ObjectNotProperlyInitializedByQuery
+            assertEquals("s/b 'readrecord: could not find column in the sql query for class: class net.sf.persism.dao.records.recordtest2. missing column: created_on'".toLowerCase(),
+                    "readrecord: could not find column in the sql query for class: class net.sf.persism.dao.records.recordtest2. missing column: created_on".toLowerCase(),
                     e.getMessage().toLowerCase());
         }
 
         assertTrue(fail);
     }
 
+    // TODO LATER
+    public void XtestGetMultipleResultSets() throws Exception {
+        String sql = """
+                SELECT * FROM CUSTOMERS;
+
+                SELECT * FROM INVOICES;
+
+                SELECT * FROM CONTACTS;
+                
+                """;
+
+        try (Statement st = con.createStatement()) {
+            int n = 0;
+            st.execute(sql);
+            ResultSet rs = st.getResultSet();
+            System.out.println(rs.getMetaData().getColumnLabel(2));
+            n++;
+            while (st.getMoreResults(Statement.KEEP_CURRENT_RESULT)) {
+                rs = st.getResultSet();
+                System.out.println(rs.getMetaData().getColumnLabel(2));
+                System.out.println(++n);
+            }
+            System.out.println(n);
+        }
+
+    }
 
     public void testRecords() {
         RecordTest2 rt2 = new RecordTest2(0, "desc2", 100, 25.434f);
@@ -1782,7 +1809,7 @@ public abstract class BaseTest extends TestCase {
 
         var components = recordClass.getRecordComponents();
         if (components == null) {
-            log.warn("why are you calling this on a non-record?");
+            log.warn("why are you calling this on a non-record?", new Throwable(""));
             return null;
         }
         Class<?>[] componentTypes = Arrays.stream(components)
