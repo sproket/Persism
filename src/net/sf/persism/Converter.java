@@ -307,7 +307,7 @@ final class Converter {
                 if (targetType == Time.class) {
                     // MSSQL works, JTDS returns Varchar in format below with varying decimal numbers
                     // which won't format unless I use Exact, so I chop of the milliseconds.
-                    // TODO We should not lose the ms if possible.
+                    // This condition only occurs with JTDS
                     DateFormat timeFormat = DATE_FORMAT3.get();
                     String sval = "" + value;
                     if (sval.indexOf('.') > -1) {

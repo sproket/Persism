@@ -180,3 +180,18 @@ https://www.javaadvent.com/2021/12/keep-your-sql-in-check-with-flight-recorder-j
 https://www.reddit.com/r/java/comments/rhzaku/ide_plugins_for_performance_testing_code/
 
 maybe add our own ConstructorProperties annotation to remove dependency on java.beans.
+
+maybe support transient keyword (works like @NotColumn) - doesn't work with records.
+Records need javax.persistence.Transient or java.beans.Transient annotation. PITA
+(we should not have any dependency on javax - only java) OR Add our own Annotation.
+
+
+------------
+https://ebean.io/docs/query/sqlquery
+String sql = "select c.id, c.name from customer c where c.name in (:names)";
+
+List<SqlRow> rows = DB.sqlQuery(sql)
+  .setParameter("names", asList("Rob", "Fiona", "Jack"))
+  .findList();
+------------------
+

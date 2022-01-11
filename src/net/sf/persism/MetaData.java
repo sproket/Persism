@@ -886,7 +886,7 @@ final class MetaData {
         while (it.hasNext()) {
             Map.Entry<String, PropertyInfo> entry = it.next();
             PropertyInfo info = entry.getValue();
-            if (info.getAnnotation(NotColumn.class) != null) {
+            if (info.getAnnotation(NotColumn.class) != null || Modifier.isTransient(info.field.getModifiers())) {
                 it.remove();
             }
         }
@@ -1348,8 +1348,12 @@ final class MetaData {
         if (tableOrViewMap.containsKey(objectClass)) {
             return tableOrViewMap.get(objectClass);
         }
-
         return determineTable(objectClass);
+    }
+
+    <T> String getFullTableName(Class<T> objectClass) {
+        // todo return schema name as well..
+        return connectionType.getKeywordStartDelimiter() + getTableName(objectClass) + connectionType.getKeywordEndDelimiter();
     }
 
     <T> List<String> getPropertyNames(Class<T> objectClass) {

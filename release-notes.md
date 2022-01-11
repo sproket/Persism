@@ -1,6 +1,7 @@
 ## Release Notes
 
 todo add schema names to SQL.
+* Added support for transient keyword (works like @NotColumn)
 
 ### merge with 1.2.....
 * REVIEW ALL CHANGES

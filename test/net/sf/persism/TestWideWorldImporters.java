@@ -25,7 +25,7 @@ public class TestWideWorldImporters extends TestCase {
     protected void setUp() throws Exception {
         super.setUp();
 
-        con = DriverManager.getConnection("jdbc:sqlserver://HOWARD-D-LAPTOP;database=WideWorldImporters;integratedSecurity=true;");
+        con = DriverManager.getConnection("jdbc:sqlserver://localhost;database=WideWorldImporters;integratedSecurity=true;");
         session = new Session(con);
     }
 

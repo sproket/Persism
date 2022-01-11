@@ -13,5 +13,11 @@ final class JDBCResult {
     Statement st = null;
     ResultSet rs = null;
 
-    static final JDBCResult DEFAULT = new JDBCResult();
+    String name;
+
+    static final JDBCResult DEFAULT = new JDBCResult("");
+
+    public JDBCResult(String name) {
+        this.name = name;
+    }
 }

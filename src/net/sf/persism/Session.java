@@ -135,7 +135,7 @@ public final class Session implements AutoCloseable {
 
         List<ColumnInfo> columnInfos = new ArrayList<>(properties.size());
         Map<String, ColumnInfo> cols = metaData.getColumns(objectClass, connection);
-        JDBCResult result = new JDBCResult();
+        JDBCResult result = new JDBCResult(objectClass.getSimpleName());
         try {
             for (String column : primaryKeys) {
                 PropertyInfo propertyInfo = properties.get(column);
@@ -413,10 +413,11 @@ public final class Session implements AutoCloseable {
         boolean isPOJO = Types.getType(objectClass) == null;
         boolean isRecord = isPOJO && isRecord(objectClass);
 
+        long now = System.currentTimeMillis();
+
         JDBCResult result = JDBCResult.DEFAULT;
         try {
             result = helper.executeQuery(objectClass, sql, parameters);
-
 
             Map<String, PropertyInfo> properties = Collections.emptyMap();
             if (isPOJO) {
@@ -427,7 +428,6 @@ public final class Session implements AutoCloseable {
                 }
             }
 
-            long now = System.currentTimeMillis();
 
             if (isRecord) {
                 List<String> propertyNames = metaData.getPropertyNames(objectClass);
@@ -439,6 +439,8 @@ public final class Session implements AutoCloseable {
                     var record = reader.readRecord(recordInfo, result.rs);
                     list.add(record);
                 }
+                //System.out.println("time to readRecord: " + (System.currentTimeMillis() - now));
+
             } else if (isPOJO) {
                 verifyPropertyInfoForQuery(objectClass, properties, result.rs);
 
@@ -446,24 +448,24 @@ public final class Session implements AutoCloseable {
                     T t = objectClass.getDeclaredConstructor().newInstance();
                     list.add(reader.readObject(t, properties, result.rs));
                 }
+
+                //System.out.println("time to readObject: " + (System.currentTimeMillis() - now));
+
             } else {
                 ResultSetMetaData rsmd = result.rs.getMetaData();
                 while (result.rs.next()) {
                     //noinspection unchecked
                     list.add((T) reader.readColumn(result.rs, 1, rsmd.getColumnType(1), rsmd.getColumnLabel(1), objectClass));
                 }
-            }
-
-            //blog.debug("TIME TO READ " + objectClass + " " + (System.currentTimeMillis() - now) + " SIZE " + list.size());
-            blog.debug("READ time: %s SIZE: %s %s", (System.currentTimeMillis() - now), list.size(), objectClass);
-
-            if (list.size() > 0) {
-                now = System.currentTimeMillis();
-                helper.handleJoins(list, objectClass, sql.toString(), parameters);
+                // System.out.println("time to readSimple: " + (System.currentTimeMillis() - now));
             }
 
             if (blog.isDebugEnabled()) {
-                blog.debug("handleJoins TIME:  " + (System.currentTimeMillis() - now) + " " + objectClass, new Throwable());
+                blog.debug("LIST " + objectClass.getSimpleName() + " SIZE: " + list.size());
+            }
+
+            if (list.size() > 0) {
+                helper.handleJoins(list, objectClass, sql.toString(), parameters);
             }
 
         } catch (Exception e) {
