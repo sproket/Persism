@@ -1,4 +1,4 @@
-<link rel=”shortcut icon” href =“images/favicon.ico”>
+<link rel="shortcut icon" href ="favicon.ico">
 
 # ![](img/logo2.png) Welcome 
 Persism is a wood simple, auto-discovery, auto-configuration, and convention over configuration ORM (Object Relational Mapping) library for Java.
