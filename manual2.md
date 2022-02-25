@@ -594,6 +594,9 @@ a date type is ```yyyy-MM-dd hh:mm:ss``` for DateTime types and ```yyyy-MM-dd```
 
 ## Logging
 
+**Note:** Persism has no specific requirements for logging. It will utilize whatever logging framework 
+your application is using. 
+
 Here's an example logback configuration for logging with Persism:
 
 ```xml

@@ -58,10 +58,10 @@ Current scope:     <a href="../../index.html">all classes</a>
 </td>
 <td class="coverageStat">
   <span class="percent">
-    98.9%
+    100%
   </span>
   <span class="absValue">
-    (87/88)
+    (86/86)
   </span>
 </td>
 </tr>
@@ -235,37 +235,30 @@ Current scope:     <a href="../../index.html">all classes</a>
 <i class="no-highlight">160</i>&nbsp;        }
 <i class="no-highlight">161</i>&nbsp;
 <b class="fc"><i class="no-highlight">162</i>&nbsp;        if (result == null) {</b>
-<i class="no-highlight">163</i>&nbsp;            // Need this for converter
-<i class="no-highlight">164</i>&nbsp;            // https://stackoverflow.com/questions/36405320/using-the-datetimeoffset-datatype-with-jtds
-<b class="fc"><i class="no-highlight">165</i>&nbsp;            if (sqlType == -155) {</b>
-<i class="no-highlight">166</i>&nbsp;                // MSSQL type for DateTimeOffset
-<b class="fc"><i class="no-highlight">167</i>&nbsp;                result = TimestampType;</b>
-<i class="no-highlight">168</i>&nbsp;            } else {
-<b class="nc"><i class="no-highlight">169</i>&nbsp;                log.warn(Messages.UnknownSQLType.message(sqlType), new Throwable());</b>
-<i class="no-highlight">170</i>&nbsp;            }
-<i class="no-highlight">171</i>&nbsp;        }
+<b class="fc"><i class="no-highlight">163</i>&nbsp;            log.warnNoDuplicates(Messages.UnknownSQLType.message(sqlType));</b>
+<i class="no-highlight">164</i>&nbsp;        }
+<i class="no-highlight">165</i>&nbsp;
+<b class="fc"><i class="no-highlight">166</i>&nbsp;        return result;</b>
+<i class="no-highlight">167</i>&nbsp;    }
+<i class="no-highlight">168</i>&nbsp;
+<i class="no-highlight">169</i>&nbsp;    public Class&lt;?&gt; getJavaType() {
+<b class="fc"><i class="no-highlight">170</i>&nbsp;        return type;</b>
+<i class="no-highlight">171</i>&nbsp;    }
 <i class="no-highlight">172</i>&nbsp;
-<b class="fc"><i class="no-highlight">173</i>&nbsp;        return result;</b>
-<i class="no-highlight">174</i>&nbsp;    }
-<i class="no-highlight">175</i>&nbsp;
-<i class="no-highlight">176</i>&nbsp;    public Class&lt;?&gt; getJavaType() {
-<b class="fc"><i class="no-highlight">177</i>&nbsp;        return type;</b>
+<i class="no-highlight">173</i>&nbsp;    public boolean isEligibleForAutoinc() {
+<i class="no-highlight">174</i>&nbsp;        // Oracle returns BigDecimalType for INT
+<i class="no-highlight">175</i>&nbsp;        // PUBS has SmallInt -&gt; short
+<b class="fc"><i class="no-highlight">176</i>&nbsp;        return this == IntegerType || this == integerType || this == LongType || this == longType</b>
+<i class="no-highlight">177</i>&nbsp;                || this == ShortType || this == shortType || this == BigDecimalType || this == BigIntegerType;
 <i class="no-highlight">178</i>&nbsp;    }
 <i class="no-highlight">179</i>&nbsp;
-<i class="no-highlight">180</i>&nbsp;    public boolean isEligibleForAutoinc() {
-<i class="no-highlight">181</i>&nbsp;        // Oracle returns BigDecimalType for INT
-<i class="no-highlight">182</i>&nbsp;        // PUBS has SmallInt -&gt; short
-<b class="fc"><i class="no-highlight">183</i>&nbsp;        return this == IntegerType || this == integerType || this == LongType || this == longType</b>
-<i class="no-highlight">184</i>&nbsp;                || this == ShortType || this == shortType || this == BigDecimalType || this == BigIntegerType;
-<i class="no-highlight">185</i>&nbsp;    }
+<i class="no-highlight">180</i>&nbsp;    // https://stackoverflow.com/questions/2891970/getting-default-value-for-primitive-types
+<i class="no-highlight">181</i>&nbsp;    public static &lt;T&gt; T getDefaultValue(Class&lt;T&gt; clazz) {
+<b class="fc"><i class="no-highlight">182</i>&nbsp;        return (T) Array.get(Array.newInstance(clazz, 1), 0);</b>
+<i class="no-highlight">183</i>&nbsp;    }
+<i class="no-highlight">184</i>&nbsp;}
+<i class="no-highlight">185</i>&nbsp;
 <i class="no-highlight">186</i>&nbsp;
-<i class="no-highlight">187</i>&nbsp;    // https://stackoverflow.com/questions/2891970/getting-default-value-for-primitive-types
-<i class="no-highlight">188</i>&nbsp;    public static &lt;T&gt; T getDefaultValue(Class&lt;T&gt; clazz) {
-<b class="fc"><i class="no-highlight">189</i>&nbsp;        return (T) Array.get(Array.newInstance(clazz, 1), 0);</b>
-<i class="no-highlight">190</i>&nbsp;    }
-<i class="no-highlight">191</i>&nbsp;}
-<i class="no-highlight">192</i>&nbsp;
-<i class="no-highlight">193</i>&nbsp;
 </div>
 </pre>
 </div>
@@ -292,7 +285,7 @@ Current scope:     <a href="../../index.html">all classes</a>
 
 <div class="footer">
     
-    <div style="float:right;">generated on 2021-11-28 13:52</div>
+    <div style="float:right;">generated on 2021-12-11 06:53</div>
 </div>
 </body>
 </html>

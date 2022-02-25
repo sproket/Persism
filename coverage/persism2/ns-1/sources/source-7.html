@@ -58,10 +58,10 @@ Current scope:     <a href="../../index.html">all classes</a>
 </td>
 <td class="coverageStat">
   <span class="percent">
-    69.8%
+    70.5%
   </span>
   <span class="absValue">
-    (30/43)
+    (31/44)
   </span>
 </td>
 </tr>
@@ -130,80 +130,81 @@ Current scope:     <a href="../../index.html">all classes</a>
 <i class="no-highlight">55</i>&nbsp;    void warnNoDuplicates(String message) {
 <b class="fc"><i class="no-highlight">56</i>&nbsp;        String additional = &quot;&quot;;</b>
 <i class="no-highlight">57</i>&nbsp;
-<i class="no-highlight">58</i>&nbsp;        // This finds the stack element for the user&#39;s package name - should be the source of the call to include in the message
-<b class="fc"><i class="no-highlight">59</i>&nbsp;        Optional&lt;StackTraceElement&gt; opt = Arrays.stream(new Throwable().getStackTrace()).</b>
-<b class="fc"><i class="no-highlight">60</i>&nbsp;                filter(e -&gt; !e.getClassName().startsWith(&quot;net.sf.persism&quot;)).findFirst();</b>
-<i class="no-highlight">61</i>&nbsp;
-<b class="fc"><i class="no-highlight">62</i>&nbsp;        if (opt.isPresent()) {</b>
-<b class="fc"><i class="no-highlight">63</i>&nbsp;            additional = opt.get().toString().trim();</b>
-<i class="no-highlight">64</i>&nbsp;        }
-<i class="no-highlight">65</i>&nbsp;
-<b class="fc"><i class="no-highlight">66</i>&nbsp;        String msg = message + &quot; &quot; + additional;</b>
-<b class="fc"><i class="no-highlight">67</i>&nbsp;        if (!warnings.contains(msg)) {</b>
-<b class="fc"><i class="no-highlight">68</i>&nbsp;            warnings.add(msg);</b>
-<b class="fc"><i class="no-highlight">69</i>&nbsp;            warn(msg);</b>
-<i class="no-highlight">70</i>&nbsp;        }
-<i class="no-highlight">71</i>&nbsp;    }
-<i class="no-highlight">72</i>&nbsp;
-<i class="no-highlight">73</i>&nbsp;    public static Log getLogger(Class&lt;?&gt; logName) {
-<b class="fc"><i class="no-highlight">74</i>&nbsp;        return getLogger(logName.getName());</b>
-<i class="no-highlight">75</i>&nbsp;    }
-<i class="no-highlight">76</i>&nbsp;
-<i class="no-highlight">77</i>&nbsp;    public static Log getLogger(String logName) {
-<b class="fc"><i class="no-highlight">78</i>&nbsp;        if (loggers.containsKey(logName)) {</b>
-<b class="fc"><i class="no-highlight">79</i>&nbsp;            return loggers.get(logName);</b>
-<i class="no-highlight">80</i>&nbsp;        }
-<b class="fc"><i class="no-highlight">81</i>&nbsp;        Log log = new Log(logName);</b>
-<b class="fc"><i class="no-highlight">82</i>&nbsp;        loggers.put(logName, log);</b>
-<b class="fc"><i class="no-highlight">83</i>&nbsp;        return log;</b>
-<i class="no-highlight">84</i>&nbsp;    }
-<i class="no-highlight">85</i>&nbsp;
+<b class="fc"><i class="no-highlight">58</i>&nbsp;        Throwable throwable = new Throwable(&quot;&quot;);</b>
+<i class="no-highlight">59</i>&nbsp;        // This finds the stack element for the user&#39;s package name - should be the source of the call to include in the message
+<b class="fc"><i class="no-highlight">60</i>&nbsp;        Optional&lt;StackTraceElement&gt; opt = Arrays.stream(throwable.getStackTrace()).</b>
+<b class="fc"><i class="no-highlight">61</i>&nbsp;                filter(e -&gt; !e.getClassName().startsWith(&quot;net.sf.persism&quot;)).findFirst();</b>
+<i class="no-highlight">62</i>&nbsp;
+<b class="fc"><i class="no-highlight">63</i>&nbsp;        if (opt.isPresent()) {</b>
+<b class="fc"><i class="no-highlight">64</i>&nbsp;            additional = opt.get().toString().trim();</b>
+<i class="no-highlight">65</i>&nbsp;        }
+<i class="no-highlight">66</i>&nbsp;
+<b class="fc"><i class="no-highlight">67</i>&nbsp;        String msg = message + &quot; &quot; + additional;</b>
+<b class="fc"><i class="no-highlight">68</i>&nbsp;        if (!warnings.contains(msg)) {</b>
+<b class="fc"><i class="no-highlight">69</i>&nbsp;            warnings.add(msg);</b>
+<b class="fc"><i class="no-highlight">70</i>&nbsp;            warn(msg);</b>
+<i class="no-highlight">71</i>&nbsp;        }
+<i class="no-highlight">72</i>&nbsp;    }
+<i class="no-highlight">73</i>&nbsp;
+<i class="no-highlight">74</i>&nbsp;    public static Log getLogger(Class&lt;?&gt; logName) {
+<b class="fc"><i class="no-highlight">75</i>&nbsp;        return getLogger(logName.getName());</b>
+<i class="no-highlight">76</i>&nbsp;    }
+<i class="no-highlight">77</i>&nbsp;
+<i class="no-highlight">78</i>&nbsp;    public static Log getLogger(String logName) {
+<b class="fc"><i class="no-highlight">79</i>&nbsp;        if (loggers.containsKey(logName)) {</b>
+<b class="fc"><i class="no-highlight">80</i>&nbsp;            return loggers.get(logName);</b>
+<i class="no-highlight">81</i>&nbsp;        }
+<b class="fc"><i class="no-highlight">82</i>&nbsp;        Log log = new Log(logName);</b>
+<b class="fc"><i class="no-highlight">83</i>&nbsp;        loggers.put(logName, log);</b>
+<b class="fc"><i class="no-highlight">84</i>&nbsp;        return log;</b>
+<i class="no-highlight">85</i>&nbsp;    }
 <i class="no-highlight">86</i>&nbsp;
-<i class="no-highlight">87</i>&nbsp;    public boolean isDebugEnabled() {
-<b class="fc"><i class="no-highlight">88</i>&nbsp;        return logger.isDebugEnabled();</b>
-<i class="no-highlight">89</i>&nbsp;    }
-<i class="no-highlight">90</i>&nbsp;
-<i class="no-highlight">91</i>&nbsp;    public void debug(Object message) {
-<b class="fc"><i class="no-highlight">92</i>&nbsp;        logger.debug(message);</b>
-<i class="no-highlight">93</i>&nbsp;    }
-<i class="no-highlight">94</i>&nbsp;
-<i class="no-highlight">95</i>&nbsp;    public void debug(Object message, Object... params) {
-<b class="fc"><i class="no-highlight">96</i>&nbsp;        logger.debug(message, params);</b>
-<i class="no-highlight">97</i>&nbsp;    }
-<i class="no-highlight">98</i>&nbsp;
-<i class="no-highlight">99</i>&nbsp;    public void info(Object message) {
-<b class="fc"><i class="no-highlight">100</i>&nbsp;        logger.info(message);</b>
-<i class="no-highlight">101</i>&nbsp;    }
-<i class="no-highlight">102</i>&nbsp;
-<i class="no-highlight">103</i>&nbsp;    public void info(Object message, Throwable t) {
-<b class="fc"><i class="no-highlight">104</i>&nbsp;        logger.info(message, t);</b>
-<i class="no-highlight">105</i>&nbsp;    }
-<i class="no-highlight">106</i>&nbsp;
-<i class="no-highlight">107</i>&nbsp;    public void warn(Object message) {
-<b class="fc"><i class="no-highlight">108</i>&nbsp;        logger.warn(message);</b>
-<i class="no-highlight">109</i>&nbsp;    }
-<i class="no-highlight">110</i>&nbsp;
-<i class="no-highlight">111</i>&nbsp;    public void warn(Object message, Throwable t) {
-<b class="fc"><i class="no-highlight">112</i>&nbsp;        logger.warn(message, t);</b>
-<i class="no-highlight">113</i>&nbsp;    }
-<i class="no-highlight">114</i>&nbsp;
+<i class="no-highlight">87</i>&nbsp;
+<i class="no-highlight">88</i>&nbsp;    public boolean isDebugEnabled() {
+<b class="fc"><i class="no-highlight">89</i>&nbsp;        return logger.isDebugEnabled();</b>
+<i class="no-highlight">90</i>&nbsp;    }
+<i class="no-highlight">91</i>&nbsp;
+<i class="no-highlight">92</i>&nbsp;    public void debug(Object message) {
+<b class="fc"><i class="no-highlight">93</i>&nbsp;        logger.debug(message);</b>
+<i class="no-highlight">94</i>&nbsp;    }
+<i class="no-highlight">95</i>&nbsp;
+<i class="no-highlight">96</i>&nbsp;    public void debug(Object message, Object... params) {
+<b class="fc"><i class="no-highlight">97</i>&nbsp;        logger.debug(message, params);</b>
+<i class="no-highlight">98</i>&nbsp;    }
+<i class="no-highlight">99</i>&nbsp;
+<i class="no-highlight">100</i>&nbsp;    public void info(Object message) {
+<b class="fc"><i class="no-highlight">101</i>&nbsp;        logger.info(message);</b>
+<i class="no-highlight">102</i>&nbsp;    }
+<i class="no-highlight">103</i>&nbsp;
+<i class="no-highlight">104</i>&nbsp;    public void info(Object message, Throwable t) {
+<b class="fc"><i class="no-highlight">105</i>&nbsp;        logger.info(message, t);</b>
+<i class="no-highlight">106</i>&nbsp;    }
+<i class="no-highlight">107</i>&nbsp;
+<i class="no-highlight">108</i>&nbsp;    public void warn(Object message) {
+<b class="fc"><i class="no-highlight">109</i>&nbsp;        logger.warn(message);</b>
+<i class="no-highlight">110</i>&nbsp;    }
+<i class="no-highlight">111</i>&nbsp;
+<i class="no-highlight">112</i>&nbsp;    public void warn(Object message, Throwable t) {
+<b class="fc"><i class="no-highlight">113</i>&nbsp;        logger.warn(message, t);</b>
+<i class="no-highlight">114</i>&nbsp;    }
 <i class="no-highlight">115</i>&nbsp;
-<i class="no-highlight">116</i>&nbsp;    public void error(Object message) {
-<b class="fc"><i class="no-highlight">117</i>&nbsp;        logger.error(message);</b>
-<i class="no-highlight">118</i>&nbsp;    }
-<i class="no-highlight">119</i>&nbsp;
-<i class="no-highlight">120</i>&nbsp;    public void error(Object message, Throwable t) {
-<b class="fc"><i class="no-highlight">121</i>&nbsp;        logger.error(message, t);</b>
-<i class="no-highlight">122</i>&nbsp;    }
-<i class="no-highlight">123</i>&nbsp;
-<i class="no-highlight">124</i>&nbsp;    public LogMode getLogMode() {
-<b class="nc"><i class="no-highlight">125</i>&nbsp;        return logger.getLogMode();</b>
-<i class="no-highlight">126</i>&nbsp;    }
-<i class="no-highlight">127</i>&nbsp;
-<i class="no-highlight">128</i>&nbsp;    public String getLogName() {
-<b class="nc"><i class="no-highlight">129</i>&nbsp;        return logger.getLogName();</b>
-<i class="no-highlight">130</i>&nbsp;    }
-<i class="no-highlight">131</i>&nbsp;}
+<i class="no-highlight">116</i>&nbsp;
+<i class="no-highlight">117</i>&nbsp;    public void error(Object message) {
+<b class="fc"><i class="no-highlight">118</i>&nbsp;        logger.error(message);</b>
+<i class="no-highlight">119</i>&nbsp;    }
+<i class="no-highlight">120</i>&nbsp;
+<i class="no-highlight">121</i>&nbsp;    public void error(Object message, Throwable t) {
+<b class="fc"><i class="no-highlight">122</i>&nbsp;        logger.error(message, t);</b>
+<i class="no-highlight">123</i>&nbsp;    }
+<i class="no-highlight">124</i>&nbsp;
+<i class="no-highlight">125</i>&nbsp;    public LogMode getLogMode() {
+<b class="nc"><i class="no-highlight">126</i>&nbsp;        return logger.getLogMode();</b>
+<i class="no-highlight">127</i>&nbsp;    }
+<i class="no-highlight">128</i>&nbsp;
+<i class="no-highlight">129</i>&nbsp;    public String getLogName() {
+<b class="nc"><i class="no-highlight">130</i>&nbsp;        return logger.getLogName();</b>
+<i class="no-highlight">131</i>&nbsp;    }
+<i class="no-highlight">132</i>&nbsp;}
 </div>
 </pre>
 </div>
@@ -230,7 +231,7 @@ Current scope:     <a href="../../index.html">all classes</a>
 
 <div class="footer">
     
-    <div style="float:right;">generated on 2021-11-28 13:52</div>
+    <div style="float:right;">generated on 2021-12-11 06:53</div>
 </div>
 </body>
 </html>

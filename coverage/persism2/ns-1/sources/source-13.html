@@ -42,15 +42,15 @@ Current scope:     <a href="../../index.html">all classes</a>
     100%
   </span>
   <span class="absValue">
-    (19/19)
+    (22/22)
   </span>
 </td>
 <td class="coverageStat">
   <span class="percent">
-    93.3%
+    93.8%
   </span>
   <span class="absValue">
-    (332/356)
+    (333/355)
   </span>
 </td>
 </tr>
@@ -80,15 +80,15 @@ Current scope:     <a href="../../index.html">all classes</a>
     100%
   </span>
   <span class="absValue">
-    (20/20)
+    (23/23)
   </span>
 </td>
 <td class="coverageStat">
   <span class="percent">
-    93.3%
+    93.8%
   </span>
   <span class="absValue">
-    (333/357)
+    (334/356)
   </span>
 </td>
 </tr>
@@ -220,7 +220,7 @@ Current scope:     <a href="../../index.html">all classes</a>
 <i class="no-highlight">119</i>&nbsp;
 <b class="fc"><i class="no-highlight">120</i>&nbsp;            if (parameters.length == 0) {</b>
 <b class="fc"><i class="no-highlight">121</i>&nbsp;                st = session.connection.createStatement();</b>
-<b class="fc"><i class="no-highlight">122</i>&nbsp;                 st.execute(sql);</b>
+<b class="fc"><i class="no-highlight">122</i>&nbsp;                st.execute(sql);</b>
 <i class="no-highlight">123</i>&nbsp;            } else {
 <b class="fc"><i class="no-highlight">124</i>&nbsp;                st = session.connection.prepareStatement(sql);</b>
 <b class="fc"><i class="no-highlight">125</i>&nbsp;                PreparedStatement pst = (PreparedStatement) st;</b>
@@ -477,7 +477,7 @@ Current scope:     <a href="../../index.html">all classes</a>
 <i class="no-highlight">376</i>&nbsp;
 <i class="no-highlight">377</i>&nbsp;                    case characterType:
 <i class="no-highlight">378</i>&nbsp;                    case CharacterType:
-<b class="fc"><i class="no-highlight">379</i>&nbsp;                        st.setObject(n, &quot;&quot;+param); // todo informix (or others) see character as numeric so toString will fail with chars like &#39;x&#39; s/b setCharacter</b>
+<b class="fc"><i class="no-highlight">379</i>&nbsp;                        st.setObject(n, &quot;&quot; + param); // todo informix (or others) see character as numeric so toString will fail with chars like &#39;x&#39; s/b setCharacter</b>
 <i class="no-highlight">380</i>&nbsp;                        //st.setByte(n, (Byte) param);
 <b class="fc"><i class="no-highlight">381</i>&nbsp;                        break;</b>
 <i class="no-highlight">382</i>&nbsp;
@@ -570,224 +570,222 @@ Current scope:     <a href="../../index.html">all classes</a>
 <i class="no-highlight">469</i>&nbsp;
 <i class="no-highlight">470</i>&nbsp;    // parent is a POJO or a List of POJOs
 <i class="no-highlight">471</i>&nbsp;    void handleJoins(Object parent, Class&lt;?&gt; parentClass, String parentSql, Parameters parentParams) throws IllegalAccessException, InvocationTargetException {
-<i class="no-highlight">472</i>&nbsp;        // todo maybe we could add a check for fetch after insert. In those cases there&#39;s no need to query for child lists - BUT we do need query for child SINGLES
-<i class="no-highlight">473</i>&nbsp;
-<b class="fc"><i class="no-highlight">474</i>&nbsp;        List&lt;PropertyInfo&gt; joinProperties = MetaData.getPropertyInfo(parentClass).stream().filter(PropertyInfo::isJoin).collect(Collectors.toList());</b>
-<i class="no-highlight">475</i>&nbsp;
-<b class="fc"><i class="no-highlight">476</i>&nbsp;        for (PropertyInfo joinProperty : joinProperties) {</b>
-<b class="fc"><i class="no-highlight">477</i>&nbsp;            Join joinAnnotation = (Join) joinProperty.getAnnotation(Join.class);</b>
-<b class="fc"><i class="no-highlight">478</i>&nbsp;            JoinInfo joinInfo = new JoinInfo(joinAnnotation, joinProperty, parent, parentClass);</b>
-<i class="no-highlight">479</i>&nbsp;
-<b class="fc"><i class="no-highlight">480</i>&nbsp;            if (joinInfo.parentIsAQuery) {</b>
-<b class="fc"><i class="no-highlight">481</i>&nbsp;                assert ((Collection&lt;?&gt;) parent).size() &gt; 0;</b>
-<i class="no-highlight">482</i>&nbsp;            }
-<i class="no-highlight">483</i>&nbsp;
-<i class="no-highlight">484</i>&nbsp;            String parentWhere;
-<b class="fc"><i class="no-highlight">485</i>&nbsp;            if (parentSql.toUpperCase().contains(&quot; WHERE &quot;)) {</b>
-<b class="fc"><i class="no-highlight">486</i>&nbsp;                parentWhere = parentSql.substring(parentSql.toUpperCase().indexOf(&quot; WHERE &quot;) + 7);</b>
-<i class="no-highlight">487</i>&nbsp;            } else {
-<b class="fc"><i class="no-highlight">488</i>&nbsp;                parentWhere = &quot;&quot;;</b>
-<i class="no-highlight">489</i>&nbsp;            }
-<b class="fc"><i class="no-highlight">490</i>&nbsp;            String whereClause = getChildWhereClause(joinInfo, parentWhere);</b>
-<b class="fc"><i class="no-highlight">491</i>&nbsp;            List&lt;Object&gt; params = new ArrayList&lt;&gt;(parentParams.parameters);</b>
-<i class="no-highlight">492</i>&nbsp;
-<b class="fc"><i class="no-highlight">493</i>&nbsp;            if (params.size() &gt; 0) {</b>
-<i class="no-highlight">494</i>&nbsp;                // normalize params to ? since we may have repeated the SELECT IN query
-<b class="fc"><i class="no-highlight">495</i>&nbsp;                long qmCount = whereClause.chars().filter(ch -&gt; ch == &#39;?&#39;).count();</b>
-<b class="fc"><i class="no-highlight">496</i>&nbsp;                int index = 0;</b>
-<b class="fc"><i class="no-highlight">497</i>&nbsp;                while (qmCount &gt; params.size()) {</b>
-<b class="fc"><i class="no-highlight">498</i>&nbsp;                    params.add(params.get(index));</b>
-<b class="fc"><i class="no-highlight">499</i>&nbsp;                    index++;</b>
-<i class="no-highlight">500</i>&nbsp;                }
-<i class="no-highlight">501</i>&nbsp;            }
-<i class="no-highlight">502</i>&nbsp;
-<b class="fc"><i class="no-highlight">503</i>&nbsp;            if (Collection.class.isAssignableFrom(joinProperty.field.getType())) {</b>
-<i class="no-highlight">504</i>&nbsp;                // query
-<i class="no-highlight">505</i>&nbsp;                List&lt;?&gt; childList;
-<b class="fc"><i class="no-highlight">506</i>&nbsp;                childList = session.query(joinInfo.childClass, where(whereClause), params(params.toArray()));</b>
-<i class="no-highlight">507</i>&nbsp;
-<b class="fc"><i class="no-highlight">508</i>&nbsp;                if (joinInfo.parentIsAQuery) {</b>
-<b class="fc"><i class="no-highlight">509</i>&nbsp;                    List&lt;?&gt; parentList = (List&lt;?&gt;) parent;</b>
-<b class="fc"><i class="no-highlight">510</i>&nbsp;                    stitch(joinInfo, parentList, childList);</b>
-<b class="fc"><i class="no-highlight">511</i>&nbsp;                } else {</b>
-<b class="fc"><i class="no-highlight">512</i>&nbsp;                    assignJoinedList(joinProperty, parent, childList);</b>
-<i class="no-highlight">513</i>&nbsp;                }
-<b class="fc"><i class="no-highlight">514</i>&nbsp;            } else {</b>
-<i class="no-highlight">515</i>&nbsp;                // single object property
-<i class="no-highlight">516</i>&nbsp;
-<i class="no-highlight">517</i>&nbsp;                // fetch
-<i class="no-highlight">518</i>&nbsp;                List&lt;?&gt; childList;
-<b class="fc"><i class="no-highlight">519</i>&nbsp;                childList = session.query(joinInfo.childClass, where(whereClause), params(params.toArray()));</b>
+<i class="no-highlight">472</i>&nbsp;        // maybe we could add a check for fetch after insert. In those cases there&#39;s no need to query for child lists - BUT we do need query for child SINGLES
+<i class="no-highlight">473</i>&nbsp;        // NOT really important. At most 1 extra query per type will be run (and no child queries after that)
+<i class="no-highlight">474</i>&nbsp;
+<b class="fc"><i class="no-highlight">475</i>&nbsp;        List&lt;PropertyInfo&gt; joinProperties = MetaData.getPropertyInfo(parentClass).stream().filter(PropertyInfo::isJoin).collect(Collectors.toList());</b>
+<i class="no-highlight">476</i>&nbsp;
+<b class="fc"><i class="no-highlight">477</i>&nbsp;        for (PropertyInfo joinProperty : joinProperties) {</b>
+<b class="fc"><i class="no-highlight">478</i>&nbsp;            Join joinAnnotation = (Join) joinProperty.getAnnotation(Join.class);</b>
+<b class="fc"><i class="no-highlight">479</i>&nbsp;            JoinInfo joinInfo = new JoinInfo(joinAnnotation, joinProperty, parent, parentClass);</b>
+<i class="no-highlight">480</i>&nbsp;
+<b class="fc"><i class="no-highlight">481</i>&nbsp;            if (joinInfo.parentIsAQuery()) {</b>
+<i class="no-highlight">482</i>&nbsp;                // We expect this method not to be called if the result query has 0 rows.
+<b class="fc"><i class="no-highlight">483</i>&nbsp;                assert ((Collection&lt;?&gt;) parent).size() &gt; 0;</b>
+<i class="no-highlight">484</i>&nbsp;            }
+<i class="no-highlight">485</i>&nbsp;
+<i class="no-highlight">486</i>&nbsp;            String parentWhere;
+<b class="fc"><i class="no-highlight">487</i>&nbsp;            if (parentSql.toUpperCase().contains(&quot; WHERE &quot;)) {</b>
+<b class="fc"><i class="no-highlight">488</i>&nbsp;                parentWhere = parentSql.substring(parentSql.toUpperCase().indexOf(&quot; WHERE &quot;) + 7);</b>
+<i class="no-highlight">489</i>&nbsp;            } else {
+<b class="fc"><i class="no-highlight">490</i>&nbsp;                parentWhere = &quot;&quot;;</b>
+<i class="no-highlight">491</i>&nbsp;            }
+<b class="fc"><i class="no-highlight">492</i>&nbsp;            String whereClause = getChildWhereClause(joinInfo, parentWhere);</b>
+<b class="fc"><i class="no-highlight">493</i>&nbsp;            List&lt;Object&gt; params = new ArrayList&lt;&gt;(parentParams.parameters);</b>
+<i class="no-highlight">494</i>&nbsp;
+<b class="fc"><i class="no-highlight">495</i>&nbsp;            if (params.size() &gt; 0) {</b>
+<i class="no-highlight">496</i>&nbsp;                // normalize params to ? since we may have repeated the SELECT IN query
+<b class="fc"><i class="no-highlight">497</i>&nbsp;                long qmCount = whereClause.chars().filter(ch -&gt; ch == &#39;?&#39;).count();</b>
+<b class="fc"><i class="no-highlight">498</i>&nbsp;                int index = 0;</b>
+<b class="fc"><i class="no-highlight">499</i>&nbsp;                while (qmCount &gt; params.size()) {</b>
+<b class="fc"><i class="no-highlight">500</i>&nbsp;                    params.add(params.get(index));</b>
+<b class="fc"><i class="no-highlight">501</i>&nbsp;                    index++;</b>
+<i class="no-highlight">502</i>&nbsp;                }
+<i class="no-highlight">503</i>&nbsp;            }
+<i class="no-highlight">504</i>&nbsp;
+<i class="no-highlight">505</i>&nbsp;            // join to a collection
+<b class="fc"><i class="no-highlight">506</i>&nbsp;            if (Collection.class.isAssignableFrom(joinProperty.field.getType())) {</b>
+<i class="no-highlight">507</i>&nbsp;                // query
+<b class="fc"><i class="no-highlight">508</i>&nbsp;                List&lt;?&gt; childList = session.query(joinInfo.childClass(), where(whereClause), params(params.toArray()));</b>
+<i class="no-highlight">509</i>&nbsp;
+<b class="fc"><i class="no-highlight">510</i>&nbsp;                if (joinInfo.parentIsAQuery()) {</b>
+<i class="no-highlight">511</i>&nbsp;                    // many to many
+<b class="fc"><i class="no-highlight">512</i>&nbsp;                    List&lt;?&gt; parentList = (List&lt;?&gt;) parent;</b>
+<b class="fc"><i class="no-highlight">513</i>&nbsp;                    stitch(joinInfo, parentList, childList);</b>
+<b class="fc"><i class="no-highlight">514</i>&nbsp;                } else {</b>
+<i class="no-highlight">515</i>&nbsp;                    // one to many
+<b class="fc"><i class="no-highlight">516</i>&nbsp;                    assignJoinedList(joinProperty, parent, childList);</b>
+<i class="no-highlight">517</i>&nbsp;                }
+<i class="no-highlight">518</i>&nbsp;
+<b class="fc"><i class="no-highlight">519</i>&nbsp;            } else { // join to single object</b>
 <i class="no-highlight">520</i>&nbsp;
-<b class="fc"><i class="no-highlight">521</i>&nbsp;                if (joinInfo.parentIsAQuery) {</b>
-<i class="no-highlight">522</i>&nbsp;
-<b class="fc"><i class="no-highlight">523</i>&nbsp;                    stitch(joinInfo, (List&lt;?&gt;) parent, childList);</b>
-<i class="no-highlight">524</i>&nbsp;
-<i class="no-highlight">525</i>&nbsp;                } else {
-<i class="no-highlight">526</i>&nbsp;                    // TODO currently can&#39;t work with record? Nope. We&#39;d need to work in reverse order or something. Wait for refactor of this method.
-<b class="fc"><i class="no-highlight">527</i>&nbsp;                    if (childList.size() &gt; 0) {</b>
-<b class="fc"><i class="no-highlight">528</i>&nbsp;                        if (joinProperty.setter != null) {</b>
-<b class="fc"><i class="no-highlight">529</i>&nbsp;                            joinProperty.setter.invoke(parent, childList.get(0));</b>
-<i class="no-highlight">530</i>&nbsp;                        } else {
-<b class="fc"><i class="no-highlight">531</i>&nbsp;                            throw new PersismException(&quot;No Setter for &quot; + joinProperty.propertyName + &quot; in &quot; + parentClass);</b>
-<i class="no-highlight">532</i>&nbsp;                        }
-<i class="no-highlight">533</i>&nbsp;                    }
-<b class="fc"><i class="no-highlight">534</i>&nbsp;                    if (childList.size() &gt; 1) {</b>
-<b class="nc"><i class="no-highlight">535</i>&nbsp;                        log.warn(&quot;why do I have more than 1?&quot;);</b>
-<i class="no-highlight">536</i>&nbsp;                    }
-<i class="no-highlight">537</i>&nbsp;                }
-<i class="no-highlight">538</i>&nbsp;            }
-<b class="fc"><i class="no-highlight">539</i>&nbsp;        }</b>
-<i class="no-highlight">540</i>&nbsp;    }
-<i class="no-highlight">541</i>&nbsp;
-<i class="no-highlight">542</i>&nbsp;    @SuppressWarnings({&quot;rawtypes&quot;, &quot;unchecked&quot;})
-<i class="no-highlight">543</i>&nbsp;    private void stitch(JoinInfo joinInfo, List&lt;?&gt; parentList, List&lt;?&gt; childList) throws InvocationTargetException, IllegalAccessException {
-<b class="fc"><i class="no-highlight">544</i>&nbsp;        blog.debug(&quot;STITCH &quot; + joinInfo);</b>
-<i class="no-highlight">545</i>&nbsp;
-<b class="fc"><i class="no-highlight">546</i>&nbsp;        long now = System.currentTimeMillis();</b>
+<b class="fc"><i class="no-highlight">521</i>&nbsp;                if (joinInfo.parentIsAQuery()) {</b>
+<i class="no-highlight">522</i>&nbsp;                    // many to one
+<b class="fc"><i class="no-highlight">523</i>&nbsp;                    List&lt;?&gt; childList = session.query(joinInfo.childClass(), where(whereClause), params(params.toArray()));</b>
+<b class="fc"><i class="no-highlight">524</i>&nbsp;                    stitch(joinInfo.swapParentAndChild(), childList, (List&lt;?&gt;) parent);</b>
+<i class="no-highlight">525</i>&nbsp;
+<b class="fc"><i class="no-highlight">526</i>&nbsp;                } else {</b>
+<i class="no-highlight">527</i>&nbsp;                    // one to one
+<b class="fc"><i class="no-highlight">528</i>&nbsp;                    Object child = session.fetch(joinInfo.childClass(), where(whereClause), params(params.toArray()));</b>
+<b class="fc"><i class="no-highlight">529</i>&nbsp;                    if (child != null) {</b>
+<b class="fc"><i class="no-highlight">530</i>&nbsp;                        joinProperty.setValue(parent, child);</b>
+<i class="no-highlight">531</i>&nbsp;                    }
+<i class="no-highlight">532</i>&nbsp;                }
+<i class="no-highlight">533</i>&nbsp;            }
+<b class="fc"><i class="no-highlight">534</i>&nbsp;        }</b>
+<i class="no-highlight">535</i>&nbsp;    }
+<i class="no-highlight">536</i>&nbsp;
+<i class="no-highlight">537</i>&nbsp;    private void stitch(JoinInfo joinInfo, List&lt;?&gt; parentList, List&lt;?&gt; childList) {
+<b class="fc"><i class="no-highlight">538</i>&nbsp;        blog.debug(&quot;STITCH &quot; + joinInfo);</b>
+<i class="no-highlight">539</i>&nbsp;
+<b class="fc"><i class="no-highlight">540</i>&nbsp;        if (childList.size() == 0) {</b>
+<i class="no-highlight">541</i>&nbsp;            return;
+<i class="no-highlight">542</i>&nbsp;        }
+<b class="fc"><i class="no-highlight">543</i>&nbsp;        long now = System.currentTimeMillis();</b>
+<i class="no-highlight">544</i>&nbsp;
+<i class="no-highlight">545</i>&nbsp;        Map&lt;Object, Object&gt; parentMap;
+<b class="fc"><i class="no-highlight">546</i>&nbsp;        if (joinInfo.parentProperties().size() == 1 &amp;&amp; joinInfo.childProperties().size() == 1) {</b>
 <i class="no-highlight">547</i>&nbsp;
-<i class="no-highlight">548</i>&nbsp;        Map&lt;Object, Object&gt; parentMap;
-<b class="fc"><i class="no-highlight">549</i>&nbsp;        if (joinInfo.parentProperties.size() == 1 &amp;&amp; joinInfo.childProperties.size() == 1) {</b>
-<b class="fc"><i class="no-highlight">550</i>&nbsp;            PropertyInfo propertyInfo = joinInfo.parentProperties.get(0);</b>
-<b class="fc"><i class="no-highlight">551</i>&nbsp;            PropertyInfo childPropertyInfo = joinInfo.childProperties.get(0);</b>
-<i class="no-highlight">552</i>&nbsp;
-<i class="no-highlight">553</i>&nbsp;            // todo this parent map is created for each join. Maybe only do it once?
-<i class="no-highlight">554</i>&nbsp;            // https://stackoverflow.com/questions/32312876/ignore-duplicates-when-producing-map-using-streams
-<b class="fc"><i class="no-highlight">555</i>&nbsp;            parentMap = parentList.stream().collect(Collectors.toMap(o -&gt; propertyInfo.getValue(o), o -&gt; o, (o1, o2) -&gt; o1));</b>
-<i class="no-highlight">556</i>&nbsp;
-<b class="fc"><i class="no-highlight">557</i>&nbsp;            for (Object child : childList) {</b>
-<b class="fc"><i class="no-highlight">558</i>&nbsp;                Object parent = parentMap.get(childPropertyInfo.getValue(child));</b>
-<b class="fc"><i class="no-highlight">559</i>&nbsp;                if (Collection.class.isAssignableFrom(joinInfo.joinProperty.field.getType())) {</b>
-<b class="fc"><i class="no-highlight">560</i>&nbsp;                    var list = (Collection) joinInfo.joinProperty.getValue(parent);</b>
-<b class="fc"><i class="no-highlight">561</i>&nbsp;                    if (list == null) {</b>
-<b class="nc"><i class="no-highlight">562</i>&nbsp;                        throw new PersismException(&quot;Cannot join to null for property: &quot; + joinInfo.joinProperty.propertyName + &quot;. Instantiate the property as ArrayList&lt;T&gt; in your constructor.&quot;);</b>
-<i class="no-highlight">563</i>&nbsp;                    }
-<b class="fc"><i class="no-highlight">564</i>&nbsp;                    list.add(child);</b>
-<i class="no-highlight">565</i>&nbsp;
-<b class="fc"><i class="no-highlight">566</i>&nbsp;                } else {</b>
-<b class="fc"><i class="no-highlight">567</i>&nbsp;                    joinInfo.joinProperty.setter.invoke(parent, child);</b>
-<i class="no-highlight">568</i>&nbsp;                }
-<b class="fc"><i class="no-highlight">569</i>&nbsp;            }</b>
-<b class="fc"><i class="no-highlight">570</i>&nbsp;        } else {</b>
-<b class="fc"><i class="no-highlight">571</i>&nbsp;            parentMap = parentList.stream().</b>
-<b class="fc"><i class="no-highlight">572</i>&nbsp;                    collect(Collectors.</b>
-<b class="fc"><i class="no-highlight">573</i>&nbsp;                            toMap(o -&gt; {</b>
-<b class="fc"><i class="no-highlight">574</i>&nbsp;                                List&lt;Object&gt; values = new ArrayList&lt;&gt;();</b>
-<b class="fc"><i class="no-highlight">575</i>&nbsp;                                for (int j = 0; j &lt; joinInfo.parentProperties.size(); j++) {</b>
-<b class="fc"><i class="no-highlight">576</i>&nbsp;                                    values.add(joinInfo.parentProperties.get(j).getValue(o));</b>
-<i class="no-highlight">577</i>&nbsp;                                }
-<b class="fc"><i class="no-highlight">578</i>&nbsp;                                return new KeyBox(joinInfo.caseSensitive, values.toArray());</b>
-<b class="fc"><i class="no-highlight">579</i>&nbsp;                            }, o -&gt; o, (o1, o2) -&gt; o1));</b>
-<i class="no-highlight">580</i>&nbsp;
-<i class="no-highlight">581</i>&nbsp;
-<b class="fc"><i class="no-highlight">582</i>&nbsp;            for (Object child : childList) {</b>
-<b class="fc"><i class="no-highlight">583</i>&nbsp;                List&lt;Object&gt; values = new ArrayList&lt;&gt;();</b>
-<b class="fc"><i class="no-highlight">584</i>&nbsp;                for (int j = 0; j &lt; joinInfo.childProperties.size(); j++) {</b>
-<b class="fc"><i class="no-highlight">585</i>&nbsp;                    values.add(joinInfo.childProperties.get(j).getValue(child));</b>
-<i class="no-highlight">586</i>&nbsp;                }
-<i class="no-highlight">587</i>&nbsp;
-<b class="fc"><i class="no-highlight">588</i>&nbsp;                KeyBox keyBox = new KeyBox(joinInfo.caseSensitive, values.toArray());</b>
-<i class="no-highlight">589</i>&nbsp;
-<b class="fc"><i class="no-highlight">590</i>&nbsp;                Object parent = parentMap.get(keyBox);</b>
-<b class="fc"><i class="no-highlight">591</i>&nbsp;                if (Collection.class.isAssignableFrom(joinInfo.joinProperty.field.getType())) {</b>
-<b class="fc"><i class="no-highlight">592</i>&nbsp;                    var list = (Collection) joinInfo.joinProperty.getValue(parent);</b>
-<b class="fc"><i class="no-highlight">593</i>&nbsp;                    if (list == null) {</b>
-<b class="nc"><i class="no-highlight">594</i>&nbsp;                        throw new PersismException(&quot;Cannot join to null for property: &quot; + joinInfo.joinProperty.propertyName + &quot;. Instantiate the property as ArrayList&lt;T&gt; in your constructor.&quot;);</b>
-<i class="no-highlight">595</i>&nbsp;                    }
-<b class="fc"><i class="no-highlight">596</i>&nbsp;                    list.add(child);</b>
-<i class="no-highlight">597</i>&nbsp;
-<b class="fc"><i class="no-highlight">598</i>&nbsp;                } else {</b>
-<b class="nc"><i class="no-highlight">599</i>&nbsp;                    joinInfo.joinProperty.setter.invoke(parent, child);</b>
-<i class="no-highlight">600</i>&nbsp;                }
-<i class="no-highlight">601</i>&nbsp;
-<b class="fc"><i class="no-highlight">602</i>&nbsp;            }</b>
-<i class="no-highlight">603</i>&nbsp;        }
-<i class="no-highlight">604</i>&nbsp;
-<b class="fc"><i class="no-highlight">605</i>&nbsp;        log.debug(&quot;stitch Time: &quot; + (System.currentTimeMillis() - now));</b>
-<i class="no-highlight">606</i>&nbsp;    }
-<i class="no-highlight">607</i>&nbsp;
-<i class="no-highlight">608</i>&nbsp;    @SuppressWarnings({&quot;rawtypes&quot;, &quot;unchecked&quot;})
-<i class="no-highlight">609</i>&nbsp;    private void assignJoinedList(PropertyInfo joinProperty, Object parentObject, List list) throws IllegalAccessException, InvocationTargetException {
+<b class="fc"><i class="no-highlight">548</i>&nbsp;            PropertyInfo parentPropertyInfo = joinInfo.parentProperties().get(0);</b>
+<b class="fc"><i class="no-highlight">549</i>&nbsp;            PropertyInfo childPropertyInfo = joinInfo.childProperties().get(0);</b>
+<i class="no-highlight">550</i>&nbsp;
+<i class="no-highlight">551</i>&nbsp;            // https://stackoverflow.com/questions/32312876/ignore-duplicates-when-producing-map-using-streams
+<b class="fc"><i class="no-highlight">552</i>&nbsp;            parentMap = parentList.stream().collect(Collectors.</b>
+<b class="fc"><i class="no-highlight">553</i>&nbsp;                    toMap(obj -&gt; {</b>
+<i class="no-highlight">554</i>&nbsp;                        // todo code coverage for not case sensitive strings for map
+<b class="fc"><i class="no-highlight">555</i>&nbsp;                        Object value = parentPropertyInfo.getValue(obj);</b>
+<b class="fc"><i class="no-highlight">556</i>&nbsp;                        if (!joinInfo.caseSensitive() &amp;&amp; value instanceof String s) {</b>
+<b class="fc"><i class="no-highlight">557</i>&nbsp;                            return s.toUpperCase();</b>
+<i class="no-highlight">558</i>&nbsp;                        }
+<b class="fc"><i class="no-highlight">559</i>&nbsp;                        return value;</b>
+<b class="fc"><i class="no-highlight">560</i>&nbsp;                    }, o -&gt; o, (o1, o2) -&gt; o1));</b>
+<i class="no-highlight">561</i>&nbsp;
+<b class="fc"><i class="no-highlight">562</i>&nbsp;            for (Object child : childList) {</b>
+<b class="fc"><i class="no-highlight">563</i>&nbsp;                Object parent = parentMap.get(childPropertyInfo.getValue(child));</b>
+<b class="fc"><i class="no-highlight">564</i>&nbsp;                setPropertyFromJoinInfo(joinInfo, parent, child);</b>
+<b class="fc"><i class="no-highlight">565</i>&nbsp;            }</b>
+<i class="no-highlight">566</i>&nbsp;
+<b class="fc"><i class="no-highlight">567</i>&nbsp;        } else {</b>
+<i class="no-highlight">568</i>&nbsp;            // todo test with reverse
+<b class="fc"><i class="no-highlight">569</i>&nbsp;            parentMap = parentList.stream().collect(Collectors.</b>
+<b class="fc"><i class="no-highlight">570</i>&nbsp;                    toMap(obj -&gt; {</b>
+<b class="fc"><i class="no-highlight">571</i>&nbsp;                        List&lt;Object&gt; values = new ArrayList&lt;&gt;();</b>
+<b class="fc"><i class="no-highlight">572</i>&nbsp;                        for (int j = 0; j &lt; joinInfo.parentProperties().size(); j++) {</b>
+<b class="fc"><i class="no-highlight">573</i>&nbsp;                            values.add(joinInfo.parentProperties().get(j).getValue(obj));</b>
+<i class="no-highlight">574</i>&nbsp;                        }
+<b class="fc"><i class="no-highlight">575</i>&nbsp;                        return new KeyBox(joinInfo.caseSensitive(), values.toArray());</b>
+<b class="fc"><i class="no-highlight">576</i>&nbsp;                    }, o -&gt; o, (o1, o2) -&gt; o1));</b>
+<i class="no-highlight">577</i>&nbsp;
+<i class="no-highlight">578</i>&nbsp;
+<b class="fc"><i class="no-highlight">579</i>&nbsp;            for (Object child : childList) {</b>
+<b class="fc"><i class="no-highlight">580</i>&nbsp;                List&lt;Object&gt; values = new ArrayList&lt;&gt;();</b>
+<b class="fc"><i class="no-highlight">581</i>&nbsp;                for (int j = 0; j &lt; joinInfo.childProperties().size(); j++) {</b>
+<b class="fc"><i class="no-highlight">582</i>&nbsp;                    values.add(joinInfo.childProperties().get(j).getValue(child));</b>
+<i class="no-highlight">583</i>&nbsp;                }
+<i class="no-highlight">584</i>&nbsp;
+<b class="fc"><i class="no-highlight">585</i>&nbsp;                KeyBox keyBox = new KeyBox(joinInfo.caseSensitive(), values.toArray());</b>
+<b class="fc"><i class="no-highlight">586</i>&nbsp;                Object parent = parentMap.get(keyBox);</b>
+<b class="fc"><i class="no-highlight">587</i>&nbsp;                setPropertyFromJoinInfo(joinInfo, parent, child);</b>
+<b class="fc"><i class="no-highlight">588</i>&nbsp;            }</b>
+<i class="no-highlight">589</i>&nbsp;        }
+<i class="no-highlight">590</i>&nbsp;
+<b class="fc"><i class="no-highlight">591</i>&nbsp;        log.debug(&quot;stitch Time: &quot; + (System.currentTimeMillis() - now));</b>
+<i class="no-highlight">592</i>&nbsp;    }
+<i class="no-highlight">593</i>&nbsp;
+<i class="no-highlight">594</i>&nbsp;    @SuppressWarnings({&quot;rawtypes&quot;, &quot;unchecked&quot;})
+<i class="no-highlight">595</i>&nbsp;    private void setPropertyFromJoinInfo(JoinInfo joinInfo, Object parent, Object child) {
+<b class="fc"><i class="no-highlight">596</i>&nbsp;        if (Collection.class.isAssignableFrom(joinInfo.joinProperty().field.getType())) {</b>
+<b class="fc"><i class="no-highlight">597</i>&nbsp;            var list = (Collection) joinInfo.joinProperty().getValue(parent);</b>
+<b class="fc"><i class="no-highlight">598</i>&nbsp;            if (list == null) {</b>
+<b class="nc"><i class="no-highlight">599</i>&nbsp;                throw new PersismException(&quot;Cannot join to null for property: &quot; + joinInfo.joinProperty().propertyName + &quot;. Instantiate the property as ArrayList&lt;T&gt; in your constructor.&quot;);</b>
+<i class="no-highlight">600</i>&nbsp;            }
+<b class="fc"><i class="no-highlight">601</i>&nbsp;            list.add(child);</b>
+<b class="fc"><i class="no-highlight">602</i>&nbsp;        } else {</b>
+<b class="fc"><i class="no-highlight">603</i>&nbsp;            if (joinInfo.reversed()) {</b>
+<b class="fc"><i class="no-highlight">604</i>&nbsp;                joinInfo.joinProperty().setValue(child, parent);</b>
+<i class="no-highlight">605</i>&nbsp;            } else {
+<b class="nc"><i class="no-highlight">606</i>&nbsp;                joinInfo.joinProperty().setValue(parent, child);</b>
+<i class="no-highlight">607</i>&nbsp;            }
+<i class="no-highlight">608</i>&nbsp;        }
+<i class="no-highlight">609</i>&nbsp;    }
 <i class="no-highlight">610</i>&nbsp;
-<i class="no-highlight">611</i>&nbsp;        // no null test - the object should have some List initialized.
-<i class="no-highlight">612</i>&nbsp;
-<b class="fc"><i class="no-highlight">613</i>&nbsp;        List joinedList = (List) joinProperty.getter.invoke(parentObject);</b>
-<b class="fc"><i class="no-highlight">614</i>&nbsp;        if (joinedList == null) {</b>
-<b class="nc"><i class="no-highlight">615</i>&nbsp;            throw new PersismException(&quot;Cannot join to null for property: &quot; + joinProperty.propertyName + &quot;. Instantiate the property as ArrayList&lt;T&gt; in your constructor.&quot;);</b>
-<i class="no-highlight">616</i>&nbsp;        }
-<b class="fc"><i class="no-highlight">617</i>&nbsp;        joinedList.clear();</b>
-<b class="fc"><i class="no-highlight">618</i>&nbsp;        joinedList.addAll(list);</b>
-<i class="no-highlight">619</i>&nbsp;    }
-<i class="no-highlight">620</i>&nbsp;
-<i class="no-highlight">621</i>&nbsp;    private String getChildWhereClause(JoinInfo joinInfo, String parentWhere) {
-<b class="fc"><i class="no-highlight">622</i>&nbsp;        String sep = &quot;&quot;;</b>
-<b class="fc"><i class="no-highlight">623</i>&nbsp;        StringBuilder where = new StringBuilder();</b>
-<b class="fc"><i class="no-highlight">624</i>&nbsp;        String sd = session.metaData.getConnectionType().getKeywordStartDelimiter();</b>
-<b class="fc"><i class="no-highlight">625</i>&nbsp;        String ed = session.metaData.getConnectionType().getKeywordEndDelimiter();</b>
-<i class="no-highlight">626</i>&nbsp;
-<b class="fc"><i class="no-highlight">627</i>&nbsp;        int n = parentWhere.toUpperCase().indexOf(&quot;ORDER BY&quot;);</b>
-<b class="fc"><i class="no-highlight">628</i>&nbsp;        if (n &gt; -1) {</b>
-<b class="fc"><i class="no-highlight">629</i>&nbsp;            parentWhere = parentWhere.substring(0, n);</b>
-<i class="no-highlight">630</i>&nbsp;        }
-<i class="no-highlight">631</i>&nbsp;
-<b class="fc"><i class="no-highlight">632</i>&nbsp;        Map&lt;String, PropertyInfo&gt; properties = session.metaData.getTableColumnsPropertyInfo(joinInfo.parentClass, session.connection);</b>
-<i class="no-highlight">633</i>&nbsp;
-<b class="fc"><i class="no-highlight">634</i>&nbsp;        for (int j = 0; j &lt; joinInfo.parentPropertyNames.length; j++) {</b>
-<b class="fc"><i class="no-highlight">635</i>&nbsp;            String parentColumnName = null;</b>
+<i class="no-highlight">611</i>&nbsp;    @SuppressWarnings({&quot;rawtypes&quot;, &quot;unchecked&quot;})
+<i class="no-highlight">612</i>&nbsp;    private void assignJoinedList(PropertyInfo joinProperty, Object parentObject, List list) {
+<i class="no-highlight">613</i>&nbsp;
+<i class="no-highlight">614</i>&nbsp;        // no null test - the object should have some List initialized.
+<i class="no-highlight">615</i>&nbsp;
+<b class="fc"><i class="no-highlight">616</i>&nbsp;        List joinedList = (List) joinProperty.getValue(parentObject);</b>
+<b class="fc"><i class="no-highlight">617</i>&nbsp;        if (joinedList == null) {</b>
+<b class="nc"><i class="no-highlight">618</i>&nbsp;            throw new PersismException(&quot;Cannot join to null for property: &quot; + joinProperty.propertyName + &quot;. Instantiate the property as ArrayList&lt;T&gt; in your constructor.&quot;);</b>
+<i class="no-highlight">619</i>&nbsp;        }
+<b class="fc"><i class="no-highlight">620</i>&nbsp;        joinedList.clear();</b>
+<b class="fc"><i class="no-highlight">621</i>&nbsp;        joinedList.addAll(list);</b>
+<i class="no-highlight">622</i>&nbsp;    }
+<i class="no-highlight">623</i>&nbsp;
+<i class="no-highlight">624</i>&nbsp;    private String getChildWhereClause(JoinInfo joinInfo, String parentWhere) {
+<b class="fc"><i class="no-highlight">625</i>&nbsp;        String sep = &quot;&quot;;</b>
+<b class="fc"><i class="no-highlight">626</i>&nbsp;        StringBuilder where = new StringBuilder();</b>
+<b class="fc"><i class="no-highlight">627</i>&nbsp;        String sd = session.metaData.getConnectionType().getKeywordStartDelimiter();</b>
+<b class="fc"><i class="no-highlight">628</i>&nbsp;        String ed = session.metaData.getConnectionType().getKeywordEndDelimiter();</b>
+<i class="no-highlight">629</i>&nbsp;
+<b class="fc"><i class="no-highlight">630</i>&nbsp;        int n = parentWhere.toUpperCase().indexOf(&quot;ORDER BY&quot;);</b>
+<b class="fc"><i class="no-highlight">631</i>&nbsp;        if (n &gt; -1) {</b>
+<b class="fc"><i class="no-highlight">632</i>&nbsp;            parentWhere = parentWhere.substring(0, n);</b>
+<i class="no-highlight">633</i>&nbsp;        }
+<i class="no-highlight">634</i>&nbsp;
+<b class="fc"><i class="no-highlight">635</i>&nbsp;        Map&lt;String, PropertyInfo&gt; properties = session.metaData.getTableColumnsPropertyInfo(joinInfo.parentClass(), session.connection);</b>
 <i class="no-highlight">636</i>&nbsp;
-<b class="fc"><i class="no-highlight">637</i>&nbsp;            for (String key : properties.keySet()) {</b>
-<b class="fc"><i class="no-highlight">638</i>&nbsp;                if (properties.get(key).propertyName.equals(joinInfo.parentPropertyNames[j])) {</b>
-<b class="fc"><i class="no-highlight">639</i>&nbsp;                    parentColumnName = key;</b>
-<b class="fc"><i class="no-highlight">640</i>&nbsp;                    break;</b>
-<i class="no-highlight">641</i>&nbsp;                }
-<b class="fc"><i class="no-highlight">642</i>&nbsp;            }</b>
-<i class="no-highlight">643</i>&nbsp;
-<b class="fc"><i class="no-highlight">644</i>&nbsp;            assert parentColumnName != null;</b>
-<i class="no-highlight">645</i>&nbsp;
-<b class="fc"><i class="no-highlight">646</i>&nbsp;            parentColumnName = sd + parentColumnName + ed;</b>
-<i class="no-highlight">647</i>&nbsp;
-<b class="fc"><i class="no-highlight">648</i>&nbsp;            String parentTable = session.metaData.getTableName(joinInfo.parentClass);</b>
-<i class="no-highlight">649</i>&nbsp;
-<i class="no-highlight">650</i>&nbsp;            String inOrEqualsStart;
-<i class="no-highlight">651</i>&nbsp;            String inOrEqualsEnd;
+<b class="fc"><i class="no-highlight">637</i>&nbsp;        for (int j = 0; j &lt; joinInfo.parentPropertyNames().length; j++) {</b>
+<b class="fc"><i class="no-highlight">638</i>&nbsp;            String parentColumnName = null;</b>
+<i class="no-highlight">639</i>&nbsp;
+<b class="fc"><i class="no-highlight">640</i>&nbsp;            for (String key : properties.keySet()) {</b>
+<b class="fc"><i class="no-highlight">641</i>&nbsp;                if (properties.get(key).propertyName.equals(joinInfo.parentPropertyNames()[j])) {</b>
+<b class="fc"><i class="no-highlight">642</i>&nbsp;                    parentColumnName = key;</b>
+<b class="fc"><i class="no-highlight">643</i>&nbsp;                    break;</b>
+<i class="no-highlight">644</i>&nbsp;                }
+<b class="fc"><i class="no-highlight">645</i>&nbsp;            }</b>
+<i class="no-highlight">646</i>&nbsp;
+<b class="fc"><i class="no-highlight">647</i>&nbsp;            assert parentColumnName != null;</b>
+<i class="no-highlight">648</i>&nbsp;
+<b class="fc"><i class="no-highlight">649</i>&nbsp;            parentColumnName = sd + parentColumnName + ed;</b>
+<i class="no-highlight">650</i>&nbsp;
+<b class="fc"><i class="no-highlight">651</i>&nbsp;            String parentTable = sd + session.metaData.getTableName(joinInfo.parentClass()) + ed;</b>
 <i class="no-highlight">652</i>&nbsp;
-<b class="fc"><i class="no-highlight">653</i>&nbsp;            inOrEqualsStart = &quot; IN (&quot;;</b>
-<b class="fc"><i class="no-highlight">654</i>&nbsp;            inOrEqualsEnd = &quot;) &quot;;</b>
+<b class="fc"><i class="no-highlight">653</i>&nbsp;            where.append(sep).append(&quot;:&quot;).append(joinInfo.childPropertyNames()[j]).append(&quot; IN (&quot;);</b>
+<b class="fc"><i class="no-highlight">654</i>&nbsp;            where.append(&quot;SELECT &quot;).append(parentColumnName).append(&quot; FROM &quot;).append(parentTable);</b>
 <i class="no-highlight">655</i>&nbsp;
-<b class="fc"><i class="no-highlight">656</i>&nbsp;            where.append(sep).append(&quot;:&quot;).append(joinInfo.childPropertyNames[j]).append(inOrEqualsStart);</b>
-<b class="fc"><i class="no-highlight">657</i>&nbsp;            where.append(&quot;SELECT &quot;).append(parentColumnName).append(&quot; FROM &quot;).append(parentTable);</b>
-<b class="fc"><i class="no-highlight">658</i>&nbsp;            if (!parentWhere.isEmpty()) {</b>
-<b class="fc"><i class="no-highlight">659</i>&nbsp;                where.append(&quot; WHERE &quot;).append(parentWhere);</b>
-<i class="no-highlight">660</i>&nbsp;            }
-<b class="fc"><i class="no-highlight">661</i>&nbsp;            where.append(inOrEqualsEnd);</b>
-<b class="fc"><i class="no-highlight">662</i>&nbsp;            sep = &quot; AND &quot;;</b>
-<i class="no-highlight">663</i>&nbsp;        }
-<b class="fc"><i class="no-highlight">664</i>&nbsp;        return where.toString();</b>
-<i class="no-highlight">665</i>&nbsp;    }
-<i class="no-highlight">666</i>&nbsp;
-<i class="no-highlight">667</i>&nbsp;    boolean isSelect(String sql) {
-<b class="fc"><i class="no-highlight">668</i>&nbsp;        assert sql != null;</b>
-<b class="fc"><i class="no-highlight">669</i>&nbsp;        return sql.trim().substring(0, 7).trim().equalsIgnoreCase(&quot;select&quot;);</b>
-<i class="no-highlight">670</i>&nbsp;    }
-<i class="no-highlight">671</i>&nbsp;
-<i class="no-highlight">672</i>&nbsp;    boolean isStoredProc(String sql) {
-<b class="fc"><i class="no-highlight">673</i>&nbsp;        return !isSelect(sql);</b>
-<i class="no-highlight">674</i>&nbsp;    }
-<i class="no-highlight">675</i>&nbsp;
-<i class="no-highlight">676</i>&nbsp;    private &lt;T&gt; void checkIfStoredProcOrSQL(Class&lt;T&gt; objectClass, SQL sql) {
-<b class="fc"><i class="no-highlight">677</i>&nbsp;        boolean startsWithSelect = isSelect(sql.sql);</b>
-<b class="fc"><i class="no-highlight">678</i>&nbsp;        if (sql.storedProc) {</b>
-<b class="fc"><i class="no-highlight">679</i>&nbsp;            if (startsWithSelect) {</b>
-<b class="nc"><i class="no-highlight">680</i>&nbsp;                log.warnNoDuplicates(Messages.InappropriateMethodUsedForSQLTypeInstance.message(objectClass, &quot;sql()&quot;, &quot;a stored proc&quot;, &quot;proc()&quot;));</b>
-<i class="no-highlight">681</i>&nbsp;            }
-<i class="no-highlight">682</i>&nbsp;        } else {
-<b class="fc"><i class="no-highlight">683</i>&nbsp;            if (!startsWithSelect) {</b>
-<b class="nc"><i class="no-highlight">684</i>&nbsp;                log.warnNoDuplicates(Messages.InappropriateMethodUsedForSQLTypeInstance.message(objectClass, &quot;proc()&quot;, &quot;an SQL query&quot;, &quot;sql()&quot;));</b>
-<i class="no-highlight">685</i>&nbsp;            }
-<i class="no-highlight">686</i>&nbsp;        }
-<i class="no-highlight">687</i>&nbsp;    }
-<i class="no-highlight">688</i>&nbsp;
-<i class="no-highlight">689</i>&nbsp;}
+<b class="fc"><i class="no-highlight">656</i>&nbsp;            if (!parentWhere.isEmpty()) {</b>
+<b class="fc"><i class="no-highlight">657</i>&nbsp;                where.append(&quot; WHERE &quot;).append(parentWhere);</b>
+<i class="no-highlight">658</i>&nbsp;            }
+<b class="fc"><i class="no-highlight">659</i>&nbsp;            where.append(&quot;) &quot;);</b>
+<b class="fc"><i class="no-highlight">660</i>&nbsp;            sep = &quot; AND &quot;;</b>
+<i class="no-highlight">661</i>&nbsp;        }
+<b class="fc"><i class="no-highlight">662</i>&nbsp;        return where.toString();</b>
+<i class="no-highlight">663</i>&nbsp;    }
+<i class="no-highlight">664</i>&nbsp;
+<i class="no-highlight">665</i>&nbsp;    boolean isSelect(String sql) {
+<b class="fc"><i class="no-highlight">666</i>&nbsp;        assert sql != null;</b>
+<b class="fc"><i class="no-highlight">667</i>&nbsp;        return sql.trim().substring(0, 7).trim().equalsIgnoreCase(&quot;select&quot;);</b>
+<i class="no-highlight">668</i>&nbsp;    }
+<i class="no-highlight">669</i>&nbsp;
+<i class="no-highlight">670</i>&nbsp;    boolean isStoredProc(String sql) {
+<b class="fc"><i class="no-highlight">671</i>&nbsp;        return !isSelect(sql);</b>
+<i class="no-highlight">672</i>&nbsp;    }
+<i class="no-highlight">673</i>&nbsp;
+<i class="no-highlight">674</i>&nbsp;    private &lt;T&gt; void checkIfStoredProcOrSQL(Class&lt;T&gt; objectClass, SQL sql) {
+<b class="fc"><i class="no-highlight">675</i>&nbsp;        boolean startsWithSelect = isSelect(sql.sql);</b>
+<b class="fc"><i class="no-highlight">676</i>&nbsp;        if (sql.storedProc) {</b>
+<b class="fc"><i class="no-highlight">677</i>&nbsp;            if (startsWithSelect) {</b>
+<b class="nc"><i class="no-highlight">678</i>&nbsp;                log.warnNoDuplicates(Messages.InappropriateMethodUsedForSQLTypeInstance.message(objectClass, &quot;sql()&quot;, &quot;a stored proc&quot;, &quot;proc()&quot;));</b>
+<i class="no-highlight">679</i>&nbsp;            }
+<i class="no-highlight">680</i>&nbsp;        } else {
+<b class="fc"><i class="no-highlight">681</i>&nbsp;            if (!startsWithSelect) {</b>
+<b class="nc"><i class="no-highlight">682</i>&nbsp;                log.warnNoDuplicates(Messages.InappropriateMethodUsedForSQLTypeInstance.message(objectClass, &quot;proc()&quot;, &quot;an SQL query&quot;, &quot;sql()&quot;));</b>
+<i class="no-highlight">683</i>&nbsp;            }
+<i class="no-highlight">684</i>&nbsp;        }
+<i class="no-highlight">685</i>&nbsp;    }
+<i class="no-highlight">686</i>&nbsp;
+<i class="no-highlight">687</i>&nbsp;}
 </div>
 </pre>
 </div>
@@ -814,7 +812,7 @@ Current scope:     <a href="../../index.html">all classes</a>
 
 <div class="footer">
     
-    <div style="float:right;">generated on 2021-11-28 13:52</div>
+    <div style="float:right;">generated on 2021-12-11 06:53</div>
 </div>
 </body>
 </html>

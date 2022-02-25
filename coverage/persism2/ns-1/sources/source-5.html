@@ -53,15 +53,15 @@ Current scope:     <a href="../../index.html">all classes</a>
     100%
   </span>
   <span class="absValue">
-    (4/4)
+    (16/16)
   </span>
 </td>
 <td class="coverageStat">
   <span class="percent">
-    96.8%
+    98.5%
   </span>
   <span class="absValue">
-    (30/31)
+    (64/65)
   </span>
 </td>
 </tr>
@@ -85,75 +85,148 @@ Current scope:     <a href="../../index.html">all classes</a>
 <i class="no-highlight">10</i>&nbsp;
 <i class="no-highlight">11</i>&nbsp;final class JoinInfo {
 <i class="no-highlight">12</i>&nbsp;
-<i class="no-highlight">13</i>&nbsp;    String[] parentPropertyNames;
-<i class="no-highlight">14</i>&nbsp;    String[] childPropertyNames;
-<i class="no-highlight">15</i>&nbsp;    List&lt;PropertyInfo&gt; parentProperties;
-<i class="no-highlight">16</i>&nbsp;    List&lt;PropertyInfo&gt; childProperties;
-<i class="no-highlight">17</i>&nbsp;    Class&lt;?&gt; parentClass;
-<i class="no-highlight">18</i>&nbsp;    Class&lt;?&gt; childClass;
-<i class="no-highlight">19</i>&nbsp;    boolean caseSensitive;
-<i class="no-highlight">20</i>&nbsp;    boolean parentIsAQuery;
-<i class="no-highlight">21</i>&nbsp;    PropertyInfo joinProperty;
-<i class="no-highlight">22</i>&nbsp;
-<i class="no-highlight">23</i>&nbsp;    // note parent may be a POJO or a list of POJOs
-<b class="fc"><i class="no-highlight">24</i>&nbsp;    public JoinInfo(Join joinAnnotation, PropertyInfo joinProperty, Object parent, Class&lt;?&gt; parentClass) {</b>
-<b class="fc"><i class="no-highlight">25</i>&nbsp;        this.joinProperty = joinProperty;</b>
-<b class="fc"><i class="no-highlight">26</i>&nbsp;        parentPropertyNames = joinAnnotation.onProperties().split(&quot;,&quot;);</b>
-<b class="fc"><i class="no-highlight">27</i>&nbsp;        childPropertyNames = joinAnnotation.toProperties().split(&quot;,&quot;);</b>
-<b class="fc"><i class="no-highlight">28</i>&nbsp;        if (parentPropertyNames.length != childPropertyNames.length) {</b>
-<b class="nc"><i class="no-highlight">29</i>&nbsp;            throw new PersismException(&quot;how would I match these?&quot;);</b>
-<i class="no-highlight">30</i>&nbsp;        }
-<b class="fc"><i class="no-highlight">31</i>&nbsp;        Util.trimArray(parentPropertyNames);</b>
-<b class="fc"><i class="no-highlight">32</i>&nbsp;        Util.trimArray(childPropertyNames);</b>
-<i class="no-highlight">33</i>&nbsp;        // todo test these properties exist and fail otherwise
-<i class="no-highlight">34</i>&nbsp;
-<b class="fc"><i class="no-highlight">35</i>&nbsp;        caseSensitive = joinAnnotation.caseSensitive();</b>
+<i class="no-highlight">13</i>&nbsp;    private String[] parentPropertyNames;
+<i class="no-highlight">14</i>&nbsp;    private String[] childPropertyNames;
+<i class="no-highlight">15</i>&nbsp;    private List&lt;PropertyInfo&gt; parentProperties;
+<i class="no-highlight">16</i>&nbsp;    private List&lt;PropertyInfo&gt; childProperties;
+<i class="no-highlight">17</i>&nbsp;    private Class&lt;?&gt; parentClass;
+<i class="no-highlight">18</i>&nbsp;    private Class&lt;?&gt; childClass;
+<i class="no-highlight">19</i>&nbsp;    private final PropertyInfo joinProperty;
+<i class="no-highlight">20</i>&nbsp;    private final boolean caseSensitive;
+<i class="no-highlight">21</i>&nbsp;    private final boolean parentIsAQuery;
+<b class="fc"><i class="no-highlight">22</i>&nbsp;    private boolean reversed = false;</b>
+<i class="no-highlight">23</i>&nbsp;
+<b class="fc"><i class="no-highlight">24</i>&nbsp;    JoinInfo(JoinInfo other) {</b>
+<b class="fc"><i class="no-highlight">25</i>&nbsp;        parentPropertyNames = other.parentPropertyNames;</b>
+<b class="fc"><i class="no-highlight">26</i>&nbsp;        childPropertyNames = other.childPropertyNames;</b>
+<b class="fc"><i class="no-highlight">27</i>&nbsp;        parentProperties = other.parentProperties;</b>
+<b class="fc"><i class="no-highlight">28</i>&nbsp;        childProperties = other.childProperties;</b>
+<b class="fc"><i class="no-highlight">29</i>&nbsp;        parentClass = other.parentClass;</b>
+<b class="fc"><i class="no-highlight">30</i>&nbsp;        childClass = other.childClass;</b>
+<b class="fc"><i class="no-highlight">31</i>&nbsp;        joinProperty = other.joinProperty;</b>
+<b class="fc"><i class="no-highlight">32</i>&nbsp;        caseSensitive = other.caseSensitive;</b>
+<b class="fc"><i class="no-highlight">33</i>&nbsp;        parentIsAQuery = other.parentIsAQuery;</b>
+<b class="fc"><i class="no-highlight">34</i>&nbsp;        reversed = other.reversed;</b>
+<i class="no-highlight">35</i>&nbsp;    }
 <i class="no-highlight">36</i>&nbsp;
-<b class="fc"><i class="no-highlight">37</i>&nbsp;        childClass = joinAnnotation.to();</b>
-<b class="fc"><i class="no-highlight">38</i>&nbsp;        this.parentClass = parentClass;</b>
-<i class="no-highlight">39</i>&nbsp;
-<b class="fc"><i class="no-highlight">40</i>&nbsp;        parentIsAQuery = Collection.class.isAssignableFrom(parent.getClass());</b>
-<i class="no-highlight">41</i>&nbsp;
-<b class="fc"><i class="no-highlight">42</i>&nbsp;        parentProperties = new ArrayList&lt;&gt;(MetaData.getPropertyInfo(parentClass)).stream().filter(propertyInfo -&gt; {</b>
-<b class="fc"><i class="no-highlight">43</i>&nbsp;            boolean found = false;</b>
-<b class="fc"><i class="no-highlight">44</i>&nbsp;            for (int j = 0; j &lt; parentPropertyNames.length; j++) {</b>
-<b class="fc"><i class="no-highlight">45</i>&nbsp;                if (parentPropertyNames[j].equals(propertyInfo.propertyName)) {</b>
-<b class="fc"><i class="no-highlight">46</i>&nbsp;                    found = true;</b>
-<b class="fc"><i class="no-highlight">47</i>&nbsp;                    break;</b>
-<i class="no-highlight">48</i>&nbsp;                }
-<i class="no-highlight">49</i>&nbsp;            }
-<b class="fc"><i class="no-highlight">50</i>&nbsp;            return found;</b>
-<i class="no-highlight">51</i>&nbsp;
-<b class="fc"><i class="no-highlight">52</i>&nbsp;        }).collect(Collectors.toList());</b>
+<i class="no-highlight">37</i>&nbsp;    // note parent may be a POJO or a list of POJOs
+<b class="fc"><i class="no-highlight">38</i>&nbsp;    public JoinInfo(Join joinAnnotation, PropertyInfo joinProperty, Object parent, Class&lt;?&gt; parentClass) {</b>
+<b class="fc"><i class="no-highlight">39</i>&nbsp;        this.joinProperty = joinProperty;</b>
+<b class="fc"><i class="no-highlight">40</i>&nbsp;        parentPropertyNames = joinAnnotation.onProperties().split(&quot;,&quot;);</b>
+<b class="fc"><i class="no-highlight">41</i>&nbsp;        childPropertyNames = joinAnnotation.toProperties().split(&quot;,&quot;);</b>
+<b class="fc"><i class="no-highlight">42</i>&nbsp;        if (parentPropertyNames.length != childPropertyNames.length) {</b>
+<b class="nc"><i class="no-highlight">43</i>&nbsp;            throw new PersismException(&quot;how would I match these?&quot;); // todo add to Messages</b>
+<i class="no-highlight">44</i>&nbsp;        }
+<b class="fc"><i class="no-highlight">45</i>&nbsp;        Util.trimArray(parentPropertyNames);</b>
+<b class="fc"><i class="no-highlight">46</i>&nbsp;        Util.trimArray(childPropertyNames);</b>
+<i class="no-highlight">47</i>&nbsp;        // todo test these properties exist and fail otherwise
+<i class="no-highlight">48</i>&nbsp;
+<b class="fc"><i class="no-highlight">49</i>&nbsp;        caseSensitive = joinAnnotation.caseSensitive();</b>
+<i class="no-highlight">50</i>&nbsp;
+<b class="fc"><i class="no-highlight">51</i>&nbsp;        childClass = joinAnnotation.to();</b>
+<b class="fc"><i class="no-highlight">52</i>&nbsp;        this.parentClass = parentClass;</b>
 <i class="no-highlight">53</i>&nbsp;
-<b class="fc"><i class="no-highlight">54</i>&nbsp;        childProperties = new ArrayList&lt;&gt;(MetaData.getPropertyInfo(childClass)).stream().filter(propertyInfo -&gt; {</b>
-<b class="fc"><i class="no-highlight">55</i>&nbsp;            boolean found = false;</b>
-<b class="fc"><i class="no-highlight">56</i>&nbsp;            for (int j = 0; j &lt; childPropertyNames.length; j++) {</b>
-<b class="fc"><i class="no-highlight">57</i>&nbsp;                if (childPropertyNames[j].equals(propertyInfo.propertyName)) {</b>
-<b class="fc"><i class="no-highlight">58</i>&nbsp;                    found = true;</b>
-<b class="fc"><i class="no-highlight">59</i>&nbsp;                    break;</b>
-<i class="no-highlight">60</i>&nbsp;                }
-<i class="no-highlight">61</i>&nbsp;            }
-<b class="fc"><i class="no-highlight">62</i>&nbsp;            return found;</b>
-<i class="no-highlight">63</i>&nbsp;
-<b class="fc"><i class="no-highlight">64</i>&nbsp;        }).collect(Collectors.toList());;</b>
-<i class="no-highlight">65</i>&nbsp;
-<i class="no-highlight">66</i>&nbsp;    }
-<i class="no-highlight">67</i>&nbsp;
-<i class="no-highlight">68</i>&nbsp;    @Override
-<i class="no-highlight">69</i>&nbsp;    public String toString() {
-<b class="fc"><i class="no-highlight">70</i>&nbsp;        return &quot;JoinInfo{&quot; +</b>
-<b class="fc"><i class="no-highlight">71</i>&nbsp;                &quot;parentPropertyNames=&quot; + Arrays.toString(parentPropertyNames) +</b>
-<b class="fc"><i class="no-highlight">72</i>&nbsp;                &quot;, childPropertyNames=&quot; + Arrays.toString(childPropertyNames) +</b>
-<i class="no-highlight">73</i>&nbsp;                &quot;, parentProperties=&quot; + parentProperties +
-<i class="no-highlight">74</i>&nbsp;                &quot;, childProperties=&quot; + childProperties +
-<i class="no-highlight">75</i>&nbsp;                &quot;, parentClass=&quot; + parentClass +
-<i class="no-highlight">76</i>&nbsp;                &quot;, childClass=&quot; + childClass +
-<i class="no-highlight">77</i>&nbsp;                &quot;, caseSensitive=&quot; + caseSensitive +
-<i class="no-highlight">78</i>&nbsp;                &quot;, parentIsAQuery=&quot; + parentIsAQuery +
-<i class="no-highlight">79</i>&nbsp;                &#39;}&#39;;
+<b class="fc"><i class="no-highlight">54</i>&nbsp;        parentIsAQuery = Collection.class.isAssignableFrom(parent.getClass());</b>
+<i class="no-highlight">55</i>&nbsp;
+<i class="no-highlight">56</i>&nbsp;        // todo if we encapsulate PropertyInfo we MAY NOT need a defensive copy here or with childProperties
+<b class="fc"><i class="no-highlight">57</i>&nbsp;        parentProperties = new ArrayList&lt;&gt;(MetaData.getPropertyInfo(parentClass)).stream().filter(propertyInfo -&gt; {</b>
+<b class="fc"><i class="no-highlight">58</i>&nbsp;            boolean found = false;</b>
+<b class="fc"><i class="no-highlight">59</i>&nbsp;            for (int j = 0; j &lt; parentPropertyNames.length; j++) {</b>
+<b class="fc"><i class="no-highlight">60</i>&nbsp;                if (parentPropertyNames[j].equals(propertyInfo.propertyName)) {</b>
+<b class="fc"><i class="no-highlight">61</i>&nbsp;                    found = true;</b>
+<b class="fc"><i class="no-highlight">62</i>&nbsp;                    break;</b>
+<i class="no-highlight">63</i>&nbsp;                }
+<i class="no-highlight">64</i>&nbsp;            }
+<b class="fc"><i class="no-highlight">65</i>&nbsp;            return found;</b>
+<i class="no-highlight">66</i>&nbsp;
+<b class="fc"><i class="no-highlight">67</i>&nbsp;        }).collect(Collectors.toList());</b>
+<i class="no-highlight">68</i>&nbsp;
+<b class="fc"><i class="no-highlight">69</i>&nbsp;        childProperties = new ArrayList&lt;&gt;(MetaData.getPropertyInfo(childClass)).stream().filter(propertyInfo -&gt; {</b>
+<b class="fc"><i class="no-highlight">70</i>&nbsp;            boolean found = false;</b>
+<b class="fc"><i class="no-highlight">71</i>&nbsp;            for (int j = 0; j &lt; childPropertyNames.length; j++) {</b>
+<b class="fc"><i class="no-highlight">72</i>&nbsp;                if (childPropertyNames[j].equals(propertyInfo.propertyName)) {</b>
+<b class="fc"><i class="no-highlight">73</i>&nbsp;                    found = true;</b>
+<b class="fc"><i class="no-highlight">74</i>&nbsp;                    break;</b>
+<i class="no-highlight">75</i>&nbsp;                }
+<i class="no-highlight">76</i>&nbsp;            }
+<b class="fc"><i class="no-highlight">77</i>&nbsp;            return found;</b>
+<i class="no-highlight">78</i>&nbsp;
+<b class="fc"><i class="no-highlight">79</i>&nbsp;        }).collect(Collectors.toList());;</b>
 <i class="no-highlight">80</i>&nbsp;    }
-<i class="no-highlight">81</i>&nbsp;}
+<i class="no-highlight">81</i>&nbsp;
+<i class="no-highlight">82</i>&nbsp;    public JoinInfo swapParentAndChild() {
+<b class="fc"><i class="no-highlight">83</i>&nbsp;        JoinInfo info = new JoinInfo(this);</b>
+<i class="no-highlight">84</i>&nbsp;
+<b class="fc"><i class="no-highlight">85</i>&nbsp;        String[] tmpPropertyNames = info.parentPropertyNames;</b>
+<b class="fc"><i class="no-highlight">86</i>&nbsp;        info.parentPropertyNames = info.childPropertyNames;</b>
+<b class="fc"><i class="no-highlight">87</i>&nbsp;        info.childPropertyNames = tmpPropertyNames;</b>
+<i class="no-highlight">88</i>&nbsp;
+<b class="fc"><i class="no-highlight">89</i>&nbsp;        List&lt;PropertyInfo&gt; tmpProperties = info.parentProperties;</b>
+<b class="fc"><i class="no-highlight">90</i>&nbsp;        info.parentProperties = info.childProperties;</b>
+<b class="fc"><i class="no-highlight">91</i>&nbsp;        info.childProperties = tmpProperties;</b>
+<i class="no-highlight">92</i>&nbsp;
+<b class="fc"><i class="no-highlight">93</i>&nbsp;        Class&lt;?&gt; tmpClass = info.parentClass;</b>
+<b class="fc"><i class="no-highlight">94</i>&nbsp;        info.parentClass = info.childClass;</b>
+<b class="fc"><i class="no-highlight">95</i>&nbsp;        info.childClass = tmpClass;</b>
+<i class="no-highlight">96</i>&nbsp;
+<b class="fc"><i class="no-highlight">97</i>&nbsp;        info.reversed = true;</b>
+<b class="fc"><i class="no-highlight">98</i>&nbsp;        return info;</b>
+<i class="no-highlight">99</i>&nbsp;    }
+<i class="no-highlight">100</i>&nbsp;
+<i class="no-highlight">101</i>&nbsp;    public String[] parentPropertyNames() {
+<b class="fc"><i class="no-highlight">102</i>&nbsp;        return parentPropertyNames;</b>
+<i class="no-highlight">103</i>&nbsp;    }
+<i class="no-highlight">104</i>&nbsp;
+<i class="no-highlight">105</i>&nbsp;    public String[] childPropertyNames() {
+<b class="fc"><i class="no-highlight">106</i>&nbsp;        return childPropertyNames;</b>
+<i class="no-highlight">107</i>&nbsp;    }
+<i class="no-highlight">108</i>&nbsp;
+<i class="no-highlight">109</i>&nbsp;    public List&lt;PropertyInfo&gt; parentProperties() {
+<b class="fc"><i class="no-highlight">110</i>&nbsp;        return parentProperties;</b>
+<i class="no-highlight">111</i>&nbsp;    }
+<i class="no-highlight">112</i>&nbsp;
+<i class="no-highlight">113</i>&nbsp;    public List&lt;PropertyInfo&gt; childProperties() {
+<b class="fc"><i class="no-highlight">114</i>&nbsp;        return childProperties;</b>
+<i class="no-highlight">115</i>&nbsp;    }
+<i class="no-highlight">116</i>&nbsp;
+<i class="no-highlight">117</i>&nbsp;    public Class&lt;?&gt; parentClass() {
+<b class="fc"><i class="no-highlight">118</i>&nbsp;        return parentClass;</b>
+<i class="no-highlight">119</i>&nbsp;    }
+<i class="no-highlight">120</i>&nbsp;
+<i class="no-highlight">121</i>&nbsp;    public Class&lt;?&gt; childClass() {
+<b class="fc"><i class="no-highlight">122</i>&nbsp;        return childClass;</b>
+<i class="no-highlight">123</i>&nbsp;    }
+<i class="no-highlight">124</i>&nbsp;
+<i class="no-highlight">125</i>&nbsp;    public boolean caseSensitive() {
+<b class="fc"><i class="no-highlight">126</i>&nbsp;        return caseSensitive;</b>
+<i class="no-highlight">127</i>&nbsp;    }
+<i class="no-highlight">128</i>&nbsp;
+<i class="no-highlight">129</i>&nbsp;    public boolean parentIsAQuery() {
+<b class="fc"><i class="no-highlight">130</i>&nbsp;        return parentIsAQuery;</b>
+<i class="no-highlight">131</i>&nbsp;    }
+<i class="no-highlight">132</i>&nbsp;
+<i class="no-highlight">133</i>&nbsp;    public PropertyInfo joinProperty() {
+<b class="fc"><i class="no-highlight">134</i>&nbsp;        return joinProperty;</b>
+<i class="no-highlight">135</i>&nbsp;    }
+<i class="no-highlight">136</i>&nbsp;
+<i class="no-highlight">137</i>&nbsp;    public boolean reversed() {
+<b class="fc"><i class="no-highlight">138</i>&nbsp;        return reversed;</b>
+<i class="no-highlight">139</i>&nbsp;    }
+<i class="no-highlight">140</i>&nbsp;
+<i class="no-highlight">141</i>&nbsp;    @Override
+<i class="no-highlight">142</i>&nbsp;    public String toString() {
+<b class="fc"><i class="no-highlight">143</i>&nbsp;        return &quot;JoinInfo{&quot; +</b>
+<b class="fc"><i class="no-highlight">144</i>&nbsp;                &quot;parentPropertyNames=&quot; + Arrays.toString(parentPropertyNames) +</b>
+<b class="fc"><i class="no-highlight">145</i>&nbsp;                &quot;, childPropertyNames=&quot; + Arrays.toString(childPropertyNames) +</b>
+<i class="no-highlight">146</i>&nbsp;                &quot;, parentProperties=&quot; + parentProperties +
+<i class="no-highlight">147</i>&nbsp;                &quot;, childProperties=&quot; + childProperties +
+<i class="no-highlight">148</i>&nbsp;                &quot;, parentClass=&quot; + parentClass +
+<i class="no-highlight">149</i>&nbsp;                &quot;, childClass=&quot; + childClass +
+<i class="no-highlight">150</i>&nbsp;                &quot;, caseSensitive=&quot; + caseSensitive +
+<i class="no-highlight">151</i>&nbsp;                &quot;, parentIsAQuery=&quot; + parentIsAQuery +
+<i class="no-highlight">152</i>&nbsp;                &#39;}&#39;;
+<i class="no-highlight">153</i>&nbsp;    }
+<i class="no-highlight">154</i>&nbsp;}
 </div>
 </pre>
 </div>
@@ -180,7 +253,7 @@ Current scope:     <a href="../../index.html">all classes</a>
 
 <div class="footer">
     
-    <div style="float:right;">generated on 2021-11-28 13:52</div>
+    <div style="float:right;">generated on 2021-12-11 06:53</div>
 </div>
 </body>
 </html>

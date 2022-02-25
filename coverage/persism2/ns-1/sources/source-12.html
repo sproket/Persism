@@ -218,7 +218,7 @@ Current scope:     <a href="../../index.html">all classes</a>
 <i class="no-highlight">143</i>&nbsp;        try {
 <b class="fc"><i class="no-highlight">144</i>&nbsp;            for (String column : primaryKeys) {</b>
 <b class="fc"><i class="no-highlight">145</i>&nbsp;                PropertyInfo propertyInfo = properties.get(column);</b>
-<b class="fc"><i class="no-highlight">146</i>&nbsp;                params.add(propertyInfo.getter.invoke(object));</b>
+<b class="fc"><i class="no-highlight">146</i>&nbsp;                params.add(propertyInfo.getValue(object));</b>
 <b class="fc"><i class="no-highlight">147</i>&nbsp;                columnInfos.add(cols.get(column));</b>
 <b class="fc"><i class="no-highlight">148</i>&nbsp;            }</b>
 <b class="fc"><i class="no-highlight">149</i>&nbsp;            assert params.size() == columnInfos.size();</b>
@@ -298,7 +298,7 @@ Current scope:     <a href="../../index.html">all classes</a>
 <i class="no-highlight">223</i>&nbsp;     * @param parameters  parameters to the query.
 <i class="no-highlight">224</i>&nbsp;     * @param &lt;T&gt;         Return type
 <i class="no-highlight">225</i>&nbsp;     * @return value read from the database of type T or null if not found
-<i class="no-highlight">226</i>&nbsp;     * @throws PersismException Well, this is a runtime exception so actually it could be anything really.
+<i class="no-highlight">226</i>&nbsp;     * @throws PersismException Well, this is a runtime exception, so it actually could be anything really.
 <i class="no-highlight">227</i>&nbsp;     */
 <i class="no-highlight">228</i>&nbsp;    public &lt;T&gt; T fetch(Class&lt;T&gt; objectClass, SQL sql, Parameters parameters) {
 <i class="no-highlight">229</i>&nbsp;        // If we know this type it means it&#39;s a primitive type. Not a DAO so we use a different rule to read those
@@ -429,12 +429,12 @@ Current scope:     <a href="../../index.html">all classes</a>
 <b class="fc"><i class="no-highlight">354</i>&nbsp;        String ed = metaData.getConnectionType().getKeywordEndDelimiter();</b>
 <i class="no-highlight">355</i>&nbsp;
 <b class="fc"><i class="no-highlight">356</i>&nbsp;        String andSep = &quot;&quot;;</b>
-<i class="no-highlight">357</i>&nbsp;        // View should not check for WHERE we don&#39;t support @View here anyway RIGHT?
+<i class="no-highlight">357</i>&nbsp;        // TODO View should not check for WHERE we don&#39;t support @View here anyway RIGHT?
 <b class="fc"><i class="no-highlight">358</i>&nbsp;        if (objectClass.getAnnotation(View.class) == null) {</b>
 <b class="fc"><i class="no-highlight">359</i>&nbsp;            int n = query.indexOf(&quot; WHERE&quot;);</b>
 <b class="fc"><i class="no-highlight">360</i>&nbsp;            query = query.substring(0, n + 7);</b>
 <b class="fc"><i class="no-highlight">361</i>&nbsp;        } else {</b>
-<b class="nc"><i class="no-highlight">362</i>&nbsp;            query += &quot; WHERE &quot;;</b>
+<b class="nc"><i class="no-highlight">362</i>&nbsp;            query += &quot; WHERE &quot;; // not covered.....</b>
 <i class="no-highlight">363</i>&nbsp;        }
 <i class="no-highlight">364</i>&nbsp;
 <b class="fc"><i class="no-highlight">365</i>&nbsp;        StringBuilder sb = new StringBuilder(query);</b>
@@ -573,16 +573,16 @@ Current scope:     <a href="../../index.html">all classes</a>
 <b class="fc"><i class="no-highlight">498</i>&nbsp;                ColumnInfo columnInfo = columns.get(column);</b>
 <i class="no-highlight">499</i>&nbsp;
 <b class="fc"><i class="no-highlight">500</i>&nbsp;                if (primaryKeys.contains(column)) {</b>
-<b class="fc"><i class="no-highlight">501</i>&nbsp;                    log.info(&quot;Session update: skipping column &quot; + column);</b>
+<b class="fc"><i class="no-highlight">501</i>&nbsp;                    log.debug(&quot;Session update: skipping column %s&quot;,  column);</b>
 <i class="no-highlight">502</i>&nbsp;                } else {
-<b class="fc"><i class="no-highlight">503</i>&nbsp;                    Object value = allProperties.get(column).getter.invoke(object);</b>
+<b class="fc"><i class="no-highlight">503</i>&nbsp;                    Object value = allProperties.get(column).getValue(object);</b>
 <b class="fc"><i class="no-highlight">504</i>&nbsp;                    params.add(value);</b>
 <b class="fc"><i class="no-highlight">505</i>&nbsp;                    columnInfos.add(columnInfo);</b>
 <i class="no-highlight">506</i>&nbsp;                }
 <b class="fc"><i class="no-highlight">507</i>&nbsp;            }</b>
 <i class="no-highlight">508</i>&nbsp;
 <b class="fc"><i class="no-highlight">509</i>&nbsp;            for (String column : primaryKeys) {</b>
-<b class="fc"><i class="no-highlight">510</i>&nbsp;                params.add(allProperties.get(column).getter.invoke(object));</b>
+<b class="fc"><i class="no-highlight">510</i>&nbsp;                params.add(allProperties.get(column).getValue(object));</b>
 <b class="fc"><i class="no-highlight">511</i>&nbsp;                columnInfos.add(metaData.getColumns(object.getClass(), connection).get(column));</b>
 <b class="fc"><i class="no-highlight">512</i>&nbsp;            }</b>
 <b class="fc"><i class="no-highlight">513</i>&nbsp;            assert params.size() == columnInfos.size();</b>
@@ -669,7 +669,7 @@ Current scope:     <a href="../../index.html">all classes</a>
 <b class="fc"><i class="no-highlight">594</i>&nbsp;                            log.warnNoDuplicates(Messages.PropertyShouldBeAnObjectType.message(propertyInfo.propertyName, columnInfo.columnName, object.getClass()));</b>
 <i class="no-highlight">595</i>&nbsp;                        }
 <i class="no-highlight">596</i>&nbsp;
-<b class="fc"><i class="no-highlight">597</i>&nbsp;                        if (propertyInfo.getter.invoke(object) == null) {</b>
+<b class="fc"><i class="no-highlight">597</i>&nbsp;                        if (propertyInfo.getValue(object) == null) {</b>
 <i class="no-highlight">598</i>&nbsp;
 <b class="fc"><i class="no-highlight">599</i>&nbsp;                            if (columnInfo.primary) {</b>
 <i class="no-highlight">600</i>&nbsp;                                // This is supported with PostgreSQL but otherwise throw this an exception
@@ -683,7 +683,7 @@ Current scope:     <a href="../../index.html">all classes</a>
 <i class="no-highlight">608</i>&nbsp;                        }
 <i class="no-highlight">609</i>&nbsp;                    }
 <i class="no-highlight">610</i>&nbsp;
-<b class="fc"><i class="no-highlight">611</i>&nbsp;                    Object value = propertyInfo.getter.invoke(object);</b>
+<b class="fc"><i class="no-highlight">611</i>&nbsp;                    Object value = propertyInfo.getValue(object);</b>
 <i class="no-highlight">612</i>&nbsp;
 <b class="fc"><i class="no-highlight">613</i>&nbsp;                    params.add(value);</b>
 <b class="fc"><i class="no-highlight">614</i>&nbsp;                    columnInfos.add(columnInfo);</b>
@@ -800,7 +800,7 @@ Current scope:     <a href="../../index.html">all classes</a>
 <b class="fc"><i class="no-highlight">725</i>&nbsp;            List&lt;Object&gt; params = new ArrayList&lt;&gt;(primaryKeys.size());</b>
 <b class="fc"><i class="no-highlight">726</i>&nbsp;            List&lt;ColumnInfo&gt; columnInfos = new ArrayList&lt;&gt;(columns.size());</b>
 <b class="fc"><i class="no-highlight">727</i>&nbsp;            for (String column : primaryKeys) {</b>
-<b class="fc"><i class="no-highlight">728</i>&nbsp;                params.add(columns.get(column).getter.invoke(object));</b>
+<b class="fc"><i class="no-highlight">728</i>&nbsp;                params.add(columns.get(column).getValue(object));</b>
 <b class="fc"><i class="no-highlight">729</i>&nbsp;                columnInfos.add(metaData.getColumns(object.getClass(), connection).get(column));</b>
 <b class="fc"><i class="no-highlight">730</i>&nbsp;            }</b>
 <i class="no-highlight">731</i>&nbsp;
@@ -900,7 +900,7 @@ Current scope:     <a href="../../index.html">all classes</a>
 
 <div class="footer">
     
-    <div style="float:right;">generated on 2021-11-28 13:52</div>
+    <div style="float:right;">generated on 2021-12-11 06:53</div>
 </div>
 </body>
 </html>

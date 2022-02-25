@@ -221,7 +221,7 @@ Current scope:     <a href="../../index.html">all classes</a>
 <i class="no-highlight">146</i>&nbsp;                }
 <b class="fc"><i class="no-highlight">147</i>&nbsp;                PropertyInfo foundProperty = null;</b>
 <b class="fc"><i class="no-highlight">148</i>&nbsp;                for (PropertyInfo propertyInfo : properties) {</b>
-<b class="fc"><i class="no-highlight">149</i>&nbsp;                    String checkName = propertyInfo.propertyName.toLowerCase().replace(&quot;_&quot;, &quot;&quot;);</b>
+<b class="fc"><i class="no-highlight">149</i>&nbsp;                    String checkName = propertyInfo.propertyName().toLowerCase().replace(&quot;_&quot;, &quot;&quot;);</b>
 <b class="fc"><i class="no-highlight">150</i>&nbsp;                    if (checkName.equalsIgnoreCase(columnName)) {</b>
 <b class="fc"><i class="no-highlight">151</i>&nbsp;                        foundProperty = propertyInfo;</b>
 <b class="fc"><i class="no-highlight">152</i>&nbsp;                        break;</b>
@@ -239,7 +239,7 @@ Current scope:     <a href="../../index.html">all classes</a>
 <i class="no-highlight">164</i>&nbsp;
 <b class="fc"><i class="no-highlight">165</i>&nbsp;                if (foundProperty != null) {</b>
 <b class="fc"><i class="no-highlight">166</i>&nbsp;                    columns.put(realColumnName, foundProperty);</b>
-<b class="fc"><i class="no-highlight">167</i>&nbsp;                    propertyNames.add(foundProperty.propertyName);</b>
+<b class="fc"><i class="no-highlight">167</i>&nbsp;                    propertyNames.add(foundProperty.propertyName());</b>
 <i class="no-highlight">168</i>&nbsp;                } else {
 <b class="fc"><i class="no-highlight">169</i>&nbsp;                    log.warn(Messages.NoPropertyFoundForColumn.message(realColumnName, objectClass));</b>
 <i class="no-highlight">170</i>&nbsp;                }
@@ -593,7 +593,7 @@ Current scope:     <a href="../../index.html">all classes</a>
 <b class="fc"><i class="no-highlight">518</i>&nbsp;            if (changes.size() == 0) {</b>
 <b class="fc"><i class="no-highlight">519</i>&nbsp;                throw new NoChangesDetectedForUpdateException();</b>
 <i class="no-highlight">520</i>&nbsp;            }
-<i class="no-highlight">521</i>&nbsp;            // Note we don&#39;t not add Persistable updates to updateStatementsMap since they will be different each time.
+<i class="no-highlight">521</i>&nbsp;            // Note we don&#39;t add Persistable updates to updateStatementsMap since they will be different each time.
 <b class="fc"><i class="no-highlight">522</i>&nbsp;            String sql = buildUpdateString(object, changes.keySet().iterator(), connection);</b>
 <b class="fc"><i class="no-highlight">523</i>&nbsp;            if (log.isDebugEnabled()) {</b>
 <b class="fc"><i class="no-highlight">524</i>&nbsp;                log.debug(&quot;getUpdateStatement for %s for changed fields is %s&quot;, object.getClass(), sql);</b>
@@ -874,7 +874,7 @@ Current scope:     <a href="../../index.html">all classes</a>
 <b class="fc"><i class="no-highlight">799</i>&nbsp;            String column = it.next();</b>
 <b class="fc"><i class="no-highlight">800</i>&nbsp;            ColumnInfo columnInfo = columns.get(column);</b>
 <b class="fc"><i class="no-highlight">801</i>&nbsp;            if (columnInfo.autoIncrement || columnInfo.primary) {</b>
-<b class="fc"><i class="no-highlight">802</i>&nbsp;                log.info(&quot;buildUpdateString: skipping &quot; + column);</b>
+<b class="fc"><i class="no-highlight">802</i>&nbsp;                log.debug(&quot;buildUpdateString: skipping &quot; + column);</b>
 <i class="no-highlight">803</i>&nbsp;            } else {
 <b class="fc"><i class="no-highlight">804</i>&nbsp;                sb.append(sep).append(sd).append(column).append(ed).append(&quot; = ?&quot;);</b>
 <b class="fc"><i class="no-highlight">805</i>&nbsp;                sep = &quot;, &quot;;</b>
@@ -907,8 +907,8 @@ Current scope:     <a href="../../index.html">all classes</a>
 <i class="no-highlight">832</i>&nbsp;
 <b class="fc"><i class="no-highlight">833</i>&nbsp;                    Object newValue = null;</b>
 <b class="fc"><i class="no-highlight">834</i>&nbsp;                    Object orgValue = null;</b>
-<b class="fc"><i class="no-highlight">835</i>&nbsp;                    newValue = propertyInfo.getter.invoke(persistable);</b>
-<b class="fc"><i class="no-highlight">836</i>&nbsp;                    orgValue = propertyInfo.getter.invoke(original);</b>
+<b class="fc"><i class="no-highlight">835</i>&nbsp;                    newValue = propertyInfo.getValue(persistable);</b>
+<b class="fc"><i class="no-highlight">836</i>&nbsp;                    orgValue = propertyInfo.getValue(original);</b>
 <i class="no-highlight">837</i>&nbsp;
 <b class="fc"><i class="no-highlight">838</i>&nbsp;                    if (newValue != null &amp;&amp; !newValue.equals(orgValue) || orgValue != null &amp;&amp; !orgValue.equals(newValue)) {</b>
 <b class="fc"><i class="no-highlight">839</i>&nbsp;                        changedColumns.put(column, propertyInfo);</b>
@@ -1151,7 +1151,7 @@ Current scope:     <a href="../../index.html">all classes</a>
 
 <div class="footer">
     
-    <div style="float:right;">generated on 2021-11-28 13:52</div>
+    <div style="float:right;">generated on 2021-12-11 06:53</div>
 </div>
 </body>
 </html>
