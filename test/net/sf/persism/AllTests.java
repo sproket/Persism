@@ -34,7 +34,6 @@ public class AllTests {
         theTestSuite.addTestSuite(TestInformix.class);
         theTestSuite.addTestSuite(TestMSSQL.class);
         theTestSuite.addTestSuite(TestOracle.class);
-//        theTestSuite.addTestSuite(TestMSSQL.class);
         theTestSuite.addTestSuite(TestMySQL.class);
         theTestSuite.addTestSuite(TestPostgreSQL.class);
         theTestSuite.addTestSuite(TestFirebird.class);
@@ -42,6 +41,7 @@ public class AllTests {
         theTestSuite.addTestSuite(TestMetaData.class);
         theTestSuite.addTestSuite(TestNorthwind.class);
         theTestSuite.addTestSuite(TestPubs.class);
+        theTestSuite.addTestSuite(TestStackOverflow.class);
 
         return theTestSuite;
     }

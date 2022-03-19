@@ -34,7 +34,8 @@ public final class TestDerby extends BaseTest {
 
         Properties props = new Properties();
         props.load(getClass().getResourceAsStream("/derby.properties"));
-        Class.forName(props.getProperty("database.driver")).newInstance(); // derby needs new instance....
+        // SEE POM AND DOCUMENT THAT WE USE A NEWER VERSION.
+        //Class.forName(props.getProperty("database.driver")).newInstance(); // derby needs new instance.... NO IT DOESNT ANYMORE
 
         String home = createHomeFolder("pinfderby");
         String url = replace(props.getProperty("database.url"), "{$home}", home);

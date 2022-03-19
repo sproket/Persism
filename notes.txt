@@ -1,3 +1,38 @@
+Blog
+http://sourceforge.net/u/sproketboy/blog/2012/04/simple-logging-wrapper-to-avoid-runtime-dependencies/
+http://logwrapper.blogspot.ca/ (blocked by dzone)
+
+*******
+connection.getTypeMap()  // interesting - might be worth checking into.
+https://docs.oracle.com/javase/tutorial/jdbc/basics/sqlcustommapping.html
+Not really useful for Persism - used with a CREATE TYPE SQL command.
+******
+
+SVN
+https://persism.svn.sourceforge.net/svnroot/persism/
+
+GIT
+http://eikke.com/importing-a-git-tree-into-a-subversion-repository/
+
+https://www.cis.upenn.edu/~bcpierce/courses/629/jdkdocs/guide/jdbc/getstart/mapping.doc.html
+
+https://andresalmiray.com/publishing-to-maven-central-using-apache-maven/
+
+MAVEN:
+https://www.youtube.com/watch?v=bxP9IuJbcDQ
+http://tutorials.jenkov.com/maven/publish-to-central-maven-repository.html
+
+
+https://mkyong.com/maven/maven-jacoco-code-coverage-example/
+https://duckduckgo.com/?q=maven+generate+code+coverage
+
+
+MULTI JAVA
+https://maven.apache.org/plugins/maven-compiler-plugin/examples/set-compiler-source-and-target.html
+https://maven.apache.org/plugins/maven-jar-plugin/usage.html
+https://maven.apache.org/plugins/maven-jar-plugin/
+https://www.google.com/search?q=maven-jar-plugin+build+for+Java+8&oq=maven-jar-plugin+build+for+Java+8&aqs=chrome..69i57j33i22i29i30.4055j0j4&sourceid=chrome&ie=UTF-8
+
 https://github.com/r2dbc/r2dbc-mssql/issues/36
 https://stackoverflow.com/questions/1074843/is-there-an-oracle-equivalent-to-sql-servers-output-inserted
 https://stackoverflow.com/questions/5469416/mysql-insert-with-output-like-mssql
@@ -45,19 +80,3 @@ Options:
 
 
  mvn install -Dmaven.test.skip
-
-CREATE TABLE Customers (
-    Customer_ID varchar(10) PRIMARY KEY UNIQUE NOT NULL,
-    Company_Name VARCHAR(30) NULL,
-    Contact_Name VARCHAR(30) NULL,
-    Contact_Title VARCHAR(10) NULL,
-    Address VARCHAR(40) NULL,
-    City VARCHAR(30) NULL,
-    Region VARCHAR(10) NULL,
-    Postal_Code VARCHAR(10) NULL,
-    Country VARCHAR(2) DEFAULT 'US',
-    Phone VARCHAR(30) NULL,
-    STATUS CHAR(1) NULL,
-    Fax VARCHAR(30) NULL,
-    Date_Of_Last_Order DATE
-)

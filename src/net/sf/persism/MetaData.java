@@ -427,7 +427,8 @@ final class MetaData {
                         propertyInfo.annotations.put(annotation.annotationType(), annotation);
                     }
 
-                    if (method.getName().equalsIgnoreCase("set" + propertyNameToTest)) {
+                    // OR added to fix to builder pattern style when your setters are just the field name
+                    if (method.getName().equalsIgnoreCase("set" + propertyNameToTest) || method.getParameterCount() > 0) {
                         propertyInfo.setter = method;
                     } else {
                         propertyInfo.getter = method;
@@ -446,7 +447,8 @@ final class MetaData {
         while (it.hasNext()) {
             Map.Entry<String, PropertyInfo> entry = it.next();
             PropertyInfo info = entry.getValue();
-            if (info.getAnnotation(NotColumn.class) != null) {
+			// add support for transient TODO add an issue for this
+            if (info.getAnnotation(NotColumn.class) != null || Modifier.isTransient(info.field.getModifiers())) {
                 it.remove();
             }
         }
@@ -606,7 +608,7 @@ final class MetaData {
 
                         // Do not include if this column has a default and no value has been
                         // set on it's associated property.
-                        if (properties.get(column.columnName).getter.invoke(object) == null) {
+                        if (properties.get(column.columnName).getValue(object) == null) {
                             continue;
                         }
 

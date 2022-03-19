@@ -1,7 +1,6 @@
 package net.sf.persism.dao;
 
 import net.sf.persism.PersistableObject;
-import net.sf.persism.annotations.Column;
 
 import java.sql.Timestamp;
 import java.time.LocalDate;

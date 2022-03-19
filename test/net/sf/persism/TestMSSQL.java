@@ -37,15 +37,11 @@ public class TestMSSQL extends BaseTest {
         connectionType = ConnectionTypes.MSSQL;
         super.setUp();
 
-
+        // Subclass TestMSSQLContainer does its own connection
         if (getClass().equals(TestMSSQL.class)) {
             con = MSSQLDataSource.getInstance().getConnection();
-            //TODO SHOULD I DO THIS ALWAYS? con.setHoldability(ResultSet.HOLD_CURSORS_OVER_COMMIT);
-
             log.info("PRODUCT? " + con.getMetaData().getDriverName() + " - " + con.getMetaData().getDriverVersion());
-
             createTables();
-
             session = new Session(con);
         }
     }
@@ -733,13 +729,13 @@ public class TestMSSQL extends BaseTest {
         assertTrue("proc1 should have an id? ", proc1.getExamCodeNo() > 0);
 
         // test fetch
-        Procedure proc2 = session.fetch(Procedure.class, sql("select * from EXAMCODE WHERE ExamCode_No=?"), Parameters.params(2));
+        Procedure proc2 = session.fetch(Procedure.class, sql("select * from EXAMCODE WHERE ExamCode_No=?"), params(2));
         assertNotNull("proc2 should be found ", proc2);
 
-        Procedure proc3 = session.fetch(Procedure.class, sql("select * from EXAMCODE WHERE ExamCode_No=?"), Parameters.params(-99));
+        Procedure proc3 = session.fetch(Procedure.class, sql("select * from EXAMCODE WHERE ExamCode_No=?"), params(-99));
         assertNull("proc3 should NOT be found ", proc3);
 
-        Procedure proc4 = session.fetch(Procedure.class, sql("select * from EXAMCODE WHERE ExamCode_No=?"), Parameters.params(2));
+        Procedure proc4 = session.fetch(Procedure.class, sql("select * from EXAMCODE WHERE ExamCode_No=?"), params(2));
         assertNotNull("proc4 should be found ", proc4);
 
 
@@ -1074,7 +1070,7 @@ public class TestMSSQL extends BaseTest {
         sql = "select count(*) from exams where examDate > ?";
         Date d = new Date(1997 - 1900, 2, 4);
         log.info("" + d);
-        exams = session.fetch(Integer.class, sql(sql), Parameters.params(d));
+        exams = session.fetch(Integer.class, sql(sql), params(d));
         log.info("" + exams);
         assertTrue("should be > 0", exams > 0);
 

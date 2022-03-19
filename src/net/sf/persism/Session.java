@@ -412,6 +412,7 @@ public final class Session implements AutoCloseable {
         boolean isPOJO = Types.getType(objectClass) == null;
         boolean isRecord = isPOJO && isRecord(objectClass);
 
+        long now = System.currentTimeMillis();
         JDBCResult result = JDBCResult.DEFAULT;
         try {
             result = helper.executeQuery(objectClass, sql, parameters);
@@ -425,8 +426,6 @@ public final class Session implements AutoCloseable {
                     properties = metaData.getQueryColumnsPropertyInfo(objectClass, result.rs);
                 }
             }
-
-            long now = System.currentTimeMillis();
 
             if (isRecord) {
                 List<String> propertyNames = metaData.getPropertyNames(objectClass);
@@ -707,17 +706,11 @@ public final class Session implements AutoCloseable {
             //int ret = st.executeUpdate(insertStatement, Statement.RETURN_GENERATED_KEYS);
             assert params.size() == columnInfos.size();
 
-            if (metaData.getConnectionType() == ConnectionTypes.SQLite) {
-                log.warn("sqlite");
-            }
 
             for (int j = 0; j < params.size(); j++) {
                 ColumnInfo columnInfo = columnInfos.get(j);
                 PropertyInfo propertyInfo = properties.get(columnInfo.columnName);
                 if (params.get(j) != null) {
-//                    if (propertyInfo.converter != null) {
-//                        params.set(j, propertyInfo.converter.apply(params.get(j)));
-//                    }
                     params.set(j, converter.convert(params.get(j), columnInfos.get(j).columnType.getJavaType(), columnInfos.get(j).columnName));
                 }
             }

@@ -33,7 +33,7 @@ public final class TestMetaData extends TestCase {
 
         Properties props = new Properties();
         props.load(getClass().getResourceAsStream("/derby.properties"));
-        Class.forName(props.getProperty("database.driver")).newInstance(); // derby needs new instance....
+        //Class.forName(props.getProperty("database.driver")).newInstance(); // derby needs new instance....
 
         String home = UtilsForTests.createHomeFolder("pinfderby");
         String url = UtilsForTests.replace(props.getProperty("database.url"), "{$home}", home);

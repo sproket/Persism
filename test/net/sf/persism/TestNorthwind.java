@@ -75,7 +75,9 @@ public class TestNorthwind extends TestCase {
                     directory.mkdir();
                 }
 
-                File file = new File("c:/temp/pinf/" + cat.getCategoryId() + ".jpg");
+                String fileName = "c:/temp/pinf/" + cat.getCategoryId() + ".jpg";
+                log.info(fileName);
+                File file = new File(fileName);
                 ImageIO.write(cat.getImage(), "jpg", file);
             }
 

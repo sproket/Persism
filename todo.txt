@@ -1,106 +1,25 @@
-Blog
-http://sourceforge.net/u/sproketboy/blog/2012/04/simple-logging-wrapper-to-avoid-runtime-dependencies/
-http://logwrapper.blogspot.ca/ (blocked by dzone)
 
-DONE we'll need synchronization of some kind - to make sure internal maps are written once.
-    ConcurrentMap + private synchronized "determine" methods to do double check in the map.
-
-Should we throw PINFException? Or just pass along SQLException...?
-
-connection.getTypeMap()  // interesting - might be worth checking into.
-
-jereme
-jetsom/jetsam
-purpose
-persistence
-persistent
-persevere
-tenacity
-persism! CHOSEN NOW MOVE ON.
-
-
+** NO
 Add a ResultSet class with similar interface to java.sql.ResultSet
 but it would be read-only and disconnected and would not throw any SQLException
 Add method in Query class for it. executeSQL or executeQuery.
+*************************************************************
 
-
-SVN
-http://stackoverflow.com/questions/337024/how-do-i-dump-one-project-out-of-a-svn-repository-which-contains-multiple-projec
-http://svnbook.red-bean.com/en/1.7/svn.reposadmin.maint.html
-https://sourceforge.net/apps/trac/sourceforge/wiki/Subversion%20import%20instructions
-
-https://persism.svn.sourceforge.net/svnroot/persism/
-
-GIT
-http://eikke.com/importing-a-git-tree-into-a-subversion-repository/
-
-
-ADD Firebird? Done.
-Add Sybase DB2 Ingres Informix hsqldb? .....
-
-DONE Handle X words Tax - Taxes, Fax - Faxes - plural rules and FIXED Holiday (not Holidaies....)
-
-NOTHING TO DO HERE. This is fixed by looking at fields and then getter setter methods.
-DONE  @Column(name = "IsCompound") - yeah we do a simple "is" check but I need to think about this. See determinePropertyInfo
-         private boolean compound; Find "Is" Columns so we don't need the annotation? OR just name the field isCompound - gets and sets seem to generate fine... BUT IT FAILS LOOKING FOR "compound" as the property name!
-
-
-DONE DOCUMENTATION Example how to implement Persistable
+Add Sybase DB2 Ingres ..... ?
 
 NOPE https://github.com/JSQLParser/JSqlParser/releases/tag/jsqlparser-4.0
 
-DONE Support new DateTime APIs https://stackoverflow.com/questions/32548331/missed-opportunity-to-fix-jdbc-date-handling-in-java-8
-DONE https://jdbc.postgresql.org/documentation/head/8-date-time.html
 TODO https://stackoverflow.com/questions/44091688/using-zoneddatetime-with-datetimeoffset-in-sqlserver BETTER TO JUST DOCUMENT HOW TO USE UTC
 TODO https://www.baeldung.com/java-daylight-savings
 
-NOTE: Checks for setting for a default depend on an Object Type - will not work with primitive types.
-
-DONE conversions between LocalDate and LocalDateTime (with downcast warning) (no warning though)
-Exception in thread "main" net.sf.persism.PersismException: argument type mismatch Object class javaapplication1.models.Customer. Column: date_of_last_order Type of property: class java.time.LocalDateTime - Type read: class java.time.LocalDate VALUE: 1997-03-03
-	at net.sf.persism.Session.fetch(Session.java:422)
-	at javaapplication1.JavaApplication1.test(JavaApplication1.java:57)
-	at javaapplication1.JavaApplication1.main(JavaApplication1.java:32)
-Caused by: net.sf.persism.PersismException: argument type mismatch Object class javaapplication1.models.Customer. Column: date_of_last_order Type of property: class java.time.LocalDateTime - Type read: class java.time.LocalDate VALUE: 1997-03-03
-	at net.sf.persism.Session.readObject(Session.java:572)
-	at net.sf.persism.Session.fetch(Session.java:415)
-	... 2 more
-Caused by: java.lang.IllegalArgumentException: argument type mismatch
-	at java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
-	at java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:64)
-	at java.base/jdk.internal.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
-	at java.base/java.lang.reflect.Method.invoke(Method.java:564)
-	at net.sf.persism.Session.readObject(Session.java:569)
-	... 3 more
-
-
-https://www.cis.upenn.edu/~bcpierce/courses/629/jdkdocs/guide/jdbc/getstart/mapping.doc.html
-
-
-IN PROGRESS https://www.testcontainers.org/
-
-Documentation: Remove "Persism" from Logo itself. Use separate Text instead.
-
-https://andresalmiray.com/publishing-to-maven-central-using-apache-maven/
-
-DONE Document date and time mapping and storing only up to the second for time.
-
-Document about using CustomerOrder class for 2 different queries (1 stored proc). Problems arise if
-you have 1 with a missing field that is 1st defined in MetaData (any query after - even if they are correct)
-will complain about missing fields. You'd need to fix any query that would use that class (for now) - maybe
-add the query string as a key to the Column/Property Info objects? Duplicating but......
+DONE https://www.testcontainers.org/ BUT we should set it up locally somewhere.
 
 DONE SQL enum to Java enum? PostgreSQL, MySQL and H2. TODO Possible with MSSQL with CHECK constraints
 
-TODO @NotTable classes should allow getters only and we can set values through fields instead. (even normal table should allow this for read only columns)
+DONE @NotTable classes should allow getters only, and we can set values through fields instead. (even normal table should allow this for read only columns)
 DONE Add support for Records
 
-MAVEN:
-https://www.youtube.com/watch?v=bxP9IuJbcDQ
-http://tutorials.jenkov.com/maven/publish-to-central-maven-repository.html
-
-DONE add dual compile for 9+ with module-info.java - somewhere there's a tutorial for that ADDED Automatic-Module-Name
-
+TODO add dual compile for 9+ with module-info.java - somewhere there's a tutorial for that ADDED Automatic-Module-Name
 
 DONE test for con.setAutoCommit(false) and commit at appropriate times. how does this affect connection pools
 
@@ -121,7 +40,7 @@ TODO See about deprecating Column autoIncrement - I think all supported drivers 
 
 TODO Sample Oracle DB https://docs.oracle.com/cd/E11882_01/doc.112/e26211/loe.htm
 
-IN PROGRESS Session autocommit false? https://www.reddit.com/r/java/comments/lvya1x/persism_101_released_a_zero_ceremony_orm_for_java/gpghfn4/
+DONE Session autocommit false? https://www.reddit.com/r/java/comments/lvya1x/persism_101_released_a_zero_ceremony_orm_for_java/gpghfn4/
 
 DONE POM still gets log4j logback and slf4j - FFS
 
@@ -129,39 +48,68 @@ DONE POM still gets log4j logback and slf4j - FFS
 // If existing components use Log4j 1.x and you want to have this logging routed to Log4j 2, then remove any log4j 1.x dependencies and add the following.
 // http://logging.apache.org/log4j/2.x/maven-artifacts.html
 
-todo see if contributors want mentions in the pom.xml see https://github.com/jahlborn/jackcess/blob/master/pom.xml
+TODO see if contributors want mentions in the pom.xml see https://github.com/jahlborn/jackcess/blob/master/pom.xml
 
 TODO Can we use https://www.logicbig.com/tutorials/core-java-tutorial/java-9-changes/platform-logging.html to replace our logger? It doesn't seem so....
 
-https://mkyong.com/maven/maven-jacoco-code-coverage-example/
-https://duckduckgo.com/?q=maven+generate+code+coverage
-
-
-MULTI JAVA
-https://maven.apache.org/plugins/maven-compiler-plugin/examples/set-compiler-source-and-target.html
-https://maven.apache.org/plugins/maven-jar-plugin/usage.html
-https://maven.apache.org/plugins/maven-jar-plugin/
-https://www.google.com/search?q=maven-jar-plugin+build+for+Java+8&oq=maven-jar-plugin+build+for+Java+8&aqs=chrome..69i57j33i22i29i30.4055j0j4&sourceid=chrome&ie=UTF-8
-
-FROM https://www.reddit.com/r/java/comments/mp96a7/your_cool_open_source_libraries/
-Maybe support https://github.com/ksuid/ksuid
+Maybe support https://github.com/ksuid/ksuid - not sure how or what we'd do.
 
 TODO idea plugin - generate classes for Tables/Views (Views should be records) + code assist for property names with where() method
-TODO could/should we support javax.persistence annotations?
+
+Could/should we support javax.persistence annotations? No. They don't make sense.
 https://github.com/javaee/jpa-spec/tree/master/javax.persistence-api/src/main/java/javax/persistence
 
 Maven code-coverage - see if we get this to work with AllTests (no container setting)
 https://stackoverflow.com/questions/36199422/how-to-make-maven-unit-test-code-coverage-work
 
-FOLLOW UP Ucanaccess bug
+TODO FOLLOW UP Ucanaccess bug
 https://sourceforge.net/p/ucanaccess/discussion/general/thread/52ae8bb570/
 https://sourceforge.net/p/jackcess/bugs/155/
 
-check out https://readthedocs.org/
+TODO check out https://readthedocs.org/
 
 FIXED The incoming request has too many parameters. The server supports a maximum of 2100 parameters. SQL SERVER DOCUMENT THIS
 This WAS a Persism Limitation on how I do joins. :)
 
-for 2.1 remove JTDS but ask on redddit and github
+DONE for 2.1 remove JTDS but ask on redddit and github
 
-Add handling for schema. When I have this I should include it in the SQL. select e.g. * from [dbo].[CustomerInvoice]
+TODO Add handling for schema. When I have this I should include it in the SQL. select e.g. * from [dbo].[CustomerInvoice]
+
+log4j vulnerability
+DONE https://github.com/advisories/GHSA-jfh8-c2jp-5v3q
+
+TODO See if we can return multiple ResultSets from one statement. Might perform a little better.
+https://www.reddit.com/r/java/comments/re0hqn/persism_and_the_select_n1_problem/hocu4ji/?context=3
+LOCAL DBS don't seem to return the multiple. Need to check each if they support and what separators to use
+MSSSQL/PostgreSQL work with line feed and/or ";", Oracle NO, MySQL NO.
+
+
+Perf testing
+https://www.javaadvent.com/2021/12/keep-your-sql-in-check-with-flight-recorder-jmc-agent-and-jfrunit.html
+https://www.reddit.com/r/java/comments/rhzaku/ide_plugins_for_performance_testing_code/
+
+maybe add our own ConstructorProperties annotation to remove dependency on java.beans.
+
+maybe support transient keyword (works like @NotColumn) - doesn't work with records.
+Records need javax.persistence.Transient or java.beans.Transient annotation. PITA
+(we should not have any dependency on javax - only java) OR Add our own Annotation.
+
+
+------------
+https://ebean.io/docs/query/sqlquery
+String sql = "select c.id, c.name from customer c where c.name in (:names)";
+
+List<SqlRow> rows = DB.sqlQuery(sql)
+  .setParameter("names", asList("Rob", "Fiona", "Jack"))
+  .findList();
+------------------
+
+https://michael-simons.github.io/neo4j-migrations/maintaining-a-medium-sized-java-library-in-2022-and-beyond/
+
+
+
+https://www.willmcgugan.com/blog/tech/post/promoting-your-open-source-project-or-how-to-get-your-first-1k-github-stars/
+
+todo what does a Persism POJO look like in JSON ?
+
+todo post articles on linkedin

@@ -14,7 +14,6 @@ import java.util.List;
 import java.util.Scanner;
 
 /**
- * Comments for Util go here.
  *
  * @author Dan Howard
  * @since 9/25/11 3:54 PM
@@ -27,27 +26,24 @@ public class UtilsForTests {
     }
 
     public static String replace(String baseStr, String strOld, String strNew) {
-        //This takes care of possible /x characters in the string's replaceAll function.
+        // Takes care of possible /x characters in the string's replaceAll function.
         if (null == baseStr || baseStr.length() == 0) {
             return "";
         }
         StringBuilder lsNewStr = new StringBuilder(baseStr.length());
 
-        int liFound = 0;
+        int liFound;
         int liLastPointer = 0;
 
         do {
-
             liFound = baseStr.indexOf(strOld, liLastPointer);
 
             if (liFound < 0) {
-                lsNewStr.append(baseStr.substring(liLastPointer,
-                        baseStr.length()));
+                lsNewStr.append(baseStr.substring(liLastPointer));
             } else {
 
                 if (liFound > liLastPointer) {
-                    lsNewStr.append(baseStr.substring(liLastPointer,
-                            liFound));
+                    lsNewStr.append(baseStr, liLastPointer, liFound);
                 }
 
                 lsNewStr.append(strNew);
@@ -59,74 +55,41 @@ public class UtilsForTests {
         return lsNewStr.toString();
     }
 
-    public static boolean isTableInDatabase(String tableName, Connection con) {
+    private static final String[] tableType = {"TABLE"};
+    private static final String[] viewType = {"VIEW"};
 
+    public static boolean isTableInDatabase(String tableName, Connection con) throws SQLException {
         boolean result = false;
-        ResultSet rs = null;
-        try {
-            DatabaseMetaData dma = con.getMetaData();
-            String[] types = {"TABLE"};
-            rs = dma.getTables(null, null, null, types);
-
+        DatabaseMetaData dma = con.getMetaData();
+        try (ResultSet rs = dma.getTables(null, null, null, tableType)) {
             while (rs.next()) {
                 if (tableName.equalsIgnoreCase(rs.getString("TABLE_NAME"))) {
                     result = true;
                     break;
                 }
             }
-        } catch (SQLException e) {
-            log.error(e.getMessage(), e);
-        } finally {
-            try {
-                if (rs != null) {
-                    rs.close();
-                }
-            } catch (SQLException e) {
-                log.warn(e.getMessage());
-            }
         }
-
         return result;
     }
 
-    public static boolean isViewInDatabase(String viewName, Connection con) {
-
+    public static boolean isViewInDatabase(String viewName, Connection con) throws SQLException {
         boolean result = false;
-        ResultSet rs = null;
-        try {
-            DatabaseMetaData dma = con.getMetaData();
-            String[] types = {"VIEW"};
-            rs = dma.getTables(null, null, null, types);
-
+        DatabaseMetaData dma = con.getMetaData();
+        try (ResultSet rs = dma.getTables(null, null, null, viewType)) {
             while (rs.next()) {
                 if (viewName.equalsIgnoreCase(rs.getString("TABLE_NAME"))) {
                     result = true;
                     break;
                 }
             }
-        } catch (SQLException e) {
-            log.error(e.getMessage(), e);
-        } finally {
-            try {
-                if (rs != null) {
-                    rs.close();
-                }
-            } catch (SQLException e) {
-                log.warn(e.getMessage());
-            }
         }
-
         return result;
     }
 
-    public static boolean isProcedureInDatabase(String procName, Connection con) {
-
+    public static boolean isProcedureInDatabase(String procName, Connection con) throws SQLException {
         boolean result = false;
-        ResultSet rs = null;
-        try {
-            DatabaseMetaData dma = con.getMetaData();
-            rs = dma.getProcedures(null, null, "%");
-
+        DatabaseMetaData dma = con.getMetaData();
+        try (ResultSet rs = dma.getProcedures(null, null, "%")) {
             while (rs.next()) {
                 String proc = rs.getString("PROCEDURE_NAME");
                 // looks like spCustomerOrders;1 == where ;1 indicate # params
@@ -135,18 +98,23 @@ public class UtilsForTests {
                     break;
                 }
             }
-        } catch (SQLException e) {
-            log.error(e.getMessage(), e);
-        } finally {
-            try {
-                if (rs != null) {
-                    rs.close();
+        }
+        return result;
+    }
+
+    public static boolean isFieldInTable(String field, String table, Connection con) throws SQLException {
+        boolean result = false;
+        DatabaseMetaData dma = con.getMetaData();
+        try (ResultSet rs = dma.getColumns(null, null, table, null)) {
+            String c;
+            while (rs.next()) {
+                c = rs.getString("COLUMN_NAME").toUpperCase();
+                if (field.toUpperCase().compareTo(c) == 0) {
+                    result = true;
+                    break;
                 }
-            } catch (SQLException e) {
-                log.warn(e.getMessage());
             }
         }
-
         return result;
     }
 
@@ -313,8 +281,8 @@ public class UtilsForTests {
         return cal;
     }
 
-    public static String readFromResource(String path ){
-        try(InputStream is = UtilsForTests.class.getResourceAsStream(path)){
+    public static String readFromResource(String path) {
+        try (InputStream is = UtilsForTests.class.getResourceAsStream(path)) {
             return new Scanner(is, StandardCharsets.UTF_8.name()).useDelimiter("\\A").next();
         } catch (IOException e) {
             throw new UncheckedIOException(e);

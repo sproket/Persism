@@ -1,31 +1,26 @@
 package net.sf.persism;
 
-import net.sf.persism.annotations.NotTable;
-
-import java.beans.ConstructorProperties;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.StringWriter;
-import java.lang.reflect.Constructor;
-import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Parameter;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.sql.*;
-import java.util.*;
-import java.util.stream.Collectors;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 
 final class Reader {
 
     private static final Log log = Log.getLogger(Reader.class);
     private static final Log blog = Log.getLogger("net.sf.persism.Benchmarks");
 
-    private Connection connection;
-    private MetaData metaData;
-    private Converter converter;
-    private Session session;
+    private final Connection connection;
+    private final MetaData metaData;
+    private final Converter converter;
+    private final Session session;
 
     Reader(Session session) {
         this.session = session;
@@ -78,7 +73,7 @@ final class Reader {
         now = System.nanoTime();
 
         ResultSetMetaData rsmd = rs.getMetaData();
-        List<Object> constructorParams = new ArrayList<>(12);
+        List<Object> constructorParams = new ArrayList<>(recordInfo.propertyInfoByConstructorOrder.keySet().size());
 
         for (String col : recordInfo.propertyInfoByConstructorOrder.keySet()) {
             Class<?> returnType = recordInfo.propertyInfoByConstructorOrder.get(col).field.getType();
@@ -95,8 +90,8 @@ final class Reader {
 
 
         try {
-            //noinspection unchecked
-            return (T) recordInfo.constructor.newInstance(constructorParams.toArray());
+            //noinspection
+            return recordInfo.constructor.newInstance(constructorParams.toArray());
         } finally {
             blog.debug("time to get readRecord: %s", (System.nanoTime() - now));
         }
@@ -250,7 +245,7 @@ final class Reader {
         }
 
         blog.debug("time to readColumn: %s", (System.nanoTime() - now));
-        return  value;
+        return value;
     }
 
 

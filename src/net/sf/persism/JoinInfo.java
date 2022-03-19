@@ -6,7 +6,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
-import java.util.stream.Collectors;
 
 final class JoinInfo {
 
@@ -44,7 +43,9 @@ final class JoinInfo {
         }
         Util.trimArray(parentPropertyNames);
         Util.trimArray(childPropertyNames);
-        // todo test these properties exist and fail otherwise
+
+        // todo test these properties exist and fail otherwise - fix messages
+        // todo maybe defensive (unmodifiable) copies of array lists parentProperties and childProperties since we have getters
 
         caseSensitive = joinAnnotation.caseSensitive();
 
@@ -53,30 +54,27 @@ final class JoinInfo {
 
         parentIsAQuery = Collection.class.isAssignableFrom(parent.getClass());
 
-        // todo if we encapsulate PropertyInfo we MAY NOT need a defensive copy here or with childProperties
-        parentProperties = new ArrayList<>(MetaData.getPropertyInfo(parentClass)).stream().filter(propertyInfo -> {
-            boolean found = false;
-            for (int j = 0; j < parentPropertyNames.length; j++) {
-                if (parentPropertyNames[j].equals(propertyInfo.propertyName)) {
-                    found = true;
-                    break;
-                }
+        parentProperties = new ArrayList<>(parentPropertyNames.length);
+        childProperties = new ArrayList<>(childPropertyNames.length);
+
+        for (String prop : parentPropertyNames) {
+            var opt = MetaData.getPropertyInfo(parentClass).stream().filter(p -> p.propertyName.equals(prop)).findFirst();
+            if (opt.isPresent()) {
+                parentProperties.add(opt.get());
+            } else {
+                throw new PersismException("PROPERTY NOT FOUND " + prop + " in " + parentClass);
             }
-            return found;
+        }
 
-        }).collect(Collectors.toList());
-
-        childProperties = new ArrayList<>(MetaData.getPropertyInfo(childClass)).stream().filter(propertyInfo -> {
-            boolean found = false;
-            for (int j = 0; j < childPropertyNames.length; j++) {
-                if (childPropertyNames[j].equals(propertyInfo.propertyName)) {
-                    found = true;
-                    break;
-                }
+        for (String prop : childPropertyNames) {
+            var opt = MetaData.getPropertyInfo(childClass).stream().filter(p -> p.propertyName.equals(prop)).findFirst();
+            if (opt.isPresent()) {
+                childProperties.add(opt.get());
+            } else {
+                throw new PersismException("PROPERTY NOT FOUND " + prop + " in " + childClass);
             }
-            return found;
 
-        }).collect(Collectors.toList());;
+        }
     }
 
     public JoinInfo swapParentAndChild() {
