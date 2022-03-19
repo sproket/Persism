@@ -2,7 +2,6 @@ package net.sf.persism.dao;
 
 import net.sf.persism.PersismException;
 import net.sf.persism.Persistable;
-import net.sf.persism.annotations.Column;
 import net.sf.persism.annotations.NotColumn;
 
 import java.math.BigInteger;

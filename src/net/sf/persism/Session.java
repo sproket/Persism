@@ -413,8 +413,6 @@ public final class Session implements AutoCloseable {
         boolean isPOJO = Types.getType(objectClass) == null;
         boolean isRecord = isPOJO && isRecord(objectClass);
 
-        long now = System.currentTimeMillis();
-
         JDBCResult result = JDBCResult.DEFAULT;
         try {
             result = helper.executeQuery(objectClass, sql, parameters);
@@ -428,6 +426,7 @@ public final class Session implements AutoCloseable {
                 }
             }
 
+            long now = System.currentTimeMillis();
 
             if (isRecord) {
                 List<String> propertyNames = metaData.getPropertyNames(objectClass);
@@ -460,12 +459,15 @@ public final class Session implements AutoCloseable {
                 // System.out.println("time to readSimple: " + (System.currentTimeMillis() - now));
             }
 
-            if (blog.isDebugEnabled()) {
-                blog.debug("LIST " + objectClass.getSimpleName() + " SIZE: " + list.size());
-            }
+            //blog.debug("TIME TO READ " + objectClass + " " + (System.currentTimeMillis() - now) + " SIZE " + list.size());
+            blog.debug("READ time: %s SIZE: %s %s", (System.currentTimeMillis() - now), list.size(), objectClass);
 
             if (list.size() > 0) {
+                now = System.currentTimeMillis();
                 helper.handleJoins(list, objectClass, sql.toString(), parameters);
+            }
+            if (blog.isDebugEnabled()) {
+                blog.debug("handleJoins TIME:  " + (System.currentTimeMillis() - now) + " " + objectClass, new Throwable());
             }
 
         } catch (Exception e) {
@@ -710,9 +712,6 @@ public final class Session implements AutoCloseable {
             //int ret = st.executeUpdate(insertStatement, Statement.RETURN_GENERATED_KEYS);
             assert params.size() == columnInfos.size();
 
-            if (metaData.getConnectionType() == ConnectionTypes.SQLite) {
-                log.warn("sqlite");
-            }
 
             for (int j = 0; j < params.size(); j++) {
                 ColumnInfo columnInfo = columnInfos.get(j);

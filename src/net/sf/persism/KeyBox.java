@@ -3,7 +3,7 @@ package net.sf.persism;
 import java.util.Arrays;
 
 // wrapper class for when you join on multiple columns
-public final class KeyBox {
+final class KeyBox {
 
     final Object[] keyValues;
 
@@ -20,17 +20,6 @@ public final class KeyBox {
             }
         }
     }
-
-//    public KeyBox ass(Object val) {
-//        if (keyValues[0].equals(val)) {
-//            return this;
-//        }
-//        return null;
-//    }
-//
-//    public Object[] keyValues() {
-//        return keyValues;
-//    }
 
     @Override
     public boolean equals(Object o) {

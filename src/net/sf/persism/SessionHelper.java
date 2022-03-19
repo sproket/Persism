@@ -79,6 +79,10 @@ final class SessionHelper {
     void exec(JDBCResult result, String sql, Object... parameters) throws SQLException {
         long now = System.currentTimeMillis();
 
+        if (log.isDebugEnabled()) {
+            log.debug("exec: %s params: %s", sql, Arrays.asList(parameters));
+        }
+
         try {
             if (isSelect(sql)) {
                 if (session.metaData.getConnectionType() == ConnectionTypes.Firebird) {
@@ -107,7 +111,7 @@ final class SessionHelper {
             throw new SQLException(e.getMessage() + " SQL: " + sql + " params: " + Arrays.asList(parameters), e);
         } finally {
             if (blog.isDebugEnabled()) {
-                blog.debug(result.name + " exec Time: " + (System.currentTimeMillis() - now) + " " + sql + " params: " + Arrays.asList(parameters));
+                blog.debug("exec time for " + result.name + ": " + (System.currentTimeMillis() - now) + " " + sql + " params: " + Arrays.asList(parameters));
             }
         }
     }
@@ -512,10 +516,11 @@ final class SessionHelper {
         }
     }
 
+
     // todo we really need a way to detect infinite loops and FAIL FAST
     // todo cache these queries - maybe
     // parent is a POJO or a List of POJOs
-    void handleJoins(Object parent, Class<?> parentClass, String parentSql, Parameters parentParams) throws IllegalAccessException, InvocationTargetException {
+    void handleJoins(Object parent, Class<?> parentClass, String parentSql, Parameters parentParams) {
         // maybe we could add a check for fetch after insert. In those cases there's no need to query for child lists - BUT we do need query for child SINGLES
         // NOT really important. At most 1 extra query per type will be run (and no child queries after that)
 
@@ -524,7 +529,6 @@ final class SessionHelper {
         for (PropertyInfo joinProperty : joinProperties) {
             Join joinAnnotation = (Join) joinProperty.getAnnotation(Join.class);
             JoinInfo joinInfo = new JoinInfo(joinAnnotation, joinProperty, parent, parentClass);
-
             if (joinInfo.parentIsAQuery()) {
                 // We expect this method not to be called if the result query has 0 rows.
                 assert ((Collection<?>) parent).size() > 0;
@@ -582,6 +586,7 @@ final class SessionHelper {
     }
 
     private void stitch(JoinInfo joinInfo, List<?> parentList, List<?> childList) {
+        blog.debug("STITCH " + joinInfo);
         if (childList.size() == 0) {
             return;
         }
@@ -637,7 +642,7 @@ final class SessionHelper {
             }
         }
 
-        blog.debug("stitch Time: " + joinInfo.childClass().getSimpleName() + " " + (System.currentTimeMillis() - now));
+        blog.debug("stitch Time: " + (System.currentTimeMillis() - now));
     }
 
     @SuppressWarnings({"rawtypes", "unchecked"})
@@ -645,8 +650,7 @@ final class SessionHelper {
         if (Collection.class.isAssignableFrom(joinInfo.joinProperty().field.getType())) {
             var list = (Collection) joinInfo.joinProperty().getValue(parent);
             if (list == null) {
-                // todo add error message
-                throw new PersismException("Cannot join to null for property: " + joinInfo.joinProperty().propertyName + ". Instantiate the property as a modifiable collection in your constructor.");
+                throw new PersismException(Messages.CannotNotJoinToNullProperty.message(joinInfo.joinProperty().propertyName));
             }
             list.add(child);
         } else {
@@ -665,55 +669,25 @@ final class SessionHelper {
 
         List joinedList = (List) joinProperty.getValue(parentObject);
         if (joinedList == null) {
-            throw new PersismException("Cannot join to null for property: " + joinProperty.propertyName + ". Instantiate the property as a modifiable collection in your constructor.");
+            throw new PersismException(Messages.CannotNotJoinToNullProperty.message(joinProperty.propertyName));
         }
         joinedList.clear();
         joinedList.addAll(list);
     }
 
-    private String getChildWhereClauseOLD(JoinInfo joinInfo, String parentWhere) {
-        String sep = "";
-        StringBuilder where = new StringBuilder();
-        String sd = session.metaData.getConnectionType().getKeywordStartDelimiter();
-        String ed = session.metaData.getConnectionType().getKeywordEndDelimiter();
-
-        int n = parentWhere.toUpperCase().indexOf("ORDER BY");
-        if (n > -1) {
-            parentWhere = parentWhere.substring(0, n);
-        }
-
-        Map<String, PropertyInfo> parentProperties = session.metaData.getTableColumnsPropertyInfo(joinInfo.parentClass(), session.connection);
-        Map<String, PropertyInfo> childProperties = session.metaData.getTableColumnsPropertyInfo(joinInfo.childClass(), session.connection);
-
-        for (int j = 0; j < joinInfo.parentPropertyNames().length; j++) {
-            String parentColumnName = sd + getColumnName(joinInfo.parentPropertyNames()[j], parentProperties) + ed;
-            String childColumnName = sd + getColumnName(joinInfo.childPropertyNames()[j], childProperties) + ed;
-
-            String parentTable = sd + session.metaData.getTableName(joinInfo.parentClass()) + ed;
-
-            where.append(sep).append(childColumnName).append(" IN (");
-            where.append("SELECT ").append(parentColumnName).append(" FROM ").append(parentTable);
-
-            if (!parentWhere.isEmpty()) {
-                where.append(" WHERE ").append(parentWhere);
-            }
-            where.append(") ");
-            sep = " AND ";
-        }
-        return where.toString();
-    }
-
     private String getChildWhereClause(JoinInfo joinInfo, String parentWhere) {
-
-        if (joinInfo.parentProperties().size() == 1) {
-            return getChildWhereClauseOLD(joinInfo, parentWhere);
-        }
 
         StringBuilder where = new StringBuilder();
         String sd = session.metaData.getConnectionType().getKeywordStartDelimiter();
         String ed = session.metaData.getConnectionType().getKeywordEndDelimiter();
         String parentTableName = session.metaData.getFullTableName(joinInfo.parentClass());
         String childTableName = session.metaData.getFullTableName(joinInfo.childClass());
+
+        String parentAlias = "";
+        if (parentTableName.equals(childTableName)) {
+            // for self join we need an alias
+            parentAlias = session.metaData.getTableName(joinInfo.parentClass()).substring(0, 1).toUpperCase();
+        }
 
         int n = parentWhere.toUpperCase().indexOf("ORDER BY");
         if (n > -1) {
@@ -730,12 +704,24 @@ final class SessionHelper {
             sep = ",";
         }
 
-        where.append(" FROM ").append(parentTableName).append(" WHERE ").append(parentWhere).append(" ");
+        //where.append(" FROM ").append(parentTableName).append(" ").append(parentAlias).append(" WHERE ").append(parentWhere).append(" ");
+        where.append(" FROM ").append(parentTableName);
+        if (Util.isNotEmpty(parentAlias)) {
+            where.append(" ").append(parentAlias);
+        }
+        where.append(" WHERE ").append(parentWhere).append(" ");
         sep = Util.isEmpty(parentWhere) ? "" : " AND ";
         for (int j = 0; j < joinInfo.parentPropertyNames().length; j++) {
             String parentColumnName = sd + getColumnName(joinInfo.parentPropertyNames()[j], parentProperties) + ed;
             String childColumnName = sd + getColumnName(joinInfo.childPropertyNames()[j], childProperties) + ed;
-            where.append(sep).append(parentTableName).append(".").append(parentColumnName).append(" = ").
+
+            if (Util.isNotEmpty(parentAlias)) {
+                where.append(sep).append(parentAlias);
+            } else {
+                where.append(sep).append(parentTableName);
+            }
+
+            where.append(".").append(parentColumnName).append(" = ").
                     append(childTableName).append(".").append(childColumnName);
             sep = " AND ";
         }

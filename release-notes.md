@@ -2,6 +2,10 @@
 
 todo add schema names to SQL.
 * Added support for transient keyword (works like @NotColumn)
+* added support for record style pojos (no set or get needed)
+* added support for builder style pojos (setter returns "this")
+* TODO ADD SUPPORT FOR POJO constructors
+* TODO ADD SUPPORT FOR OTHER SHIT
 
 ### merge with 1.2.....
 * REVIEW ALL CHANGES

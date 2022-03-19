@@ -1,75 +1,69 @@
 package net.sf.persism.dao.so;
 
-import java.sql.Date;
-import java.sql.Time;
 import java.sql.Timestamp;
+import java.util.Objects;
 
 public final class Vote {
+
     private Integer id;
     private Integer postId;
     private Integer userId;
-    private Integer bountyAmount;
+    private int bountyAmount;
     private Integer voteTypeId;
     private Timestamp creationDate;
 
-    public Vote() {
-    }
-
-    public Vote(Integer id, Integer postId, Integer userId, Integer bountyAmount, Integer voteTypeId, Timestamp creationDate) {
-        this.id = id;
-        this.postId = postId;
-        this.userId = userId;
-        this.bountyAmount = bountyAmount;
-        this.voteTypeId = voteTypeId;
-        this.creationDate = creationDate;
-    }
-
-    public Integer getId() {
+    public Integer id() {
         return id;
     }
 
-    public void setId(Integer id) {
+    public Vote setId(Integer id) {
         this.id = id;
+        return this;
     }
 
-    public Integer getPostId() {
+    public Integer postId() {
         return postId;
     }
 
-    public void setPostId(Integer postId) {
+    public Vote setPostId(Integer postId) {
         this.postId = postId;
+        return this;
     }
 
-    public Integer getUserId() {
+    public Integer userId() {
         return userId;
     }
 
-    public void setUserId(Integer userId) {
+    public Vote setUserId(Integer userId) {
         this.userId = userId;
+        return this;
     }
 
-    public Integer getBountyAmount() {
+    public int bountyAmount() {
         return bountyAmount;
     }
 
-    public void setBountyAmount(Integer bountyAmount) {
+    public Vote setBountyAmount(int bountyAmount) {
         this.bountyAmount = bountyAmount;
+        return this;
     }
 
-    public Integer getVoteTypeId() {
+    public Integer voteTypeId() {
         return voteTypeId;
     }
 
-    public void setVoteTypeId(Integer voteTypeId) {
+    public Vote setVoteTypeId(Integer voteTypeId) {
         this.voteTypeId = voteTypeId;
+        return this;
     }
 
-    public Timestamp getCreationDate() {
+    public Timestamp creationDate() {
         return creationDate;
     }
 
-    public void setCreationDate(Timestamp creationDate) {
+    public Vote setCreationDate(Timestamp creationDate) {
         this.creationDate = creationDate;
+        return this;
     }
 
     @Override
@@ -80,39 +74,24 @@ public final class Vote {
         if (o == null || getClass() != o.getClass()) {
             return false;
         }
-
-        Vote votes = (Vote) o;
-
-        if (id != null ? !id.equals(votes.id) : votes.id != null) {
-            return false;
-        }
-        if (postId != null ? !postId.equals(votes.postId) : votes.postId != null) {
-            return false;
-        }
-        if (userId != null ? !userId.equals(votes.userId) : votes.userId != null) {
-            return false;
-        }
-        if (bountyAmount != null ? !bountyAmount.equals(votes.bountyAmount) : votes.bountyAmount != null) {
-            return false;
-        }
-        if (voteTypeId != null ? !voteTypeId.equals(votes.voteTypeId) : votes.voteTypeId != null) {
-            return false;
-        }
-        if (creationDate != null ? !creationDate.equals(votes.creationDate) : votes.creationDate != null) {
-            return false;
-        }
-
-        return true;
+        Vote vote = (Vote) o;
+        return bountyAmount == vote.bountyAmount && Objects.equals(id, vote.id) && Objects.equals(postId, vote.postId) && Objects.equals(userId, vote.userId) && Objects.equals(voteTypeId, vote.voteTypeId) && Objects.equals(creationDate, vote.creationDate);
     }
 
     @Override
     public int hashCode() {
-        int result = id != null ? id.hashCode() : 0;
-        result = 31 * result + (postId != null ? postId.hashCode() : 0);
-        result = 31 * result + (userId != null ? userId.hashCode() : 0);
-        result = 31 * result + (bountyAmount != null ? bountyAmount.hashCode() : 0);
-        result = 31 * result + (voteTypeId != null ? voteTypeId.hashCode() : 0);
-        result = 31 * result + (creationDate != null ? creationDate.hashCode() : 0);
-        return result;
+        return Objects.hash(id, postId, userId, bountyAmount, voteTypeId, creationDate);
+    }
+
+    @Override
+    public String toString() {
+        return "Vote{" +
+                "id=" + id +
+                ", postId=" + postId +
+                ", userId=" + userId +
+                ", bountyAmount=" + bountyAmount +
+                ", voteTypeId=" + voteTypeId +
+                ", creationDate=" + creationDate +
+                '}';
     }
 }

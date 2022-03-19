@@ -1,11 +1,14 @@
 package net.sf.persism.dao.so;
 
-import net.sf.persism.annotations.NotColumn;
+import net.sf.persism.annotations.Join;
+import net.sf.persism.annotations.Table;
 
 import java.sql.Timestamp;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
-
-public final class Post {
+@Table("Posts")
+public final class ExtendedPost {
     private Integer id;
     private Integer acceptedAnswerId;
     private int answerCount;
@@ -27,18 +30,27 @@ public final class Post {
     private String title;
     private int viewCount;
 
-    // this always is an infinite loop!
-    //@Join(to = Post.class, onProperties = "parentId", toProperties = "id")
-    @NotColumn
+    @Join(to = User.class, onProperties = "ownerUserId", toProperties = "id")
+    private User user;
+
+    @Join(to = Comment.class, onProperties = "id, ownerUserId", toProperties = "postId, userId ")
+    private List<Comment> myComments = new ArrayList<>();
+
+    @Join(to = Comment.class, onProperties = "id", toProperties = "postId")
+    private List<Comment> allComments = new ArrayList<>();
+
+    @Join(to = PostType.class, onProperties = "postTypeId", toProperties = "id")
+    private PostType postType;
+
+    @Join(to = Post.class, onProperties = "parentId", toProperties = "id")
     private Post parentPost;
 
-
-    public Post getParentPost() {
-        return parentPost;
+    public User getUser() {
+        return user;
     }
 
-    public void setParentPost(Post parentPost) {
-        this.parentPost = parentPost;
+    public void setUser(User user) {
+        this.user = user;
     }
 
     public Integer getId() {
@@ -162,6 +174,30 @@ public final class Post {
         this.viewCount = viewCount;
     }
 
+    public List<Comment> getMyComments() {
+        return myComments;
+    }
+
+    public void setMyComments(List<Comment> myComments) {
+        this.myComments = myComments;
+    }
+
+    public List<Comment> getAllComments() {
+        return allComments;
+    }
+
+    public void setAllComments(List<Comment> allComments) {
+        this.allComments = allComments;
+    }
+
+    public PostType getPostType() {
+        return postType;
+    }
+
+    public void setPostType(PostType postType) {
+        this.postType = postType;
+    }
+
     public Timestamp getClosedDate() {
         return closedDate;
     }
@@ -202,6 +238,14 @@ public final class Post {
         this.lastEditDate = lastEditDate;
     }
 
+    public Post getParentPost() {
+        return parentPost;
+    }
+
+    public void setParentPost(Post parentPost) {
+        this.parentPost = parentPost;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) {
@@ -210,13 +254,13 @@ public final class Post {
         if (o == null || getClass() != o.getClass()) {
             return false;
         }
-        Post post = (Post) o;
-        return answerCount == post.answerCount && commentCount == post.commentCount && favoriteCount == post.favoriteCount && viewCount == post.viewCount && Objects.equals(id, post.id) && Objects.equals(acceptedAnswerId, post.acceptedAnswerId) && Objects.equals(body, post.body) && Objects.equals(closedDate, post.closedDate) && Objects.equals(communityOwnedDate, post.communityOwnedDate) && Objects.equals(creationDate, post.creationDate) && Objects.equals(lastActivityDate, post.lastActivityDate) && Objects.equals(lastEditDate, post.lastEditDate) && Objects.equals(lastEditorDisplayName, post.lastEditorDisplayName) && Objects.equals(lastEditorUserId, post.lastEditorUserId) && Objects.equals(ownerUserId, post.ownerUserId) && Objects.equals(parentId, post.parentId) && Objects.equals(postTypeId, post.postTypeId) && Objects.equals(score, post.score) && Objects.equals(tags, post.tags) && Objects.equals(title, post.title);
+        ExtendedPost post = (ExtendedPost) o;
+        return answerCount == post.answerCount && commentCount == post.commentCount && favoriteCount == post.favoriteCount && viewCount == post.viewCount && Objects.equals(id, post.id) && Objects.equals(acceptedAnswerId, post.acceptedAnswerId) && Objects.equals(body, post.body) && Objects.equals(closedDate, post.closedDate) && Objects.equals(communityOwnedDate, post.communityOwnedDate) && Objects.equals(creationDate, post.creationDate) && Objects.equals(lastActivityDate, post.lastActivityDate) && Objects.equals(lastEditDate, post.lastEditDate) && Objects.equals(lastEditorDisplayName, post.lastEditorDisplayName) && Objects.equals(lastEditorUserId, post.lastEditorUserId) && Objects.equals(ownerUserId, post.ownerUserId) && Objects.equals(parentId, post.parentId) && Objects.equals(postTypeId, post.postTypeId) && Objects.equals(score, post.score) && Objects.equals(tags, post.tags) && Objects.equals(title, post.title) && Objects.equals(user, post.user) && Objects.equals(myComments, post.myComments) && Objects.equals(postType, post.postType);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, acceptedAnswerId, answerCount, body, closedDate, commentCount, communityOwnedDate, creationDate, favoriteCount, lastActivityDate, lastEditDate, lastEditorDisplayName, lastEditorUserId, ownerUserId, parentId, postTypeId, score, tags, title, viewCount);
+        return Objects.hash(id, acceptedAnswerId, answerCount, body, closedDate, commentCount, communityOwnedDate, creationDate, favoriteCount, lastActivityDate, lastEditDate, lastEditorDisplayName, lastEditorUserId, ownerUserId, parentId, postTypeId, score, tags, title, viewCount, user, myComments, postType);
     }
 
     @Override
@@ -226,6 +270,7 @@ public final class Post {
                 ", title='" + title + '\'' +
                 ", creationDate=" + creationDate +
                 ", parentId=" + parentId +
+                ", parent= " + parentPost +
                 '}';
     }
 }

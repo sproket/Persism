@@ -4,20 +4,30 @@ public class VoteType {
     private Integer id;
     private String name;
 
-    public Integer getId() {
+    public VoteType() {
+    }
+
+    public VoteType(Integer id, String name) {
+        this.id = id;
+        this.name = name;
+    }
+
+    public Integer id() {
         return id;
     }
 
-    public void setId(Integer id) {
+    public VoteType id(Integer id) {
         this.id = id;
+        return this;
     }
 
-    public String getName() {
+    public String name() {
         return name;
     }
 
-    public void setName(String name) {
+    public VoteType name(String name) {
         this.name = name;
+        return this;
     }
 
     @Override
@@ -46,5 +56,13 @@ public class VoteType {
         int result = id != null ? id.hashCode() : 0;
         result = 31 * result + (name != null ? name.hashCode() : 0);
         return result;
+    }
+
+    @Override
+    public String toString() {
+        return "VoteType{" +
+                "id=" + id +
+                ", name='" + name + '\'' +
+                '}';
     }
 }

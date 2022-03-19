@@ -18,36 +18,40 @@ public final class Badge {
         this.date = date;
     }
 
-    public Integer getId() {
+    public Integer id() {
         return id;
     }
 
-    public void setId(Integer id) {
+    public Badge id(Integer id) {
         this.id = id;
+        return this;
     }
 
-    public String getName() {
+    public String name() {
         return name;
     }
 
-    public void setName(String name) {
+    public Badge name(String name) {
         this.name = name;
+        return this;
     }
 
-    public Integer getUserId() {
+    public Integer userId() {
         return userId;
     }
 
-    public void setUserId(Integer userId) {
+    public Badge userId(Integer userId) {
         this.userId = userId;
+        return this;
     }
 
-    public Timestamp getDate() {
+    public Timestamp date() {
         return date;
     }
 
-    public void setDate(Timestamp date) {
+    public Badge date(Timestamp date) {
         this.date = date;
+        return this;
     }
 
     @Override
@@ -73,7 +77,6 @@ public final class Badge {
         if (date != null ? !date.equals(badges.date) : badges.date != null) {
             return false;
         }
-
         return true;
     }
 
@@ -84,5 +87,15 @@ public final class Badge {
         result = 31 * result + (userId != null ? userId.hashCode() : 0);
         result = 31 * result + (date != null ? date.hashCode() : 0);
         return result;
+    }
+
+    @Override
+    public String toString() {
+        return "Badge{" +
+                "id=" + id +
+                ", name='" + name + '\'' +
+                ", userId=" + userId +
+                ", date=" + date +
+                '}';
     }
 }

@@ -1,12 +1,15 @@
 package net.sf.persism.dao;
 
+import net.sf.persism.Persistable;
+import net.sf.persism.PersistableObject;
 import net.sf.persism.annotations.Column;
 
 import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.util.Date;
 
-public final class User {
+public final class User extends PersistableObject<User> {
+
     @Column(name = "User_No")
     private long id;
 

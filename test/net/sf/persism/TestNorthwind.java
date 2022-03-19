@@ -4,24 +4,21 @@ import junit.framework.TestCase;
 import net.sf.persism.categories.ExternalDB;
 import net.sf.persism.dao.northwind.*;
 
+import javax.imageio.ImageIO;
 import java.io.File;
-import java.io.FileOutputStream;
 import java.sql.*;
 import java.text.DecimalFormat;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Properties;
 
 import static net.sf.persism.Parameters.params;
 import static net.sf.persism.SQL.sql;
-import static net.sf.persism.UtilsForTests.isFieldInTable;
 
 
 /**
  * Does not share common tests - this is just to do some specific tests on SQL with Northwind DB
- * https://devtutorial.io/install-northwind-database-in-microsoft-sql-server-2019-express.html
  *
  * @author Dan Howard
  * @since 5/3/12 8:46 PM
@@ -37,6 +34,7 @@ public class TestNorthwind extends TestCase {
 
     protected void setUp() throws Exception {
         super.setUp();
+        //log.error(log.getLogName() + " " + log.getLogMode());
 
         Properties props = new Properties();
         props.load(getClass().getResourceAsStream("/northwind.properties"));
@@ -48,73 +46,7 @@ public class TestNorthwind extends TestCase {
 
         con = DriverManager.getConnection(url, username, password);
 
-        alterTables(con);
-
         session = new Session(con);
-    }
-
-    private void alterTables(Connection con) throws SQLException {
-        assertTrue(isFieldInTable("CustomerID", "Customers", con));
-
-        if (!isFieldInTable("DateOfLastResort", "Customers", con)) {
-            try (Statement st = con.createStatement()) {
-                st.execute("ALTER TABLE [Customers] ADD [DateOfLastResort] DATE");
-            }
-        }
-
-        if (!isFieldInTable("DateOfDoom", "Customers", con)) {
-            try (Statement st = con.createStatement()) {
-                st.execute("ALTER TABLE [Customers] ADD [DateOfDoom] datetime2(7)");
-            }
-        }
-
-        if (!isFieldInTable("LongToDate", "Customers", con)) {
-            try (Statement st = con.createStatement()) {
-                st.execute("ALTER TABLE [Customers] ADD [LongToDate] bigint");
-            }
-        }
-
-        if (!isFieldInTable("DateToLong", "Customers", con)) {
-            try (Statement st = con.createStatement()) {
-                st.execute("ALTER TABLE [Customers] ADD [DateToLong] datetime");
-            }
-        }
-
-        if (!isFieldInTable("NowMF", "Customers", con)) {
-            try (Statement st = con.createStatement()) {
-                st.execute("ALTER TABLE [Customers] ADD [NowMF] datetime2(7)");
-            }
-        }
-
-        if (!isFieldInTable("wtfDate", "Customers", con)) {
-            try (Statement st = con.createStatement()) {
-                st.execute("ALTER TABLE [Customers] ADD [wtfDate] datetime");
-            }
-        }
-
-        if (!isFieldInTable("TestLocalDateTime", "Customers", con)) {
-            try (Statement st = con.createStatement()) {
-                st.execute("ALTER TABLE [Customers] ADD [TestLocalDateTime] datetime2(7)");
-            }
-        }
-
-        if (!isFieldInTable("Status", "Employees", con)) {
-            try (Statement st = con.createStatement()) {
-                st.execute("ALTER TABLE [Employees] ADD [Status] CHAR(1)");
-            }
-        }
-
-        if (!isFieldInTable("WhatTimeIsIt", "Employees", con)) {
-            try (Statement st = con.createStatement()) {
-                st.execute("ALTER TABLE [Employees] ADD [WhatTimeIsIt] time(7)");
-            }
-        }
-
-        if (!isFieldInTable("Data", "Categories", con)) {
-            try (Statement st = con.createStatement()) {
-                st.execute("ALTER TABLE [Categories] ADD [Data] [xml]");
-            }
-        }
     }
 
 
@@ -137,20 +69,16 @@ public class TestNorthwind extends TestCase {
             List<Category> list = session.query(Category.class, sql("select * from categories"));
 
             for (Category cat : list) {
-                log.info("CAT: " + cat);
-                log.info("IMG: " + cat.getImage());
-                log.info("PIC: " + Arrays.toString(cat.getPicture()));
-
+                log.info(cat);
                 File directory = new File("c:/temp/pinf/");
                 if (!directory.exists()) {
-                    log.info(directory.mkdir());
+                    directory.mkdir();
                 }
 
-                byte[] imageData = new String(cat.getPicture()).substring(78).getBytes();
-                try (FileOutputStream fos = new FileOutputStream("c:/temp/pinf/" + cat.getCategoryId() + ".jpg")) {
-                    fos.write(imageData, 0, imageData.length);
-                }
-
+                String fileName = "c:/temp/pinf/" + cat.getCategoryId() + ".jpg";
+                log.info(fileName);
+                File file = new File(fileName);
+                ImageIO.write(cat.getImage(), "jpg", file);
             }
 
         } catch (Exception e) {

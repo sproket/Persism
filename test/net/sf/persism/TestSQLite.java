@@ -15,7 +15,9 @@ import net.sf.persism.dao.TableNoPrimary;
 import org.junit.experimental.categories.Category;
 
 import java.sql.*;
-import java.time.*;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -31,12 +33,15 @@ public final class TestSQLite extends BaseTest {
     // http://sqlite.org/datatype3.html
 
     private static final Log log = Log.getLogger(TestSQLite.class);
+    private static final Log blog = Log.getLogger("net.sf.persism.Benchmarks");
 
 
     String home;
 
     @Override
     protected void setUp() throws Exception {
+        long now = System.nanoTime();
+
         connectionType = ConnectionTypes.SQLite;
         super.setUp();
 
@@ -51,9 +56,13 @@ public final class TestSQLite extends BaseTest {
 
         con = DriverManager.getConnection(url);
 
+        log.info(con.getMetaData().getDatabaseProductName() + " " + con.getMetaData().getDatabaseProductVersion());
+
         createTables();
 
         session = new Session(con);
+
+        logit("setup: ", now);
     }
 
 
@@ -64,6 +73,7 @@ public final class TestSQLite extends BaseTest {
 
     @Override
     protected void createTables() throws SQLException {
+        long now = System.nanoTime();
 
         Statement st = null;
         List<String> commands = new ArrayList<String>(3);
@@ -274,14 +284,18 @@ public final class TestSQLite extends BaseTest {
                 """;
         executeCommand(sql, con);
 
+        logit("Create Tables:", now);
     }
 
     @Override
     public void testContactTable() throws SQLException {
+        long now = System.nanoTime();
         super.testContactTable();
+        logit("testContactTable:", now);
     }
 
     public void testOrders() throws Exception {
+        long now = System.nanoTime();
 
         Order order = DAOFactory.newOrder(con);
         order.setName("COW");
@@ -334,10 +348,13 @@ public final class TestSQLite extends BaseTest {
         Object x = new Date(System.currentTimeMillis());
         log.info(x.getClass());
 
+        logit("testOrders:", now);
     }
 
 
     public void testCustomers() {
+        long now = System.nanoTime();
+
         Customer customer = new Customer();
         customer.setCompanyName("MOO");
 
@@ -417,9 +434,12 @@ public final class TestSQLite extends BaseTest {
 
         assertEquals("list should have 0 customers", 0, list.size());
 
+        logit("testCustomers:", now);
     }
 
     public void testDefaultDate() {
+        long now = System.nanoTime();
+
         Customer customer = new Customer();
         customer.setCustomerId("XYZ");
         customer.setContactName("TEST2");
@@ -435,9 +455,11 @@ public final class TestSQLite extends BaseTest {
         log.info(customer.getDateRegistered());
         assertNotNull("date reg should be not null", customer.getDateRegistered());
 
+        logit("testDefaultDate:", now);
     }
 
     public void testMultipleGeneratedKeys() {
+        long now = System.nanoTime();
         // test customer which has a default on Date_Registered
         // getGeneratedKeys does NOT retrieve this value.
         // getGeneratedKeys is ONLY for autoincs and guids
@@ -465,11 +487,13 @@ public final class TestSQLite extends BaseTest {
             fail(e.getMessage());
         } finally {
             Util.cleanup(st, rs);
-        }
 
+            logit("testMultipleGeneratedKeys:", now);
+        }
     }
 
     public void testMetaData() {
+        long now = System.nanoTime();
 
         Statement st = null;
         java.sql.ResultSet rs = null;
@@ -496,12 +520,15 @@ public final class TestSQLite extends BaseTest {
             fail(e.getMessage());
         } finally {
             Util.cleanup(st, rs);
+            logit("testMetaData:", now);
         }
     }
 
     // ResultSetMetaData can't determine types if there is no result? where 1=0 ?
     // http://groups.google.com/group/xerial/browse_thread/thread/2abbd5ed2ea0189?hl=en
     public void testTypes() {
+        long now = System.nanoTime();
+
         Statement st = null;
         ResultSet rs = null;
         try {
@@ -559,10 +586,13 @@ public final class TestSQLite extends BaseTest {
 
         } finally {
             Util.cleanup(st, rs);
+            logit("testTypes:", now);
         }
     }
 
     public void testExplain() {
+        long now = System.nanoTime();
+
         Statement st = null;
         ResultSet rs = null;
 
@@ -588,10 +618,13 @@ public final class TestSQLite extends BaseTest {
 
         } finally {
             Util.cleanup(st, rs);
+            logit("testExplain:", now);
         }
     }
 
     public void testColumnAnnotation() {
+        long now = System.nanoTime();
+
         TableNoPrimary junk = new TableNoPrimary();
         junk.setId(1);
         junk.setName("JUNK");
@@ -635,9 +668,12 @@ public final class TestSQLite extends BaseTest {
                     e.getMessage());
         }
         assertTrue(shouldFail);
+
+        logit("testColumnAnnotation:", now);
     }
 
     public void testColumnDefaults() {
+        long now = System.nanoTime();
 
         java.sql.ResultSet rs = null;
         Statement st = null;
@@ -661,27 +697,43 @@ public final class TestSQLite extends BaseTest {
             fail(e.getMessage());
         } finally {
             Util.cleanup(st, rs);
+            logit("testColumnDefaults:", now);
         }
 
     }
 
     @Override
     public void testInvoice() {
+        long now = System.nanoTime();
         super.testInvoice();
+        logit("testInvoice:", now);
     }
 
     @Override
     public void testAllDates() {
+        long now = System.nanoTime();
         super.testAllDates();
+        logit("testAllDates:", now);
     }
 
     @Override
     public void testRecord1() {
+        long now = System.nanoTime();
         super.testRecord1();
+        logit("testRecord1: ", now);
     }
 
     @Override
     public void testRecord2() {
+        long now = System.nanoTime();
         super.testRecord2();
+        logit("testRecord2:", now);
     }
+
+    static void logit(String text, long start) {
+        long end = (System.nanoTime() - start);
+        blog.info(text + " " + end + " (" + (end / 1_000_000) + ")");
+    }
+
+
 }

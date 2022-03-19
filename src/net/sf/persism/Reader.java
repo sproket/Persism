@@ -15,12 +15,12 @@ import java.util.Map;
 final class Reader {
 
     private static final Log log = Log.getLogger(Reader.class);
-//    private static final Log blog = Log.getLogger("net.sf.persism.Benchmarks");
+    private static final Log blog = Log.getLogger("net.sf.persism.Benchmarks");
 
-    private Connection connection;
-    private MetaData metaData;
-    private Converter converter;
-    private Session session;
+    private final Connection connection;
+    private final MetaData metaData;
+    private final Converter converter;
+    private final Session session;
 
     Reader(Session session) {
         this.session = session;
@@ -100,10 +100,10 @@ final class Reader {
         //      now = System.nanoTime();
 
         try {
-            //noinspection unchecked
+            //noinspection
             return recordInfo.constructor.newInstance(constructorParams.toArray());
         } finally {
-            // blog.debug("time to get readRecord: %s", (System.nanoTime() - now));
+            blog.debug("time to get readRecord: %s", (System.nanoTime() - now));
             // System.out.println("time to readRecord: " + (System.nanoTime() - now));
         }
     }
@@ -255,7 +255,7 @@ final class Reader {
             value = converter.convert(value, returnType, columnName);
         }
 
-        //blog.debug("time to readColumn: %s", (System.nanoTime() - now));
+        blog.debug("time to readColumn: %s", (System.nanoTime() - now));
         return value;
     }
 

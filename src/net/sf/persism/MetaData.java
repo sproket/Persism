@@ -867,7 +867,8 @@ final class MetaData {
                         propertyInfo.annotations.put(annotation.annotationType(), annotation);
                     }
 
-                    if (method.getName().equalsIgnoreCase("set" + propertyNameToTest)) {
+                    // OR added to fix to builder pattern style when your setters are just the field name
+                    if (method.getName().equalsIgnoreCase("set" + propertyNameToTest) || method.getParameterCount() > 0) {
                         propertyInfo.setter = method;
                     } else {
                         propertyInfo.getter = method;
@@ -1293,7 +1294,7 @@ final class MetaData {
             Map<String, PropertyInfo> columns = getTableColumnsPropertyInfo(persistable.getClass(), connection);
 
             if (original == null) {
-                // Could happen in the case of cloning or other operation - so it's never read so it never sets original.
+                // Could happen in the case of cloning or other operation - so it's never read, so it never sets original.
                 return columns;
             } else {
                 Map<String, PropertyInfo> changedColumns = new HashMap<>(columns.keySet().size());

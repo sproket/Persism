@@ -13,8 +13,7 @@ public final class Comment {
     private String text;
     private Integer userId;
 
-    //@Join(to = User.class, onProperties = "userId", toProperties = "id")
-    @NotColumn
+    @Join(to = User.class, onProperties = "userId", toProperties = "id")
     private User user;
 
     public Integer getId() {
@@ -116,5 +115,17 @@ public final class Comment {
 
         result = 31 * result + (userId != null ? userId.hashCode() : 0);
         return result;
+    }
+
+    @Override
+    public String toString() {
+        return "Comment{" +
+                "id=" + id +
+                ", creationDate=" + creationDate +
+                ", postId=" + postId +
+                ", score=" + score +
+                ", text='" + text + '\'' +
+                ", userId=" + userId +
+                '}';
     }
 }

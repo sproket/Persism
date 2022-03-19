@@ -32,7 +32,6 @@ public final class Invoice {
     // Used as a primitive to test for warning about using primitives on columns with defaults
     private Character status;
 
-    // query(Customer.class, where(":name = ? and :i.quantity > ?"),.,..
     @Join(to = InvoiceLineItem.class, onProperties = "invoiceId", toProperties = "invoiceId")
     private List<InvoiceLineItem> lineItems = new ArrayList<>();
 
@@ -48,7 +47,7 @@ public final class Invoice {
         return invoiceId;
     }
 
-    // remove setter for code coverage
+// remove setter for code coverage
 //    public void setInvoiceId(Integer invoiceId) {
 //        this.invoiceId = invoiceId;
 //    }

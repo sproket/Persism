@@ -4,6 +4,8 @@ package net.sf.persism.dao.northwind;
 //import javafx.scene.image.Image;
 
 import net.sf.persism.annotations.NotColumn;
+import org.apache.commons.imaging.ImageReadException;
+import org.apache.commons.imaging.Imaging;
 
 import java.awt.image.BufferedImage;
 import java.io.IOException;
@@ -73,17 +75,20 @@ public final class Category {
      * @return JPEG BufferedImage
      * @throws IOException
      */
-    public BufferedImage getImage() throws IOException {
+    public BufferedImage getImage() throws IOException, ImageReadException {
         // Fails but maybe we could use JavaFX for this
         // https://docs.oracle.com/javase/8/javafx/api/javafx/scene/image/Image.html
         if (image == null) {
-            // OLE header is 1st 78 bytes so we strip it.
+            // OLE header is 1st 78 bytes, so we strip it.
             byte[] imageData = new String(picture).substring(78).getBytes();
 
-//            try (InputStream in = new ByteArrayInputStream(imageData)) {
-//                Image image1 = new Image(in);
-//                image = SwingFXUtils.fromFXImage(image1, null);
-//            }
+            // forget about northwind for this. we'll use WorldWideImporters instead later
+
+            // BMP: Unknown Compression: 262145
+            return Imaging.getBufferedImage(imageData);
+
+            // ByteArrayInputStream bais = new ByteArrayInputStream(imageData);
+            // return ImageIO.read(bais);  // New BMP version not implemented yet.
         }
         return image;
     }
