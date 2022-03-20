@@ -36,12 +36,10 @@ public final class Customer {
 
     private LocalDateTime dateOfLastOrder;
 
-    // TODO DOCUMENT: Joins must be a modifiable list and must be instantiated. We use the
-    // TODO properties are case sensitive - make a FailCustomer class or something to test that
-    @Join(to = Invoice.class, onProperties = " customerId , status ", toProperties = "customerId , status ")
+    // properties are case Insensitive
+    @Join(to = Invoice.class, onProperties = " CustomerId , sTatuS ", toProperties = "cusTomerId , status ")
     private List<Invoice> invoices = new ArrayList<>();
 
-    //@Join(to=Contact.class, onProperties = "contactName", toProperties = "contactName")
     @NotColumn
     private Contact contact;
 

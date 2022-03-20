@@ -1,8 +1,6 @@
 package net.sf.persism;
 
 enum Messages {
-    // todo that verify each occurs with code coverage (some additional tests required)
-
     // Errors
     ObjectNotProperlyInitialized("Object %s was not properly initialized. Some properties not initialized in the queried columns (%s)"),
     ObjectNotProperlyInitializedByQuery("Object %s was not properly initialized. Some properties not initialized by the queried columns: %s  Missing: %s"),
@@ -28,6 +26,9 @@ enum Messages {
     QueryParameterNamesMissingOrNotFound("Parameters missing or not found %s mistyped: %s"),
     QueryPropertyNamesMissingOrNotFound("Properties missing or not found %s SQL: %s"),
     CannotNotJoinToNullProperty("Cannot join to null for property: %s. Instantiate the property as a modifiable collection in your constructor."),
+    PropertyNotFoundForJoin("Join property %s not found in %s"),
+    PropertyCountMismatchForJoin("You need the same number of Properties on both sides of a join %s %s vs %s"),
+
 
     // WARNINGS
     UnknownConnectionType("Unknown connection type. Please contact Persism to add support for %s"),
@@ -50,7 +51,8 @@ enum Messages {
     UnknownTypeInSetParameters("setParameters: Unknown type: %s"),
     UnSupportedTypeInSetParameters("setParameters: %s type not supported yet. We're probably about to fail....."),
     ParametersDoNotUseClobOrBlob("Usually you should not use blob or clob as an SQL parameter type. Blob maps to byteArray, Clob maps to String"),
-    NamedParametersUsedWithStoredProc("Using named parameters with a stored proc doesn't buy you anything...")
+    NamedParametersUsedWithStoredProc("Using named parameters with a stored proc doesn't buy you anything..."),
+    PrimaryAnnotationOnViewOrQueryMakesNoSense("Primary annotation on %s:%s is only useful on POJOs for tables. Not for queries or views."),
     ;
 
     private final String message;

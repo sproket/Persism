@@ -18,10 +18,8 @@ public record CustomerOrderRec(String customerId,
                                Date datePaid,
                                boolean paid) {
 
-    // todo also see https://stackoverflow.com/questions/67168624/constructor-annotation-on-java-records
+    // see https://stackoverflow.com/questions/67168624/constructor-annotation-on-java-records
 
-
-    //    @ConstructorProperties({"id", "filename"})
     public CustomerOrderRec {
         // Note this constructor is not in the objectClass.getConstructors() GOOD?
         System.out.println("CustomerOrderRec canonical constructor...");

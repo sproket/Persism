@@ -39,13 +39,10 @@ final class JoinInfo {
         parentPropertyNames = joinAnnotation.onProperties().split(",");
         childPropertyNames = joinAnnotation.toProperties().split(",");
         if (parentPropertyNames.length != childPropertyNames.length) {
-            throw new PersismException("how would I match these?"); // todo add to Messages
+            throw new PersismException(Messages.PropertyCountMismatchForJoin.message(parentClass, joinAnnotation.onProperties(), joinAnnotation.toProperties()));
         }
         Util.trimArray(parentPropertyNames);
         Util.trimArray(childPropertyNames);
-
-        // todo test these properties exist and fail otherwise - fix messages
-        // todo maybe defensive (unmodifiable) copies of array lists parentProperties and childProperties since we have getters
 
         caseSensitive = joinAnnotation.caseSensitive();
 
@@ -57,23 +54,27 @@ final class JoinInfo {
         parentProperties = new ArrayList<>(parentPropertyNames.length);
         childProperties = new ArrayList<>(childPropertyNames.length);
 
-        for (String prop : parentPropertyNames) {
-            var opt = MetaData.getPropertyInfo(parentClass).stream().filter(p -> p.propertyName.equals(prop)).findFirst();
+        for (int j = 0; j < parentPropertyNames.length; j++) {
+            String prop = parentPropertyNames[j];
+            var opt = MetaData.getPropertyInfo(parentClass).stream().filter(p -> p.propertyName.equalsIgnoreCase(prop)).findFirst();
             if (opt.isPresent()) {
                 parentProperties.add(opt.get());
+                parentPropertyNames[j] = opt.get().propertyName; // ensure names match exact
             } else {
-                throw new PersismException("PROPERTY NOT FOUND " + prop + " in " + parentClass);
+                throw new PersismException(Messages.PropertyNotFoundForJoin.message(prop, parentClass));
             }
+
         }
 
-        for (String prop : childPropertyNames) {
-            var opt = MetaData.getPropertyInfo(childClass).stream().filter(p -> p.propertyName.equals(prop)).findFirst();
+        for (int j = 0; j < childPropertyNames.length; j++) {
+            String prop = childPropertyNames[j];
+            var opt = MetaData.getPropertyInfo(childClass).stream().filter(p -> p.propertyName.equalsIgnoreCase(prop)).findFirst();
             if (opt.isPresent()) {
                 childProperties.add(opt.get());
+                childPropertyNames[j] = opt.get().propertyName; // ensure names match exact
             } else {
-                throw new PersismException("PROPERTY NOT FOUND " + prop + " in " + childClass);
+                throw new PersismException(Messages.PropertyNotFoundForJoin.message(prop, childClass));
             }
-
         }
     }
 

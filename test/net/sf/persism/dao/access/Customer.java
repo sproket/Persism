@@ -39,10 +39,6 @@ public class Customer {
     private LocalDate testLocalDate;
     private LocalDateTime testLocalDateTime;
 
-    // todo maybe test this for Access
-//    @Join(to = Contact.class, onProperties = "x?", toProperties = "y?")
-//    private Contact contact;
-
     public String getCustomerId() {
         return customerId;
     }

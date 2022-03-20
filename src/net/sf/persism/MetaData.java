@@ -245,6 +245,9 @@ final class MetaData {
 
                         if (col.primary()) {
                             columnInfo.primary = true;
+                            if (objectClass.getAnnotation(NotTable.class) != null || objectClass.getAnnotation(View.class) != null) {
+                                log.warn(Messages.PrimaryAnnotationOnViewOrQueryMakesNoSense.message(objectClass, propertyInfo.propertyName));
+                            }
                         }
 
                         if (col.autoIncrement()) {
@@ -447,7 +450,7 @@ final class MetaData {
         while (it.hasNext()) {
             Map.Entry<String, PropertyInfo> entry = it.next();
             PropertyInfo info = entry.getValue();
-			// add support for transient TODO add an issue for this
+			// added support for transient
             if (info.getAnnotation(NotColumn.class) != null || Modifier.isTransient(info.field.getModifiers())) {
                 it.remove();
             }

@@ -14,8 +14,9 @@ import java.util.Date;
 @NotTable
 public final class CustomerOrder {
 
-    @Column(primary = true) // todo wtf does this mean?
+    @Column(primary = true) // makes no sense in a @View or @NotTable. We warn
     private String customerId;
+
     private String companyName;
     private String description;
     private long orderId;

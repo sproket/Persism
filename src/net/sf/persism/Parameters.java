@@ -13,7 +13,6 @@ public final class Parameters {
     Map<String, Object> namedParameters;
     Map<String, List<Integer>> parameterMap;
 
-    boolean okToVerify = false; // todo ? what for?
     boolean areKeys = false;
     boolean areNamed = false;
 

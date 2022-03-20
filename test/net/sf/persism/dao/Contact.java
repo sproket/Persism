@@ -24,7 +24,7 @@ public final class Contact implements Persistable<Contact> {
     private UUID identity3; // test for Varchar
 
     // later test with byte[] or does it matter?
-    private UUID partnerId; // todo the reason this breaks is all DBs need to be UUID or byte array type to map properly
+    private UUID partnerId;
 
     @NotColumn // for now
     private String personId;  // test for UUID in supported DBs so UUID to String

@@ -14,7 +14,6 @@ public final class CustomerInvoiceTestView {
     @Column(primary = true)
     private String customerId;
 
-    //@Column(primary = true) // TODO super fucked up to do this. Should we say no to this method with View?????? How would know the primary key order..?
     private String companyName;
     private long invoiceId;
     private Date dateCreated;

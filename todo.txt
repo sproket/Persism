@@ -110,6 +110,6 @@ https://michael-simons.github.io/neo4j-migrations/maintaining-a-medium-sized-jav
 
 https://www.willmcgugan.com/blog/tech/post/promoting-your-open-source-project-or-how-to-get-your-first-1k-github-stars/
 
-todo what does a Persism POJO look like in JSON ?
+What does a Persism POJO look like in JSON ? - looks fine.
 
 todo post articles on linkedin

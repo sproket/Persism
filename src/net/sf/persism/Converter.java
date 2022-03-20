@@ -254,6 +254,7 @@ final class Converter {
                     dval = tryParseDate(value, targetType, columnName, df);
 
                     if (targetType == java.sql.Date.class) {
+                        // does not occur. SQLite sees sql-date as Long, so we never do this one
                         returnValue = new java.sql.Date(dval.getTime());
                     } else {
                         returnValue = dval;
@@ -307,7 +308,7 @@ final class Converter {
                 if (targetType == Time.class) {
                     // MSSQL works, JTDS returns Varchar in format below with varying decimal numbers
                     // which won't format unless I use Exact, so I chop of the milliseconds.
-                    // TODO We should not lose the ms if possible.
+                    // This case only occurs with JTDS which is no longer supported
                     DateFormat timeFormat = DATE_FORMAT3.get();
                     String sval = "" + value;
                     if (sval.indexOf('.') > -1) {
@@ -319,7 +320,7 @@ final class Converter {
                 }
 
                 if (targetType == LocalTime.class) {
-                    // JTDS Fails again...
+                    // JTDS Fails again... and is no longer supported
                     returnValue = LocalTime.parse("" + value);
                     break;
                 }

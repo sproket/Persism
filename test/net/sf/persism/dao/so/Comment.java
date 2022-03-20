@@ -1,7 +1,6 @@
 package net.sf.persism.dao.so;
 
 import net.sf.persism.annotations.Join;
-import net.sf.persism.annotations.NotColumn;
 
 import java.sql.Timestamp;
 

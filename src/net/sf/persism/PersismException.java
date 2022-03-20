@@ -14,10 +14,19 @@ public final class PersismException extends RuntimeException {
     private PersismException() {
     }
 
+    /**
+     * PersismException with a message
+     * @param message message string
+     */
     public PersismException(String message) {
         this(message, new Throwable(message));
     }
 
+    /**
+     * PersismException with a message and a cause
+     * @param message message string
+     * @param cause Throwable cause
+     */
     public PersismException(String message, Throwable cause) {
         super(message, cause);
     }

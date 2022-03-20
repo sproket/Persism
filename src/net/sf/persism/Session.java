@@ -275,11 +275,7 @@ public final class Session implements AutoCloseable {
     }
 
     /**
-     * @param objectClass
-     * @param sql
-     * @param parameters
-     * @param <T>
-     * @return
+     * @hidden
      * @deprecated
      */
     public <T> T fetch(Class<T> objectClass, String sql, Object... parameters) {
@@ -366,16 +362,10 @@ public final class Session implements AutoCloseable {
         String sd = metaData.getConnectionType().getKeywordStartDelimiter();
         String ed = metaData.getConnectionType().getKeywordEndDelimiter();
 
+        // at this point query should have a WHERE because it's the default query for a table.
         String andSep = "";
-        // TODO View should not check for WHERE we don't support @View here anyway RIGHT?
-        // TODO here we could have a view only if params length = 0
-        // todo the test is call a view with Params.none()
-        if (objectClass.getAnnotation(View.class) == null) {
-            int n = query.indexOf(" WHERE");
-            query = query.substring(0, n + 7);
-        } else {
-            query += " WHERE "; // not covered.....
-        }
+        int n = query.indexOf(" WHERE");
+        query = query.substring(0, n + 7);
 
         StringBuilder sb = new StringBuilder(query);
         int groups = primaryKeyValues.size() / primaryKeys.size();
@@ -523,11 +513,7 @@ public final class Session implements AutoCloseable {
     }
 
     /**
-     * @param objectClass
-     * @param sql
-     * @param parameters
-     * @param <T>
-     * @return
+     * @hidden
      * @deprecated
      */
     public <T> List<T> query(Class<T> objectClass, String sql, Object... parameters) {
@@ -701,17 +687,12 @@ public final class Session implements AutoCloseable {
                 }
             }
 
-            // https://forums.oracle.com/forums/thread.jspa?threadID=879222
-            // http://download.oracle.com/javase/1.4.2/docs/guide/jdbc/getstart/statement.html
-            //int ret = st.executeUpdate(insertStatement, Statement.RETURN_GENERATED_KEYS);
             assert params.size() == columnInfos.size();
-
 
             for (int j = 0; j < params.size(); j++) {
                 ColumnInfo columnInfo = columnInfos.get(j);
-                PropertyInfo propertyInfo = properties.get(columnInfo.columnName);
                 if (params.get(j) != null) {
-                    params.set(j, converter.convert(params.get(j), columnInfos.get(j).columnType.getJavaType(), columnInfos.get(j).columnName));
+                    params.set(j, converter.convert(params.get(j), columnInfo.columnType.getJavaType(), columnInfo.columnName));
                 }
             }
 

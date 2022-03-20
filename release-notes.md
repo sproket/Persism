@@ -1,5 +1,12 @@
 ## Release Notes
 
+### 2.1.0
+* Implemented table joins!
+* Update log4j2 reference in POM to 2.17.1
+* MORE
+* MORE 
+* FIXES - CHECK DIFFS TO FIND THEM ALL
+
 ### 2.0.1
 * Update log4j2 reference in POM to 2.15.0
 

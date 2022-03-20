@@ -12,7 +12,6 @@ import java.util.Map;
  * User: DHoward
  * Date: 9/8/11
  * Time: 8:09 AM
- * todo encapsulate this class better
  */
 final class PropertyInfo {
 

@@ -368,13 +368,13 @@ final class SessionHelper {
 
             if (param != null) {
 
-                Types type = Types.getType(param.getClass());
-                if (type == null) {
+                Types paramType = Types.getType(param.getClass());
+                if (paramType == null) {
                     log.warn(Messages.UnknownTypeInSetParameters.message(param.getClass()));
-                    type = Types.ObjectType;
+                    paramType = Types.ObjectType;
                 }
 
-                switch (type) {
+                switch (paramType) {
 
                     case booleanType:
                     case BooleanType:
@@ -425,8 +425,7 @@ final class SessionHelper {
 
                     case characterType:
                     case CharacterType:
-                        st.setObject(n, "" + param); // todo informix (or others) see character as numeric so toString will fail with chars like 'x' s/b setCharacter
-                        //st.setByte(n, (Byte) param);
+                        st.setObject(n, "" + param);
                         break;
 
                     case SQLDateType:
@@ -456,9 +455,8 @@ final class SessionHelper {
                     case OffsetDateTimeType:
                     case ZonedDateTimeType:
                     case InstantType:
-                        log.warn(Messages.UnSupportedTypeInSetParameters.message(type));
+                        log.warn(Messages.UnSupportedTypeInSetParameters.message(paramType));
                         st.setObject(n, param);
-                        // todo ZonedDateTime, OffsetDateTimeType and MAYBE Instant NAH
                         break;
 
                     case byteArrayType:
@@ -486,10 +484,8 @@ final class SessionHelper {
 
                     case UUIDType:
                         if (session.metaData.getConnectionType() == ConnectionTypes.PostgreSQL) {
-                            // PostgreSQL does work with setObject but not setString unless you set the connection property stringtype=unspecified todo document this
                             st.setObject(n, param);
                         } else {
-                            // TODO mysql seems to set the byte array this way? But it won't match!
                             st.setString(n, param.toString());
                         }
                         break;
@@ -497,7 +493,6 @@ final class SessionHelper {
                     default:
                         // Usually SQLite with util.date - setObject works
                         // Also if it's a custom non-standard type.
-                        // todo add to Messages
                         log.info("setParameters using setObject on parameter: " + n + " for " + param.getClass());
                         st.setObject(n, param);
                 }
@@ -601,7 +596,6 @@ final class SessionHelper {
             // https://stackoverflow.com/questions/32312876/ignore-duplicates-when-producing-map-using-streams
             parentMap = parentList.stream().collect(Collectors.
                     toMap(obj -> {
-                        // todo code coverage for not case sensitive strings for map
                         Object value = parentPropertyInfo.getValue(obj);
                         if (!joinInfo.caseSensitive() && value instanceof String s) {
                             return s.toUpperCase();
@@ -615,7 +609,6 @@ final class SessionHelper {
             }
 
         } else {
-            // todo test with reverse
             parentMap = parentList.stream().collect(Collectors.
                     toMap(obj -> {
                         List<Object> values = new ArrayList<>();
@@ -624,7 +617,6 @@ final class SessionHelper {
                         }
                         return new KeyBox(joinInfo.caseSensitive(), values.toArray());
                     }, o -> o, (o1, o2) -> o1));
-
 
             for (Object child : childList) {
                 List<Object> values = new ArrayList<>();
@@ -635,7 +627,7 @@ final class SessionHelper {
                 KeyBox keyBox = new KeyBox(joinInfo.caseSensitive(), values.toArray());
                 Object parent = parentMap.get(keyBox);
                 if (parent == null) {
-                    log.warn("parent not found: " + keyBox); // todo add warn message
+                    log.warn("parent not found: " + keyBox); // Should not usually occur. Why would we not find a parent?
                 } else {
                     setPropertyFromJoinInfo(joinInfo, parent, child);
                 }

@@ -42,6 +42,7 @@ public abstract class BaseTest extends TestCase {
 
     static String UUID1 = "d316ad81-946d-416b-98e3-3f3b03aa73db";
     static String UUID2 = "a0d00c5a-3de6-4ae8-ba11-e3e02c2b3a83";
+    static String UUID3 = "d0d00a5c-4de6-4ae8-ba33-f3e02c2b3a84";
 
     String COLUMN_FIRST_NAME = "FirstName";
     String COLUMN_LAST_NAME = "LastName";
@@ -949,17 +950,15 @@ public abstract class BaseTest extends TestCase {
         }
         assertTrue(fail);
 
-        // now lets try query with property names - total fail....
-        // can only work MAYBE with view
-        // select * seems to return SQL itself as col 1?
-        // Customer_ID, Company_Name, Invoice_ID, Status, DateCreated, PAID, Quantity
+        list = session.query(CustomerInvoice.class, none());
+
         String sql =
                 """
-                            SELECT * FROM CUSTOMERINVOICE
-                        """;
+                SELECT * FROM CUSTOMERINVOICE
+                """;
         list = session.query(CustomerInvoice.class, sql(sql), none());
         sql = """
-                        SELECT Customer_ID, Company_Name, Invoice_ID, Status, DateCreated, PAID, Quantity FROM CUSTOMERINVOICE
+                SELECT Customer_ID, Company_Name, Invoice_ID, Status, DateCreated, PAID, Quantity FROM CUSTOMERINVOICE
                 """;
         list = session.query(CustomerInvoice.class, sql(sql), none());
 
@@ -974,7 +973,7 @@ public abstract class BaseTest extends TestCase {
 
         } catch (PersismException e) {
             // message would be different for different DBS.
-            log.warn(e.getMessage(), e);
+            log.info(e.getMessage(), e);
             fail = true;
         }
         assertTrue(fail);
@@ -991,6 +990,10 @@ public abstract class BaseTest extends TestCase {
 
         assertEquals("expect 1", 1, session.insert(contact).rows());
 
+        // query back with the identity UUID
+        Contact resultX = session.fetch(Contact.class, params(identity));
+        assertNotNull(resultX);
+
         contact.setNotes(null);
         assertEquals("expect 1", 1, session.update(contact).rows());
 
@@ -1000,6 +1003,22 @@ public abstract class BaseTest extends TestCase {
         assertNotNull(contact2.getPartnerId());
         assertEquals(contact2.getIdentity(), identity);
         assertEquals(contact2.getPartnerId(), partnerId);
+
+        contact2 = new Contact();
+        contact2.setIdentity(UUID.fromString(UUID3));
+        contact2.setPartnerId(partnerId);
+        contact2.setContactName("test 2");
+        contact2.setFirstname("wilma");
+        contact2.setLastname("flintstone");
+        contact2.setCompany("compaty");
+        contact2.setType("X");
+        session.insert(contact2);
+
+        // test query with primary params
+        var list = session.query(Contact.class, params(UUID.fromString(UUID1), UUID.fromString(UUID2), UUID.fromString(UUID3)));
+        assertEquals("list should be 2", 2, list.size());
+        session.delete(contact2);
+
 
         contact.setDivision("Y");
         assertEquals("1 update?", 1, session.update(contact).rows());
@@ -1534,6 +1553,18 @@ public abstract class BaseTest extends TestCase {
         NumberFormat nf = NumberFormat.getInstance();
 
         assertEquals("totals/b 105.00", nf.format(105.0f), invoice.getTotal().toString());
+
+        boolean fail = false;
+
+        try {
+            // invoice fail
+            session.query(InvoiceFail.class, where("CUSTOMER_ID=? ORDER BY CUSTOMER_ID"), params("123"));
+        } catch (PersismException e) {
+            fail = true;
+            String msg = Messages.PropertyCountMismatchForJoin.message(InvoiceFail.class, "invoiceId, price", "invoiceId");
+            assertEquals("msg s/b ' " + msg + "' ", msg, e.getMessage());
+        }
+        assertTrue(fail);
     }
 
     // RecordTest1 is invalid, so it should fail on query and fetch
@@ -1639,7 +1670,7 @@ public abstract class BaseTest extends TestCase {
                 SELECT * FROM INVOICES;
 
                 SELECT * FROM CONTACTS;
-                
+                                
                 """;
 
         try (Statement st = con.createStatement()) {
