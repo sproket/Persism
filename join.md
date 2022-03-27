@@ -174,7 +174,7 @@ List<Customer> list = session.query(Customer.class, where(":status = ?"), params
 Here we select for list of customers with status = 2. Again we will have all associated 
 invoices, line-items and products.
 
-**Note:** Persism does not have any [SELECT N+1](n+1.md)) problems here. Each join represents 
+**Note:** Persism does not have any [SELECT N+1](n+1.md) problems here. Each join represents 
 only 1 extra query whether this is a one-to-many or many-to-many type of query.
 
 ### Sample code
