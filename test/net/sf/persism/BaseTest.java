@@ -1033,6 +1033,14 @@ public abstract class BaseTest extends TestCase {
         Contact contact1 = contacts.get(0);
         log.info("CONTACT: " + contact1);
 
+        // TODO we can't convert parameters that are not primary keys since we don't know for sure which column they may refer to,
+        Object param = partnerId;
+        if (ConnectionTypes.Firebird == session.metaData.getConnectionType()) {
+            param = Converter.asBytesFromUUID(partnerId);
+        }
+        contacts = session.query(Contact.class, where(":partnerId = ?"), params(param));
+        assertEquals("should have 1", 1, contacts.size());
+
         assertEquals("1?", 1, session.delete(contact).rows());
 
         assertEquals("UDDI should be the same ", UUID1, contact1.getIdentity().toString());
@@ -1136,8 +1144,6 @@ public abstract class BaseTest extends TestCase {
         log.info(result);
         assertNotNull(result);
 
-        //todo Try this. should it convert foreign key property? WE CANT !
-        assertTrue(session.query(Contact.class, where(":partnerId = ?"), params(contact.getPartnerId())).size() > 0);
 
         var sd = session.getMetaData().getConnectionType().getKeywordStartDelimiter();
         var ed = session.getMetaData().getConnectionType().getKeywordEndDelimiter();
@@ -1811,6 +1817,7 @@ public abstract class BaseTest extends TestCase {
 
     // use if you want to run commands one at a time for debugging or testing
     static void executeCommand(String command, Connection con) throws SQLException {
+        System.out.println(command);
         try (Statement st = con.createStatement()) {
             log.info(command);
             st.execute(command);

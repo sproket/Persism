@@ -176,7 +176,7 @@ public class TestFirebird extends BaseTest {
         // FIREBIRD and Derby don't like NULL
         sql = "CREATE TABLE Contacts( " +
                 "   identity varchar(40) NOT NULL PRIMARY KEY, \n" +  // test binary(16)
-                "   PartnerID varchar(36) NOT NULL, \n" + // test varchar(36)
+                "   PartnerID binary(16) NOT NULL, \n" + // test varchar(36)
                 "   Type char(2) NOT NULL, \n" +
                 "   Firstname varchar(50) NOT NULL, \n" +
                 "   Lastname varchar(50) NOT NULL, \n" +
@@ -340,7 +340,6 @@ public class TestFirebird extends BaseTest {
         System.out.println(sql);
         executeCommand(sql, con);
 
-        // todo this is copied from TestMSSQL - eventually we should move this into BaseTest
         Customer c1 = new Customer();
         c1.setCustomerId("123");
         c1.setCompanyName("ABC INC");

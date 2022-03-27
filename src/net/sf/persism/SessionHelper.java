@@ -144,6 +144,7 @@ final class SessionHelper {
     /**
      * Original from Adam Crume, JavaWorld.com, 04/03/07
      * https://www.infoworld.com/article/2077706/named-parameters-for-preparedstatement.html
+     * https://archive.ph/au5XM and https://archive.ph/4OOze
      *
      * @param sql      query to parse
      * @param paramMap map to hold parameter-index mappings
@@ -157,18 +158,19 @@ final class SessionHelper {
 
         Set<Character> startDelims = new HashSet<>(4);
         startDelims.add('"');
-        startDelims.add('\'');
 
-        if (Util.isNotEmpty(session.metaData.getConnectionType().getKeywordStartDelimiter())) {
-            startDelims.add(session.metaData.getConnectionType().getKeywordStartDelimiter().charAt(0));
+        String sd = session.metaData.getConnectionType().getKeywordStartDelimiter();
+        String ed = session.metaData.getConnectionType().getKeywordEndDelimiter();
+
+        if (Util.isNotEmpty(sd)) {
+            startDelims.add(sd.charAt(0));
         }
 
         Set<Character> endDelims = new HashSet<>(4);
         endDelims.add('"');
-        endDelims.add('\'');
 
-        if (Util.isNotEmpty(session.metaData.getConnectionType().getKeywordEndDelimiter())) {
-            endDelims.add(session.metaData.getConnectionType().getKeywordEndDelimiter().charAt(0));
+        if (Util.isNotEmpty(ed)) {
+            endDelims.add(ed.charAt(0));
         }
 
         boolean inDelimiter = false;
@@ -219,7 +221,7 @@ final class SessionHelper {
         startDelims.add('"');
         startDelims.add('\'');
 
-        if (Util.isNotEmpty(session.metaData.getConnectionType().getKeywordStartDelimiter())) {
+        if (Util.isNotEmpty(sd)) {
             startDelims.add(sd.charAt(0));
         }
 

@@ -101,24 +101,26 @@ public class TestInformix extends BaseTest {
             executeCommand("DROP TABLE Invoices", con);
         }
 
-        executeCommand("CREATE TABLE Invoices ( " +
-                " Invoice_ID SERIAL PRIMARY KEY, " +
-                " Customer_ID varchar(10) NOT NULL, " +
-                " Paid CHAR(1) NOT NULL, " +
-                " Price NUMERIC(7,3) NOT NULL, " +
-                " ActualPrice NUMERIC(7,3) NOT NULL, " +
-                " Status CHAR(1) DEFAULT '1', " +
-                " Created datetime year to fraction(5) DEFAULT current YEAR TO fraction(5) NOT NULL, " +
-                " Quantity NUMERIC(10) NOT NULL, " +
-                " Discount NUMERIC(10,3) NOT NULL " +
-                ") ", con);
+        sql = """
+              CREATE TABLE Invoices (
+                Invoice_ID SERIAL PRIMARY KEY, 
+                Customer_ID varchar(10) NOT NULL,  
+                Paid CHAR(1) NOT NULL,  
+                Price NUMERIC(7,3) NOT NULL,  
+                ActualPrice NUMERIC(7,3) NOT NULL,  
+                Status CHAR(1) DEFAULT '1',  
+                Created datetime year to fraction(5) DEFAULT current YEAR TO fraction(5) NOT NULL,  
+                Quantity NUMERIC(10) NOT NULL,  
+                Discount NUMERIC(10,3) NOT NULL )                
+        """;
+        executeCommand(sql, con);
 
-        sql = "CREATE VIEW CustomerInvoice AS\n" +
-                " SELECT c.Customer_ID, c.Company_Name, i.Invoice_ID, i.Status, i.Created AS DateCreated, i.PAID, i.Quantity\n" +
-                "       FROM Invoices i\n" +
-                "       JOIN Customers c ON i.Customer_ID = c.Customer_ID\n";
-//                "       WHERE i.Status = 1\n";
-
+        sql = """
+                CREATE VIEW CustomerInvoice AS
+                 SELECT c.Customer_ID, c.Company_Name, i.Invoice_ID, i.Status, i.Created AS DateCreated, i.PAID, i.Quantity
+                       FROM Invoices i
+                       JOIN Customers c ON i.Customer_ID = c.Customer_ID
+                """;
         executeCommand(sql, con);
 
         if (isTableInDatabase("TABLEMULTIPRIMARY", con)) {
@@ -157,7 +159,7 @@ public class TestInformix extends BaseTest {
 
         sql = "CREATE TABLE Contacts( " +
                 "   identity varchar(36) NOT NULL PRIMARY KEY, " + // varchar is safest
-                "   PartnerID varchar(36) NOT NULL, " +
+                "   PartnerID varchar(36) NOT NULL, " + // Informix does not support byte types as fields like this. Throws Blobs are not allowed in this expression.
                 "   Type char(2) NOT NULL, " +
                 "   Firstname varchar(50) NOT NULL, " +
                 "   Lastname varchar(50) NOT NULL, " +

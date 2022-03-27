@@ -32,7 +32,6 @@ enum ConnectionTypes {
     ;
 
     private final String schemaPattern;
-    // todo need more than 1 but always use the 1st. We need to know if the DB supports multiple delims to skip them when parsing....
     private final String keywordStartDelimiter;
     private final String keywordEndDelimiter;
 

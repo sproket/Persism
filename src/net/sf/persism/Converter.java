@@ -554,5 +554,9 @@ final class Converter {
         return bb.array();
     }
 
+    static Object asBytesFromUUID(UUID uuid) {
+        return asBytes(uuid);
+    }
+
 
 }
