@@ -161,6 +161,10 @@ customer = session.fetch(Customer.class, sql, params(Map.of("name", "Fred", "las
 
 **Note:** Use the query method for lists, and the fetch method for single results.
 
+## Joining tables
+
+See: [Joins](join.md)
+
 ## Tables, Views and Queries
 
 By default, Persism will consider a class/record with no annotation to be a Table. If you want a class to represent 
