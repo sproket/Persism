@@ -1,5 +1,32 @@
 ## Release Notes
 
+### 2.1.0
+* Implemented [table joins!](join.md)
+* Update log4j2 reference in POM to 2.17.1
+* Added warning if using a primary key on a View
+* Added support for fluent styled POJOs
+* Added support for transient keyword on fields (same behaviour as @NotColumn)
+* Performance: Converter Moved DateFormatters to ThreadLocal
+* Performance: Converter optimized switch statement
+* Performance: Improvements to Reader for class and record from DB
+* Updated baseline version for Derby to 10.15.2.0
+* Updated baseline version for SQLite to 3.36.0.2
+* Fixed some cases where property names were case-sensitive
+
+
+### 2.0.1
+* Update log4j2 reference in POM to 2.15.0
+
+### 2.0.0
+
+* Set baseline to be Java 17 (see the 1.x branch for Java 8+)
+* Added SQL type wrapper for String
+* Added Parameters type wrapper for parameters array
+* Added better type safe query and fetch methods
+* Added SQL where method (shorthand where Persism knows the columns) which supports property names as well as column names
+* Added SQL proc method to indicate the query is a call to a stored proc rather than a SELECT statement
+* Added support for named parameters
+
 ### 1.2.0
 * Added support for Views
 * Added query 'select *' method to session
