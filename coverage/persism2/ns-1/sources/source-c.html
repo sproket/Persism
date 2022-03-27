@@ -89,15 +89,24 @@ Current scope:     <a href="../../index.html">all classes</a>
 <b class="nc"><i class="no-highlight">14</i>&nbsp;    private PersismException() {</b>
 <i class="no-highlight">15</i>&nbsp;    }
 <i class="no-highlight">16</i>&nbsp;
-<i class="no-highlight">17</i>&nbsp;    public PersismException(String message) {
-<b class="fc"><i class="no-highlight">18</i>&nbsp;        this(message, new Throwable(message));</b>
-<i class="no-highlight">19</i>&nbsp;    }
-<i class="no-highlight">20</i>&nbsp;
-<i class="no-highlight">21</i>&nbsp;    public PersismException(String message, Throwable cause) {
-<b class="fc"><i class="no-highlight">22</i>&nbsp;        super(message, cause);</b>
+<i class="no-highlight">17</i>&nbsp;    /**
+<i class="no-highlight">18</i>&nbsp;     * PersismException with a message
+<i class="no-highlight">19</i>&nbsp;     * @param message message string
+<i class="no-highlight">20</i>&nbsp;     */
+<i class="no-highlight">21</i>&nbsp;    public PersismException(String message) {
+<b class="fc"><i class="no-highlight">22</i>&nbsp;        this(message, new Throwable(message));</b>
 <i class="no-highlight">23</i>&nbsp;    }
 <i class="no-highlight">24</i>&nbsp;
-<i class="no-highlight">25</i>&nbsp;}
+<i class="no-highlight">25</i>&nbsp;    /**
+<i class="no-highlight">26</i>&nbsp;     * PersismException with a message and a cause
+<i class="no-highlight">27</i>&nbsp;     * @param message message string
+<i class="no-highlight">28</i>&nbsp;     * @param cause Throwable cause
+<i class="no-highlight">29</i>&nbsp;     */
+<i class="no-highlight">30</i>&nbsp;    public PersismException(String message, Throwable cause) {
+<b class="fc"><i class="no-highlight">31</i>&nbsp;        super(message, cause);</b>
+<i class="no-highlight">32</i>&nbsp;    }
+<i class="no-highlight">33</i>&nbsp;
+<i class="no-highlight">34</i>&nbsp;}
 </div>
 </pre>
 </div>
@@ -124,7 +133,7 @@ Current scope:     <a href="../../index.html">all classes</a>
 
 <div class="footer">
     
-    <div style="float:right;">generated on 2021-12-11 06:53</div>
+    <div style="float:right;">generated on 2022-03-27 14:08</div>
 </div>
 </body>
 </html>

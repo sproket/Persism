@@ -87,87 +87,86 @@ Current scope:     <a href="../../index.html">all classes</a>
 <i class="no-highlight">12</i>&nbsp; * User: DHoward
 <i class="no-highlight">13</i>&nbsp; * Date: 9/8/11
 <i class="no-highlight">14</i>&nbsp; * Time: 8:09 AM
-<i class="no-highlight">15</i>&nbsp; * todo encapsulate this class better
-<i class="no-highlight">16</i>&nbsp; */
-<b class="fc"><i class="no-highlight">17</i>&nbsp;final class PropertyInfo {</b>
-<i class="no-highlight">18</i>&nbsp;
-<i class="no-highlight">19</i>&nbsp;    String propertyName;
-<i class="no-highlight">20</i>&nbsp;    Method getter;
-<i class="no-highlight">21</i>&nbsp;    Method setter;
-<i class="no-highlight">22</i>&nbsp;    Field field;
-<i class="no-highlight">23</i>&nbsp;    boolean readOnly;
-<i class="no-highlight">24</i>&nbsp;    boolean isJoin;
-<i class="no-highlight">25</i>&nbsp;
-<b class="fc"><i class="no-highlight">26</i>&nbsp;    Map&lt;Class&lt;? extends Annotation&gt;, Annotation&gt; annotations = new HashMap&lt;&gt;(4);</b>
-<i class="no-highlight">27</i>&nbsp;
-<i class="no-highlight">28</i>&nbsp;    Annotation getAnnotation(Class&lt;? extends Annotation&gt; annotationClass) {
-<b class="fc"><i class="no-highlight">29</i>&nbsp;        return annotations.get(annotationClass);</b>
-<i class="no-highlight">30</i>&nbsp;    }
-<i class="no-highlight">31</i>&nbsp;
-<i class="no-highlight">32</i>&nbsp;    // for collections
-<i class="no-highlight">33</i>&nbsp;    String propertyName() {
-<b class="fc"><i class="no-highlight">34</i>&nbsp;        return propertyName;</b>
-<i class="no-highlight">35</i>&nbsp;    }
-<i class="no-highlight">36</i>&nbsp;
-<i class="no-highlight">37</i>&nbsp;    Method getter() {
-<b class="nc"><i class="no-highlight">38</i>&nbsp;        return getter;</b>
-<i class="no-highlight">39</i>&nbsp;    }
-<i class="no-highlight">40</i>&nbsp;
-<i class="no-highlight">41</i>&nbsp;    Method setter() {
-<b class="nc"><i class="no-highlight">42</i>&nbsp;        return setter;</b>
-<i class="no-highlight">43</i>&nbsp;    }
-<i class="no-highlight">44</i>&nbsp;
-<i class="no-highlight">45</i>&nbsp;    Field field() {
-<b class="nc"><i class="no-highlight">46</i>&nbsp;        return field;</b>
-<i class="no-highlight">47</i>&nbsp;    }
-<i class="no-highlight">48</i>&nbsp;
-<i class="no-highlight">49</i>&nbsp;    boolean isReadOnly() {
-<b class="nc"><i class="no-highlight">50</i>&nbsp;        return readOnly;</b>
-<i class="no-highlight">51</i>&nbsp;    }
-<i class="no-highlight">52</i>&nbsp;
-<i class="no-highlight">53</i>&nbsp;    boolean isJoin() {
-<b class="fc"><i class="no-highlight">54</i>&nbsp;        return isJoin;</b>
-<i class="no-highlight">55</i>&nbsp;    }
-<i class="no-highlight">56</i>&nbsp;
-<i class="no-highlight">57</i>&nbsp;    // Convenience getter with runtime exception for functional
-<i class="no-highlight">58</i>&nbsp;    Object getValue(Object object) {
-<i class="no-highlight">59</i>&nbsp;        try {
-<b class="fc"><i class="no-highlight">60</i>&nbsp;            return getter.invoke(object);</b>
-<b class="nc"><i class="no-highlight">61</i>&nbsp;        } catch (IllegalAccessException | InvocationTargetException e) {</b>
-<b class="nc"><i class="no-highlight">62</i>&nbsp;            throw new PersismException(e.getMessage(), e);</b>
-<i class="no-highlight">63</i>&nbsp;        }
-<i class="no-highlight">64</i>&nbsp;    }
-<i class="no-highlight">65</i>&nbsp;
-<i class="no-highlight">66</i>&nbsp;    void setValue(Object object, Object value) {
-<i class="no-highlight">67</i>&nbsp;        try {
-<b class="fc"><i class="no-highlight">68</i>&nbsp;            if (setter != null) {</b>
-<b class="fc"><i class="no-highlight">69</i>&nbsp;                setter.invoke(object, value);</b>
-<i class="no-highlight">70</i>&nbsp;            } else {
-<b class="fc"><i class="no-highlight">71</i>&nbsp;                field.setAccessible(true);</b>
-<b class="fc"><i class="no-highlight">72</i>&nbsp;                field.set(object, value);</b>
-<b class="fc"><i class="no-highlight">73</i>&nbsp;                field.setAccessible(false);</b>
-<i class="no-highlight">74</i>&nbsp;            }
-<b class="fc"><i class="no-highlight">75</i>&nbsp;        } catch (IllegalAccessException | InvocationTargetException e) {</b>
-<b class="fc"><i class="no-highlight">76</i>&nbsp;            throw new PersismException(e.getMessage(), e);</b>
-<b class="fc"><i class="no-highlight">77</i>&nbsp;        }</b>
-<i class="no-highlight">78</i>&nbsp;    }
+<i class="no-highlight">15</i>&nbsp; */
+<b class="fc"><i class="no-highlight">16</i>&nbsp;final class PropertyInfo {</b>
+<i class="no-highlight">17</i>&nbsp;
+<i class="no-highlight">18</i>&nbsp;    String propertyName;
+<i class="no-highlight">19</i>&nbsp;    Method getter;
+<i class="no-highlight">20</i>&nbsp;    Method setter;
+<i class="no-highlight">21</i>&nbsp;    Field field;
+<i class="no-highlight">22</i>&nbsp;    boolean readOnly;
+<i class="no-highlight">23</i>&nbsp;    boolean isJoin;
+<i class="no-highlight">24</i>&nbsp;
+<b class="fc"><i class="no-highlight">25</i>&nbsp;    Map&lt;Class&lt;? extends Annotation&gt;, Annotation&gt; annotations = new HashMap&lt;&gt;(4);</b>
+<i class="no-highlight">26</i>&nbsp;
+<i class="no-highlight">27</i>&nbsp;    Annotation getAnnotation(Class&lt;? extends Annotation&gt; annotationClass) {
+<b class="fc"><i class="no-highlight">28</i>&nbsp;        return annotations.get(annotationClass);</b>
+<i class="no-highlight">29</i>&nbsp;    }
+<i class="no-highlight">30</i>&nbsp;
+<i class="no-highlight">31</i>&nbsp;    // for collections
+<i class="no-highlight">32</i>&nbsp;    String propertyName() {
+<b class="fc"><i class="no-highlight">33</i>&nbsp;        return propertyName;</b>
+<i class="no-highlight">34</i>&nbsp;    }
+<i class="no-highlight">35</i>&nbsp;
+<i class="no-highlight">36</i>&nbsp;    Method getter() {
+<b class="nc"><i class="no-highlight">37</i>&nbsp;        return getter;</b>
+<i class="no-highlight">38</i>&nbsp;    }
+<i class="no-highlight">39</i>&nbsp;
+<i class="no-highlight">40</i>&nbsp;    Method setter() {
+<b class="nc"><i class="no-highlight">41</i>&nbsp;        return setter;</b>
+<i class="no-highlight">42</i>&nbsp;    }
+<i class="no-highlight">43</i>&nbsp;
+<i class="no-highlight">44</i>&nbsp;    Field field() {
+<b class="nc"><i class="no-highlight">45</i>&nbsp;        return field;</b>
+<i class="no-highlight">46</i>&nbsp;    }
+<i class="no-highlight">47</i>&nbsp;
+<i class="no-highlight">48</i>&nbsp;    boolean isReadOnly() {
+<b class="nc"><i class="no-highlight">49</i>&nbsp;        return readOnly;</b>
+<i class="no-highlight">50</i>&nbsp;    }
+<i class="no-highlight">51</i>&nbsp;
+<i class="no-highlight">52</i>&nbsp;    boolean isJoin() {
+<b class="fc"><i class="no-highlight">53</i>&nbsp;        return isJoin;</b>
+<i class="no-highlight">54</i>&nbsp;    }
+<i class="no-highlight">55</i>&nbsp;
+<i class="no-highlight">56</i>&nbsp;    // Convenience getter with runtime exception for functional
+<i class="no-highlight">57</i>&nbsp;    Object getValue(Object object) {
+<i class="no-highlight">58</i>&nbsp;        try {
+<b class="fc"><i class="no-highlight">59</i>&nbsp;            return getter.invoke(object);</b>
+<b class="nc"><i class="no-highlight">60</i>&nbsp;        } catch (IllegalAccessException | InvocationTargetException e) {</b>
+<b class="nc"><i class="no-highlight">61</i>&nbsp;            throw new PersismException(e.getMessage(), e);</b>
+<i class="no-highlight">62</i>&nbsp;        }
+<i class="no-highlight">63</i>&nbsp;    }
+<i class="no-highlight">64</i>&nbsp;
+<i class="no-highlight">65</i>&nbsp;    void setValue(Object object, Object value) {
+<i class="no-highlight">66</i>&nbsp;        try {
+<b class="fc"><i class="no-highlight">67</i>&nbsp;            if (setter != null) {</b>
+<b class="fc"><i class="no-highlight">68</i>&nbsp;                setter.invoke(object, value);</b>
+<i class="no-highlight">69</i>&nbsp;            } else {
+<b class="fc"><i class="no-highlight">70</i>&nbsp;                field.setAccessible(true);</b>
+<b class="fc"><i class="no-highlight">71</i>&nbsp;                field.set(object, value);</b>
+<b class="fc"><i class="no-highlight">72</i>&nbsp;                field.setAccessible(false);</b>
+<i class="no-highlight">73</i>&nbsp;            }
+<b class="fc"><i class="no-highlight">74</i>&nbsp;        } catch (IllegalAccessException | InvocationTargetException e) {</b>
+<b class="fc"><i class="no-highlight">75</i>&nbsp;            throw new PersismException(e.getMessage(), e);</b>
+<b class="fc"><i class="no-highlight">76</i>&nbsp;        }</b>
+<i class="no-highlight">77</i>&nbsp;    }
+<i class="no-highlight">78</i>&nbsp;
 <i class="no-highlight">79</i>&nbsp;
-<i class="no-highlight">80</i>&nbsp;
-<i class="no-highlight">81</i>&nbsp;    Map&lt;Class&lt;? extends Annotation&gt;, Annotation&gt; annotations() {
-<b class="nc"><i class="no-highlight">82</i>&nbsp;        return annotations;</b>
-<i class="no-highlight">83</i>&nbsp;    }
-<i class="no-highlight">84</i>&nbsp;
-<i class="no-highlight">85</i>&nbsp;    @Override
-<i class="no-highlight">86</i>&nbsp;    public String toString() {
-<b class="fc"><i class="no-highlight">87</i>&nbsp;        return &quot;PropertyInfo{&quot; +</b>
-<i class="no-highlight">88</i>&nbsp;                &quot;propertyName=&#39;&quot; + propertyName + &#39;\&#39;&#39; +
-<i class="no-highlight">89</i>&nbsp;                &quot;, getter=&quot; + getter +
-<i class="no-highlight">90</i>&nbsp;                &quot;, setter=&quot; + setter +
-<i class="no-highlight">91</i>&nbsp;                &quot;, annotations=&quot; + annotations +
-<i class="no-highlight">92</i>&nbsp;                &quot;, readOnly=&quot; + readOnly +
-<i class="no-highlight">93</i>&nbsp;                &#39;}&#39;;
-<i class="no-highlight">94</i>&nbsp;    }
-<i class="no-highlight">95</i>&nbsp;}
+<i class="no-highlight">80</i>&nbsp;    Map&lt;Class&lt;? extends Annotation&gt;, Annotation&gt; annotations() {
+<b class="nc"><i class="no-highlight">81</i>&nbsp;        return annotations;</b>
+<i class="no-highlight">82</i>&nbsp;    }
+<i class="no-highlight">83</i>&nbsp;
+<i class="no-highlight">84</i>&nbsp;    @Override
+<i class="no-highlight">85</i>&nbsp;    public String toString() {
+<b class="fc"><i class="no-highlight">86</i>&nbsp;        return &quot;PropertyInfo{&quot; +</b>
+<i class="no-highlight">87</i>&nbsp;                &quot;propertyName=&#39;&quot; + propertyName + &#39;\&#39;&#39; +
+<i class="no-highlight">88</i>&nbsp;                &quot;, getter=&quot; + getter +
+<i class="no-highlight">89</i>&nbsp;                &quot;, setter=&quot; + setter +
+<i class="no-highlight">90</i>&nbsp;                &quot;, annotations=&quot; + annotations +
+<i class="no-highlight">91</i>&nbsp;                &quot;, readOnly=&quot; + readOnly +
+<i class="no-highlight">92</i>&nbsp;                &#39;}&#39;;
+<i class="no-highlight">93</i>&nbsp;    }
+<i class="no-highlight">94</i>&nbsp;}
 </div>
 </pre>
 </div>
@@ -194,7 +193,7 @@ Current scope:     <a href="../../index.html">all classes</a>
 
 <div class="footer">
     
-    <div style="float:right;">generated on 2021-12-11 06:53</div>
+    <div style="float:right;">generated on 2022-03-27 14:08</div>
 </div>
 </body>
 </html>

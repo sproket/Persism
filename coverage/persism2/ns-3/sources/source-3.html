@@ -4,7 +4,7 @@
 <!DOCTYPE html>
 <html id="htmlId">
 <head>
-  <title>Coverage Report > Join</title>
+  <title>Coverage Report > Column</title>
   <style type="text/css">
     @import "../../css/coverage.css";
     @import "../../css/highlight-idea.css";
@@ -20,14 +20,14 @@ Current scope:     <a href="../../index.html">all classes</a>
     <a href="../index.html">net.sf.persism.annotations</a>
 </div>
 
-<h1>Coverage Summary for Class: Join (net.sf.persism.annotations)</h1>
+<h1>Coverage Summary for Class: Column (net.sf.persism.annotations)</h1>
 
 <table class="coverageStats">
 <tr>
   <th class="name">Class</th>
 </tr>
 <tr>
-  <td class="name">Join</td>
+  <td class="name">Column</td>
 </tr>
 
 </table>
@@ -39,26 +39,67 @@ Current scope:     <a href="../../index.html">all classes</a>
 <pre>
 <div class="sourceCode" id="sourceCode"><i class="no-highlight">1</i>&nbsp;package net.sf.persism.annotations;
 <i class="no-highlight">2</i>&nbsp;
-<i class="no-highlight">3</i>&nbsp;import java.lang.annotation.ElementType;
-<i class="no-highlight">4</i>&nbsp;import java.lang.annotation.Retention;
-<i class="no-highlight">5</i>&nbsp;import java.lang.annotation.RetentionPolicy;
-<i class="no-highlight">6</i>&nbsp;import java.lang.annotation.Target;
-<i class="no-highlight">7</i>&nbsp;
-<i class="no-highlight">8</i>&nbsp;/**
-<i class="no-highlight">9</i>&nbsp; * @hidden - we&#39;ll unhide for 2.1
-<i class="no-highlight">10</i>&nbsp; */
-<i class="no-highlight">11</i>&nbsp;@Retention(RetentionPolicy.RUNTIME)
-<i class="no-highlight">12</i>&nbsp;@Target({ElementType.METHOD, ElementType.FIELD})
-<i class="no-highlight">13</i>&nbsp;public @interface Join {
+<i class="no-highlight">3</i>&nbsp;/*
+<i class="no-highlight">4</i>&nbsp; * Created by IntelliJ IDEA.
+<i class="no-highlight">5</i>&nbsp; * User: DHoward
+<i class="no-highlight">6</i>&nbsp; * Date: 9/8/11
+<i class="no-highlight">7</i>&nbsp; * Time: 6:18 AM
+<i class="no-highlight">8</i>&nbsp; */
+<i class="no-highlight">9</i>&nbsp;
+<i class="no-highlight">10</i>&nbsp;import java.lang.annotation.ElementType;
+<i class="no-highlight">11</i>&nbsp;import java.lang.annotation.Retention;
+<i class="no-highlight">12</i>&nbsp;import java.lang.annotation.RetentionPolicy;
+<i class="no-highlight">13</i>&nbsp;import java.lang.annotation.Target;
 <i class="no-highlight">14</i>&nbsp;
-<i class="no-highlight">15</i>&nbsp;    Class&lt;?&gt; to();
-<i class="no-highlight">16</i>&nbsp;
-<i class="no-highlight">17</i>&nbsp;    String onProperties();
-<i class="no-highlight">18</i>&nbsp;
-<i class="no-highlight">19</i>&nbsp;    String toProperties();
-<i class="no-highlight">20</i>&nbsp;
-<i class="no-highlight">21</i>&nbsp;    boolean caseSensitive() default false;
-<i class="no-highlight">22</i>&nbsp;}
+<i class="no-highlight">15</i>&nbsp;/**
+<i class="no-highlight">16</i>&nbsp; * Optional annotation defining a column mapping for a property on the class. This annotation can appear on the class field, getter or setter.
+<i class="no-highlight">17</i>&nbsp; */
+<i class="no-highlight">18</i>&nbsp;@Retention(RetentionPolicy.RUNTIME)
+<i class="no-highlight">19</i>&nbsp;@Target({ElementType.METHOD, ElementType.FIELD})
+<i class="no-highlight">20</i>&nbsp;public @interface Column {
+<i class="no-highlight">21</i>&nbsp;
+<i class="no-highlight">22</i>&nbsp;    /**
+<i class="no-highlight">23</i>&nbsp;     * Name of the column mapped to the property. Used when the property cannot be auto-mapped to a table column.
+<i class="no-highlight">24</i>&nbsp;     * &lt;p&gt;
+<i class="no-highlight">25</i>&nbsp;     * It&#39;s only required if Persism cannot discover the column/property mapping on its own.
+<i class="no-highlight">26</i>&nbsp;     *
+<i class="no-highlight">27</i>&nbsp;     * @return Name of the column mapped to the property.
+<i class="no-highlight">28</i>&nbsp;     */
+<i class="no-highlight">29</i>&nbsp;    String name() default &quot;&quot;;
+<i class="no-highlight">30</i>&nbsp;
+<i class="no-highlight">31</i>&nbsp;    /**
+<i class="no-highlight">32</i>&nbsp;     * Indicates if the column is an auto increment field.
+<i class="no-highlight">33</i>&nbsp;     * This will tell Persism to exclude this column in insert statements and to
+<i class="no-highlight">34</i>&nbsp;     * update the object with this column value after the insert.
+<i class="no-highlight">35</i>&nbsp;     * &lt;p&gt;
+<i class="no-highlight">36</i>&nbsp;     * It&#39;s only required if Persism cannot detect this column attribute on its own.
+<i class="no-highlight">37</i>&nbsp;     * The only case for this seems to be Oracle before version 12. To maybe be deprecated later on.
+<i class="no-highlight">38</i>&nbsp;     *
+<i class="no-highlight">39</i>&nbsp;     * @return true if this column is autoIncrement.
+<i class="no-highlight">40</i>&nbsp;     */
+<i class="no-highlight">41</i>&nbsp;    @Deprecated
+<i class="no-highlight">42</i>&nbsp;    boolean autoIncrement() default false;
+<i class="no-highlight">43</i>&nbsp;
+<i class="no-highlight">44</i>&nbsp;    /**
+<i class="no-highlight">45</i>&nbsp;     * Indicates that this column is a primary key.
+<i class="no-highlight">46</i>&nbsp;     * &lt;p&gt;
+<i class="no-highlight">47</i>&nbsp;     * It&#39;s only required if Persism cannot detect this column attribute on its own.
+<i class="no-highlight">48</i>&nbsp;     *
+<i class="no-highlight">49</i>&nbsp;     * @return true if this column is a primary key.
+<i class="no-highlight">50</i>&nbsp;     */
+<i class="no-highlight">51</i>&nbsp;    boolean primary() default false;
+<i class="no-highlight">52</i>&nbsp;
+<i class="no-highlight">53</i>&nbsp;    /**
+<i class="no-highlight">54</i>&nbsp;     * Indicates that this column has a default value in the database. This tells Persism that if the data object
+<i class="no-highlight">55</i>&nbsp;     * did not specify a value then Persism will update the data object with the default after an insert.
+<i class="no-highlight">56</i>&nbsp;     * &lt;p&gt;
+<i class="no-highlight">57</i>&nbsp;     * It&#39;s only required if Persism cannot detect this column attribute on its own.
+<i class="no-highlight">58</i>&nbsp;     *
+<i class="no-highlight">59</i>&nbsp;     * @return true if this column has a default value in the database.
+<i class="no-highlight">60</i>&nbsp;     */
+<i class="no-highlight">61</i>&nbsp;    boolean hasDefault() default false;
+<i class="no-highlight">62</i>&nbsp;
+<i class="no-highlight">63</i>&nbsp;}
 </div>
 </pre>
 </div>
@@ -85,7 +126,7 @@ Current scope:     <a href="../../index.html">all classes</a>
 
 <div class="footer">
     
-    <div style="float:right;">generated on 2021-12-11 06:53</div>
+    <div style="float:right;">generated on 2022-03-27 14:08</div>
 </div>
 </body>
 </html>

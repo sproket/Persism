@@ -4,7 +4,7 @@
 <!DOCTYPE html>
 <html id="htmlId">
 <head>
-  <title>Coverage Report > View</title>
+  <title>Coverage Report > NotTable</title>
   <style type="text/css">
     @import "../../css/coverage.css";
     @import "../../css/highlight-idea.css";
@@ -20,14 +20,14 @@ Current scope:     <a href="../../index.html">all classes</a>
     <a href="../index.html">net.sf.persism.annotations</a>
 </div>
 
-<h1>Coverage Summary for Class: View (net.sf.persism.annotations)</h1>
+<h1>Coverage Summary for Class: NotTable (net.sf.persism.annotations)</h1>
 
 <table class="coverageStats">
 <tr>
   <th class="name">Class</th>
 </tr>
 <tr>
-  <td class="name">View</td>
+  <td class="name">NotTable</td>
 </tr>
 
 </table>
@@ -39,24 +39,26 @@ Current scope:     <a href="../../index.html">all classes</a>
 <pre>
 <div class="sourceCode" id="sourceCode"><i class="no-highlight">1</i>&nbsp;package net.sf.persism.annotations;
 <i class="no-highlight">2</i>&nbsp;
-<i class="no-highlight">3</i>&nbsp;import java.lang.annotation.ElementType;
-<i class="no-highlight">4</i>&nbsp;import java.lang.annotation.Retention;
-<i class="no-highlight">5</i>&nbsp;import java.lang.annotation.RetentionPolicy;
-<i class="no-highlight">6</i>&nbsp;import java.lang.annotation.Target;
-<i class="no-highlight">7</i>&nbsp;
-<i class="no-highlight">8</i>&nbsp;/**
-<i class="no-highlight">9</i>&nbsp; * Indicates this class represents a view. You may optionally indicate the view name if Persism cannot find the view name on it&#39;s own.
-<i class="no-highlight">10</i>&nbsp; */
-<i class="no-highlight">11</i>&nbsp;
-<i class="no-highlight">12</i>&nbsp;@Retention(value = RetentionPolicy.RUNTIME)
-<i class="no-highlight">13</i>&nbsp;@Target(ElementType.TYPE)
-<i class="no-highlight">14</i>&nbsp;public @interface View {
-<i class="no-highlight">15</i>&nbsp;    /**
-<i class="no-highlight">16</i>&nbsp;     * View Name
-<i class="no-highlight">17</i>&nbsp;     * @return View Name
-<i class="no-highlight">18</i>&nbsp;     */
-<i class="no-highlight">19</i>&nbsp;    String value() default &quot;&quot;;
-<i class="no-highlight">20</i>&nbsp;}
+<i class="no-highlight">3</i>&nbsp;/*
+<i class="no-highlight">4</i>&nbsp; * Created by IntelliJ IDEA.
+<i class="no-highlight">5</i>&nbsp; * User: DHoward
+<i class="no-highlight">6</i>&nbsp; * Date: 9/14/11
+<i class="no-highlight">7</i>&nbsp; * Time: 7:38 AM
+<i class="no-highlight">8</i>&nbsp; */
+<i class="no-highlight">9</i>&nbsp;
+<i class="no-highlight">10</i>&nbsp;import java.lang.annotation.ElementType;
+<i class="no-highlight">11</i>&nbsp;import java.lang.annotation.Retention;
+<i class="no-highlight">12</i>&nbsp;import java.lang.annotation.RetentionPolicy;
+<i class="no-highlight">13</i>&nbsp;import java.lang.annotation.Target;
+<i class="no-highlight">14</i>&nbsp;
+<i class="no-highlight">15</i>&nbsp;/**
+<i class="no-highlight">16</i>&nbsp; * Indicates that the class represents the result of query instead of a table.
+<i class="no-highlight">17</i>&nbsp; */
+<i class="no-highlight">18</i>&nbsp;@Retention(value = RetentionPolicy.RUNTIME)
+<i class="no-highlight">19</i>&nbsp;@Target(ElementType.TYPE)
+<i class="no-highlight">20</i>&nbsp;public @interface NotTable {
+<i class="no-highlight">21</i>&nbsp;
+<i class="no-highlight">22</i>&nbsp;}
 </div>
 </pre>
 </div>
@@ -83,7 +85,7 @@ Current scope:     <a href="../../index.html">all classes</a>
 
 <div class="footer">
     
-    <div style="float:right;">generated on 2021-12-11 06:53</div>
+    <div style="float:right;">generated on 2022-03-27 14:08</div>
 </div>
 </body>
 </html>

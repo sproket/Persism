@@ -61,7 +61,7 @@ Current scope:     <a href="../../index.html">all classes</a>
     100%
   </span>
   <span class="absValue">
-    (50/50)
+    (54/54)
   </span>
 </td>
 </tr>
@@ -76,70 +76,73 @@ Current scope:     <a href="../../index.html">all classes</a>
 <div class="sourceCode" id="sourceCode"><i class="no-highlight">1</i>&nbsp;package net.sf.persism;
 <i class="no-highlight">2</i>&nbsp;
 <b class="fc"><i class="no-highlight">3</i>&nbsp;enum Messages {</b>
-<i class="no-highlight">4</i>&nbsp;    // todo that verify each occurs with code coverage (some additional tests required)
-<i class="no-highlight">5</i>&nbsp;
-<i class="no-highlight">6</i>&nbsp;    // Errors
-<b class="fc"><i class="no-highlight">7</i>&nbsp;    ObjectNotProperlyInitialized(&quot;Object %s was not properly initialized. Some properties not initialized in the queried columns (%s)&quot;),</b>
-<b class="fc"><i class="no-highlight">8</i>&nbsp;    ObjectNotProperlyInitializedByQuery(&quot;Object %s was not properly initialized. Some properties not initialized by the queried columns: %s  Missing: %s&quot;),</b>
-<b class="fc"><i class="no-highlight">9</i>&nbsp;    IllegalArgumentReadingColumn(&quot;Illegal Argument occurred setting property: %s. Object %s. Column: %s Type of property: %s - Type read: %s VALUE: %s&quot;),</b>
-<b class="fc"><i class="no-highlight">10</i>&nbsp;    NumberFormatException(&quot;NumberFormatException: Column: %s Type of property: %s - Type read: %s VALUE: %s&quot;),</b>
-<b class="fc"><i class="no-highlight">11</i>&nbsp;    DateFormatException(&quot;%s. Column: %s Target Conversion: %s - Type read: %s VALUE: %s&quot;),</b>
-<b class="fc"><i class="no-highlight">12</i>&nbsp;    ReadRecordColumnNotFound(&quot;readRecord: Could not find column in the SQL query for class: %s. Missing column: %s&quot;),</b>
-<b class="fc"><i class="no-highlight">13</i>&nbsp;    ReadRecordCouldNotInstantiate(&quot;readRecord: Could instantiate the constructor for: %s params: %s (%s)&quot;),</b>
-<b class="fc"><i class="no-highlight">14</i>&nbsp;    TableHasNoPrimaryKeys(&quot;Cannot perform %s - %s has no primary keys&quot;),</b>
-<b class="fc"><i class="no-highlight">15</i>&nbsp;    TableHasNoPrimaryKeysForWhere(&quot;Could not determine WHERE clause for %s. No primary keys detected&quot;),</b>
-<b class="fc"><i class="no-highlight">16</i>&nbsp;    ClassHasNoGetterForProperty(&quot;Class %s has no getter for property %s&quot;),</b>
-<b class="fc"><i class="no-highlight">17</i>&nbsp;    NonAutoIncGeneratedNotSupported(&quot;Non-auto inc generated primary keys are not supported. Please assign your primary key value before performing an insert&quot;),</b>
-<b class="fc"><i class="no-highlight">18</i>&nbsp;    CouldNotFindTableNameInTheDatabase(&quot;Could not find a Table in the database named %s. Check the @Table annotation on %s&quot;),</b>
-<b class="fc"><i class="no-highlight">19</i>&nbsp;    CouldNotFindViewNameInTheDatabase(&quot;Could not find a View in the database named %s. Check the @View annotation on %s&quot;),</b>
-<b class="fc"><i class="no-highlight">20</i>&nbsp;    CouldNotDetermineTableOrViewForType(&quot;Could not determine a %s for type: %s Guesses were: %s&quot;),</b>
-<b class="fc"><i class="no-highlight">21</i>&nbsp;    CouldNotDetermineTableOrViewForTypeMultipleMatches(&quot;Could not determine a %s for type: %s Guesses were: %s and we found multiple matching: %s&quot;),</b>
-<b class="fc"><i class="no-highlight">22</i>&nbsp;    CouldNotFindConstructorForRecord(&quot;findConstructor: Could not find a constructor for class: %s properties: %s&quot;),</b>
-<b class="fc"><i class="no-highlight">23</i>&nbsp;    OperationNotSupportedForView(&quot;s: %s operation not supported for Views&quot;),</b>
-<b class="fc"><i class="no-highlight">24</i>&nbsp;    OperationNotSupportedForNotTableQuery(&quot;%s: %s operation not supported for @NotTable classes&quot;),</b>
-<b class="fc"><i class="no-highlight">25</i>&nbsp;    OperationNotSupportedForJavaType(&quot;%s: %s operation not supported for Java types&quot;),</b>
-<b class="fc"><i class="no-highlight">26</i>&nbsp;    OperationNotSupportedForRecord(&quot;%s: %s operation not supported for record types&quot;),</b>
-<b class="fc"><i class="no-highlight">27</i>&nbsp;    WhereNotSupportedForNotTableQueries(&quot;WHERE clause not supported for Queries (using @NotTable). If this is a View annotate the class as @View&quot;),</b>
-<b class="fc"><i class="no-highlight">28</i>&nbsp;    QueryParameterNamesMissingOrNotFound(&quot;Parameters missing or not found %s mistyped: %s&quot;),</b>
-<b class="fc"><i class="no-highlight">29</i>&nbsp;    QueryPropertyNamesMissingOrNotFound(&quot;Properties missing or not found %s SQL: %s&quot;),</b>
-<i class="no-highlight">30</i>&nbsp;
-<i class="no-highlight">31</i>&nbsp;    // WARNINGS
-<b class="fc"><i class="no-highlight">32</i>&nbsp;    UnknownConnectionType(&quot;Unknown connection type. Please contact Persism to add support for %s&quot;),</b>
-<b class="fc"><i class="no-highlight">33</i>&nbsp;    NoPropertyFoundForColumn(&quot;No property found for column: %s class: %s&quot;),</b>
-<b class="fc"><i class="no-highlight">34</i>&nbsp;    ColumnAnnotatedAsAutoIncButNAN(&quot;Column %s is annotated as auto-increment but it is not a number type (%s)&quot;),</b>
-<b class="fc"><i class="no-highlight">35</i>&nbsp;    DatabaseMetaDataCouldNotFindPrimaryKeys(&quot;DatabaseMetaData could not find primary keys for table %s&quot;),</b>
-<b class="fc"><i class="no-highlight">36</i>&nbsp;    DatabaseMetaDataCouldNotFindColumns(&quot;DatabaseMetaData could not find columns for table %s!&quot;),</b>
-<b class="fc"><i class="no-highlight">37</i>&nbsp;    NoPrimaryKeyFoundForTable(&quot;No primary key found for table %s. Do not use with update/delete/fetch or add a primary key&quot;),</b>
-<b class="fc"><i class="no-highlight">38</i>&nbsp;    NoConversionForUnknownType(&quot;Conversion: Unknown type: %s - no conversion performed&quot;),</b>
-<b class="fc"><i class="no-highlight">39</i>&nbsp;    TinyIntMSSQL(&quot;COLUMN: %s: MSSQL Sees tinyint as 0 - 254 - Others -127 - +127 - no conversion performed - recommend changing it to SMALLINT/Short&quot;),</b>
-<b class="fc"><i class="no-highlight">40</i>&nbsp;    PossibleOverflow(&quot;Possible overflow column %s - Target type is %s and Value type is %s&quot;),</b>
-<b class="fc"><i class="no-highlight">41</i>&nbsp;    PropertyShouldBeAnObjectType(&quot;Property %s for column %s for class %s should be an Object type to properly detect NULL for defaults (change it from the primitive type to its Boxed version)&quot;),</b>
-<b class="fc"><i class="no-highlight">42</i>&nbsp;    SettersFoundInReadOnlyObject(&quot;Setters found in read only object %s %s&quot;),</b>
-<b class="fc"><i class="no-highlight">43</i>&nbsp;    UnknownSQLType(&quot;Convert: Unknown SQL TYPE: %s&quot;),</b>
-<b class="fc"><i class="no-highlight">44</i>&nbsp;    ConverterValueTypeNotYetSupported(&quot;%s not yet supported&quot;),</b>
-<b class="fc"><i class="no-highlight">45</i>&nbsp;    ConverterDoNotUseClobOrBlobAsAPropertyType(&quot;Usually you should not use blob or clob as a property type on a POJO. Blob maps to byteArray, Clob maps to String&quot;),</b>
-<b class="fc"><i class="no-highlight">46</i>&nbsp;    ColumnTypeNotKnownForSQLType(&quot;Column type not known for SQL type %s. Reading column: %s as Object&quot;),</b>
-<b class="fc"><i class="no-highlight">47</i>&nbsp;    InappropriateMethodUsedForSQLTypeInstance(&quot;%s It seems you&#39;re using the %s method with %s. You might prefer to use the %s method instead for better &#39;Find Usages&#39;&quot;),</b>
-<b class="fc"><i class="no-highlight">48</i>&nbsp;    UnknownTypeForPrimaryGeneratedKey(&quot;Unknown type for primary/generated key: %s. using getObject&quot;),</b>
-<b class="fc"><i class="no-highlight">49</i>&nbsp;    UnknownTypeInSetParameters(&quot;setParameters: Unknown type: %s&quot;),</b>
-<b class="fc"><i class="no-highlight">50</i>&nbsp;    UnSupportedTypeInSetParameters(&quot;setParameters: %s type not supported yet. We&#39;re probably about to fail.....&quot;),</b>
-<b class="fc"><i class="no-highlight">51</i>&nbsp;    ParametersDoNotUseClobOrBlob(&quot;Usually you should not use blob or clob as an SQL parameter type. Blob maps to byteArray, Clob maps to String&quot;),</b>
-<b class="fc"><i class="no-highlight">52</i>&nbsp;    NamedParametersUsedWithStoredProc(&quot;Using named parameters with a stored proc doesn&#39;t buy you anything...&quot;)</b>
-<i class="no-highlight">53</i>&nbsp;    ;
-<i class="no-highlight">54</i>&nbsp;
-<i class="no-highlight">55</i>&nbsp;    private final String message;
-<i class="no-highlight">56</i>&nbsp;
-<b class="fc"><i class="no-highlight">57</i>&nbsp;    Messages(String message) {</b>
-<b class="fc"><i class="no-highlight">58</i>&nbsp;        this.message = message;</b>
-<i class="no-highlight">59</i>&nbsp;    }
-<i class="no-highlight">60</i>&nbsp;
-<i class="no-highlight">61</i>&nbsp;    public String message(Object... params) {
-<b class="fc"><i class="no-highlight">62</i>&nbsp;        if (params.length == 0) {</b>
-<b class="fc"><i class="no-highlight">63</i>&nbsp;            return message;</b>
-<i class="no-highlight">64</i>&nbsp;        }
-<b class="fc"><i class="no-highlight">65</i>&nbsp;        return String.format(message, params);</b>
-<i class="no-highlight">66</i>&nbsp;    }
-<i class="no-highlight">67</i>&nbsp;}
+<i class="no-highlight">4</i>&nbsp;    // Errors
+<b class="fc"><i class="no-highlight">5</i>&nbsp;    ObjectNotProperlyInitialized(&quot;Object %s was not properly initialized. Some properties not initialized in the queried columns (%s)&quot;),</b>
+<b class="fc"><i class="no-highlight">6</i>&nbsp;    ObjectNotProperlyInitializedByQuery(&quot;Object %s was not properly initialized. Some properties not initialized by the queried columns: %s  Missing: %s&quot;),</b>
+<b class="fc"><i class="no-highlight">7</i>&nbsp;    IllegalArgumentReadingColumn(&quot;Illegal Argument occurred setting property: %s. Object %s. Column: %s Type of property: %s - Type read: %s VALUE: %s&quot;),</b>
+<b class="fc"><i class="no-highlight">8</i>&nbsp;    NumberFormatException(&quot;NumberFormatException: Column: %s Type of property: %s - Type read: %s VALUE: %s&quot;),</b>
+<b class="fc"><i class="no-highlight">9</i>&nbsp;    DateFormatException(&quot;%s. Column: %s Target Conversion: %s - Type read: %s VALUE: %s&quot;),</b>
+<b class="fc"><i class="no-highlight">10</i>&nbsp;    ReadRecordColumnNotFound(&quot;readRecord: Could not find column in the SQL query for class: %s. Missing column: %s&quot;),</b>
+<b class="fc"><i class="no-highlight">11</i>&nbsp;    ReadRecordCouldNotInstantiate(&quot;readRecord: Could instantiate the constructor for: %s (%s)&quot;),</b>
+<b class="fc"><i class="no-highlight">12</i>&nbsp;    TableHasNoPrimaryKeys(&quot;Cannot perform %s - %s has no primary keys&quot;),</b>
+<b class="fc"><i class="no-highlight">13</i>&nbsp;    TableHasNoPrimaryKeysForWhere(&quot;Could not determine WHERE clause for %s. No primary keys detected&quot;),</b>
+<b class="fc"><i class="no-highlight">14</i>&nbsp;    ClassHasNoGetterForProperty(&quot;Class %s has no getter for property %s&quot;),</b>
+<b class="fc"><i class="no-highlight">15</i>&nbsp;    NonAutoIncGeneratedNotSupported(&quot;Non-auto inc generated primary keys are not supported. Please assign your primary key value before performing an insert&quot;),</b>
+<b class="fc"><i class="no-highlight">16</i>&nbsp;    CouldNotFindTableNameInTheDatabase(&quot;Could not find a Table in the database named %s. Check the @Table annotation on %s&quot;),</b>
+<b class="fc"><i class="no-highlight">17</i>&nbsp;    CouldNotFindViewNameInTheDatabase(&quot;Could not find a View in the database named %s. Check the @View annotation on %s&quot;),</b>
+<b class="fc"><i class="no-highlight">18</i>&nbsp;    CouldNotDetermineTableOrViewForType(&quot;Could not determine a %s for type: %s Guesses were: %s&quot;),</b>
+<b class="fc"><i class="no-highlight">19</i>&nbsp;    CouldNotDetermineTableOrViewForTypeMultipleMatches(&quot;Could not determine a %s for type: %s Guesses were: %s and we found multiple matching: %s&quot;),</b>
+<b class="fc"><i class="no-highlight">20</i>&nbsp;    CouldNotFindConstructorForRecord(&quot;findConstructor: Could not find a constructor for class: %s properties: %s&quot;),</b>
+<b class="fc"><i class="no-highlight">21</i>&nbsp;    OperationNotSupportedForView(&quot;s: %s operation not supported for Views&quot;),</b>
+<b class="fc"><i class="no-highlight">22</i>&nbsp;    OperationNotSupportedForNotTableQuery(&quot;%s: %s operation not supported for @NotTable classes&quot;),</b>
+<b class="fc"><i class="no-highlight">23</i>&nbsp;    OperationNotSupportedForJavaType(&quot;%s: %s operation not supported for Java types&quot;),</b>
+<b class="fc"><i class="no-highlight">24</i>&nbsp;    OperationNotSupportedForRecord(&quot;%s: %s operation not supported for record types&quot;),</b>
+<b class="fc"><i class="no-highlight">25</i>&nbsp;    WhereNotSupportedForNotTableQueries(&quot;WHERE clause not supported for Queries (using @NotTable). If this is a View annotate the class as @View&quot;),</b>
+<b class="fc"><i class="no-highlight">26</i>&nbsp;    QueryParameterNamesMissingOrNotFound(&quot;Parameters missing or not found %s mistyped: %s&quot;),</b>
+<b class="fc"><i class="no-highlight">27</i>&nbsp;    QueryPropertyNamesMissingOrNotFound(&quot;Properties missing or not found %s SQL: %s&quot;),</b>
+<b class="fc"><i class="no-highlight">28</i>&nbsp;    CannotNotJoinToNullProperty(&quot;Cannot join to null for property: %s. Instantiate the property as a modifiable collection in your constructor.&quot;),</b>
+<b class="fc"><i class="no-highlight">29</i>&nbsp;    PropertyNotFoundForJoin(&quot;Join property %s not found in %s&quot;),</b>
+<b class="fc"><i class="no-highlight">30</i>&nbsp;    PropertyCountMismatchForJoin(&quot;You need the same number of Properties on both sides of a join %s %s vs %s&quot;),</b>
+<i class="no-highlight">31</i>&nbsp;
+<i class="no-highlight">32</i>&nbsp;
+<i class="no-highlight">33</i>&nbsp;    // WARNINGS
+<b class="fc"><i class="no-highlight">34</i>&nbsp;    UnknownConnectionType(&quot;Unknown connection type. Please contact Persism to add support for %s&quot;),</b>
+<b class="fc"><i class="no-highlight">35</i>&nbsp;    NoPropertyFoundForColumn(&quot;No property found for column: %s class: %s&quot;),</b>
+<b class="fc"><i class="no-highlight">36</i>&nbsp;    ColumnAnnotatedAsAutoIncButNAN(&quot;Column %s is annotated as auto-increment but it is not a number type (%s)&quot;),</b>
+<b class="fc"><i class="no-highlight">37</i>&nbsp;    DatabaseMetaDataCouldNotFindPrimaryKeys(&quot;DatabaseMetaData could not find primary keys for table %s&quot;),</b>
+<b class="fc"><i class="no-highlight">38</i>&nbsp;    DatabaseMetaDataCouldNotFindColumns(&quot;DatabaseMetaData could not find columns for table %s!&quot;),</b>
+<b class="fc"><i class="no-highlight">39</i>&nbsp;    NoPrimaryKeyFoundForTable(&quot;No primary key found for table %s. Do not use with update/delete/fetch or add a primary key&quot;),</b>
+<b class="fc"><i class="no-highlight">40</i>&nbsp;    NoConversionForUnknownType(&quot;Conversion: Unknown type: %s - no conversion performed&quot;),</b>
+<b class="fc"><i class="no-highlight">41</i>&nbsp;    TinyIntMSSQL(&quot;COLUMN: %s: MSSQL Sees tinyint as 0 - 254 - Others -127 - +127 - no conversion performed - recommend changing it to SMALLINT/Short&quot;),</b>
+<b class="fc"><i class="no-highlight">42</i>&nbsp;    PossibleOverflow(&quot;Possible overflow column %s - Target type is %s and Value type is %s&quot;),</b>
+<b class="fc"><i class="no-highlight">43</i>&nbsp;    PropertyShouldBeAnObjectType(&quot;Property %s for column %s for class %s should be an Object type to properly detect NULL for defaults (change it from the primitive type to its Boxed version)&quot;),</b>
+<b class="fc"><i class="no-highlight">44</i>&nbsp;    SettersFoundInReadOnlyObject(&quot;Setters found in read only object %s %s&quot;),</b>
+<b class="fc"><i class="no-highlight">45</i>&nbsp;    UnknownSQLType(&quot;Convert: Unknown SQL TYPE: %s&quot;),</b>
+<b class="fc"><i class="no-highlight">46</i>&nbsp;    ConverterValueTypeNotYetSupported(&quot;%s not yet supported&quot;),</b>
+<b class="fc"><i class="no-highlight">47</i>&nbsp;    ConverterDoNotUseClobOrBlobAsAPropertyType(&quot;Usually you should not use blob or clob as a property type on a POJO. Blob maps to byteArray, Clob maps to String&quot;),</b>
+<b class="fc"><i class="no-highlight">48</i>&nbsp;    ColumnTypeNotKnownForSQLType(&quot;Column type not known for SQL type %s. Reading column: %s as Object&quot;),</b>
+<b class="fc"><i class="no-highlight">49</i>&nbsp;    InappropriateMethodUsedForSQLTypeInstance(&quot;%s It seems you&#39;re using the %s method with %s. You might prefer to use the %s method instead for better &#39;Find Usages&#39;&quot;),</b>
+<b class="fc"><i class="no-highlight">50</i>&nbsp;    UnknownTypeForPrimaryGeneratedKey(&quot;Unknown type for primary/generated key: %s. using getObject&quot;),</b>
+<b class="fc"><i class="no-highlight">51</i>&nbsp;    UnknownTypeInSetParameters(&quot;setParameters: Unknown type: %s&quot;),</b>
+<b class="fc"><i class="no-highlight">52</i>&nbsp;    UnSupportedTypeInSetParameters(&quot;setParameters: %s type not supported yet. We&#39;re probably about to fail.....&quot;),</b>
+<b class="fc"><i class="no-highlight">53</i>&nbsp;    ParametersDoNotUseClobOrBlob(&quot;Usually you should not use blob or clob as an SQL parameter type. Blob maps to byteArray, Clob maps to String&quot;),</b>
+<b class="fc"><i class="no-highlight">54</i>&nbsp;    NamedParametersUsedWithStoredProc(&quot;Using named parameters with a stored proc doesn&#39;t buy you anything...&quot;),</b>
+<b class="fc"><i class="no-highlight">55</i>&nbsp;    PrimaryAnnotationOnViewOrQueryMakesNoSense(&quot;Primary annotation on %s:%s is only useful on POJOs for tables. Not for queries or views.&quot;),</b>
+<i class="no-highlight">56</i>&nbsp;    ;
+<i class="no-highlight">57</i>&nbsp;
+<i class="no-highlight">58</i>&nbsp;    private final String message;
+<i class="no-highlight">59</i>&nbsp;
+<b class="fc"><i class="no-highlight">60</i>&nbsp;    Messages(String message) {</b>
+<b class="fc"><i class="no-highlight">61</i>&nbsp;        this.message = message;</b>
+<i class="no-highlight">62</i>&nbsp;    }
+<i class="no-highlight">63</i>&nbsp;
+<i class="no-highlight">64</i>&nbsp;    public String message(Object... params) {
+<b class="fc"><i class="no-highlight">65</i>&nbsp;        if (params.length == 0) {</b>
+<b class="fc"><i class="no-highlight">66</i>&nbsp;            return message;</b>
+<i class="no-highlight">67</i>&nbsp;        }
+<b class="fc"><i class="no-highlight">68</i>&nbsp;        return String.format(message, params);</b>
+<i class="no-highlight">69</i>&nbsp;    }
+<i class="no-highlight">70</i>&nbsp;}
 </div>
 </pre>
 </div>
@@ -166,7 +169,7 @@ Current scope:     <a href="../../index.html">all classes</a>
 
 <div class="footer">
     
-    <div style="float:right;">generated on 2021-12-11 06:53</div>
+    <div style="float:right;">generated on 2022-03-27 14:08</div>
 </div>
 </body>
 </html>

@@ -4,7 +4,7 @@
 <!DOCTYPE html>
 <html id="htmlId">
 <head>
-  <title>Coverage Report > Types</title>
+  <title>Coverage Report > SessionHelper</title>
   <style type="text/css">
     @import "../../css/coverage.css";
     @import "../../css/highlight-idea.css";
@@ -20,15 +20,12 @@ Current scope:     <a href="../../index.html">all classes</a>
     <a href="../index.html">net.sf.persism</a>
 </div>
 
-<h1>Coverage Summary for Class: Types (net.sf.persism)</h1>
+<h1>Coverage Summary for Class: SessionHelper (net.sf.persism)</h1>
 
 <table class="coverageStats">
+
 <tr>
   <th class="name">Class</th>
-<th class="coverageStat 
-">
-  Class, %
-</th>
 <th class="coverageStat 
 ">
   Method, %
@@ -39,7 +36,26 @@ Current scope:     <a href="../../index.html">all classes</a>
 </th>
 </tr>
 <tr>
-  <td class="name">Types</td>
+  <td class="name">SessionHelper</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (25/25)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    92.7%
+  </span>
+  <span class="absValue">
+    (367/396)
+  </span>
+</td>
+</tr>
+  <tr>
+    <td class="name">SessionHelper$1</td>
 <td class="coverageStat">
   <span class="percent">
     100%
@@ -53,19 +69,29 @@ Current scope:     <a href="../../index.html">all classes</a>
     100%
   </span>
   <span class="absValue">
-    (9/9)
+    (1/1)
   </span>
 </td>
+  </tr>
+<tr>
+  <td class="name"><strong>Total</strong></td>
 <td class="coverageStat">
   <span class="percent">
     100%
   </span>
   <span class="absValue">
-    (86/86)
+    (26/26)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    92.7%
+  </span>
+  <span class="absValue">
+    (368/397)
   </span>
 </td>
 </tr>
-
 </table>
 
 <br/>
@@ -75,190 +101,762 @@ Current scope:     <a href="../../index.html">all classes</a>
 <pre>
 <div class="sourceCode" id="sourceCode"><i class="no-highlight">1</i>&nbsp;package net.sf.persism;
 <i class="no-highlight">2</i>&nbsp;
-<i class="no-highlight">3</i>&nbsp;import java.lang.reflect.Array;
-<i class="no-highlight">4</i>&nbsp;import java.math.BigDecimal;
-<i class="no-highlight">5</i>&nbsp;import java.math.BigInteger;
-<i class="no-highlight">6</i>&nbsp;import java.sql.Blob;
-<i class="no-highlight">7</i>&nbsp;import java.sql.Clob;
-<i class="no-highlight">8</i>&nbsp;import java.sql.Time;
-<i class="no-highlight">9</i>&nbsp;import java.sql.Timestamp;
-<i class="no-highlight">10</i>&nbsp;import java.time.LocalTime;
-<i class="no-highlight">11</i>&nbsp;import java.util.UUID;
-<i class="no-highlight">12</i>&nbsp;
-<i class="no-highlight">13</i>&nbsp;/**
-<i class="no-highlight">14</i>&nbsp; * Type mapper used for fast switch statements
-<i class="no-highlight">15</i>&nbsp; *
-<i class="no-highlight">16</i>&nbsp; * @author Dan Howard
-<i class="no-highlight">17</i>&nbsp; * @since 10/8/11 5:36 PM
-<i class="no-highlight">18</i>&nbsp; */
-<b class="fc"><i class="no-highlight">19</i>&nbsp;enum Types {</b>
-<i class="no-highlight">20</i>&nbsp;
-<b class="fc"><i class="no-highlight">21</i>&nbsp;    booleanType(boolean.class),</b>
-<b class="fc"><i class="no-highlight">22</i>&nbsp;    BooleanType(Boolean.class),</b>
-<b class="fc"><i class="no-highlight">23</i>&nbsp;    byteType(byte.class),</b>
-<b class="fc"><i class="no-highlight">24</i>&nbsp;    ByteType(Byte.class),</b>
-<b class="fc"><i class="no-highlight">25</i>&nbsp;    shortType(short.class),</b>
-<b class="fc"><i class="no-highlight">26</i>&nbsp;    ShortType(Short.class),</b>
-<b class="fc"><i class="no-highlight">27</i>&nbsp;    integerType(int.class),</b>
-<b class="fc"><i class="no-highlight">28</i>&nbsp;    IntegerType(Integer.class),</b>
-<b class="fc"><i class="no-highlight">29</i>&nbsp;    longType(long.class),</b>
-<b class="fc"><i class="no-highlight">30</i>&nbsp;    LongType(Long.class),</b>
-<b class="fc"><i class="no-highlight">31</i>&nbsp;    floatType(float.class),</b>
-<b class="fc"><i class="no-highlight">32</i>&nbsp;    FloatType(Float.class),</b>
-<b class="fc"><i class="no-highlight">33</i>&nbsp;    doubleType(double.class),</b>
-<b class="fc"><i class="no-highlight">34</i>&nbsp;    DoubleType(Double.class),</b>
-<b class="fc"><i class="no-highlight">35</i>&nbsp;    BigDecimalType(BigDecimal.class),</b>
-<b class="fc"><i class="no-highlight">36</i>&nbsp;    BigIntegerType(BigInteger.class),</b>
-<b class="fc"><i class="no-highlight">37</i>&nbsp;    StringType(String.class),</b>
-<b class="fc"><i class="no-highlight">38</i>&nbsp;    characterType(char.class),</b>
-<b class="fc"><i class="no-highlight">39</i>&nbsp;    CharacterType(Character.class),</b>
-<b class="fc"><i class="no-highlight">40</i>&nbsp;    UtilDateType(java.util.Date.class),</b>
-<b class="fc"><i class="no-highlight">41</i>&nbsp;    SQLDateType(java.sql.Date.class),</b>
-<b class="fc"><i class="no-highlight">42</i>&nbsp;    TimeType(Time.class),</b>
-<b class="fc"><i class="no-highlight">43</i>&nbsp;    LocalTimeType(LocalTime.class),</b>
-<b class="fc"><i class="no-highlight">44</i>&nbsp;    TimestampType(Timestamp.class),</b>
-<b class="fc"><i class="no-highlight">45</i>&nbsp;    LocalDateType(java.time.LocalDate.class),</b>
-<b class="fc"><i class="no-highlight">46</i>&nbsp;    LocalDateTimeType(java.time.LocalDateTime.class),</b>
-<b class="fc"><i class="no-highlight">47</i>&nbsp;    InstantType(java.time.Instant.class),</b>
-<b class="fc"><i class="no-highlight">48</i>&nbsp;    OffsetDateTimeType(java.time.OffsetDateTime.class),</b>
-<b class="fc"><i class="no-highlight">49</i>&nbsp;    ZonedDateTimeType(java.time.ZonedDateTime.class),</b>
-<b class="fc"><i class="no-highlight">50</i>&nbsp;    byteArrayType(byte[].class),</b>
-<b class="fc"><i class="no-highlight">51</i>&nbsp;    ByteArrayType(Byte[].class),</b>
-<b class="fc"><i class="no-highlight">52</i>&nbsp;    ClobType(Clob.class),</b>
-<b class="fc"><i class="no-highlight">53</i>&nbsp;    BlobType(Blob.class),</b>
-<b class="fc"><i class="no-highlight">54</i>&nbsp;    EnumType(Enum.class),</b>
-<b class="fc"><i class="no-highlight">55</i>&nbsp;    UUIDType(UUID.class),</b>
-<b class="fc"><i class="no-highlight">56</i>&nbsp;    ObjectType(Object.class);</b>
-<i class="no-highlight">57</i>&nbsp;
-<b class="fc"><i class="no-highlight">58</i>&nbsp;    private static final Log log = Log.getLogger(Types.class);</b>
-<i class="no-highlight">59</i>&nbsp;
-<i class="no-highlight">60</i>&nbsp;    private Class&lt;?&gt; type;
-<i class="no-highlight">61</i>&nbsp;
-<b class="fc"><i class="no-highlight">62</i>&nbsp;    &lt;T&gt; Types(Class&lt;T&gt; type) {</b>
-<b class="fc"><i class="no-highlight">63</i>&nbsp;        init(type);</b>
-<i class="no-highlight">64</i>&nbsp;    }
-<i class="no-highlight">65</i>&nbsp;
-<i class="no-highlight">66</i>&nbsp;    private &lt;T&gt; void init(Class&lt;T&gt; type) {
-<b class="fc"><i class="no-highlight">67</i>&nbsp;        this.type = type;</b>
-<i class="no-highlight">68</i>&nbsp;    }
-<i class="no-highlight">69</i>&nbsp;
-<i class="no-highlight">70</i>&nbsp;    public static &lt;T&gt; Types getType(Class&lt;T&gt; type) {
-<b class="fc"><i class="no-highlight">71</i>&nbsp;        if (type.isEnum()) {</b>
-<b class="fc"><i class="no-highlight">72</i>&nbsp;            return EnumType;</b>
+<i class="no-highlight">3</i>&nbsp;import net.sf.persism.annotations.Join;
+<i class="no-highlight">4</i>&nbsp;import net.sf.persism.annotations.NotTable;
+<i class="no-highlight">5</i>&nbsp;import net.sf.persism.annotations.View;
+<i class="no-highlight">6</i>&nbsp;
+<i class="no-highlight">7</i>&nbsp;import java.beans.ConstructorProperties;
+<i class="no-highlight">8</i>&nbsp;import java.lang.reflect.Constructor;
+<i class="no-highlight">9</i>&nbsp;import java.lang.reflect.InvocationTargetException;
+<i class="no-highlight">10</i>&nbsp;import java.lang.reflect.Parameter;
+<i class="no-highlight">11</i>&nbsp;import java.math.BigDecimal;
+<i class="no-highlight">12</i>&nbsp;import java.sql.*;
+<i class="no-highlight">13</i>&nbsp;import java.util.*;
+<i class="no-highlight">14</i>&nbsp;import java.util.stream.Collectors;
+<i class="no-highlight">15</i>&nbsp;
+<i class="no-highlight">16</i>&nbsp;import static net.sf.persism.Parameters.params;
+<i class="no-highlight">17</i>&nbsp;import static net.sf.persism.SQL.where;
+<i class="no-highlight">18</i>&nbsp;
+<i class="no-highlight">19</i>&nbsp;// Non-public code Session uses.
+<b class="fc"><i class="no-highlight">20</i>&nbsp;final class SessionHelper {</b>
+<i class="no-highlight">21</i>&nbsp;
+<i class="no-highlight">22</i>&nbsp;    // leave this using the Session.class for logging
+<b class="fc"><i class="no-highlight">23</i>&nbsp;    private static final Log log = Log.getLogger(Session.class);</b>
+<b class="fc"><i class="no-highlight">24</i>&nbsp;    private static final Log blog = Log.getLogger(&quot;net.sf.persism.Benchmarks&quot;);</b>
+<i class="no-highlight">25</i>&nbsp;
+<i class="no-highlight">26</i>&nbsp;    private final Session session;
+<i class="no-highlight">27</i>&nbsp;
+<b class="fc"><i class="no-highlight">28</i>&nbsp;    public SessionHelper(Session session) {</b>
+<b class="fc"><i class="no-highlight">29</i>&nbsp;        this.session = session;</b>
+<i class="no-highlight">30</i>&nbsp;    }
+<i class="no-highlight">31</i>&nbsp;
+<i class="no-highlight">32</i>&nbsp;    JDBCResult executeQuery(Class&lt;?&gt; objectClass, SQL sql, Parameters parameters) throws SQLException {
+<i class="no-highlight">33</i>&nbsp;
+<b class="fc"><i class="no-highlight">34</i>&nbsp;        JDBCResult result = new JDBCResult();</b>
+<b class="fc"><i class="no-highlight">35</i>&nbsp;        String sqlQuery = sql.sql;</b>
+<b class="fc"><i class="no-highlight">36</i>&nbsp;        sql.storedProc = !sql.whereOnly &amp;&amp; isStoredProc(sqlQuery);</b>
+<i class="no-highlight">37</i>&nbsp;
+<b class="fc"><i class="no-highlight">38</i>&nbsp;        if (parameters.areNamed) {</b>
+<b class="fc"><i class="no-highlight">39</i>&nbsp;            if (sql.storedProc) {</b>
+<b class="fc"><i class="no-highlight">40</i>&nbsp;                log.warn(Messages.NamedParametersUsedWithStoredProc.message());</b>
+<i class="no-highlight">41</i>&nbsp;            }
+<i class="no-highlight">42</i>&nbsp;
+<b class="fc"><i class="no-highlight">43</i>&nbsp;            char delim = &#39;@&#39;;</b>
+<b class="fc"><i class="no-highlight">44</i>&nbsp;            Map&lt;String, List&lt;Integer&gt;&gt; paramMap = new HashMap&lt;&gt;();</b>
+<b class="fc"><i class="no-highlight">45</i>&nbsp;            sqlQuery = parseParameters(delim, sqlQuery, paramMap);</b>
+<b class="fc"><i class="no-highlight">46</i>&nbsp;            parameters.setParameterMap(paramMap);</b>
+<i class="no-highlight">47</i>&nbsp;
+<b class="fc"><i class="no-highlight">48</i>&nbsp;        } else if (parameters.areKeys) {</b>
+<i class="no-highlight">49</i>&nbsp;            // convert parameters - usually it&#39;s the UUID type that may need a conversion to byte[16]
+<i class="no-highlight">50</i>&nbsp;            // Probably we don&#39;t want to auto-convert here since it&#39;s inconsistent. DO WE? YES.
+<b class="fc"><i class="no-highlight">51</i>&nbsp;            List&lt;String&gt; keys = session.metaData.getPrimaryKeys(objectClass, session.connection);</b>
+<b class="fc"><i class="no-highlight">52</i>&nbsp;            if (keys.size() == 1) {</b>
+<b class="fc"><i class="no-highlight">53</i>&nbsp;                Map&lt;String, ColumnInfo&gt; columns = session.metaData.getColumns(objectClass, session.connection);</b>
+<b class="fc"><i class="no-highlight">54</i>&nbsp;                String key = keys.get(0);</b>
+<b class="fc"><i class="no-highlight">55</i>&nbsp;                ColumnInfo columnInfo = columns.get(key);</b>
+<b class="fc"><i class="no-highlight">56</i>&nbsp;                for (int j = 0; j &lt; parameters.size(); j++) {</b>
+<b class="fc"><i class="no-highlight">57</i>&nbsp;                    if (parameters.get(j) != null) {</b>
+<b class="fc"><i class="no-highlight">58</i>&nbsp;                        parameters.set(j, session.converter.convert(parameters.get(j), columnInfo.columnType.getJavaType(), columnInfo.columnName));</b>
+<i class="no-highlight">59</i>&nbsp;                    }
+<i class="no-highlight">60</i>&nbsp;                }
+<i class="no-highlight">61</i>&nbsp;            }
+<i class="no-highlight">62</i>&nbsp;        }
+<i class="no-highlight">63</i>&nbsp;
+<b class="fc"><i class="no-highlight">64</i>&nbsp;        if (sql.whereOnly) {</b>
+<b class="fc"><i class="no-highlight">65</i>&nbsp;            if (objectClass.getAnnotation(NotTable.class) != null) {</b>
+<b class="fc"><i class="no-highlight">66</i>&nbsp;                throw new PersismException(Messages.WhereNotSupportedForNotTableQueries.message());</b>
+<i class="no-highlight">67</i>&nbsp;            }
+<b class="fc"><i class="no-highlight">68</i>&nbsp;            String select = session.metaData.getSelectStatement(objectClass, session.connection);</b>
+<b class="fc"><i class="no-highlight">69</i>&nbsp;            sqlQuery = select + &quot; &quot; + parsePropertyNames(sqlQuery, objectClass, session.connection);</b>
+<b class="fc"><i class="no-highlight">70</i>&nbsp;            sql.processedSQL = sqlQuery;</b>
+<b class="fc"><i class="no-highlight">71</i>&nbsp;        } else {</b>
+<b class="fc"><i class="no-highlight">72</i>&nbsp;            checkIfStoredProcOrSQL(objectClass, sql);</b>
 <i class="no-highlight">73</i>&nbsp;        }
 <i class="no-highlight">74</i>&nbsp;
-<b class="fc"><i class="no-highlight">75</i>&nbsp;        for (Types t : values()) {</b>
-<b class="fc"><i class="no-highlight">76</i>&nbsp;            if (t.type.equals(type)) {</b>
-<b class="fc"><i class="no-highlight">77</i>&nbsp;                return t;</b>
-<i class="no-highlight">78</i>&nbsp;            }
-<i class="no-highlight">79</i>&nbsp;        }
-<b class="fc"><i class="no-highlight">80</i>&nbsp;        return null;</b>
-<i class="no-highlight">81</i>&nbsp;    }
-<i class="no-highlight">82</i>&nbsp;
-<i class="no-highlight">83</i>&nbsp;    public static Types convert(int sqlType) {
-<b class="fc"><i class="no-highlight">84</i>&nbsp;        Types result = null;</b>
-<i class="no-highlight">85</i>&nbsp;
-<b class="fc"><i class="no-highlight">86</i>&nbsp;        switch (sqlType) {</b>
-<i class="no-highlight">87</i>&nbsp;            case java.sql.Types.CHAR:
-<i class="no-highlight">88</i>&nbsp;            case java.sql.Types.NCHAR:
-<i class="no-highlight">89</i>&nbsp;            case java.sql.Types.VARCHAR:
-<i class="no-highlight">90</i>&nbsp;            case java.sql.Types.NVARCHAR:
-<i class="no-highlight">91</i>&nbsp;            case java.sql.Types.LONGVARCHAR:
-<i class="no-highlight">92</i>&nbsp;            case java.sql.Types.LONGNVARCHAR:
-<b class="fc"><i class="no-highlight">93</i>&nbsp;                result = StringType;</b>
-<b class="fc"><i class="no-highlight">94</i>&nbsp;                break;</b>
-<i class="no-highlight">95</i>&nbsp;
-<i class="no-highlight">96</i>&nbsp;            case java.sql.Types.NUMERIC:
-<i class="no-highlight">97</i>&nbsp;            case java.sql.Types.DECIMAL:
-<b class="fc"><i class="no-highlight">98</i>&nbsp;                result = BigDecimalType;</b>
-<b class="fc"><i class="no-highlight">99</i>&nbsp;                break;</b>
-<i class="no-highlight">100</i>&nbsp;
-<i class="no-highlight">101</i>&nbsp;            case java.sql.Types.BIT:
-<i class="no-highlight">102</i>&nbsp;            case java.sql.Types.BOOLEAN:
-<b class="fc"><i class="no-highlight">103</i>&nbsp;                result = BooleanType;</b>
-<b class="fc"><i class="no-highlight">104</i>&nbsp;                break;</b>
-<i class="no-highlight">105</i>&nbsp;
-<i class="no-highlight">106</i>&nbsp;            case java.sql.Types.TINYINT:
-<b class="fc"><i class="no-highlight">107</i>&nbsp;                result = ByteType;</b>
-<b class="fc"><i class="no-highlight">108</i>&nbsp;                break;</b>
-<i class="no-highlight">109</i>&nbsp;
-<i class="no-highlight">110</i>&nbsp;            case java.sql.Types.SMALLINT:
-<b class="fc"><i class="no-highlight">111</i>&nbsp;                result = ShortType;</b>
-<b class="fc"><i class="no-highlight">112</i>&nbsp;                break;</b>
-<i class="no-highlight">113</i>&nbsp;
-<i class="no-highlight">114</i>&nbsp;            case java.sql.Types.INTEGER:
-<b class="fc"><i class="no-highlight">115</i>&nbsp;                result = IntegerType;</b>
-<b class="fc"><i class="no-highlight">116</i>&nbsp;                break;</b>
+<b class="fc"><i class="no-highlight">75</i>&nbsp;        exec(result, sqlQuery, parameters.toArray());</b>
+<b class="fc"><i class="no-highlight">76</i>&nbsp;        return result;</b>
+<i class="no-highlight">77</i>&nbsp;    }
+<i class="no-highlight">78</i>&nbsp;
+<i class="no-highlight">79</i>&nbsp;    void exec(JDBCResult result, String sql, Object... parameters) throws SQLException {
+<b class="fc"><i class="no-highlight">80</i>&nbsp;        long now = System.currentTimeMillis();</b>
+<i class="no-highlight">81</i>&nbsp;
+<b class="fc"><i class="no-highlight">82</i>&nbsp;        if (log.isDebugEnabled()) {</b>
+<b class="nc"><i class="no-highlight">83</i>&nbsp;            log.debug(&quot;exec: %s params: %s&quot;, sql, Arrays.asList(parameters));</b>
+<i class="no-highlight">84</i>&nbsp;        }
+<i class="no-highlight">85</i>&nbsp;        try {
+<b class="fc"><i class="no-highlight">86</i>&nbsp;            if (isSelect(sql)) {</b>
+<b class="fc"><i class="no-highlight">87</i>&nbsp;                if (session.metaData.getConnectionType() == ConnectionTypes.Firebird) {</b>
+<i class="no-highlight">88</i>&nbsp;                    // https://stackoverflow.com/questions/935511/how-can-i-avoid-resultset-is-closed-exception-in-java
+<b class="fc"><i class="no-highlight">89</i>&nbsp;                    result.st = session.connection.prepareStatement(sql, ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY, ResultSet.HOLD_CURSORS_OVER_COMMIT);</b>
+<i class="no-highlight">90</i>&nbsp;                } else {
+<b class="fc"><i class="no-highlight">91</i>&nbsp;                    result.st = session.connection.prepareStatement(sql, ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);</b>
+<i class="no-highlight">92</i>&nbsp;                }
+<i class="no-highlight">93</i>&nbsp;
+<b class="fc"><i class="no-highlight">94</i>&nbsp;                PreparedStatement pst = (PreparedStatement) result.st;</b>
+<b class="fc"><i class="no-highlight">95</i>&nbsp;                setParameters(pst, parameters);</b>
+<b class="fc"><i class="no-highlight">96</i>&nbsp;                result.rs = pst.executeQuery();</b>
+<b class="fc"><i class="no-highlight">97</i>&nbsp;            } else {</b>
+<b class="fc"><i class="no-highlight">98</i>&nbsp;                if (!sql.trim().toLowerCase().startsWith(&quot;{call&quot;)) {</b>
+<b class="fc"><i class="no-highlight">99</i>&nbsp;                    sql = &quot;{call &quot; + sql + &quot;} &quot;;</b>
+<i class="no-highlight">100</i>&nbsp;                }
+<i class="no-highlight">101</i>&nbsp;                // Don&#39;t need If Firebird here. Firebird would call a selectable stored proc with SELECT anyway
+<b class="fc"><i class="no-highlight">102</i>&nbsp;                result.st = session.connection.prepareCall(sql, ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY, ResultSet.HOLD_CURSORS_OVER_COMMIT);</b>
+<i class="no-highlight">103</i>&nbsp;
+<b class="fc"><i class="no-highlight">104</i>&nbsp;                CallableStatement cst = (CallableStatement) result.st;</b>
+<b class="fc"><i class="no-highlight">105</i>&nbsp;                setParameters(cst, parameters);</b>
+<b class="fc"><i class="no-highlight">106</i>&nbsp;                result.rs = cst.executeQuery();</b>
+<i class="no-highlight">107</i>&nbsp;            }
+<i class="no-highlight">108</i>&nbsp;
+<b class="fc"><i class="no-highlight">109</i>&nbsp;        } catch (SQLException e) {</b>
+<b class="fc"><i class="no-highlight">110</i>&nbsp;            throw new SQLException(e.getMessage() + &quot; SQL: &quot; + sql + &quot; params: &quot; + Arrays.asList(parameters), e);</b>
+<i class="no-highlight">111</i>&nbsp;        } finally {
+<b class="fc"><i class="no-highlight">112</i>&nbsp;            if (blog.isDebugEnabled()) {</b>
+<b class="nc"><i class="no-highlight">113</i>&nbsp;                blog.debug(&quot;exec time: &quot; + (System.currentTimeMillis() - now) + &quot; &quot; + sql + &quot; params: &quot; + Arrays.asList(parameters));</b>
+<i class="no-highlight">114</i>&nbsp;            }
+<b class="fc"><i class="no-highlight">115</i>&nbsp;        }</b>
+<i class="no-highlight">116</i>&nbsp;    }
 <i class="no-highlight">117</i>&nbsp;
-<i class="no-highlight">118</i>&nbsp;            case java.sql.Types.BIGINT:
-<b class="fc"><i class="no-highlight">119</i>&nbsp;                result = LongType;</b>
-<b class="fc"><i class="no-highlight">120</i>&nbsp;                break;</b>
-<i class="no-highlight">121</i>&nbsp;
-<i class="no-highlight">122</i>&nbsp;            case java.sql.Types.FLOAT:
-<b class="fc"><i class="no-highlight">123</i>&nbsp;                result = FloatType;</b>
-<b class="fc"><i class="no-highlight">124</i>&nbsp;                break;</b>
+<i class="no-highlight">118</i>&nbsp;    // For unit tests only for now.
+<i class="no-highlight">119</i>&nbsp;    void execute(String sql, Object... parameters) {
+<i class="no-highlight">120</i>&nbsp;
+<b class="fc"><i class="no-highlight">121</i>&nbsp;        log.debug(&quot;execute: %s params: %s&quot;, sql, Arrays.asList(parameters));</b>
+<i class="no-highlight">122</i>&nbsp;
+<b class="fc"><i class="no-highlight">123</i>&nbsp;        Statement st = null;</b>
+<i class="no-highlight">124</i>&nbsp;        try {
 <i class="no-highlight">125</i>&nbsp;
-<i class="no-highlight">126</i>&nbsp;            case java.sql.Types.DOUBLE:
-<i class="no-highlight">127</i>&nbsp;            case java.sql.Types.REAL:
-<b class="fc"><i class="no-highlight">128</i>&nbsp;                result = DoubleType;</b>
-<b class="fc"><i class="no-highlight">129</i>&nbsp;                break;</b>
-<i class="no-highlight">130</i>&nbsp;
-<i class="no-highlight">131</i>&nbsp;            case java.sql.Types.BINARY:
-<i class="no-highlight">132</i>&nbsp;            case java.sql.Types.VARBINARY:
-<b class="fc"><i class="no-highlight">133</i>&nbsp;                result = ByteArrayType;</b>
-<b class="fc"><i class="no-highlight">134</i>&nbsp;                break;</b>
+<b class="fc"><i class="no-highlight">126</i>&nbsp;            if (parameters.length == 0) {</b>
+<b class="fc"><i class="no-highlight">127</i>&nbsp;                st = session.connection.createStatement();</b>
+<b class="fc"><i class="no-highlight">128</i>&nbsp;                st.execute(sql);</b>
+<i class="no-highlight">129</i>&nbsp;            } else {
+<b class="fc"><i class="no-highlight">130</i>&nbsp;                st = session.connection.prepareStatement(sql);</b>
+<b class="fc"><i class="no-highlight">131</i>&nbsp;                PreparedStatement pst = (PreparedStatement) st;</b>
+<b class="fc"><i class="no-highlight">132</i>&nbsp;                setParameters(pst, parameters);</b>
+<b class="fc"><i class="no-highlight">133</i>&nbsp;                pst.execute();</b>
+<i class="no-highlight">134</i>&nbsp;            }
 <i class="no-highlight">135</i>&nbsp;
-<i class="no-highlight">136</i>&nbsp;            case java.sql.Types.LONGVARBINARY:
-<i class="no-highlight">137</i>&nbsp;            case java.sql.Types.BLOB:
-<b class="fc"><i class="no-highlight">138</i>&nbsp;                result = BlobType;</b>
-<b class="fc"><i class="no-highlight">139</i>&nbsp;                break;</b>
-<i class="no-highlight">140</i>&nbsp;
-<i class="no-highlight">141</i>&nbsp;            case java.sql.Types.DATE:
-<b class="fc"><i class="no-highlight">142</i>&nbsp;                result = SQLDateType;</b>
-<b class="fc"><i class="no-highlight">143</i>&nbsp;                break;</b>
-<i class="no-highlight">144</i>&nbsp;
-<i class="no-highlight">145</i>&nbsp;            case java.sql.Types.TIME:
-<b class="fc"><i class="no-highlight">146</i>&nbsp;                result = TimeType;</b>
-<b class="fc"><i class="no-highlight">147</i>&nbsp;                break;</b>
-<i class="no-highlight">148</i>&nbsp;
-<i class="no-highlight">149</i>&nbsp;            case java.sql.Types.TIMESTAMP:
-<b class="fc"><i class="no-highlight">150</i>&nbsp;                result = TimestampType;</b>
-<b class="fc"><i class="no-highlight">151</i>&nbsp;                break;</b>
-<i class="no-highlight">152</i>&nbsp;
-<i class="no-highlight">153</i>&nbsp;            case java.sql.Types.CLOB:
-<i class="no-highlight">154</i>&nbsp;            case java.sql.Types.NCLOB:
-<b class="fc"><i class="no-highlight">155</i>&nbsp;                result = ClobType;</b>
-<b class="fc"><i class="no-highlight">156</i>&nbsp;                break;</b>
-<i class="no-highlight">157</i>&nbsp;
-<i class="no-highlight">158</i>&nbsp;            case java.sql.Types.OTHER:
-<b class="fc"><i class="no-highlight">159</i>&nbsp;                result = ObjectType;</b>
-<i class="no-highlight">160</i>&nbsp;        }
+<b class="nc"><i class="no-highlight">136</i>&nbsp;        } catch (Exception e) {</b>
+<b class="nc"><i class="no-highlight">137</i>&nbsp;            Util.rollback(session.connection);</b>
+<b class="nc"><i class="no-highlight">138</i>&nbsp;            throw new PersismException(e.getMessage(), e);</b>
+<i class="no-highlight">139</i>&nbsp;        } finally {
+<b class="fc"><i class="no-highlight">140</i>&nbsp;            Util.cleanup(st, null);</b>
+<b class="fc"><i class="no-highlight">141</i>&nbsp;        }</b>
+<i class="no-highlight">142</i>&nbsp;    }
+<i class="no-highlight">143</i>&nbsp;
+<i class="no-highlight">144</i>&nbsp;    /**
+<i class="no-highlight">145</i>&nbsp;     * Original from Adam Crume, JavaWorld.com, 04/03/07
+<i class="no-highlight">146</i>&nbsp;     * https://www.infoworld.com/article/2077706/named-parameters-for-preparedstatement.html
+<i class="no-highlight">147</i>&nbsp;     * https://archive.ph/au5XM and https://archive.ph/4OOze
+<i class="no-highlight">148</i>&nbsp;     *
+<i class="no-highlight">149</i>&nbsp;     * @param sql      query to parse
+<i class="no-highlight">150</i>&nbsp;     * @param paramMap map to hold parameter-index mappings
+<i class="no-highlight">151</i>&nbsp;     * @return the parsed query
+<i class="no-highlight">152</i>&nbsp;     */
+<i class="no-highlight">153</i>&nbsp;    String parseParameters(char delim, String sql, Map&lt;String, List&lt;Integer&gt;&gt; paramMap) {
+<b class="fc"><i class="no-highlight">154</i>&nbsp;        log.debug(&quot;parseParameters using &quot; + delim);</b>
+<i class="no-highlight">155</i>&nbsp;
+<b class="fc"><i class="no-highlight">156</i>&nbsp;        int length = sql.length();</b>
+<b class="fc"><i class="no-highlight">157</i>&nbsp;        StringBuilder parsedQuery = new StringBuilder(length);</b>
+<i class="no-highlight">158</i>&nbsp;
+<b class="fc"><i class="no-highlight">159</i>&nbsp;        Set&lt;Character&gt; startDelims = new HashSet&lt;&gt;(4);</b>
+<b class="fc"><i class="no-highlight">160</i>&nbsp;        startDelims.add(&#39;&quot;&#39;);</b>
 <i class="no-highlight">161</i>&nbsp;
-<b class="fc"><i class="no-highlight">162</i>&nbsp;        if (result == null) {</b>
-<b class="fc"><i class="no-highlight">163</i>&nbsp;            log.warnNoDuplicates(Messages.UnknownSQLType.message(sqlType));</b>
-<i class="no-highlight">164</i>&nbsp;        }
-<i class="no-highlight">165</i>&nbsp;
-<b class="fc"><i class="no-highlight">166</i>&nbsp;        return result;</b>
-<i class="no-highlight">167</i>&nbsp;    }
+<b class="fc"><i class="no-highlight">162</i>&nbsp;        String sd = session.metaData.getConnectionType().getKeywordStartDelimiter();</b>
+<b class="fc"><i class="no-highlight">163</i>&nbsp;        String ed = session.metaData.getConnectionType().getKeywordEndDelimiter();</b>
+<i class="no-highlight">164</i>&nbsp;
+<b class="fc"><i class="no-highlight">165</i>&nbsp;        if (Util.isNotEmpty(sd)) {</b>
+<b class="fc"><i class="no-highlight">166</i>&nbsp;            startDelims.add(sd.charAt(0));</b>
+<i class="no-highlight">167</i>&nbsp;        }
 <i class="no-highlight">168</i>&nbsp;
-<i class="no-highlight">169</i>&nbsp;    public Class&lt;?&gt; getJavaType() {
-<b class="fc"><i class="no-highlight">170</i>&nbsp;        return type;</b>
-<i class="no-highlight">171</i>&nbsp;    }
-<i class="no-highlight">172</i>&nbsp;
-<i class="no-highlight">173</i>&nbsp;    public boolean isEligibleForAutoinc() {
-<i class="no-highlight">174</i>&nbsp;        // Oracle returns BigDecimalType for INT
-<i class="no-highlight">175</i>&nbsp;        // PUBS has SmallInt -&gt; short
-<b class="fc"><i class="no-highlight">176</i>&nbsp;        return this == IntegerType || this == integerType || this == LongType || this == longType</b>
-<i class="no-highlight">177</i>&nbsp;                || this == ShortType || this == shortType || this == BigDecimalType || this == BigIntegerType;
-<i class="no-highlight">178</i>&nbsp;    }
-<i class="no-highlight">179</i>&nbsp;
-<i class="no-highlight">180</i>&nbsp;    // https://stackoverflow.com/questions/2891970/getting-default-value-for-primitive-types
-<i class="no-highlight">181</i>&nbsp;    public static &lt;T&gt; T getDefaultValue(Class&lt;T&gt; clazz) {
-<b class="fc"><i class="no-highlight">182</i>&nbsp;        return (T) Array.get(Array.newInstance(clazz, 1), 0);</b>
-<i class="no-highlight">183</i>&nbsp;    }
-<i class="no-highlight">184</i>&nbsp;}
-<i class="no-highlight">185</i>&nbsp;
-<i class="no-highlight">186</i>&nbsp;
+<b class="fc"><i class="no-highlight">169</i>&nbsp;        Set&lt;Character&gt; endDelims = new HashSet&lt;&gt;(4);</b>
+<b class="fc"><i class="no-highlight">170</i>&nbsp;        endDelims.add(&#39;&quot;&#39;);</b>
+<i class="no-highlight">171</i>&nbsp;
+<b class="fc"><i class="no-highlight">172</i>&nbsp;        if (Util.isNotEmpty(ed)) {</b>
+<b class="fc"><i class="no-highlight">173</i>&nbsp;            endDelims.add(ed.charAt(0));</b>
+<i class="no-highlight">174</i>&nbsp;        }
+<i class="no-highlight">175</i>&nbsp;
+<b class="fc"><i class="no-highlight">176</i>&nbsp;        boolean inDelimiter = false;</b>
+<b class="fc"><i class="no-highlight">177</i>&nbsp;        int index = 1;</b>
+<i class="no-highlight">178</i>&nbsp;
+<b class="fc"><i class="no-highlight">179</i>&nbsp;        for (int i = 0; i &lt; length; i++) {</b>
+<b class="fc"><i class="no-highlight">180</i>&nbsp;            char c = sql.charAt(i);</b>
+<b class="fc"><i class="no-highlight">181</i>&nbsp;            if (inDelimiter) {</b>
+<b class="fc"><i class="no-highlight">182</i>&nbsp;                if (endDelims.contains(c)) {</b>
+<b class="fc"><i class="no-highlight">183</i>&nbsp;                    inDelimiter = false;</b>
+<i class="no-highlight">184</i>&nbsp;                }
+<b class="fc"><i class="no-highlight">185</i>&nbsp;            } else if (startDelims.contains(c)) {</b>
+<b class="fc"><i class="no-highlight">186</i>&nbsp;                inDelimiter = true;</b>
+<b class="fc"><i class="no-highlight">187</i>&nbsp;            } else if (c == delim &amp;&amp; i + 1 &lt; length &amp;&amp; Character.isJavaIdentifierStart(sql.charAt(i + 1))) {</b>
+<b class="fc"><i class="no-highlight">188</i>&nbsp;                int j = i + 2;</b>
+<b class="fc"><i class="no-highlight">189</i>&nbsp;                while (j &lt; length &amp;&amp; Character.isJavaIdentifierPart(sql.charAt(j))) {</b>
+<b class="fc"><i class="no-highlight">190</i>&nbsp;                    j++;</b>
+<i class="no-highlight">191</i>&nbsp;                }
+<b class="fc"><i class="no-highlight">192</i>&nbsp;                String name = sql.substring(i + 1, j);</b>
+<b class="fc"><i class="no-highlight">193</i>&nbsp;                c = &#39;?&#39;; // replace the parameter with a question mark</b>
+<b class="fc"><i class="no-highlight">194</i>&nbsp;                i += name.length(); // skip past the end of the parameter</b>
+<i class="no-highlight">195</i>&nbsp;
+<b class="fc"><i class="no-highlight">196</i>&nbsp;                List&lt;Integer&gt; indexList = paramMap.get(name);</b>
+<b class="fc"><i class="no-highlight">197</i>&nbsp;                if (indexList == null) {</b>
+<b class="fc"><i class="no-highlight">198</i>&nbsp;                    indexList = new LinkedList&lt;&gt;();</b>
+<b class="fc"><i class="no-highlight">199</i>&nbsp;                    paramMap.put(name, indexList);</b>
+<i class="no-highlight">200</i>&nbsp;                }
+<b class="fc"><i class="no-highlight">201</i>&nbsp;                indexList.add(index);</b>
+<i class="no-highlight">202</i>&nbsp;
+<b class="fc"><i class="no-highlight">203</i>&nbsp;                index++;</b>
+<i class="no-highlight">204</i>&nbsp;            }
+<b class="fc"><i class="no-highlight">205</i>&nbsp;            parsedQuery.append(c);</b>
+<i class="no-highlight">206</i>&nbsp;        }
+<i class="no-highlight">207</i>&nbsp;
+<b class="fc"><i class="no-highlight">208</i>&nbsp;        return parsedQuery.toString();</b>
+<i class="no-highlight">209</i>&nbsp;    }
+<i class="no-highlight">210</i>&nbsp;
+<i class="no-highlight">211</i>&nbsp;    String parsePropertyNames(String sql, Class&lt;?&gt; objectClass, Connection connection) {
+<b class="fc"><i class="no-highlight">212</i>&nbsp;        log.debug(&quot;parsePropertyNames using : with SQL: %s&quot;, sql);</b>
+<i class="no-highlight">213</i>&nbsp;
+<b class="fc"><i class="no-highlight">214</i>&nbsp;        int length = sql.length();</b>
+<b class="fc"><i class="no-highlight">215</i>&nbsp;        StringBuilder parsedQuery = new StringBuilder(length);</b>
+<i class="no-highlight">216</i>&nbsp;
+<b class="fc"><i class="no-highlight">217</i>&nbsp;        String sd = session.metaData.getConnectionType().getKeywordStartDelimiter();</b>
+<b class="fc"><i class="no-highlight">218</i>&nbsp;        String ed = session.metaData.getConnectionType().getKeywordEndDelimiter();</b>
+<i class="no-highlight">219</i>&nbsp;
+<b class="fc"><i class="no-highlight">220</i>&nbsp;        Set&lt;Character&gt; startDelims = new HashSet&lt;&gt;(4);</b>
+<b class="fc"><i class="no-highlight">221</i>&nbsp;        startDelims.add(&#39;&quot;&#39;);</b>
+<b class="fc"><i class="no-highlight">222</i>&nbsp;        startDelims.add(&#39;\&#39;&#39;);</b>
+<i class="no-highlight">223</i>&nbsp;
+<b class="fc"><i class="no-highlight">224</i>&nbsp;        if (Util.isNotEmpty(sd)) {</b>
+<b class="fc"><i class="no-highlight">225</i>&nbsp;            startDelims.add(sd.charAt(0));</b>
+<i class="no-highlight">226</i>&nbsp;        }
+<i class="no-highlight">227</i>&nbsp;
+<b class="fc"><i class="no-highlight">228</i>&nbsp;        Set&lt;Character&gt; endDelims = new HashSet&lt;&gt;(4);</b>
+<b class="fc"><i class="no-highlight">229</i>&nbsp;        endDelims.add(&#39;&quot;&#39;);</b>
+<b class="fc"><i class="no-highlight">230</i>&nbsp;        endDelims.add(&#39;\&#39;&#39;);</b>
+<i class="no-highlight">231</i>&nbsp;
+<b class="fc"><i class="no-highlight">232</i>&nbsp;        if (Util.isNotEmpty(session.metaData.getConnectionType().getKeywordEndDelimiter())) {</b>
+<b class="fc"><i class="no-highlight">233</i>&nbsp;            endDelims.add(ed.charAt(0));</b>
+<i class="no-highlight">234</i>&nbsp;        }
+<i class="no-highlight">235</i>&nbsp;
+<b class="fc"><i class="no-highlight">236</i>&nbsp;        Map&lt;String, PropertyInfo&gt; properties = session.metaData.getTableColumnsPropertyInfo(objectClass, connection);</b>
+<i class="no-highlight">237</i>&nbsp;
+<b class="fc"><i class="no-highlight">238</i>&nbsp;        Set&lt;String&gt; propertiesNotFound = new LinkedHashSet&lt;&gt;();</b>
+<i class="no-highlight">239</i>&nbsp;
+<b class="fc"><i class="no-highlight">240</i>&nbsp;        boolean inDelimiter = false;</b>
+<i class="no-highlight">241</i>&nbsp;        boolean appendChar;
+<b class="fc"><i class="no-highlight">242</i>&nbsp;        for (int i = 0; i &lt; length; i++) {</b>
+<b class="fc"><i class="no-highlight">243</i>&nbsp;            appendChar = true;</b>
+<b class="fc"><i class="no-highlight">244</i>&nbsp;            char c = sql.charAt(i);</b>
+<b class="fc"><i class="no-highlight">245</i>&nbsp;            if (inDelimiter) {</b>
+<b class="fc"><i class="no-highlight">246</i>&nbsp;                if (endDelims.contains(c)) {</b>
+<b class="fc"><i class="no-highlight">247</i>&nbsp;                    inDelimiter = false;</b>
+<i class="no-highlight">248</i>&nbsp;                }
+<b class="fc"><i class="no-highlight">249</i>&nbsp;            } else if (startDelims.contains(c)) {</b>
+<b class="fc"><i class="no-highlight">250</i>&nbsp;                inDelimiter = true;</b>
+<b class="fc"><i class="no-highlight">251</i>&nbsp;            } else if (c == &#39;:&#39; &amp;&amp; i + 1 &lt; length &amp;&amp; Character.isJavaIdentifierStart(sql.charAt(i + 1))) {</b>
+<b class="fc"><i class="no-highlight">252</i>&nbsp;                int j = i + 2;</b>
+<b class="fc"><i class="no-highlight">253</i>&nbsp;                while (j &lt; length &amp;&amp; Character.isJavaIdentifierPart(sql.charAt(j))) {</b>
+<b class="fc"><i class="no-highlight">254</i>&nbsp;                    j++;</b>
+<i class="no-highlight">255</i>&nbsp;                }
+<b class="fc"><i class="no-highlight">256</i>&nbsp;                String name = sql.substring(i + 1, j);</b>
+<b class="fc"><i class="no-highlight">257</i>&nbsp;                log.debug(&quot;parsePropertyNames property name: %s&quot;, name);</b>
+<b class="fc"><i class="no-highlight">258</i>&nbsp;                i += name.length(); // skip past the end if the property name</b>
+<i class="no-highlight">259</i>&nbsp;
+<b class="fc"><i class="no-highlight">260</i>&nbsp;                boolean found = false;</b>
+<b class="fc"><i class="no-highlight">261</i>&nbsp;                for (String col : properties.keySet()) {</b>
+<b class="fc"><i class="no-highlight">262</i>&nbsp;                    PropertyInfo propertyInfo = properties.get(col);</b>
+<i class="no-highlight">263</i>&nbsp;                    // ignore case?
+<b class="fc"><i class="no-highlight">264</i>&nbsp;                    if (propertyInfo.propertyName.equals(name)) {</b>
+<b class="fc"><i class="no-highlight">265</i>&nbsp;                        parsedQuery.append(sd).append(col).append(ed);</b>
+<b class="fc"><i class="no-highlight">266</i>&nbsp;                        appendChar = false;</b>
+<b class="fc"><i class="no-highlight">267</i>&nbsp;                        found = true;</b>
+<b class="fc"><i class="no-highlight">268</i>&nbsp;                        break;</b>
+<i class="no-highlight">269</i>&nbsp;                    }
+<b class="fc"><i class="no-highlight">270</i>&nbsp;                }</b>
+<b class="fc"><i class="no-highlight">271</i>&nbsp;                if (!found) {</b>
+<b class="fc"><i class="no-highlight">272</i>&nbsp;                    propertiesNotFound.add(name);</b>
+<i class="no-highlight">273</i>&nbsp;                }
+<i class="no-highlight">274</i>&nbsp;            }
+<b class="fc"><i class="no-highlight">275</i>&nbsp;            if (appendChar) {</b>
+<b class="fc"><i class="no-highlight">276</i>&nbsp;                parsedQuery.append(c);</b>
+<i class="no-highlight">277</i>&nbsp;            }
+<i class="no-highlight">278</i>&nbsp;        }
+<i class="no-highlight">279</i>&nbsp;
+<b class="fc"><i class="no-highlight">280</i>&nbsp;        if (propertiesNotFound.size() &gt; 0) {</b>
+<b class="fc"><i class="no-highlight">281</i>&nbsp;            throw new PersismException(Messages.QueryPropertyNamesMissingOrNotFound.message(propertiesNotFound, sql));</b>
+<i class="no-highlight">282</i>&nbsp;        }
+<b class="fc"><i class="no-highlight">283</i>&nbsp;        String parsedSql = parsedQuery.toString();</b>
+<b class="fc"><i class="no-highlight">284</i>&nbsp;        log.debug(&quot;parsePropertyNames SQL: %s&quot;, parsedSql);</b>
+<b class="fc"><i class="no-highlight">285</i>&nbsp;        return parsedSql;</b>
+<i class="no-highlight">286</i>&nbsp;    }
+<i class="no-highlight">287</i>&nbsp;
+<i class="no-highlight">288</i>&nbsp;    void checkIfOkForWriteOperation(Object object, String operation) {
+<b class="fc"><i class="no-highlight">289</i>&nbsp;        Class&lt;?&gt; objectClass = object.getClass();</b>
+<b class="fc"><i class="no-highlight">290</i>&nbsp;        if (objectClass.getAnnotation(View.class) != null) {</b>
+<b class="fc"><i class="no-highlight">291</i>&nbsp;            throw new PersismException(Messages.OperationNotSupportedForView.message(objectClass, operation));</b>
+<i class="no-highlight">292</i>&nbsp;        }
+<b class="fc"><i class="no-highlight">293</i>&nbsp;        if (objectClass.getAnnotation(NotTable.class) != null) {</b>
+<b class="nc"><i class="no-highlight">294</i>&nbsp;            throw new PersismException(Messages.OperationNotSupportedForNotTableQuery.message(objectClass, operation));</b>
+<i class="no-highlight">295</i>&nbsp;        }
+<b class="fc"><i class="no-highlight">296</i>&nbsp;        if (Types.getType(objectClass) != null) {</b>
+<b class="nc"><i class="no-highlight">297</i>&nbsp;            throw new PersismException(Messages.OperationNotSupportedForJavaType.message(objectClass, operation));</b>
+<i class="no-highlight">298</i>&nbsp;        }
+<i class="no-highlight">299</i>&nbsp;    }
+<i class="no-highlight">300</i>&nbsp;
+<i class="no-highlight">301</i>&nbsp;    Object getTypedValueReturnedFromGeneratedKeys(Class&lt;?&gt; objectClass, ResultSet rs) throws SQLException {
+<i class="no-highlight">302</i>&nbsp;
+<b class="fc"><i class="no-highlight">303</i>&nbsp;        Object value = null;</b>
+<b class="fc"><i class="no-highlight">304</i>&nbsp;        Types type = Types.getType(objectClass);</b>
+<i class="no-highlight">305</i>&nbsp;
+<b class="fc"><i class="no-highlight">306</i>&nbsp;        if (type == null) {</b>
+<b class="nc"><i class="no-highlight">307</i>&nbsp;            log.warn(Messages.UnknownTypeForPrimaryGeneratedKey.message(objectClass));</b>
+<b class="nc"><i class="no-highlight">308</i>&nbsp;            return rs.getObject(1);</b>
+<i class="no-highlight">309</i>&nbsp;        }
+<i class="no-highlight">310</i>&nbsp;
+<b class="fc"><i class="no-highlight">311</i>&nbsp;        value = switch (type) {</b>
+<b class="fc"><i class="no-highlight">312</i>&nbsp;            case integerType, IntegerType -&gt; rs.getInt(1);</b>
+<b class="fc"><i class="no-highlight">313</i>&nbsp;            case longType, LongType -&gt; rs.getLong(1);</b>
+<b class="fc"><i class="no-highlight">314</i>&nbsp;            default -&gt; rs.getObject(1);</b>
+<i class="no-highlight">315</i>&nbsp;        };
+<b class="fc"><i class="no-highlight">316</i>&nbsp;        return value;</b>
+<i class="no-highlight">317</i>&nbsp;    }
+<i class="no-highlight">318</i>&nbsp;
+<i class="no-highlight">319</i>&nbsp;    &lt;T&gt; Constructor&lt;T&gt; findConstructor(Class&lt;T&gt; objectClass, List&lt;String&gt; propertyNames) {
+<b class="fc"><i class="no-highlight">320</i>&nbsp;        Constructor&lt;?&gt;[] constructors = objectClass.getConstructors();</b>
+<b class="fc"><i class="no-highlight">321</i>&nbsp;        Constructor&lt;T&gt; selectedConstructor = null;</b>
+<i class="no-highlight">322</i>&nbsp;
+<b class="fc"><i class="no-highlight">323</i>&nbsp;        for (Constructor&lt;?&gt; constructor : constructors) {</b>
+<i class="no-highlight">324</i>&nbsp;            // Check with canonical or maybe -parameters
+<b class="fc"><i class="no-highlight">325</i>&nbsp;            List&lt;String&gt; parameterNames = Arrays.stream(constructor.getParameters()).</b>
+<b class="fc"><i class="no-highlight">326</i>&nbsp;                    map(Parameter::getName).collect(Collectors.toList());</b>
+<i class="no-highlight">327</i>&nbsp;
+<b class="fc"><i class="no-highlight">328</i>&nbsp;            if (listEqualsIgnoreOrder(propertyNames, parameterNames)) {</b>
+<i class="no-highlight">329</i>&nbsp;                // re-arrange the propertyNames to match parameterNames
+<b class="fc"><i class="no-highlight">330</i>&nbsp;                propertyNames.clear();</b>
+<b class="fc"><i class="no-highlight">331</i>&nbsp;                propertyNames.addAll(parameterNames);</b>
+<b class="fc"><i class="no-highlight">332</i>&nbsp;                selectedConstructor = (Constructor&lt;T&gt;) constructor;</b>
+<b class="fc"><i class="no-highlight">333</i>&nbsp;                break;</b>
+<i class="no-highlight">334</i>&nbsp;            }
+<i class="no-highlight">335</i>&nbsp;
+<i class="no-highlight">336</i>&nbsp;            // Check with ConstructorProperties
+<b class="fc"><i class="no-highlight">337</i>&nbsp;            ConstructorProperties constructorProperties = constructor.getAnnotation(ConstructorProperties.class);</b>
+<b class="fc"><i class="no-highlight">338</i>&nbsp;            if (constructorProperties != null) {</b>
+<b class="fc"><i class="no-highlight">339</i>&nbsp;                parameterNames = Arrays.asList(constructorProperties.value());</b>
+<b class="fc"><i class="no-highlight">340</i>&nbsp;                if (listEqualsIgnoreOrder(propertyNames, parameterNames)) {</b>
+<i class="no-highlight">341</i>&nbsp;                    // re-arrange the propertyNames to match parameterNames
+<b class="fc"><i class="no-highlight">342</i>&nbsp;                    propertyNames.clear();</b>
+<b class="fc"><i class="no-highlight">343</i>&nbsp;                    propertyNames.addAll(parameterNames);</b>
+<b class="fc"><i class="no-highlight">344</i>&nbsp;                    selectedConstructor = (Constructor&lt;T&gt;) constructor;</b>
+<b class="fc"><i class="no-highlight">345</i>&nbsp;                    break;</b>
+<i class="no-highlight">346</i>&nbsp;                }
+<i class="no-highlight">347</i>&nbsp;            }
+<i class="no-highlight">348</i>&nbsp;        }
+<i class="no-highlight">349</i>&nbsp;
+<b class="fc"><i class="no-highlight">350</i>&nbsp;        if (selectedConstructor == null) {</b>
+<b class="fc"><i class="no-highlight">351</i>&nbsp;            throw new PersismException(Messages.CouldNotFindConstructorForRecord.message(objectClass, propertyNames));</b>
+<i class="no-highlight">352</i>&nbsp;        }
+<b class="fc"><i class="no-highlight">353</i>&nbsp;        return selectedConstructor;</b>
+<i class="no-highlight">354</i>&nbsp;    }
+<i class="no-highlight">355</i>&nbsp;
+<i class="no-highlight">356</i>&nbsp;    // https://stackoverflow.com/questions/1075656/simple-way-to-find-if-two-different-lists-contain-exactly-the-same-elements
+<i class="no-highlight">357</i>&nbsp;    private static &lt;T&gt; boolean listEqualsIgnoreOrder(List&lt;T&gt; list1, List&lt;T&gt; list2) {
+<b class="fc"><i class="no-highlight">358</i>&nbsp;        return new HashSet&lt;&gt;(list1).equals(new HashSet&lt;&gt;(list2));</b>
+<i class="no-highlight">359</i>&nbsp;    }
+<i class="no-highlight">360</i>&nbsp;
+<i class="no-highlight">361</i>&nbsp;
+<i class="no-highlight">362</i>&nbsp;    void setParameters(PreparedStatement st, Object[] parameters) throws SQLException {
+<b class="fc"><i class="no-highlight">363</i>&nbsp;        if (log.isDebugEnabled()) {</b>
+<b class="nc"><i class="no-highlight">364</i>&nbsp;            log.debug(&quot;setParameters PARAMS: %s&quot;, Arrays.asList(parameters));</b>
+<i class="no-highlight">365</i>&nbsp;        }
+<i class="no-highlight">366</i>&nbsp;
+<i class="no-highlight">367</i>&nbsp;        Object value; // used for conversions
+<b class="fc"><i class="no-highlight">368</i>&nbsp;        int n = 1;</b>
+<b class="fc"><i class="no-highlight">369</i>&nbsp;        for (Object param : parameters) {</b>
+<i class="no-highlight">370</i>&nbsp;
+<b class="fc"><i class="no-highlight">371</i>&nbsp;            if (param != null) {</b>
+<i class="no-highlight">372</i>&nbsp;
+<b class="fc"><i class="no-highlight">373</i>&nbsp;                Types paramType = Types.getType(param.getClass());</b>
+<b class="fc"><i class="no-highlight">374</i>&nbsp;                if (paramType == null) {</b>
+<b class="nc"><i class="no-highlight">375</i>&nbsp;                    log.warn(Messages.UnknownTypeInSetParameters.message(param.getClass()));</b>
+<b class="nc"><i class="no-highlight">376</i>&nbsp;                    paramType = Types.ObjectType;</b>
+<i class="no-highlight">377</i>&nbsp;                }
+<i class="no-highlight">378</i>&nbsp;
+<b class="fc"><i class="no-highlight">379</i>&nbsp;                switch (paramType) {</b>
+<i class="no-highlight">380</i>&nbsp;
+<i class="no-highlight">381</i>&nbsp;                    case booleanType:
+<i class="no-highlight">382</i>&nbsp;                    case BooleanType:
+<b class="fc"><i class="no-highlight">383</i>&nbsp;                        st.setBoolean(n, (Boolean) param);</b>
+<b class="fc"><i class="no-highlight">384</i>&nbsp;                        break;</b>
+<i class="no-highlight">385</i>&nbsp;
+<i class="no-highlight">386</i>&nbsp;                    case byteType:
+<i class="no-highlight">387</i>&nbsp;                    case ByteType:
+<b class="fc"><i class="no-highlight">388</i>&nbsp;                        st.setByte(n, (Byte) param);</b>
+<b class="fc"><i class="no-highlight">389</i>&nbsp;                        break;</b>
+<i class="no-highlight">390</i>&nbsp;
+<i class="no-highlight">391</i>&nbsp;                    case shortType:
+<i class="no-highlight">392</i>&nbsp;                    case ShortType:
+<b class="fc"><i class="no-highlight">393</i>&nbsp;                        st.setShort(n, (Short) param);</b>
+<b class="fc"><i class="no-highlight">394</i>&nbsp;                        break;</b>
+<i class="no-highlight">395</i>&nbsp;
+<i class="no-highlight">396</i>&nbsp;                    case integerType:
+<i class="no-highlight">397</i>&nbsp;                    case IntegerType:
+<b class="fc"><i class="no-highlight">398</i>&nbsp;                        st.setInt(n, (Integer) param);</b>
+<b class="fc"><i class="no-highlight">399</i>&nbsp;                        break;</b>
+<i class="no-highlight">400</i>&nbsp;
+<i class="no-highlight">401</i>&nbsp;                    case longType:
+<i class="no-highlight">402</i>&nbsp;                    case LongType:
+<b class="fc"><i class="no-highlight">403</i>&nbsp;                        st.setLong(n, (Long) param);</b>
+<b class="fc"><i class="no-highlight">404</i>&nbsp;                        break;</b>
+<i class="no-highlight">405</i>&nbsp;
+<i class="no-highlight">406</i>&nbsp;                    case floatType:
+<i class="no-highlight">407</i>&nbsp;                    case FloatType:
+<b class="fc"><i class="no-highlight">408</i>&nbsp;                        st.setFloat(n, (Float) param);</b>
+<b class="fc"><i class="no-highlight">409</i>&nbsp;                        break;</b>
+<i class="no-highlight">410</i>&nbsp;
+<i class="no-highlight">411</i>&nbsp;                    case doubleType:
+<i class="no-highlight">412</i>&nbsp;                    case DoubleType:
+<b class="fc"><i class="no-highlight">413</i>&nbsp;                        st.setDouble(n, (Double) param);</b>
+<b class="fc"><i class="no-highlight">414</i>&nbsp;                        break;</b>
+<i class="no-highlight">415</i>&nbsp;
+<i class="no-highlight">416</i>&nbsp;                    case BigDecimalType:
+<b class="fc"><i class="no-highlight">417</i>&nbsp;                        st.setBigDecimal(n, (BigDecimal) param);</b>
+<b class="fc"><i class="no-highlight">418</i>&nbsp;                        break;</b>
+<i class="no-highlight">419</i>&nbsp;
+<i class="no-highlight">420</i>&nbsp;                    case BigIntegerType:
+<b class="fc"><i class="no-highlight">421</i>&nbsp;                        st.setString(n, &quot;&quot; + param);</b>
+<b class="fc"><i class="no-highlight">422</i>&nbsp;                        break;</b>
+<i class="no-highlight">423</i>&nbsp;
+<i class="no-highlight">424</i>&nbsp;                    case StringType:
+<b class="fc"><i class="no-highlight">425</i>&nbsp;                        st.setString(n, (String) param);</b>
+<b class="fc"><i class="no-highlight">426</i>&nbsp;                        break;</b>
+<i class="no-highlight">427</i>&nbsp;
+<i class="no-highlight">428</i>&nbsp;                    case characterType:
+<i class="no-highlight">429</i>&nbsp;                    case CharacterType:
+<b class="fc"><i class="no-highlight">430</i>&nbsp;                        st.setObject(n, &quot;&quot; + param);</b>
+<b class="fc"><i class="no-highlight">431</i>&nbsp;                        break;</b>
+<i class="no-highlight">432</i>&nbsp;
+<i class="no-highlight">433</i>&nbsp;                    case SQLDateType:
+<b class="fc"><i class="no-highlight">434</i>&nbsp;                        st.setDate(n, (java.sql.Date) param);</b>
+<b class="fc"><i class="no-highlight">435</i>&nbsp;                        break;</b>
+<i class="no-highlight">436</i>&nbsp;
+<i class="no-highlight">437</i>&nbsp;                    case TimeType:
+<b class="fc"><i class="no-highlight">438</i>&nbsp;                        st.setTime(n, (Time) param);</b>
+<b class="fc"><i class="no-highlight">439</i>&nbsp;                        break;</b>
+<i class="no-highlight">440</i>&nbsp;
+<i class="no-highlight">441</i>&nbsp;                    case TimestampType:
+<b class="fc"><i class="no-highlight">442</i>&nbsp;                        st.setTimestamp(n, (Timestamp) param);</b>
+<b class="fc"><i class="no-highlight">443</i>&nbsp;                        break;</b>
+<i class="no-highlight">444</i>&nbsp;
+<i class="no-highlight">445</i>&nbsp;                    case LocalTimeType:
+<b class="fc"><i class="no-highlight">446</i>&nbsp;                        value = session.converter.convert(param, Time.class, &quot;Parameter &quot; + n);</b>
+<b class="fc"><i class="no-highlight">447</i>&nbsp;                        st.setObject(n, value);</b>
+<b class="fc"><i class="no-highlight">448</i>&nbsp;                        break;</b>
+<i class="no-highlight">449</i>&nbsp;
+<i class="no-highlight">450</i>&nbsp;                    case UtilDateType:
+<i class="no-highlight">451</i>&nbsp;                    case LocalDateType:
+<i class="no-highlight">452</i>&nbsp;                    case LocalDateTimeType:
+<b class="fc"><i class="no-highlight">453</i>&nbsp;                        value = session.converter.convert(param, Timestamp.class, &quot;Parameter &quot; + n);</b>
+<b class="fc"><i class="no-highlight">454</i>&nbsp;                        st.setObject(n, value);</b>
+<b class="fc"><i class="no-highlight">455</i>&nbsp;                        break;</b>
+<i class="no-highlight">456</i>&nbsp;
+<i class="no-highlight">457</i>&nbsp;                    case OffsetDateTimeType:
+<i class="no-highlight">458</i>&nbsp;                    case ZonedDateTimeType:
+<i class="no-highlight">459</i>&nbsp;                    case InstantType:
+<b class="nc"><i class="no-highlight">460</i>&nbsp;                        log.warn(Messages.UnSupportedTypeInSetParameters.message(paramType));</b>
+<b class="nc"><i class="no-highlight">461</i>&nbsp;                        st.setObject(n, param);</b>
+<b class="nc"><i class="no-highlight">462</i>&nbsp;                        break;</b>
+<i class="no-highlight">463</i>&nbsp;
+<i class="no-highlight">464</i>&nbsp;                    case byteArrayType:
+<i class="no-highlight">465</i>&nbsp;                    case ByteArrayType:
+<i class="no-highlight">466</i>&nbsp;                        // Blob maps to byte array
+<b class="fc"><i class="no-highlight">467</i>&nbsp;                        st.setBytes(n, (byte[]) param);</b>
+<b class="fc"><i class="no-highlight">468</i>&nbsp;                        break;</b>
+<i class="no-highlight">469</i>&nbsp;
+<i class="no-highlight">470</i>&nbsp;                    case ClobType:
+<i class="no-highlight">471</i>&nbsp;                    case BlobType:
+<i class="no-highlight">472</i>&nbsp;                        // Clob is converted to String Blob is converted to byte array
+<i class="no-highlight">473</i>&nbsp;                        // so this should not occur unless they were passed in by the user.
+<i class="no-highlight">474</i>&nbsp;                        // We are most probably about to fail here.
+<b class="nc"><i class="no-highlight">475</i>&nbsp;                        log.warn(Messages.ParametersDoNotUseClobOrBlob.message(), new Throwable());</b>
+<b class="nc"><i class="no-highlight">476</i>&nbsp;                        st.setObject(n, param);</b>
+<b class="nc"><i class="no-highlight">477</i>&nbsp;                        break;</b>
+<i class="no-highlight">478</i>&nbsp;
+<i class="no-highlight">479</i>&nbsp;                    case EnumType:
+<b class="fc"><i class="no-highlight">480</i>&nbsp;                        if (session.metaData.getConnectionType() == ConnectionTypes.PostgreSQL) {</b>
+<b class="fc"><i class="no-highlight">481</i>&nbsp;                            st.setObject(n, param.toString(), java.sql.Types.OTHER);</b>
+<i class="no-highlight">482</i>&nbsp;                        } else {
+<b class="fc"><i class="no-highlight">483</i>&nbsp;                            st.setString(n, param.toString());</b>
+<i class="no-highlight">484</i>&nbsp;                        }
+<b class="fc"><i class="no-highlight">485</i>&nbsp;                        break;</b>
+<i class="no-highlight">486</i>&nbsp;
+<i class="no-highlight">487</i>&nbsp;                    case UUIDType:
+<b class="fc"><i class="no-highlight">488</i>&nbsp;                        if (session.metaData.getConnectionType() == ConnectionTypes.PostgreSQL) {</b>
+<b class="fc"><i class="no-highlight">489</i>&nbsp;                            st.setObject(n, param);</b>
+<i class="no-highlight">490</i>&nbsp;                        } else {
+<b class="fc"><i class="no-highlight">491</i>&nbsp;                            st.setString(n, param.toString());</b>
+<i class="no-highlight">492</i>&nbsp;                        }
+<b class="fc"><i class="no-highlight">493</i>&nbsp;                        break;</b>
+<i class="no-highlight">494</i>&nbsp;
+<i class="no-highlight">495</i>&nbsp;                    default:
+<i class="no-highlight">496</i>&nbsp;                        // Usually SQLite with util.date - setObject works
+<i class="no-highlight">497</i>&nbsp;                        // Also if it&#39;s a custom non-standard type.
+<b class="nc"><i class="no-highlight">498</i>&nbsp;                        log.info(&quot;setParameters using setObject on parameter: &quot; + n + &quot; for &quot; + param.getClass());</b>
+<b class="nc"><i class="no-highlight">499</i>&nbsp;                        st.setObject(n, param);</b>
+<i class="no-highlight">500</i>&nbsp;                }
+<i class="no-highlight">501</i>&nbsp;
+<b class="fc"><i class="no-highlight">502</i>&nbsp;            } else {</b>
+<i class="no-highlight">503</i>&nbsp;                // param is null
+<b class="fc"><i class="no-highlight">504</i>&nbsp;                if (session.metaData.getConnectionType() == ConnectionTypes.UCanAccess) {</b>
+<b class="fc"><i class="no-highlight">505</i>&nbsp;                    st.setNull(n, java.sql.Types.OTHER);</b>
+<i class="no-highlight">506</i>&nbsp;                } else {
+<b class="fc"><i class="no-highlight">507</i>&nbsp;                    st.setObject(n, null);</b>
+<i class="no-highlight">508</i>&nbsp;                }
+<i class="no-highlight">509</i>&nbsp;            }
+<i class="no-highlight">510</i>&nbsp;
+<b class="fc"><i class="no-highlight">511</i>&nbsp;            n++;</b>
+<i class="no-highlight">512</i>&nbsp;        }
+<i class="no-highlight">513</i>&nbsp;    }
+<i class="no-highlight">514</i>&nbsp;
+<i class="no-highlight">515</i>&nbsp;
+<i class="no-highlight">516</i>&nbsp;    // todo we really need a way to detect infinite loops and FAIL FAST
+<i class="no-highlight">517</i>&nbsp;    // parent is a POJO or a List of POJOs
+<i class="no-highlight">518</i>&nbsp;    void handleJoins(Object parent, Class&lt;?&gt; parentClass, String parentSql, Parameters parentParams) {
+<i class="no-highlight">519</i>&nbsp;        // maybe we could add a check for fetch after insert. In those cases there&#39;s no need to query for child lists - BUT we do need query for child SINGLES
+<i class="no-highlight">520</i>&nbsp;        // NOT really important. At most 1 extra query per type will be run (and no child queries after that)
+<i class="no-highlight">521</i>&nbsp;
+<b class="fc"><i class="no-highlight">522</i>&nbsp;        List&lt;PropertyInfo&gt; joinProperties = MetaData.getPropertyInfo(parentClass).stream().filter(PropertyInfo::isJoin).toList();</b>
+<i class="no-highlight">523</i>&nbsp;
+<b class="fc"><i class="no-highlight">524</i>&nbsp;        for (PropertyInfo joinProperty : joinProperties) {</b>
+<b class="fc"><i class="no-highlight">525</i>&nbsp;            Join joinAnnotation = (Join) joinProperty.getAnnotation(Join.class);</b>
+<b class="fc"><i class="no-highlight">526</i>&nbsp;            JoinInfo joinInfo = new JoinInfo(joinAnnotation, joinProperty, parent, parentClass);</b>
+<i class="no-highlight">527</i>&nbsp;
+<b class="fc"><i class="no-highlight">528</i>&nbsp;            if (joinInfo.parentIsAQuery()) {</b>
+<i class="no-highlight">529</i>&nbsp;                // We expect this method not to be called if the result query has 0 rows.
+<b class="fc"><i class="no-highlight">530</i>&nbsp;                assert ((Collection&lt;?&gt;) parent).size() &gt; 0;</b>
+<i class="no-highlight">531</i>&nbsp;            }
+<i class="no-highlight">532</i>&nbsp;
+<i class="no-highlight">533</i>&nbsp;            String parentWhere;
+<b class="fc"><i class="no-highlight">534</i>&nbsp;            if (parentSql.toUpperCase().contains(&quot; WHERE &quot;)) {</b>
+<b class="fc"><i class="no-highlight">535</i>&nbsp;                parentWhere = parentSql.substring(parentSql.toUpperCase().indexOf(&quot; WHERE &quot;) + 7);</b>
+<i class="no-highlight">536</i>&nbsp;            } else {
+<b class="fc"><i class="no-highlight">537</i>&nbsp;                parentWhere = &quot;&quot;;</b>
+<i class="no-highlight">538</i>&nbsp;            }
+<b class="fc"><i class="no-highlight">539</i>&nbsp;            String whereClause = getChildWhereClause(joinInfo, parentWhere);</b>
+<b class="fc"><i class="no-highlight">540</i>&nbsp;            List&lt;Object&gt; params = new ArrayList&lt;&gt;(parentParams.parameters);</b>
+<i class="no-highlight">541</i>&nbsp;
+<b class="fc"><i class="no-highlight">542</i>&nbsp;            if (params.size() &gt; 0) {</b>
+<i class="no-highlight">543</i>&nbsp;                // normalize params to ? since we may have repeated the SELECT IN query
+<b class="fc"><i class="no-highlight">544</i>&nbsp;                long qmCount = whereClause.chars().filter(ch -&gt; ch == &#39;?&#39;).count();</b>
+<b class="fc"><i class="no-highlight">545</i>&nbsp;                int index = 0;</b>
+<b class="fc"><i class="no-highlight">546</i>&nbsp;                while (qmCount &gt; params.size()) {</b>
+<b class="nc"><i class="no-highlight">547</i>&nbsp;                    params.add(params.get(index));</b>
+<b class="nc"><i class="no-highlight">548</i>&nbsp;                    index++;</b>
+<i class="no-highlight">549</i>&nbsp;                }
+<i class="no-highlight">550</i>&nbsp;            }
+<i class="no-highlight">551</i>&nbsp;
+<i class="no-highlight">552</i>&nbsp;            // join to a collection
+<b class="fc"><i class="no-highlight">553</i>&nbsp;            if (Collection.class.isAssignableFrom(joinProperty.field.getType())) {</b>
+<i class="no-highlight">554</i>&nbsp;                // query
+<b class="fc"><i class="no-highlight">555</i>&nbsp;                List&lt;?&gt; childList = session.query(joinInfo.childClass(), where(whereClause), params(params.toArray()));</b>
+<i class="no-highlight">556</i>&nbsp;
+<b class="fc"><i class="no-highlight">557</i>&nbsp;                if (joinInfo.parentIsAQuery()) {</b>
+<i class="no-highlight">558</i>&nbsp;                    // many to many
+<b class="fc"><i class="no-highlight">559</i>&nbsp;                    List&lt;?&gt; parentList = (List&lt;?&gt;) parent;</b>
+<b class="fc"><i class="no-highlight">560</i>&nbsp;                    stitch(joinInfo, parentList, childList);</b>
+<b class="fc"><i class="no-highlight">561</i>&nbsp;                } else {</b>
+<i class="no-highlight">562</i>&nbsp;                    // one to many
+<b class="fc"><i class="no-highlight">563</i>&nbsp;                    assignJoinedList(joinProperty, parent, childList);</b>
+<i class="no-highlight">564</i>&nbsp;                }
+<i class="no-highlight">565</i>&nbsp;
+<b class="fc"><i class="no-highlight">566</i>&nbsp;            } else { // join to single object</b>
+<i class="no-highlight">567</i>&nbsp;
+<b class="fc"><i class="no-highlight">568</i>&nbsp;                if (joinInfo.parentIsAQuery()) {</b>
+<i class="no-highlight">569</i>&nbsp;                    // many to one
+<b class="fc"><i class="no-highlight">570</i>&nbsp;                    List&lt;?&gt; childList = session.query(joinInfo.childClass(), where(whereClause), params(params.toArray()));</b>
+<b class="fc"><i class="no-highlight">571</i>&nbsp;                    stitch(joinInfo.swapParentAndChild(), childList, (List&lt;?&gt;) parent);</b>
+<i class="no-highlight">572</i>&nbsp;
+<b class="fc"><i class="no-highlight">573</i>&nbsp;                } else {</b>
+<i class="no-highlight">574</i>&nbsp;                    // one to one
+<b class="fc"><i class="no-highlight">575</i>&nbsp;                    Object child = session.fetch(joinInfo.childClass(), where(whereClause), params(params.toArray()));</b>
+<b class="fc"><i class="no-highlight">576</i>&nbsp;                    if (child != null) {</b>
+<b class="fc"><i class="no-highlight">577</i>&nbsp;                        joinProperty.setValue(parent, child);</b>
+<i class="no-highlight">578</i>&nbsp;                    }
+<i class="no-highlight">579</i>&nbsp;                }
+<i class="no-highlight">580</i>&nbsp;            }
+<b class="fc"><i class="no-highlight">581</i>&nbsp;        }</b>
+<i class="no-highlight">582</i>&nbsp;    }
+<i class="no-highlight">583</i>&nbsp;
+<i class="no-highlight">584</i>&nbsp;    private void stitch(JoinInfo joinInfo, List&lt;?&gt; parentList, List&lt;?&gt; childList) {
+<b class="fc"><i class="no-highlight">585</i>&nbsp;        blog.debug(&quot;STITCH &quot; + joinInfo);</b>
+<i class="no-highlight">586</i>&nbsp;
+<b class="fc"><i class="no-highlight">587</i>&nbsp;        if (childList.size() == 0) {</b>
+<i class="no-highlight">588</i>&nbsp;            return;
+<i class="no-highlight">589</i>&nbsp;        }
+<b class="fc"><i class="no-highlight">590</i>&nbsp;        long now = System.currentTimeMillis();</b>
+<i class="no-highlight">591</i>&nbsp;
+<i class="no-highlight">592</i>&nbsp;        Map&lt;Object, Object&gt; parentMap;
+<b class="fc"><i class="no-highlight">593</i>&nbsp;        if (joinInfo.parentProperties().size() == 1 &amp;&amp; joinInfo.childProperties().size() == 1) {</b>
+<i class="no-highlight">594</i>&nbsp;
+<b class="fc"><i class="no-highlight">595</i>&nbsp;            PropertyInfo parentPropertyInfo = joinInfo.parentProperties().get(0);</b>
+<b class="fc"><i class="no-highlight">596</i>&nbsp;            PropertyInfo childPropertyInfo = joinInfo.childProperties().get(0);</b>
+<i class="no-highlight">597</i>&nbsp;
+<i class="no-highlight">598</i>&nbsp;            // https://stackoverflow.com/questions/32312876/ignore-duplicates-when-producing-map-using-streams
+<b class="fc"><i class="no-highlight">599</i>&nbsp;            parentMap = parentList.stream().collect(Collectors.</b>
+<b class="fc"><i class="no-highlight">600</i>&nbsp;                    toMap(obj -&gt; {</b>
+<b class="fc"><i class="no-highlight">601</i>&nbsp;                        Object value = parentPropertyInfo.getValue(obj);</b>
+<b class="fc"><i class="no-highlight">602</i>&nbsp;                        if (!joinInfo.caseSensitive() &amp;&amp; value instanceof String s) {</b>
+<b class="fc"><i class="no-highlight">603</i>&nbsp;                            return s.toUpperCase();</b>
+<i class="no-highlight">604</i>&nbsp;                        }
+<b class="fc"><i class="no-highlight">605</i>&nbsp;                        return value;</b>
+<b class="fc"><i class="no-highlight">606</i>&nbsp;                    }, o -&gt; o, (o1, o2) -&gt; o1));</b>
+<i class="no-highlight">607</i>&nbsp;
+<b class="fc"><i class="no-highlight">608</i>&nbsp;            for (Object child : childList) {</b>
+<b class="fc"><i class="no-highlight">609</i>&nbsp;                Object parent = parentMap.get(childPropertyInfo.getValue(child));</b>
+<b class="fc"><i class="no-highlight">610</i>&nbsp;                setPropertyFromJoinInfo(joinInfo, parent, child);</b>
+<b class="fc"><i class="no-highlight">611</i>&nbsp;            }</b>
+<i class="no-highlight">612</i>&nbsp;
+<b class="fc"><i class="no-highlight">613</i>&nbsp;        } else {</b>
+<b class="fc"><i class="no-highlight">614</i>&nbsp;            parentMap = parentList.stream().collect(Collectors.</b>
+<b class="fc"><i class="no-highlight">615</i>&nbsp;                    toMap(obj -&gt; {</b>
+<b class="fc"><i class="no-highlight">616</i>&nbsp;                        List&lt;Object&gt; values = new ArrayList&lt;&gt;();</b>
+<b class="fc"><i class="no-highlight">617</i>&nbsp;                        for (int j = 0; j &lt; joinInfo.parentProperties().size(); j++) {</b>
+<b class="fc"><i class="no-highlight">618</i>&nbsp;                            values.add(joinInfo.parentProperties().get(j).getValue(obj));</b>
+<i class="no-highlight">619</i>&nbsp;                        }
+<b class="fc"><i class="no-highlight">620</i>&nbsp;                        return new KeyBox(joinInfo.caseSensitive(), values.toArray());</b>
+<b class="fc"><i class="no-highlight">621</i>&nbsp;                    }, o -&gt; o, (o1, o2) -&gt; o1));</b>
+<i class="no-highlight">622</i>&nbsp;
+<b class="fc"><i class="no-highlight">623</i>&nbsp;            for (Object child : childList) {</b>
+<b class="fc"><i class="no-highlight">624</i>&nbsp;                List&lt;Object&gt; values = new ArrayList&lt;&gt;();</b>
+<b class="fc"><i class="no-highlight">625</i>&nbsp;                for (int j = 0; j &lt; joinInfo.childProperties().size(); j++) {</b>
+<b class="fc"><i class="no-highlight">626</i>&nbsp;                    values.add(joinInfo.childProperties().get(j).getValue(child));</b>
+<i class="no-highlight">627</i>&nbsp;                }
+<i class="no-highlight">628</i>&nbsp;
+<b class="fc"><i class="no-highlight">629</i>&nbsp;                KeyBox keyBox = new KeyBox(joinInfo.caseSensitive(), values.toArray());</b>
+<b class="fc"><i class="no-highlight">630</i>&nbsp;                Object parent = parentMap.get(keyBox);</b>
+<b class="fc"><i class="no-highlight">631</i>&nbsp;                if (parent == null) {</b>
+<b class="nc"><i class="no-highlight">632</i>&nbsp;                    log.warn(&quot;parent not found: &quot; + keyBox); // Should not usually occur. Why would we not find a parent?</b>
+<i class="no-highlight">633</i>&nbsp;                } else {
+<b class="fc"><i class="no-highlight">634</i>&nbsp;                    setPropertyFromJoinInfo(joinInfo, parent, child);</b>
+<i class="no-highlight">635</i>&nbsp;                }
+<b class="fc"><i class="no-highlight">636</i>&nbsp;            }</b>
+<i class="no-highlight">637</i>&nbsp;        }
+<i class="no-highlight">638</i>&nbsp;
+<b class="fc"><i class="no-highlight">639</i>&nbsp;        blog.debug(&quot;stitch Time: &quot; + (System.currentTimeMillis() - now));</b>
+<i class="no-highlight">640</i>&nbsp;    }
+<i class="no-highlight">641</i>&nbsp;
+<i class="no-highlight">642</i>&nbsp;    @SuppressWarnings({&quot;rawtypes&quot;, &quot;unchecked&quot;})
+<i class="no-highlight">643</i>&nbsp;    private void setPropertyFromJoinInfo(JoinInfo joinInfo, Object parent, Object child) {
+<b class="fc"><i class="no-highlight">644</i>&nbsp;        if (Collection.class.isAssignableFrom(joinInfo.joinProperty().field.getType())) {</b>
+<b class="fc"><i class="no-highlight">645</i>&nbsp;            var list = (Collection) joinInfo.joinProperty().getValue(parent);</b>
+<b class="fc"><i class="no-highlight">646</i>&nbsp;            if (list == null) {</b>
+<b class="nc"><i class="no-highlight">647</i>&nbsp;                throw new PersismException(Messages.CannotNotJoinToNullProperty.message(joinInfo.joinProperty().propertyName));</b>
+<i class="no-highlight">648</i>&nbsp;            }
+<b class="fc"><i class="no-highlight">649</i>&nbsp;            list.add(child);</b>
+<b class="fc"><i class="no-highlight">650</i>&nbsp;        } else {</b>
+<b class="fc"><i class="no-highlight">651</i>&nbsp;            if (joinInfo.reversed()) {</b>
+<b class="fc"><i class="no-highlight">652</i>&nbsp;                joinInfo.joinProperty().setValue(child, parent);</b>
+<i class="no-highlight">653</i>&nbsp;            } else {
+<b class="nc"><i class="no-highlight">654</i>&nbsp;                joinInfo.joinProperty().setValue(parent, child);</b>
+<i class="no-highlight">655</i>&nbsp;            }
+<i class="no-highlight">656</i>&nbsp;        }
+<i class="no-highlight">657</i>&nbsp;    }
+<i class="no-highlight">658</i>&nbsp;
+<i class="no-highlight">659</i>&nbsp;    @SuppressWarnings({&quot;rawtypes&quot;, &quot;unchecked&quot;})
+<i class="no-highlight">660</i>&nbsp;    private void assignJoinedList(PropertyInfo joinProperty, Object parentObject, List list) {
+<i class="no-highlight">661</i>&nbsp;
+<i class="no-highlight">662</i>&nbsp;        // no null test - the object should have some List initialized.
+<i class="no-highlight">663</i>&nbsp;
+<b class="fc"><i class="no-highlight">664</i>&nbsp;        List joinedList = (List) joinProperty.getValue(parentObject);</b>
+<b class="fc"><i class="no-highlight">665</i>&nbsp;        if (joinedList == null) {</b>
+<b class="nc"><i class="no-highlight">666</i>&nbsp;            throw new PersismException(Messages.CannotNotJoinToNullProperty.message(joinProperty.propertyName));</b>
+<i class="no-highlight">667</i>&nbsp;        }
+<b class="fc"><i class="no-highlight">668</i>&nbsp;        joinedList.clear();</b>
+<b class="fc"><i class="no-highlight">669</i>&nbsp;        joinedList.addAll(list);</b>
+<i class="no-highlight">670</i>&nbsp;    }
+<i class="no-highlight">671</i>&nbsp;
+<i class="no-highlight">672</i>&nbsp;    private String getChildWhereClause(JoinInfo joinInfo, String parentWhere) {
+<i class="no-highlight">673</i>&nbsp;
+<b class="fc"><i class="no-highlight">674</i>&nbsp;        StringBuilder where = new StringBuilder();</b>
+<b class="fc"><i class="no-highlight">675</i>&nbsp;        String sd = session.metaData.getConnectionType().getKeywordStartDelimiter();</b>
+<b class="fc"><i class="no-highlight">676</i>&nbsp;        String ed = session.metaData.getConnectionType().getKeywordEndDelimiter();</b>
+<b class="fc"><i class="no-highlight">677</i>&nbsp;        String parentTableName = session.metaData.getTableName(joinInfo.parentClass());</b>
+<b class="fc"><i class="no-highlight">678</i>&nbsp;        String childTableName = session.metaData.getTableName(joinInfo.childClass());</b>
+<i class="no-highlight">679</i>&nbsp;
+<b class="fc"><i class="no-highlight">680</i>&nbsp;        String parentAlias = &quot;&quot;;</b>
+<b class="fc"><i class="no-highlight">681</i>&nbsp;        if (parentTableName.equals(childTableName)) {</b>
+<i class="no-highlight">682</i>&nbsp;            // for self join we need an alias
+<b class="fc"><i class="no-highlight">683</i>&nbsp;            parentAlias = session.metaData.getTableName(joinInfo.parentClass()).substring(0, 1).toUpperCase();</b>
+<i class="no-highlight">684</i>&nbsp;        }
+<i class="no-highlight">685</i>&nbsp;
+<b class="fc"><i class="no-highlight">686</i>&nbsp;        int n = parentWhere.toUpperCase().indexOf(&quot;ORDER BY&quot;);</b>
+<b class="fc"><i class="no-highlight">687</i>&nbsp;        if (n &gt; -1) {</b>
+<b class="fc"><i class="no-highlight">688</i>&nbsp;            parentWhere = parentWhere.substring(0, n);</b>
+<i class="no-highlight">689</i>&nbsp;        }
+<i class="no-highlight">690</i>&nbsp;
+<b class="fc"><i class="no-highlight">691</i>&nbsp;        Map&lt;String, PropertyInfo&gt; parentProperties = session.metaData.getTableColumnsPropertyInfo(joinInfo.parentClass(), session.connection);</b>
+<b class="fc"><i class="no-highlight">692</i>&nbsp;        Map&lt;String, PropertyInfo&gt; childProperties = session.metaData.getTableColumnsPropertyInfo(joinInfo.childClass(), session.connection);</b>
+<b class="fc"><i class="no-highlight">693</i>&nbsp;        where.append(&quot;EXISTS (SELECT &quot;);</b>
+<b class="fc"><i class="no-highlight">694</i>&nbsp;        String sep = &quot;&quot;;</b>
+<b class="fc"><i class="no-highlight">695</i>&nbsp;        for (int j = 0; j &lt; joinInfo.parentPropertyNames().length; j++) {</b>
+<b class="fc"><i class="no-highlight">696</i>&nbsp;            String parentColumnName = sd + getColumnName(joinInfo.parentPropertyNames()[j], parentProperties) + ed;</b>
+<b class="fc"><i class="no-highlight">697</i>&nbsp;            where.append(sep).append(parentColumnName);</b>
+<b class="fc"><i class="no-highlight">698</i>&nbsp;            sep = &quot;,&quot;;</b>
+<i class="no-highlight">699</i>&nbsp;        }
+<i class="no-highlight">700</i>&nbsp;
+<i class="no-highlight">701</i>&nbsp;        //where.append(&quot; FROM &quot;).append(parentTableName).append(&quot; &quot;).append(parentAlias).append(&quot; WHERE &quot;).append(parentWhere).append(&quot; &quot;);
+<b class="fc"><i class="no-highlight">702</i>&nbsp;        where.append(&quot; FROM &quot;).append(parentTableName);</b>
+<b class="fc"><i class="no-highlight">703</i>&nbsp;        if (Util.isNotEmpty(parentAlias)) {</b>
+<b class="fc"><i class="no-highlight">704</i>&nbsp;            where.append(&quot; &quot;).append(parentAlias);</b>
+<i class="no-highlight">705</i>&nbsp;        }
+<b class="fc"><i class="no-highlight">706</i>&nbsp;        where.append(&quot; WHERE &quot;).append(parentWhere).append(&quot; &quot;);</b>
+<b class="fc"><i class="no-highlight">707</i>&nbsp;        sep = Util.isEmpty(parentWhere) ? &quot;&quot; : &quot; AND &quot;;</b>
+<b class="fc"><i class="no-highlight">708</i>&nbsp;        for (int j = 0; j &lt; joinInfo.parentPropertyNames().length; j++) {</b>
+<b class="fc"><i class="no-highlight">709</i>&nbsp;            String parentColumnName = sd + getColumnName(joinInfo.parentPropertyNames()[j], parentProperties) + ed;</b>
+<b class="fc"><i class="no-highlight">710</i>&nbsp;            String childColumnName = sd + getColumnName(joinInfo.childPropertyNames()[j], childProperties) + ed;</b>
+<i class="no-highlight">711</i>&nbsp;
+<b class="fc"><i class="no-highlight">712</i>&nbsp;            if (Util.isNotEmpty(parentAlias)) {</b>
+<b class="fc"><i class="no-highlight">713</i>&nbsp;                where.append(sep).append(parentAlias);</b>
+<i class="no-highlight">714</i>&nbsp;            } else {
+<b class="fc"><i class="no-highlight">715</i>&nbsp;                where.append(sep).append(parentTableName);</b>
+<i class="no-highlight">716</i>&nbsp;            }
+<i class="no-highlight">717</i>&nbsp;
+<b class="fc"><i class="no-highlight">718</i>&nbsp;            where.append(&quot;.&quot;).append(parentColumnName).append(&quot; = &quot;).</b>
+<b class="fc"><i class="no-highlight">719</i>&nbsp;                    append(childTableName).append(&quot;.&quot;).append(childColumnName);</b>
+<b class="fc"><i class="no-highlight">720</i>&nbsp;            sep = &quot; AND &quot;;</b>
+<i class="no-highlight">721</i>&nbsp;        }
+<b class="fc"><i class="no-highlight">722</i>&nbsp;        where.append(&quot;) &quot;);</b>
+<i class="no-highlight">723</i>&nbsp;
+<b class="fc"><i class="no-highlight">724</i>&nbsp;        return where.toString();</b>
+<i class="no-highlight">725</i>&nbsp;    }
+<i class="no-highlight">726</i>&nbsp;
+<i class="no-highlight">727</i>&nbsp;    private String getColumnName(String propertyName, Map&lt;String, PropertyInfo&gt; properties) {
+<b class="fc"><i class="no-highlight">728</i>&nbsp;        for (String key : properties.keySet()) {</b>
+<b class="fc"><i class="no-highlight">729</i>&nbsp;            if (properties.get(key).propertyName.equals(propertyName)) {</b>
+<b class="fc"><i class="no-highlight">730</i>&nbsp;                return key;</b>
+<i class="no-highlight">731</i>&nbsp;            }
+<b class="fc"><i class="no-highlight">732</i>&nbsp;        }</b>
+<b class="nc"><i class="no-highlight">733</i>&nbsp;        return null;</b>
+<i class="no-highlight">734</i>&nbsp;    }
+<i class="no-highlight">735</i>&nbsp;
+<i class="no-highlight">736</i>&nbsp;    boolean isSelect(String sql) {
+<b class="fc"><i class="no-highlight">737</i>&nbsp;        assert sql != null;</b>
+<b class="fc"><i class="no-highlight">738</i>&nbsp;        return sql.trim().substring(0, 7).trim().equalsIgnoreCase(&quot;select&quot;);</b>
+<i class="no-highlight">739</i>&nbsp;    }
+<i class="no-highlight">740</i>&nbsp;
+<i class="no-highlight">741</i>&nbsp;    boolean isStoredProc(String sql) {
+<b class="fc"><i class="no-highlight">742</i>&nbsp;        return !isSelect(sql);</b>
+<i class="no-highlight">743</i>&nbsp;    }
+<i class="no-highlight">744</i>&nbsp;
+<i class="no-highlight">745</i>&nbsp;    private &lt;T&gt; void checkIfStoredProcOrSQL(Class&lt;T&gt; objectClass, SQL sql) {
+<b class="fc"><i class="no-highlight">746</i>&nbsp;        boolean startsWithSelect = isSelect(sql.sql);</b>
+<b class="fc"><i class="no-highlight">747</i>&nbsp;        if (sql.storedProc) {</b>
+<b class="fc"><i class="no-highlight">748</i>&nbsp;            if (startsWithSelect) {</b>
+<b class="nc"><i class="no-highlight">749</i>&nbsp;                log.warnNoDuplicates(Messages.InappropriateMethodUsedForSQLTypeInstance.message(objectClass, &quot;sql()&quot;, &quot;a stored proc&quot;, &quot;proc()&quot;));</b>
+<i class="no-highlight">750</i>&nbsp;            }
+<i class="no-highlight">751</i>&nbsp;        } else {
+<b class="fc"><i class="no-highlight">752</i>&nbsp;            if (!startsWithSelect) {</b>
+<b class="nc"><i class="no-highlight">753</i>&nbsp;                log.warnNoDuplicates(Messages.InappropriateMethodUsedForSQLTypeInstance.message(objectClass, &quot;proc()&quot;, &quot;an SQL query&quot;, &quot;sql()&quot;));</b>
+<i class="no-highlight">754</i>&nbsp;            }
+<i class="no-highlight">755</i>&nbsp;        }
+<i class="no-highlight">756</i>&nbsp;    }
+<i class="no-highlight">757</i>&nbsp;
+<i class="no-highlight">758</i>&nbsp;}
 </div>
 </pre>
 </div>
@@ -285,7 +883,7 @@ Current scope:     <a href="../../index.html">all classes</a>
 
 <div class="footer">
     
-    <div style="float:right;">generated on 2021-12-11 06:53</div>
+    <div style="float:right;">generated on 2022-03-27 14:08</div>
 </div>
 </body>
 </html>

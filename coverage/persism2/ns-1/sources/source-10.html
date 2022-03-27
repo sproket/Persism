@@ -4,7 +4,7 @@
 <!DOCTYPE html>
 <html id="htmlId">
 <head>
-  <title>Coverage Report > Result</title>
+  <title>Coverage Report > RecordInfo</title>
   <style type="text/css">
     @import "../../css/coverage.css";
     @import "../../css/highlight-idea.css";
@@ -20,7 +20,7 @@ Current scope:     <a href="../../index.html">all classes</a>
     <a href="../index.html">net.sf.persism</a>
 </div>
 
-<h1>Coverage Summary for Class: Result (net.sf.persism)</h1>
+<h1>Coverage Summary for Class: RecordInfo (net.sf.persism)</h1>
 
 <table class="coverageStats">
 <tr>
@@ -39,7 +39,7 @@ Current scope:     <a href="../../index.html">all classes</a>
 </th>
 </tr>
 <tr>
-  <td class="name">Result</td>
+  <td class="name">RecordInfo</td>
 <td class="coverageStat">
   <span class="percent">
     100%
@@ -53,7 +53,7 @@ Current scope:     <a href="../../index.html">all classes</a>
     100%
   </span>
   <span class="absValue">
-    (3/3)
+    (1/1)
   </span>
 </td>
 <td class="coverageStat">
@@ -61,7 +61,7 @@ Current scope:     <a href="../../index.html">all classes</a>
     100%
   </span>
   <span class="absValue">
-    (5/5)
+    (26/26)
   </span>
 </td>
 </tr>
@@ -75,39 +75,71 @@ Current scope:     <a href="../../index.html">all classes</a>
 <pre>
 <div class="sourceCode" id="sourceCode"><i class="no-highlight">1</i>&nbsp;package net.sf.persism;
 <i class="no-highlight">2</i>&nbsp;
-<i class="no-highlight">3</i>&nbsp;/**
-<i class="no-highlight">4</i>&nbsp; * Result of an insert, update or delete. Contains the rows affected returned by JDBC and the original copy of the data object.
-<i class="no-highlight">5</i>&nbsp; */
-<i class="no-highlight">6</i>&nbsp;public final class Result&lt;T&gt; {
-<i class="no-highlight">7</i>&nbsp;    private final int rows;
-<i class="no-highlight">8</i>&nbsp;    private final T dataObject;
-<i class="no-highlight">9</i>&nbsp;
-<i class="no-highlight">10</i>&nbsp;    /**
-<i class="no-highlight">11</i>&nbsp;     *
-<i class="no-highlight">12</i>&nbsp;     * @param rows rows affected
-<i class="no-highlight">13</i>&nbsp;     * @param dataObject possibly changed object after an insert. Use for Records which are immutable.
-<i class="no-highlight">14</i>&nbsp;     */
-<b class="fc"><i class="no-highlight">15</i>&nbsp;    public Result(int rows, T dataObject) {</b>
-<b class="fc"><i class="no-highlight">16</i>&nbsp;        this.rows = rows;</b>
-<b class="fc"><i class="no-highlight">17</i>&nbsp;        this.dataObject = dataObject;</b>
-<i class="no-highlight">18</i>&nbsp;    }
+<i class="no-highlight">3</i>&nbsp;import net.sf.persism.annotations.NotTable;
+<i class="no-highlight">4</i>&nbsp;
+<i class="no-highlight">5</i>&nbsp;import java.lang.reflect.Constructor;
+<i class="no-highlight">6</i>&nbsp;import java.sql.ResultSet;
+<i class="no-highlight">7</i>&nbsp;import java.sql.ResultSetMetaData;
+<i class="no-highlight">8</i>&nbsp;import java.sql.SQLException;
+<i class="no-highlight">9</i>&nbsp;import java.util.*;
+<i class="no-highlight">10</i>&nbsp;
+<i class="no-highlight">11</i>&nbsp;class RecordInfo&lt;T&gt; {
+<i class="no-highlight">12</i>&nbsp;
+<i class="no-highlight">13</i>&nbsp;    Map&lt;String, PropertyInfo&gt; propertiesByColumn;
+<i class="no-highlight">14</i>&nbsp;    Map&lt;String, PropertyInfo&gt; propertyInfoByConstructorOrder;
+<i class="no-highlight">15</i>&nbsp;    List&lt;Class&lt;?&gt;&gt; constructorTypes;
+<i class="no-highlight">16</i>&nbsp;    Constructor&lt;T&gt; constructor;
+<i class="no-highlight">17</i>&nbsp;    Map&lt;String, Integer&gt; ordinals;
+<i class="no-highlight">18</i>&nbsp;
 <i class="no-highlight">19</i>&nbsp;
-<i class="no-highlight">20</i>&nbsp;    /**
-<i class="no-highlight">21</i>&nbsp;     * Return value from jdbc statement getUpdateCount after an insert.
-<i class="no-highlight">22</i>&nbsp;     * @return row count changed
-<i class="no-highlight">23</i>&nbsp;     */
-<i class="no-highlight">24</i>&nbsp;    public int rows() {
-<b class="fc"><i class="no-highlight">25</i>&nbsp;        return rows;</b>
-<i class="no-highlight">26</i>&nbsp;    }
-<i class="no-highlight">27</i>&nbsp;
-<i class="no-highlight">28</i>&nbsp;    /**
-<i class="no-highlight">29</i>&nbsp;     * Instance of the possibly modified object after insert.
-<i class="no-highlight">30</i>&nbsp;     * @return dataObject of type T
-<i class="no-highlight">31</i>&nbsp;     */
-<i class="no-highlight">32</i>&nbsp;    public T dataObject() {
-<b class="fc"><i class="no-highlight">33</i>&nbsp;        return dataObject;</b>
-<i class="no-highlight">34</i>&nbsp;    }
-<i class="no-highlight">35</i>&nbsp;}
+<b class="fc"><i class="no-highlight">20</i>&nbsp;    public RecordInfo(Class&lt;T&gt; objectClass, Constructor&lt;T&gt; selectedConstructor, Session session, ResultSet rs) throws SQLException {</b>
+<i class="no-highlight">21</i>&nbsp;
+<i class="no-highlight">22</i>&nbsp;        // resultset may not have columns in the proper order
+<i class="no-highlight">23</i>&nbsp;        // resultset may not have all columns
+<i class="no-highlight">24</i>&nbsp;        // get column order based on which properties are found
+<i class="no-highlight">25</i>&nbsp;        // get matching constructor
+<i class="no-highlight">26</i>&nbsp;
+<b class="fc"><i class="no-highlight">27</i>&nbsp;        List&lt;String&gt; propertyNames = session.metaData.getPropertyNames(objectClass);</b>
+<i class="no-highlight">28</i>&nbsp;
+<b class="fc"><i class="no-highlight">29</i>&nbsp;        if (objectClass.getAnnotation(NotTable.class) == null) {</b>
+<b class="fc"><i class="no-highlight">30</i>&nbsp;            propertiesByColumn = session.metaData.getTableColumnsPropertyInfo(objectClass, session.connection);</b>
+<i class="no-highlight">31</i>&nbsp;        } else {
+<b class="fc"><i class="no-highlight">32</i>&nbsp;            propertiesByColumn = session.metaData.getQueryColumnsPropertyInfo(objectClass, rs);</b>
+<i class="no-highlight">33</i>&nbsp;        }
+<i class="no-highlight">34</i>&nbsp;
+<i class="no-highlight">35</i>&nbsp;        // now re-arrange by property order
+<b class="fc"><i class="no-highlight">36</i>&nbsp;        propertyInfoByConstructorOrder = new LinkedHashMap&lt;&gt;(selectedConstructor.getParameterCount());</b>
+<b class="fc"><i class="no-highlight">37</i>&nbsp;        for (String paramName : propertyNames) {</b>
+<b class="fc"><i class="no-highlight">38</i>&nbsp;            for (String col : propertiesByColumn.keySet()) {</b>
+<b class="fc"><i class="no-highlight">39</i>&nbsp;                if (paramName.equals(propertiesByColumn.get(col).field.getName())) {</b>
+<b class="fc"><i class="no-highlight">40</i>&nbsp;                    propertyInfoByConstructorOrder.put(col, propertiesByColumn.get(col));</b>
+<i class="no-highlight">41</i>&nbsp;                }
+<b class="fc"><i class="no-highlight">42</i>&nbsp;            }</b>
+<b class="fc"><i class="no-highlight">43</i>&nbsp;        }</b>
+<b class="fc"><i class="no-highlight">44</i>&nbsp;        constructorTypes = new ArrayList&lt;&gt;(12);</b>
+<i class="no-highlight">45</i>&nbsp;
+<i class="no-highlight">46</i>&nbsp;        // put into ordinals the order to read from to match the constructor
+<b class="fc"><i class="no-highlight">47</i>&nbsp;        ResultSetMetaData rsmd = rs.getMetaData();</b>
+<b class="fc"><i class="no-highlight">48</i>&nbsp;        ordinals = new TreeMap&lt;&gt;(String.CASE_INSENSITIVE_ORDER);</b>
+<b class="fc"><i class="no-highlight">49</i>&nbsp;        for (int j = 1; j &lt;= rsmd.getColumnCount(); j++) {</b>
+<b class="fc"><i class="no-highlight">50</i>&nbsp;            ordinals.put(rsmd.getColumnLabel(j), j);</b>
+<i class="no-highlight">51</i>&nbsp;        }
+<b class="fc"><i class="no-highlight">52</i>&nbsp;        for (String col : propertyInfoByConstructorOrder.keySet()) {</b>
+<b class="fc"><i class="no-highlight">53</i>&nbsp;            if (ordinals.containsKey(col)) {</b>
+<b class="fc"><i class="no-highlight">54</i>&nbsp;                constructorTypes.add(propertyInfoByConstructorOrder.get(col).field.getType());</b>
+<i class="no-highlight">55</i>&nbsp;            } else {
+<i class="no-highlight">56</i>&nbsp;                // can happen if a user manually constructs the SQL and misses a column
+<b class="fc"><i class="no-highlight">57</i>&nbsp;                throw new PersismException(Messages.ReadRecordColumnNotFound.message(objectClass, col));</b>
+<i class="no-highlight">58</i>&nbsp;            }
+<b class="fc"><i class="no-highlight">59</i>&nbsp;        }</b>
+<i class="no-highlight">60</i>&nbsp;
+<i class="no-highlight">61</i>&nbsp;        try {
+<b class="fc"><i class="no-highlight">62</i>&nbsp;            constructor = objectClass.getConstructor(constructorTypes.toArray(new Class&lt;?&gt;[0]));</b>
+<b class="fc"><i class="no-highlight">63</i>&nbsp;        } catch (NoSuchMethodException e) {</b>
+<b class="fc"><i class="no-highlight">64</i>&nbsp;            throw new PersismException(Messages.ReadRecordCouldNotInstantiate.message(objectClass, constructorTypes));</b>
+<b class="fc"><i class="no-highlight">65</i>&nbsp;        }</b>
+<i class="no-highlight">66</i>&nbsp;    }
+<i class="no-highlight">67</i>&nbsp;}
 </div>
 </pre>
 </div>
@@ -134,7 +166,7 @@ Current scope:     <a href="../../index.html">all classes</a>
 
 <div class="footer">
     
-    <div style="float:right;">generated on 2021-12-11 06:53</div>
+    <div style="float:right;">generated on 2022-03-27 14:08</div>
 </div>
 </body>
 </html>
