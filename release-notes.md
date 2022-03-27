@@ -3,9 +3,15 @@
 ### 2.1.0
 * Implemented table joins!
 * Update log4j2 reference in POM to 2.17.1
-* MORE
-* MORE 
-* FIXES - CHECK DIFFS TO FIND THEM ALL
+* Added warning if using a primary key on a View
+* Added support for fluent styled POJOs
+* Added support for transient keyword on fields (same behaviour as @NotColumn)
+* Performance: Converter Moved DateFormatters to ThreadLocal 
+* Performance: Converter optimized switch statement
+* Performance: Improvements to Reader for class and record from DB
+* Updated baseline version for Derby to 10.15.2.0
+* Updated baseline version for SQLite to 3.36.0.2
+* Fixed some cases where property names were case-sensitive
 
 ### 2.0.1
 * Update log4j2 reference in POM to 2.15.0
