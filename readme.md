@@ -1,4 +1,6 @@
-![](logo1.png) [Release notes](release-notes.md) [Getting Started Guide](https://sproket.github.io/Persism/manual2.html)
+![](logo1.png) [Release notes 2.1.0](release-notes.md) -- [Getting Started Guide](https://sproket.github.io/Persism/manual2.html)
+
+[Table joins are now supported!](https://sproket.github.io/Persism/join.html)
 
 # Welcome
 
@@ -11,7 +13,7 @@ For Java 8 see the 1.x branch https://github.com/sproket/Persism/tree/persism1
 <dependency>
     <groupId>io.github.sproket</groupId>
     <artifactId>persism</artifactId>
-    <version>2.0.1</version>
+    <version>2.1.0</version>
 </dependency>
 ```
 ```Java 
@@ -90,6 +92,8 @@ session.withTransaction(() -> {
     session.fetch(contact);
 });
 ```
+ 
+
 ## Simple
 
 The API for Persism is small. Mostly you just need a Connection and a Persism Session object, and you're good to go.
