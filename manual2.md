@@ -435,6 +435,8 @@ You'll usually see much better performance.
 
 You can read about the N+1 select problem [here](https://stackoverflow.com/questions/97197/what-is-the-n1-selects-problem-in-orm-object-relational-mapping).
 
+This is solved with a new ```@Join``` annotation in [Persism 2.1.0](join.md)
+
 This is how you can do it though if you need to:
 ```java 
 public class Customer {
