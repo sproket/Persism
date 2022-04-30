@@ -21,14 +21,17 @@
 </ul> 
 </div>
 
-# ![](img/logo2.png) Welcome 
+# ![](img/logo2.png) Welcome
+<hr>
 Persism is a wood simple, auto-discovery, auto-configuration, and convention over configuration ORM (Object Relational Mapping) library for Java.
+<br>
+<br>
+
 
 <span style="font-style: italic"> "Coding by convention, kind of like Apache Wicket... I guess it has its place, yes. jOOQ also does auto-mapping of column names. But not of table names. Nice thinking" </span>
 <a href="https://www.reddit.com/r/java/comments/1hxgrc/jooqs_reason_for_being_compared_to_jpa_linq_jdbc/cb1hgnw/">&nbsp; lukaseder - Author of JOOQ</a>
 
 [**Get Started!**](/manual2.md)
-
 
 ## Simple
 
