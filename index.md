@@ -69,7 +69,7 @@ at runtime - SLF4J, LOG4J2, LOG4J or JUL.
 
 [Javadoc For Version 2.x](/javadoc/persism2/index.html) - [Javadoc For Version 1.x](/javadoc/persism1/index.html)
 
-[Code Coverage For Version 2.x](/coverage/persism2/index.html) - [Code Coverage For Version 1.x](/coverage/persism1/index.html)
+[Code Coverage For Version 2.x](/coverage/persism2/ns-1/index.html) - [Code Coverage For Version 1.x](/coverage/persism1/index.html)
 
 [Release Notes](/release-notes.md)
 
