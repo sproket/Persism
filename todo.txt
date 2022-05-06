@@ -113,3 +113,14 @@ https://www.willmcgugan.com/blog/tech/post/promoting-your-open-source-project-or
 What does a Persism POJO look like in JSON ? - looks fine.
 
 todo post articles on linkedin
+
+follow up on https://www.reddit.com/r/java/comments/tpqkix/persism_release_v210_with_support_for_table_joins/
+
+todo document fluent POJO changes.
+
+
+Quote from Jooq
+https://www.reddit.com/r/java/comments/1hxgrc/jooqs_reason_for_being_compared_to_jpa_linq_jdbc/cb1hgnw/
+
+
+// todo should we have a clear cache in MetaData so in dev when devs reload a web instance this metadata goes away?

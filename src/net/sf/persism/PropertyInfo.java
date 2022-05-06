@@ -29,26 +29,6 @@ final class PropertyInfo {
     }
 
     // for collections
-    String propertyName() {
-        return propertyName;
-    }
-
-    Method getter() {
-        return getter;
-    }
-
-    Method setter() {
-        return setter;
-    }
-
-    Field field() {
-        return field;
-    }
-
-    boolean isReadOnly() {
-        return readOnly;
-    }
-
     boolean isJoin() {
         return isJoin;
     }
@@ -74,11 +54,6 @@ final class PropertyInfo {
         } catch (IllegalAccessException | InvocationTargetException e) {
             throw new PersismException(e.getMessage(), e);
         }
-    }
-
-
-    Map<Class<? extends Annotation>, Annotation> annotations() {
-        return annotations;
     }
 
     @Override

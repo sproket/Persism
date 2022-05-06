@@ -51,6 +51,7 @@ public abstract class BaseTest extends TestCase {
 
     @Override
     protected void setUp() throws Exception {
+        System.out.println("LOG MODE: " + log.getLogMode() + " " + log.getLogName());
         super.setUp();
     }
 

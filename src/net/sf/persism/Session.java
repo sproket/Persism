@@ -362,6 +362,7 @@ public final class Session implements AutoCloseable {
         String sd = metaData.getConnectionType().getKeywordStartDelimiter();
         String ed = metaData.getConnectionType().getKeywordEndDelimiter();
 
+        // todo Cache this in MetaData
         // at this point query should have a WHERE because it's the default query for a table.
         String andSep = "";
         int n = query.indexOf(" WHERE");
@@ -470,7 +471,7 @@ public final class Session implements AutoCloseable {
         // This block verifies that the object is fully initialized.
         // Any properties not marked by NotColumn should have been set (or if they have a getter only)
         // If not throw a PersismException
-        Collection<PropertyInfo> allProperties = MetaData.getPropertyInfo(objectClass).stream().filter(p -> !p.isJoin()).toList();
+        Collection<PropertyInfo> allProperties = MetaData.getPropertyInfo(objectClass).stream().filter(p -> !p.isJoin).toList();
         if (properties.values().size() < allProperties.size()) {
             Set<PropertyInfo> missing = new HashSet<>(allProperties.size());
             missing.addAll(allProperties);

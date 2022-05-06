@@ -146,7 +146,7 @@ final class MetaData {
                 }
                 PropertyInfo foundProperty = null;
                 for (PropertyInfo propertyInfo : properties) {
-                    String checkName = propertyInfo.propertyName().toLowerCase().replace("_", "");
+                    String checkName = propertyInfo.propertyName.toLowerCase().replace("_", "");
                     if (checkName.equalsIgnoreCase(columnName)) {
                         foundProperty = propertyInfo;
                         break;
@@ -164,7 +164,7 @@ final class MetaData {
 
                 if (foundProperty != null) {
                     columns.put(realColumnName, foundProperty);
-                    propertyNames.add(foundProperty.propertyName());
+                    propertyNames.add(foundProperty.propertyName);
                 } else {
                     log.warn(Messages.NoPropertyFoundForColumn.message(realColumnName, objectClass));
                 }

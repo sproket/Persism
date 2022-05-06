@@ -30,9 +30,6 @@ final class Log {
 
     private static final List<String> warnings = new ArrayList<>(32);
 
-    private Log() {
-    }
-
     Log(String logName) {
         try {
             Class.forName("org.slf4j.Logger");
@@ -112,7 +109,6 @@ final class Log {
     public void warn(Object message, Throwable t) {
         logger.warn(message, t);
     }
-
 
     public void error(Object message) {
         logger.error(message);

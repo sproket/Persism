@@ -669,6 +669,7 @@ final class SessionHelper {
         joinedList.addAll(list);
     }
 
+// todo cache these Strings
     private String getChildWhereClause(JoinInfo joinInfo, String parentWhere) {
 
         StringBuilder where = new StringBuilder();

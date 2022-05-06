@@ -17,6 +17,8 @@ public final class SQL {
 
     String processedSQL = null;
 
+    private static final Pattern commentPattern = Pattern.compile("/\\*.*?\\*/", Pattern.DOTALL);
+
     SQL(String sql) {
         sql = sql.trim();
 
@@ -36,7 +38,7 @@ public final class SQL {
             sql = sb.toString();
 
             // /* */ comments
-            Pattern commentPattern = Pattern.compile("/\\*.*?\\*/", Pattern.DOTALL);
+            //Pattern commentPattern = Pattern.compile("/\\*.*?\\*/", Pattern.DOTALL);
             sql = commentPattern.matcher(sql).replaceAll("").trim();
         }
 

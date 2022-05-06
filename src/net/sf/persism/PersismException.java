@@ -11,9 +11,6 @@ public final class PersismException extends RuntimeException {
 
     private static final long serialVersionUID = 3629404706918664936L;
 
-    private PersismException() {
-    }
-
     /**
      * PersismException with a message
      * @param message message string
