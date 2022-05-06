@@ -350,37 +350,14 @@ public final class Session implements AutoCloseable {
             throw new PersismException(Messages.TableHasNoPrimaryKeys.message("QUERY", metaData.getTableName(objectClass)));
         }
 
-        String query = metaData.getDefaultSelectStatement(objectClass, connection);
-
         primaryKeyValues.areKeys = true;
 
         if (primaryKeyValues.size() == primaryKeys.size()) {
             // single select
-            return query(objectClass, sql(query), primaryKeyValues);
+            return query(objectClass, sql(metaData.getDefaultSelectStatement(objectClass, connection)), primaryKeyValues);
         }
 
-        String sd = metaData.getConnectionType().getKeywordStartDelimiter();
-        String ed = metaData.getConnectionType().getKeywordEndDelimiter();
-
-        // todo Cache this in MetaData
-        // at this point query should have a WHERE because it's the default query for a table.
-        String andSep = "";
-        int n = query.indexOf(" WHERE");
-        query = query.substring(0, n + 7);
-
-        StringBuilder sb = new StringBuilder(query);
-        int groups = primaryKeyValues.size() / primaryKeys.size();
-        for (String column : primaryKeys) {
-            String sep = "";
-            sb.append(andSep).append(sd).append(column).append(ed).append(" IN (");
-            for (int j = 0; j < groups; j++) {
-                sb.append(sep).append("?");
-                sep = ", ";
-            }
-            sb.append(")");
-            andSep = " AND ";
-        }
-        query = sb.toString();
+        String query = metaData.getPrimaryInClause(objectClass, primaryKeyValues.size(), connection);
         SQL sql = sql(query);
         return query(objectClass, sql, primaryKeyValues);
     }

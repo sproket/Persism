@@ -41,6 +41,7 @@ final class MetaData {
     private final Map<Class<?>, String> deleteStatementsMap = new ConcurrentHashMap<>(32);
     private final Map<Class<?>, String> selectStatementsMap = new ConcurrentHashMap<>(32);
     private final Map<Class<?>, String> whereClauseMap = new ConcurrentHashMap<>(32);
+    private final Map<Class<?>, Map<Integer, String>> primaryInClauseMap = new ConcurrentHashMap<>(32);
 
     // Key is SQL with named params, Value is SQL with ?
     // private Map<String, String> sqlWitNamedParams = new ConcurrentHashMap<String, String>(32);
@@ -683,6 +684,61 @@ final class MetaData {
 
         return deleteStatement;
     }
+
+    String getPrimaryInClause(Class<?> objectClass, int paramCount, Connection connection) {
+        if (primaryInClauseMap.containsKey(objectClass)) {
+            Map<Integer, String> map = primaryInClauseMap.get(objectClass);
+            if (map.containsKey(paramCount)) {
+                return map.get(paramCount);
+            }
+        }
+        return determinePrimaryInClause(objectClass, paramCount, connection);
+    }
+
+    private synchronized String determinePrimaryInClause(Class<?> objectClass, int paramCount, Connection connection) {
+
+        if (primaryInClauseMap.containsKey(objectClass)) {
+            Map<Integer, String> map = primaryInClauseMap.get(objectClass);
+            if (map.containsKey(paramCount)) {
+                return map.get(paramCount);
+            }
+        }
+
+        Map<Integer, String> map = primaryInClauseMap.get(objectClass);
+        if (map == null) {
+            map = new HashMap<>();
+        }
+
+        String sd = connectionType.getKeywordStartDelimiter();
+        String ed = connectionType.getKeywordEndDelimiter();
+        String andSep = "";
+
+        String query = getDefaultSelectStatement(objectClass, connection);
+        int n = query.indexOf(" WHERE");
+        query = query.substring(0, n + 7);
+
+        List<String> primaryKeys = getPrimaryKeys(objectClass, connection);
+
+        StringBuilder sb = new StringBuilder(query);
+        int groups = paramCount / primaryKeys.size();
+        for (String column : primaryKeys) {
+            String sep = "";
+            sb.append(andSep).append(sd).append(column).append(ed).append(" IN (");
+            for (int j = 0; j < groups; j++) {
+                sb.append(sep).append("?");
+                sep = ", ";
+            }
+            sb.append(")");
+            andSep = " AND ";
+        }
+        query = sb.toString();
+
+        map.put(paramCount, query);
+        primaryInClauseMap.put(objectClass, map);
+
+        return query;
+    }
+
 
     String getWhereClause(Class<?> objectClass, Connection connection) {
         if (whereClauseMap.containsKey(objectClass)) {

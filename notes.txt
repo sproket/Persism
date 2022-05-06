@@ -80,3 +80,5 @@ Options:
 
 
  mvn install -Dmaven.test.skip
+
+ C:\Users\Dan\WebstormProjects\Persism\coverage\persism2

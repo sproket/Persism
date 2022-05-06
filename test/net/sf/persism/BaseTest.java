@@ -467,6 +467,11 @@ public abstract class BaseTest extends TestCase {
 
         assertEquals("should be 2 ", 2, orders.size());
 
+        orders = session.query(Order.class, params(2, 3));
+        assertEquals("should be 2 ", 2, orders.size());
+
+        orders = session.query(Order.class, params(2, 3, 1, 4));
+        assertEquals("should be 4 ", 4, orders.size());
 
     }
 
