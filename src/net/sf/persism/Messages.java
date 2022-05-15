@@ -36,7 +36,7 @@ enum Messages {
     ColumnAnnotatedAsAutoIncButNAN("Column %s is annotated as auto-increment but it is not a number type (%s)"),
     DatabaseMetaDataCouldNotFindPrimaryKeys("DatabaseMetaData could not find primary keys for table %s"),
     DatabaseMetaDataCouldNotFindColumns("DatabaseMetaData could not find columns for table %s!"),
-    NoPrimaryKeyFoundForTable("No primary key found for table %s. Do not use with update/delete/fetch or add a primary key"),
+    NoPrimaryKeyFoundForTable("No primary key found for table %s. Do not use with insert/update/delete/fetch or add a primary key"),
     NoConversionForUnknownType("Conversion: Unknown type: %s - no conversion performed"),
     TinyIntMSSQL("COLUMN: %s: MSSQL Sees tinyint as 0 - 254 - Others -127 - +127 - no conversion performed - recommend changing it to SMALLINT/Short"),
     PossibleOverflow("Possible overflow column %s - Target type is %s and Value type is %s"),

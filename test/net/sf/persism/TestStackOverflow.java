@@ -32,6 +32,11 @@ public class TestStackOverflow extends TestCase {
         session = new Session(con);
     }
 
+    @Override
+    protected void tearDown() throws Exception {
+        super.tearDown();
+    }
+
     public void testExtendedUsers() {
         long ms = System.currentTimeMillis();
         List<ExtendedUser> users = session.query(ExtendedUser.class, where("Id < ?"), params(1000));

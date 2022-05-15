@@ -33,20 +33,13 @@ public final class TestOracle extends BaseTest {
     @Override
     protected void setUp() throws Exception {
         connectionType = ConnectionTypes.Oracle;
-        MSSQLDataSource.removeInstance();
         super.setUp();
 
         Properties props = new Properties();
         props.load(getClass().getResourceAsStream("/oracle.properties"));
 
         String driver = props.getProperty("database.driver");
-        String url = props.getProperty("database.url");
-        String username = props.getProperty("database.username");
-        String password = props.getProperty("database.password");
-
         Class.forName(driver);
-        log.error(props);
-        //con = DriverManager.getConnection(url, username, password);
         con = OracleDataSource.getInstance().getConnection();
 
         createTables();
@@ -588,6 +581,6 @@ grant create trigger, create sequence to pinf;
     @Override
     public void testGetDbMetaData() throws SQLException {
         // TODO SUPER SLOW ON NEW ORACLE FWR
-        //super.testGetDbMetaData();
+        super.testGetDbMetaData();
     }
 }

@@ -30,7 +30,8 @@ final class MetaData {
     // column to property map for each class
     private final Map<Class<?>, Map<String, PropertyInfo>> propertyInfoMap = new ConcurrentHashMap<>(32);
     private final Map<Class<?>, Map<String, ColumnInfo>> columnInfoMap = new ConcurrentHashMap<>(32);
-    private final Map<Class<?>, List<String>> propertyNames = new ConcurrentHashMap<>(32); // not static since this is by column order which may vary
+    // not static since this is by column order which may vary
+     final Map<Class<?>, List<String>> propertyNames = new ConcurrentHashMap<>(32); // todo make private again
 
     // table/view name for each class
     private final Map<Class<?>, String> tableOrViewMap = new ConcurrentHashMap<>(32);
@@ -40,8 +41,12 @@ final class MetaData {
     private final Map<Class<?>, String> insertStatementsMap = new ConcurrentHashMap<>(32);
     private final Map<Class<?>, String> deleteStatementsMap = new ConcurrentHashMap<>(32);
     private final Map<Class<?>, String> selectStatementsMap = new ConcurrentHashMap<>(32);
-    private final Map<Class<?>, String> whereClauseMap = new ConcurrentHashMap<>(32);
+
+    private final Map<Class<?>, String> primaryWhereClauseMap = new ConcurrentHashMap<>(32);
     private final Map<Class<?>, Map<Integer, String>> primaryInClauseMap = new ConcurrentHashMap<>(32);
+    // todo whereClauseMap - used whenever sql.where() is used
+
+    public static final List<JoinInfo> joinInfos = new ArrayList<>();
 
     // Key is SQL with named params, Value is SQL with ?
     // private Map<String, String> sqlWitNamedParams = new ConcurrentHashMap<String, String>(32);
@@ -60,7 +65,7 @@ final class MetaData {
     // Map of table names + meta data
     // private Map<String, TableInfo> tableInfoMap = new ConcurrentHashMap<String, TableInfo>(32);
 
-    private static final Map<String, MetaData> metaData = new ConcurrentHashMap<String, MetaData>(4);
+    static final Map<String, MetaData> metaData = new ConcurrentHashMap<>(4);
 
     private final ConnectionTypes connectionType;
 
@@ -451,7 +456,7 @@ final class MetaData {
         while (it.hasNext()) {
             Map.Entry<String, PropertyInfo> entry = it.next();
             PropertyInfo info = entry.getValue();
-			// added support for transient
+            // added support for transient
             if (info.getAnnotation(NotColumn.class) != null || Modifier.isTransient(info.field.getModifiers())) {
                 it.remove();
             }
@@ -477,37 +482,28 @@ final class MetaData {
         return properties;
     }
 
-    private static final String[] tableTypes = {"TABLE"};
-    private static final String[] viewTypes = {"VIEW"};
+    private static final String TABLE = "TABLE";
+    private static final String VIEW = "VIEW";
+    private static final String[] tableTypes = {TABLE, VIEW};
 
     // Populates the tables list with table names from the DB.
     // This list is used for discovery of the table name from a class.
     // ONLY to be called from Init in a synchronized way.
+    // NULL POINTER WITH
+    // http://social.msdn.microsoft.com/Forums/en-US/sqldataaccess/thread/5c74094a-8506-4278-ac1c-f07d1bfdb266
+    // solution:
+    // http://stackoverflow.com/questions/8988945/java7-sqljdbc4-sql-error-08s01-on-getconnection
     private void populateTableList(Connection con) throws PersismException {
-
-        ResultSet rs = null;
-
-        try {
-            // NULL POINTER WITH
-            // http://social.msdn.microsoft.com/Forums/en-US/sqldataaccess/thread/5c74094a-8506-4278-ac1c-f07d1bfdb266
-            // solution:
-            // http://stackoverflow.com/questions/8988945/java7-sqljdbc4-sql-error-08s01-on-getconnection
-
-            rs = con.getMetaData().getTables(null, connectionType.getSchemaPattern(), null, tableTypes);
+        try (ResultSet rs = con.getMetaData().getTables(null, connectionType.getSchemaPattern(), null, tableTypes)) {
             while (rs.next()) {
-                tableNames.add(rs.getString("TABLE_NAME"));
+                if (VIEW.equalsIgnoreCase(rs.getString("TABLE_TYPE"))) {
+                    viewNames.add(rs.getString("TABLE_NAME"));
+                } else {
+                    tableNames.add(rs.getString("TABLE_NAME"));
+                }
             }
-
-            rs = con.getMetaData().getTables(null, connectionType.getSchemaPattern(), null, viewTypes);
-            while (rs.next()) {
-                viewNames.add(rs.getString("TABLE_NAME"));
-            }
-
         } catch (SQLException e) {
             throw new PersismException(e.getMessage(), e);
-
-        } finally {
-            cleanup(null, rs);
         }
     }
 
@@ -520,12 +516,13 @@ final class MetaData {
     String getUpdateStatement(Object object, Connection connection) throws PersismException, NoChangesDetectedForUpdateException {
 
         if (object instanceof Persistable<?> pojo) {
+            // todo cache these key would be class + changes.keySet().toString() - keySet needs to be SORTED OR IN A CONSISTENT REPEATABLE ORDER
             Map<String, PropertyInfo> changes = getChangedProperties(pojo, connection);
             if (changes.size() == 0) {
                 throw new NoChangesDetectedForUpdateException();
             }
             // Note we don't add Persistable updates to updateStatementsMap since they will be different each time.
-            String sql = buildUpdateString(object, changes.keySet().iterator(), connection);
+            String sql = buildUpdateString(pojo, changes.keySet().iterator(), connection);
             if (log.isDebugEnabled()) {
                 log.debug("getUpdateStatement for %s for changed fields is %s", object.getClass(), sql);
             }
@@ -681,27 +678,19 @@ final class MetaData {
         }
 
         deleteStatementsMap.put(object.getClass(), deleteStatement);
-
         return deleteStatement;
     }
 
     String getPrimaryInClause(Class<?> objectClass, int paramCount, Connection connection) {
-        if (primaryInClauseMap.containsKey(objectClass)) {
-            Map<Integer, String> map = primaryInClauseMap.get(objectClass);
-            if (map.containsKey(paramCount)) {
-                return map.get(paramCount);
-            }
+        if (primaryInClauseMap.containsKey(objectClass) && primaryInClauseMap.get(objectClass).containsKey(paramCount)) {
+            return primaryInClauseMap.get(objectClass).get(paramCount);
         }
         return determinePrimaryInClause(objectClass, paramCount, connection);
     }
 
     private synchronized String determinePrimaryInClause(Class<?> objectClass, int paramCount, Connection connection) {
-
-        if (primaryInClauseMap.containsKey(objectClass)) {
-            Map<Integer, String> map = primaryInClauseMap.get(objectClass);
-            if (map.containsKey(paramCount)) {
-                return map.get(paramCount);
-            }
+        if (primaryInClauseMap.containsKey(objectClass) && primaryInClauseMap.get(objectClass).containsKey(paramCount)) {
+            return primaryInClauseMap.get(objectClass).get(paramCount);
         }
 
         Map<Integer, String> map = primaryInClauseMap.get(objectClass);
@@ -741,15 +730,15 @@ final class MetaData {
 
 
     String getWhereClause(Class<?> objectClass, Connection connection) {
-        if (whereClauseMap.containsKey(objectClass)) {
-            return whereClauseMap.get(objectClass);
+        if (primaryWhereClauseMap.containsKey(objectClass)) {
+            return primaryWhereClauseMap.get(objectClass);
         }
         return determineWhereClause(objectClass, connection);
     }
 
     private synchronized String determineWhereClause(Class<?> objectClass, Connection connection) {
-        if (whereClauseMap.containsKey(objectClass)) {
-            return whereClauseMap.get(objectClass);
+        if (primaryWhereClauseMap.containsKey(objectClass)) {
+            return primaryWhereClauseMap.get(objectClass);
         }
 
         String sep = "";
@@ -775,7 +764,7 @@ final class MetaData {
         if (log.isDebugEnabled()) {
             log.debug("determineWhereClause: %s %s", objectClass.getName(), where);
         }
-        whereClauseMap.put(objectClass, where);
+        primaryWhereClauseMap.put(objectClass, where);
         return where;
     }
 
@@ -883,20 +872,17 @@ final class MetaData {
             Map<String, PropertyInfo> columns = getTableColumnsPropertyInfo(persistable.getClass(), connection);
 
             if (original == null) {
-                // Could happen in the case of cloning or other operation - so it's never read so it never sets original.
+                // Could happen in the case of cloning or other operation - so it's never read, so it never sets original.
                 return columns;
             } else {
-                Map<String, PropertyInfo> changedColumns = new HashMap<>(columns.keySet().size());
-                for (String column : columns.keySet()) {
+                Map<String, PropertyInfo> changedColumns = new LinkedHashMap<>(columns.keySet().size());
 
+                for (String column : columns.keySet()) {
                     PropertyInfo propertyInfo = columns.get(column);
 
-                    Object newValue = null;
-                    Object orgValue = null;
-                    newValue = propertyInfo.getValue(persistable);
-                    orgValue = propertyInfo.getValue(original);
-
-                    if (newValue != null && !newValue.equals(orgValue) || orgValue != null && !orgValue.equals(newValue)) {
+                    Object newValue = propertyInfo.getValue(persistable);
+                    Object orgValue = propertyInfo.getValue(original);
+                    if (!Objects.equals(newValue, orgValue)) {
                         changedColumns.put(column, propertyInfo);
                     }
                 }
@@ -919,7 +905,7 @@ final class MetaData {
 
     <T> Map<String, PropertyInfo> getQueryColumnsPropertyInfo(Class<T> objectClass, ResultSet rs) throws PersismException {
         // should not be mapped since ResultSet could contain different # of columns at different times. OK NOW. If properties > columns we won't cache it
-        // nope breaks records tests
+        // nope breaks records tests TODO we should probably cache this and document that MetaData is never refreshed (unless I can somehow).
 //        if (propertyInfoMap.containsKey(objectClass)) {
 //            return propertyInfoMap.get(objectClass);
 //        }

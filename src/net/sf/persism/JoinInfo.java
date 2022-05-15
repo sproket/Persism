@@ -6,8 +6,11 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 final class JoinInfo {
+
+    static final List<JoinInfo> joinInfos = new CopyOnWriteArrayList<>();
 
     private String[] parentPropertyNames;
     private String[] childPropertyNames;
@@ -63,7 +66,6 @@ final class JoinInfo {
             } else {
                 throw new PersismException(Messages.PropertyNotFoundForJoin.message(prop, parentClass));
             }
-
         }
 
         for (int j = 0; j < childPropertyNames.length; j++) {
@@ -142,12 +144,38 @@ final class JoinInfo {
         return "JoinInfo{" +
                 "parentPropertyNames=" + Arrays.toString(parentPropertyNames) +
                 ", childPropertyNames=" + Arrays.toString(childPropertyNames) +
-                ", parentProperties=" + parentProperties +
-                ", childProperties=" + childProperties +
                 ", parentClass=" + parentClass +
                 ", childClass=" + childClass +
                 ", caseSensitive=" + caseSensitive +
                 ", parentIsAQuery=" + parentIsAQuery +
+                ", reversed=" + reversed +
                 '}';
+    }
+
+    static JoinInfo getJoinInfo(Join joinAnnotation, PropertyInfo joinProperty, Object parent, Class<?> parentClass) {
+        JoinInfo foundInfo = null;
+        for (JoinInfo joinInfo : joinInfos) {
+            if (joinInfo.joinProperty().equals(joinProperty) && joinInfo.parentClass().equals(parentClass)) {
+                if (Collection.class.isAssignableFrom(parent.getClass())) {
+                    if (joinInfo.parentIsAQuery()) {
+                        foundInfo = joinInfo;
+                        break;
+                    }
+                } else {
+                    if (!joinInfo.parentIsAQuery()) {
+                        foundInfo = joinInfo;
+                        break;
+                    }
+                }
+            }
+        }
+
+        if (foundInfo != null) {
+            return foundInfo;
+        } else {
+            JoinInfo joinInfo = new JoinInfo(joinAnnotation, joinProperty, parent, parentClass);
+            joinInfos.add(joinInfo);
+            return joinInfo;
+        }
     }
 }

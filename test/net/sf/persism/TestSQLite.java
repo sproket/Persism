@@ -684,4 +684,9 @@ public final class TestSQLite extends BaseTest {
     public void testRecord2() {
         super.testRecord2();
     }
+
+    @Override
+    public void testGetDbMetaData() throws SQLException {
+        super.testGetDbMetaData();
+    }
 }

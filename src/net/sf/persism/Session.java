@@ -846,5 +846,11 @@ public final class Session implements AutoCloseable {
         return connection;
     }
 
+    // this is a maybe....
+//    public static synchronized void clearMetaData() {
+//        log.warn("Clearing meta data");
+//        MetaData.metaData.clear();
+//        log.warn("meta data cleared");
+//    }
 
 }

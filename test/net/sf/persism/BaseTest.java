@@ -3,6 +3,7 @@ package net.sf.persism;
 import junit.framework.TestCase;
 import net.sf.persism.dao.*;
 import net.sf.persism.dao.records.*;
+import org.junit.runner.OrderWith;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
@@ -389,6 +390,16 @@ public abstract class BaseTest extends TestCase {
         CustomerRec crec2 = new CustomerRec(crec.customerId(), crec.companyName(), crec.contactName(), 'x');
         Result<CustomerRec> res = session.update(crec2);
         log.warn(res);
+    }
+
+    public void testJoinsCustomer() throws SQLException {
+        queryDataSetup();
+
+        var customer = session.fetch(Customer.class, where(":customerId = ?"), params("123"));
+        assertNotNull(customer);
+        System.out.println("***********************************************************");
+        var customers = session.query(Customer.class, where(":customerId IS NOT NULL"));
+        assertTrue(customers.size() > 0);
     }
 
     public void testJoinsParentFetch() throws SQLException {
@@ -1084,6 +1095,7 @@ public abstract class BaseTest extends TestCase {
                 contactForTest.setIdentity(randomUUID);
                 session.insert(contactForTest);
                 contactForTest.setContactName("HELLO?!");
+                contactForTest.setCompany("some company");
                 session.update(contactForTest);
                 session.fetch(contactForTest);
 
@@ -1728,16 +1740,39 @@ public abstract class BaseTest extends TestCase {
 
     }
 
-
+// @OrderWith()
     public void testGetDbMetaData() throws SQLException {
+//        if (true) {
+//            return;
+//        }
+        DatabaseMetaData dmd = con.getMetaData();
+        System.out.println("GetDbMetaData for " + dmd.getDatabaseProductName());
+
+        System.out.println("tables and views?");
+
+        String[] tableTypes = {"TABLE", "VIEW"};
+
+        ResultSetMetaData rsmd;
+        ResultSet rs;
+        // get attributes
+        //rs = dmd.getAttributes("", "", "", "");
+        //List<String> tables = new ArrayList<>(32);
+        rs = dmd.getTables(null, session.getMetaData().getConnectionType().getSchemaPattern(), null, tableTypes);
+        rsmd = rs.getMetaData();
+        while (rs.next()) {
+//            for (int i = 1; i <= rsmd.getColumnCount(); i++) {
+//                System.out.println(rsmd.getColumnName(i) + " = " + rs.getObject(i));
+//            }
+          //  tables.add(rs.getString("TABLE_NAME"));
+            System.out.println(rs.getString("TABLE_NAME") + " " + rs.getString("TABLE_TYPE"));
+        }
+        System.out.println("----------");
         if (true) {
             return;
         }
-        DatabaseMetaData dmd = con.getMetaData();
-        log.info("GetDbMetaData for " + dmd.getDatabaseProductName());
 
-        System.out.println("PROCS");
-        System.out.println("-----");
+//        System.out.println("PROCS");
+//        System.out.println("-----");
 //        ResultSet result = dmd.getProcedures(null, "%", "%");
 //        for (int i = 1; i <= result.getMetaData().getColumnCount(); i++) {
 //            System.out.println(i + " - " + result.getMetaData().getColumnLabel(i));
@@ -1750,35 +1785,35 @@ public abstract class BaseTest extends TestCase {
 //                    " - " + result.getString("PROCEDURE_NAME"));
 //        }
 
-        String[] tableTypes = {"TABLE"};
-
-        ResultSetMetaData rsmd;
-        ResultSet rs;
-        // get attributes
-        //rs = dmd.getAttributes("", "", "", "");
-        List<String> tables = new ArrayList<>(32);
-        rs = dmd.getTables(null, session.getMetaData().getConnectionType().getSchemaPattern(), null, tableTypes);
-        rsmd = rs.getMetaData();
-        while (rs.next()) {
-            for (int i = 1; i <= rsmd.getColumnCount(); i++) {
-                System.out.println(rsmd.getColumnName(i) + " = " + rs.getObject(i));
-            }
-            tables.add(rs.getString("TABLE_NAME"));
-            System.out.println("----------");
-        }
-
-        for (String table : tables) {
-            System.out.println("Table " + table + " COLUMN INFO");
-            rs = dmd.getColumns(null, session.getMetaData().getConnectionType().getSchemaPattern(), table, null);
-            rsmd = rs.getMetaData();
-            while (rs.next()) {
-                for (int i = 1; i <= rsmd.getColumnCount(); i++) {
-                    System.out.println(rsmd.getColumnName(i) + " = " + rs.getObject(i));
-                }
-                System.out.println("----------");
-            }
-
-        }
+//        String[] tableTypes = {"TABLE"};
+//
+//        ResultSetMetaData rsmd;
+//        ResultSet rs;
+//        // get attributes
+//        //rs = dmd.getAttributes("", "", "", "");
+//        List<String> tables = new ArrayList<>(32);
+//        rs = dmd.getTables(null, session.getMetaData().getConnectionType().getSchemaPattern(), null, tableTypes);
+//        rsmd = rs.getMetaData();
+//        while (rs.next()) {
+//            for (int i = 1; i <= rsmd.getColumnCount(); i++) {
+//                System.out.println(rsmd.getColumnName(i) + " = " + rs.getObject(i));
+//            }
+//            tables.add(rs.getString("TABLE_NAME"));
+//            System.out.println("----------");
+//        }
+//
+//        for (String table : tables) {
+//            System.out.println("Table " + table + " COLUMN INFO");
+//            rs = dmd.getColumns(null, session.getMetaData().getConnectionType().getSchemaPattern(), table, null);
+//            rsmd = rs.getMetaData();
+//            while (rs.next()) {
+//                for (int i = 1; i <= rsmd.getColumnCount(); i++) {
+//                    System.out.println(rsmd.getColumnName(i) + " = " + rs.getObject(i));
+//                }
+//                System.out.println("----------");
+//            }
+//
+//        }
 
         System.out.println("VIEWS");
         System.out.println("-----");
@@ -1823,9 +1858,9 @@ public abstract class BaseTest extends TestCase {
 
     // use if you want to run commands one at a time for debugging or testing
     static void executeCommand(String command, Connection con) throws SQLException {
-        System.out.println(command);
+        //System.out.println(command);
+        log.info(command);
         try (Statement st = con.createStatement()) {
-            log.info(command);
             st.execute(command);
         }
     }

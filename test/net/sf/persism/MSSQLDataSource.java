@@ -14,9 +14,6 @@ import java.util.Properties;
 
 public class MSSQLDataSource {
 
-    private static final Log log = Log.getLogger(MSSQLDataSource.class);
-
-
     private static MSSQLDataSource instance = null;
 
     private DataSource dataSource;
@@ -66,9 +63,5 @@ public class MSSQLDataSource {
             instance = new MSSQLDataSource();
         }
         return instance;
-    }
-
-    public static void removeInstance() {
-        instance = null;
     }
 }
