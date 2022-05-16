@@ -42,11 +42,17 @@ final class MetaData {
     private final Map<Class<?>, String> deleteStatementsMap = new ConcurrentHashMap<>(32);
     private final Map<Class<?>, String> selectStatementsMap = new ConcurrentHashMap<>(32);
 
+    // Where clauses for primary key queries for tables
     private final Map<Class<?>, String> primaryWhereClauseMap = new ConcurrentHashMap<>(32);
-    private final Map<Class<?>, Map<Integer, String>> primaryInClauseMap = new ConcurrentHashMap<>(32);
-    // todo whereClauseMap - used whenever sql.where() is used
 
-    public static final List<JoinInfo> joinInfos = new ArrayList<>();
+    // Where ID IN (?, ?, ?) kinds of queries when no SQL is used.
+    private final Map<Class<?>, Map<Integer, String>> primaryInClauseMap = new ConcurrentHashMap<>(32);
+
+    // SQL parsed from SQL.where() - key is WHERE, value is full SELECT (maintained by SessionHelper)
+    Map<Class<?>, Map<String, String>> whereClauses = new ConcurrentHashMap<>(32);
+
+    // WHERE clauses defined by JOIN operations (maintained by SessionHelper)
+    Map<JoinInfo, Map<String, String>> childWhereClauses = new ConcurrentHashMap<>(32);
 
     // Key is SQL with named params, Value is SQL with ?
     // private Map<String, String> sqlWitNamedParams = new ConcurrentHashMap<String, String>(32);

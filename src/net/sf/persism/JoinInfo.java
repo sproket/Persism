@@ -141,14 +141,13 @@ final class JoinInfo {
 
     @Override
     public String toString() {
-        return "JoinInfo{" +
-                "parentPropertyNames=" + Arrays.toString(parentPropertyNames) +
-                ", childPropertyNames=" + Arrays.toString(childPropertyNames) +
-                ", parentClass=" + parentClass +
-                ", childClass=" + childClass +
-                ", caseSensitive=" + caseSensitive +
-                ", parentIsAQuery=" + parentIsAQuery +
-                ", reversed=" + reversed +
+        return "" +
+                "PPN=" + Arrays.toString(parentPropertyNames) +
+                ", CPN=" + Arrays.toString(childPropertyNames) +
+                ", PC=" + parentClass.getSimpleName() +
+                ", CC=" + childClass.getSimpleName() +
+                ", CS=" + caseSensitive +
+                ", PQ=" + parentIsAQuery +
                 '}';
     }
 

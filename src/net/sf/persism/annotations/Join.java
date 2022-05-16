@@ -34,7 +34,7 @@ public @interface Join {
     String toProperties();
 
     /**
-     * Indicates that you use String primary/foreign key values in your DB which are not case-sensitive.
+     * Indicates that you use String primary/foreign key values in your DB which are case-sensitive. Default false.
      * @return case-sensitive
      */
     boolean caseSensitive() default false;

@@ -38,9 +38,8 @@ final class SessionHelper {
             if (sql.storedProc) {
                 log.warn(Messages.NamedParametersUsedWithStoredProc.message());
             }
-
             char delim = '@';
-            Map<String, List<Integer>> paramMap = new HashMap<>(); // todo cache parameter map
+            Map<String, List<Integer>> paramMap = new HashMap<>();
             sqlQuery = parseParameters(delim, sqlQuery, paramMap);
             parameters.setParameterMap(paramMap);
 
@@ -64,8 +63,7 @@ final class SessionHelper {
             if (objectClass.getAnnotation(NotTable.class) != null) {
                 throw new PersismException(Messages.WhereNotSupportedForNotTableQueries.message());
             }
-            String select = session.metaData.getSelectStatement(objectClass, session.connection);
-            sqlQuery = select + " " + parsePropertyNames(sqlQuery, objectClass, session.connection); // todo cache entire SELECT not just the WHERE
+            sqlQuery = parsePropertyNames(sqlQuery, objectClass, session.connection);
             sql.processedSQL = sqlQuery;
         } else {
             checkIfStoredProcOrSQL(objectClass, sql);
@@ -210,6 +208,19 @@ final class SessionHelper {
     String parsePropertyNames(String sql, Class<?> objectClass, Connection connection) {
         log.debug("parsePropertyNames using : with SQL: %s", sql);
 
+        if (session.metaData.whereClauses.containsKey(objectClass) && session.metaData.whereClauses.get(objectClass).containsKey(sql)) {
+            return session.metaData.whereClauses.get(objectClass).get(sql);
+        }
+
+        return determineWhereClause(sql, objectClass, connection);
+    }
+
+    private synchronized String determineWhereClause(String sql, Class<?> objectClass, Connection connection) {
+
+        if (session.metaData.whereClauses.containsKey(objectClass) && session.metaData.whereClauses.get(objectClass).containsKey(sql)) {
+            return session.metaData.whereClauses.get(objectClass).get(sql);
+        }
+
         int length = sql.length();
         StringBuilder parsedQuery = new StringBuilder(length);
 
@@ -279,8 +290,11 @@ final class SessionHelper {
         if (propertiesNotFound.size() > 0) {
             throw new PersismException(Messages.QueryPropertyNamesMissingOrNotFound.message(propertiesNotFound, sql));
         }
-        String parsedSql = parsedQuery.toString();
+        String select = session.metaData.getSelectStatement(objectClass, session.connection);
+        String parsedSql = select + " " + parsedQuery;
         log.debug("parsePropertyNames SQL: %s", parsedSql);
+        session.metaData.whereClauses.putIfAbsent(objectClass, new HashMap<>());
+        session.metaData.whereClauses.get(objectClass).put(sql, parsedSql);
         return parsedSql;
     }
 
@@ -299,7 +313,7 @@ final class SessionHelper {
 
     Object getTypedValueReturnedFromGeneratedKeys(Class<?> objectClass, ResultSet rs) throws SQLException {
 
-        Object value = null;
+        Object value;
         Types type = Types.getType(objectClass);
 
         if (type == null) {
@@ -524,8 +538,6 @@ final class SessionHelper {
         for (PropertyInfo joinProperty : joinProperties) {
             Join joinAnnotation = (Join) joinProperty.getAnnotation(Join.class);
             JoinInfo joinInfo = JoinInfo.getJoinInfo(joinAnnotation, joinProperty, parent, parentClass);
-            //JoinInfo joinInfo = new JoinInfo(joinAnnotation, joinProperty, parent, parentClass);
-
             if (joinInfo.parentIsAQuery()) {
                 // We expect this method not to be called if the result query has 0 rows.
                 assert ((Collection<?>) parent).size() > 0;
@@ -570,9 +582,7 @@ final class SessionHelper {
                 if (joinInfo.parentIsAQuery()) {
                     // many to one
                     List<?> childList = session.query(joinInfo.childClass(), where(whereClause), params(params.toArray()));
-
-                    JoinInfo swapped = joinInfo.swapParentAndChild();
-                    stitch(swapped, childList, (List<?>) parent);
+                    stitch(joinInfo.swapParentAndChild(), childList, (List<?>) parent);
                 } else {
                     // one to one
                     Object child = session.fetch(joinInfo.childClass(), where(whereClause), params(params.toArray()));
@@ -698,8 +708,17 @@ final class SessionHelper {
         joinedList.addAll(list);
     }
 
-    // todo cache these Strings
     private String getChildWhereClause(JoinInfo joinInfo, String parentWhere) {
+        if (session.metaData.childWhereClauses.containsKey(joinInfo) && session.metaData.childWhereClauses.get(joinInfo).containsKey(parentWhere)) {
+            return session.metaData.childWhereClauses.get(joinInfo).get(parentWhere);
+        }
+        return determineChildWhereClause(joinInfo, parentWhere);
+    }
+
+    private synchronized String determineChildWhereClause(JoinInfo joinInfo, String parentWhere) {
+        if (session.metaData.childWhereClauses.containsKey(joinInfo) && session.metaData.childWhereClauses.get(joinInfo).containsKey(parentWhere)) {
+            return session.metaData.childWhereClauses.get(joinInfo).get(parentWhere);
+        }
 
         StringBuilder where = new StringBuilder();
         String sd = session.metaData.getConnectionType().getKeywordStartDelimiter();
@@ -751,7 +770,10 @@ final class SessionHelper {
         }
         where.append(") ");
 
-        return where.toString();
+        String sql = where.toString();
+        session.metaData.childWhereClauses.putIfAbsent(joinInfo, new HashMap<>());
+        session.metaData.childWhereClauses.get(joinInfo).put(parentWhere, sql);
+        return sql;
     }
 
     private String getColumnName(String propertyName, Map<String, PropertyInfo> properties) {
