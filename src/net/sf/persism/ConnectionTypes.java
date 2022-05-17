@@ -108,4 +108,12 @@ enum ConnectionTypes {
     public String getKeywordEndDelimiter() {
         return keywordEndDelimiter;
     }
+
+    public boolean supportsReadingFromClobType() {
+        return ConnectionTypes.H2 == this || ConnectionTypes.Oracle == this || ConnectionTypes.HSQLDB == this || ConnectionTypes.Derby == this;
+    }
+
+    public boolean supportsReadingFromBlobType() {
+        return ConnectionTypes.Oracle == this;
+    }
 }

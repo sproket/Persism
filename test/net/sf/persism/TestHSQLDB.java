@@ -324,7 +324,21 @@ public final class TestHSQLDB extends BaseTest {
                 """;
         executeCommand(sql, con);
 
+        if (isTableInDatabase("SavedGames", con)) {
+            executeCommand("DROP TABLE SavedGames", con);
+        }
 
+        executeCommand("CREATE TABLE SavedGames ( " +
+                " ID VARCHAR(20) PRIMARY KEY, " +
+                " Name VARCHAR(100), " +
+                " Some_Date_And_Time DATETIME NULL, " +
+                " Platinum REAL NULL, " +
+                " Gold REAL NULL, " +
+                " Silver REAL NULL, " +
+                " Copper REAL NULL, " +
+                " Data varchar(1000) NULL, " +
+                " WhatTimeIsIt TIME NULL, " +
+                " SomethingBig BLOB NULL) ", con);
     }
 
     @Override

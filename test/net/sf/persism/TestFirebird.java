@@ -282,7 +282,22 @@ public class TestFirebird extends BaseTest {
                 """;
         executeCommand(sql, con);
 
+        if (isTableInDatabase("SavedGames", con)) {
+            executeCommand("DROP TABLE SavedGames", con);
+        }
 
+        executeCommand("""
+                CREATE TABLE SavedGames (\s
+                 ID VARCHAR(20) NOT NULL PRIMARY KEY,\s
+                 Name VARCHAR(100),\s
+                 Some_Date_And_Time TIMESTAMP,\s
+                 Platinum FLOAT,\s
+                 Gold FLOAT,\s
+                 Silver FLOAT,\s
+                 Copper FLOAT,\s
+                 Data BLOB SUB_TYPE TEXT,\s
+                 WhatTimeIsIt TIME,\s
+                 SomethingBig BLOB)\s""", con);
     }
 
     public void testSomething() {

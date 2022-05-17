@@ -135,7 +135,7 @@ public class TestStackOverflow extends TestCase {
         System.out.println(vote);
     }
 
-    public void testExistVSIN() {
+    public void testExistVsIN() {
         String sql;
         int rowsIn;
         int rowsExists;

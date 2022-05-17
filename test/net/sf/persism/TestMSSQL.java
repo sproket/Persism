@@ -536,6 +536,23 @@ public class TestMSSQL extends BaseTest {
         }
         commands.add(sql);
 
+        if (isTableInDatabase("SavedGames", con)) {
+            commands.add("DROP TABLE SavedGames");
+        }
+
+        commands.add("CREATE TABLE SavedGames ( " +
+                " ID VARCHAR(20) PRIMARY KEY NOT NULL, " +
+                " Name VARCHAR(100), " +
+                " Some_Date_And_Time DateTime NULL, " +
+                " Platinum REAL NULL, " +
+                " Gold REAL NULL, " +
+                " Silver REAL NULL, " +
+                " Copper REAL NULL, " +
+                " Data TEXT NULL, " +
+                " WhatTimeIsIt Time NULL, " +
+                " SomethingBig varbinary(MAX) NULL) ");
+
+
         executeCommands(commands, con);
 
 
@@ -614,6 +631,8 @@ public class TestMSSQL extends BaseTest {
                     )
                 """;
         executeCommand(sql, con);
+
+
     }
 
     @Override

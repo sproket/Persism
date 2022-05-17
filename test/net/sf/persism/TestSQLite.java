@@ -274,6 +274,22 @@ public final class TestSQLite extends BaseTest {
                 """;
         executeCommand(sql, con);
 
+        if (isTableInDatabase("SavedGames", con)) {
+            executeCommand("DROP TABLE SavedGames", con);
+        }
+
+        executeCommand("CREATE TABLE SavedGames ( " +
+                " ID VARCHAR(20) NOT NULL PRIMARY KEY, " +
+                " Name VARCHAR(100), " +
+                " Some_Date_And_Time DATETIME NULL, " +
+                " Platinum REAL NULL, " +
+                " Gold REAL NULL, " +
+                " Silver REAL NULL, " +
+                " Copper REAL NULL, " +
+                " Data CLOB NULL, " +
+                " WhatTimeIsIt DATETIME NULL, " +
+                " SomethingBig BLOB NULL) ", con);
+
     }
 
     @Override

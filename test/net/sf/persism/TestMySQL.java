@@ -32,12 +32,12 @@ public class TestMySQL extends BaseTest {
         Properties props = new Properties();
         props.load(getClass().getResourceAsStream("/mysql.properties"));
 
-        String driver = props.getProperty("database.driver");
+//         String driver = props.getProperty("database.driver");
         String url = props.getProperty("database.url");
         String username = props.getProperty("database.username");
         String password = props.getProperty("database.password");
 
-        Class.forName(driver);
+//        Class.forName(driver);
 
         con = DriverManager.getConnection(url, username, password);
 
@@ -240,6 +240,21 @@ public class TestMySQL extends BaseTest {
                 """;
         executeCommand(sql, con);
 
+        if (isTableInDatabase("SavedGames", con)) {
+            executeCommand("DROP TABLE SavedGames", con);
+        }
+
+        executeCommand("CREATE TABLE SavedGames ( " +
+                " ID VARCHAR(20) NOT NULL, PRIMARY KEY(ID), " +
+                " Name VARCHAR(100), " +
+                " Some_Date_And_Time DATETIME NULL, " +
+                " Platinum REAL NULL, " +
+                " Gold REAL NULL, " +
+                " Silver REAL NULL, " +
+                " Copper REAL NULL, " +
+                " Data TEXT NULL, " +
+                " WhatTimeIsIt TIME NULL, " +
+                " SomethingBig BLOB NULL) ", con);
     }
 
     @Override

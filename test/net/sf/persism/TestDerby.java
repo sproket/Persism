@@ -165,7 +165,7 @@ public final class TestDerby extends BaseTest {
                 "   Type char(2) NOT NULL,  " +
                 "   FIRST_NAME varchar(50) NOT NULL,  " +
                 "   LAST_NAME varchar(50) NOT NULL,  " +
-                "   ContactName varchar(50) NOT NULL,  " +
+                "   Contact_Name varchar(50) NOT NULL,  " +
                 "   Company varchar(50) NOT NULL,  " +
                 "   Division varchar(50),  " +
                 "   Email varchar(50),  " +
@@ -265,6 +265,21 @@ public final class TestDerby extends BaseTest {
                 """;
         executeCommand(sql, con);
 
+        if (isTableInDatabase("SavedGames", con)) {
+            executeCommand("DROP TABLE SavedGames", con);
+        }
+
+        executeCommand("CREATE TABLE SavedGames ( " +
+                " ID VARCHAR(20) NOT NULL PRIMARY KEY, " +
+                " Name VARCHAR(100), " +
+                " Some_Date_And_Time TIMESTAMP, " +
+                " Platinum REAL, " +
+                " Gold REAL, " +
+                " Silver REAL, " +
+                " Copper REAL, " +
+                " Data CLOB, " +
+                " WhatTimeIsIt TIME, " +
+                " SomethingBig BLOB) ", con);
 
     }
 

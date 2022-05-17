@@ -148,6 +148,22 @@ final class Converter {
 
             case floatType:
             case FloatType:
+                if (targetType == Float.class || targetType == float.class) {
+                    break;
+                }
+
+                Float flt = (Float) value;
+                if (targetType == Integer.class || targetType == int.class) {
+                    log.warnNoDuplicates(Messages.PossibleOverflow.message(columnName, "INT", "DOUBLE"));
+                    returnValue = flt.intValue();
+                    break;
+                }
+
+                if (targetType == Long.class || targetType == long.class) {
+                    log.warnNoDuplicates(Messages.PossibleOverflow.message(columnName, "LONG", "DOUBLE"));
+                    returnValue = flt.longValue();
+                    break;
+                }
                 break;
 
             case doubleType:

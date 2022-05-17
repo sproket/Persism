@@ -19,6 +19,7 @@ public final class SavedGame extends PersistableObject<SavedGame> {
     private String name;
     private Date someDateAndTime;
     private String data;
+    private double platinum;
     private float gold;
     private int silver;
     private long copper;
@@ -67,6 +68,14 @@ public final class SavedGame extends PersistableObject<SavedGame> {
 
     public void setData(String data) {
         this.data = data;
+    }
+
+    public double platinum() {
+        return platinum;
+    }
+
+    public void setPlatinum(double platinum) {
+        this.platinum = platinum;
     }
 
     public float getGold() {

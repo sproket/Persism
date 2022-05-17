@@ -273,7 +273,21 @@ public class TestPostgreSQL extends BaseTest {
                 """;
         executeCommand(sql, con);
 
+        if (isTableInDatabase("SavedGames", con)) {
+            executeCommand("DROP TABLE SavedGames", con);
+        }
 
+        executeCommand("CREATE TABLE SavedGames ( " +
+                " ID VARCHAR(20) NOT NULL PRIMARY KEY, " +
+                " Name VARCHAR(100), " +
+                " Some_Date_And_Time TIMESTAMP NULL, " +
+                " Platinum REAL NULL, " +
+                " Gold REAL NULL, " +
+                " Silver REAL NULL, " +
+                " Copper REAL NULL, " +
+                " Data TEXT NULL, " +
+                " WhatTimeIsIt TIME NULL, " +
+                " SomethingBig bytea NULL) ", con);
     }
 
     @Override

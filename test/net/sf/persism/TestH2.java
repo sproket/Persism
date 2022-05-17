@@ -4,8 +4,6 @@ import net.sf.persism.categories.LocalDB;
 import net.sf.persism.dao.*;
 import org.junit.experimental.categories.Category;
 
-import java.io.File;
-import java.nio.file.Files;
 import java.sql.*;
 import java.time.Instant;
 import java.time.LocalDate;
@@ -13,10 +11,8 @@ import java.time.LocalDateTime;
 import java.util.Date;
 import java.util.*;
 
-import static net.sf.persism.Parameters.none;
 import static net.sf.persism.Parameters.params;
 import static net.sf.persism.SQL.sql;
-import static net.sf.persism.SQL.where;
 import static net.sf.persism.UtilsForTests.isTableInDatabase;
 import static net.sf.persism.UtilsForTests.isViewInDatabase;
 
@@ -180,6 +176,7 @@ to the database URL (example: jdbc:h2:~/test;IGNORECASE=TRUE).
                 " ID VARCHAR(20) IDENTITY PRIMARY KEY, " +
                 " Name VARCHAR(100), " +
                 " Some_Date_And_Time TIMESTAMP NULL, " +
+                " Platinum REAL NULL, " +
                 " Gold REAL NULL, " +
                 " Silver REAL NULL, " +
                 " Copper REAL NULL, " +
@@ -756,51 +753,6 @@ to the database URL (example: jdbc:h2:~/test;IGNORECASE=TRUE).
             Util.cleanup(st, rs);
         }
 
-    }
-
-    public void testVariousTypesLikeClobAndBlob() throws Exception {
-        // note Data is read as a CLOB
-        SavedGame saveGame = new SavedGame();
-        saveGame.setName("BLAH");
-        saveGame.setSomeDateAndTime(new Date());
-        saveGame.setData("HJ LHLH H H                     ';lk ;lk ';l k                                K HLHLHH LH LH LH LHLHLHH LH H H H LH HHLGHLJHGHGFHGFGJFDGHFDHFDGJFDKGHDGJFDD KHGD KHG DKHDTG HKG DFGHK  GLJHG LJHG LJH GLJ");
-        saveGame.setGold(100.23f);
-        saveGame.setSilver(200);
-        saveGame.setCopper(100L);
-        saveGame.setWhatTimeIsIt(new Time(System.currentTimeMillis()));
-
-        File file = new File(getClass().getResource("/logo1.png").toURI());
-        saveGame.setSomethingBig(Files.readAllBytes(file.toPath()));
-        int size = saveGame.getSomethingBig().length;
-        log.info("SIZE?" + saveGame.getSomethingBig().length);
-        session.insert(saveGame);
-
-        SavedGame returnedSavedGame = new SavedGame();
-        returnedSavedGame.setId(saveGame.getId());
-        assertTrue(session.fetch(returnedSavedGame));
-        // test that a util date returned has a time still in it.
-        Calendar cal = Calendar.getInstance();
-        cal.setTime(returnedSavedGame.getSomeDateAndTime());
-        log.info("WHAT DO THESE LOOK LIKE? " + returnedSavedGame.getSomeDateAndTime());
-        log.info(" ETC>>> " + returnedSavedGame.getWhatTimeIsIt());
-        assertTrue("TIME s/b > 0 - we should have time:", cal.get(Calendar.HOUR_OF_DAY) + cal.get(Calendar.MINUTE) + cal.get(Calendar.SECOND) > 0);
-
-        List<SavedGame> savedGames = session.query(SavedGame.class, params(1));
-        log.info("ALL SAVED GAMES " + savedGames.size() + " " + savedGames.get(0).getName() + " id: " + savedGames.get(0).getId());
-        saveGame = session.fetch(SavedGame.class, sql("select * from SavedGames"), none());
-        assertNotNull(saveGame);
-        log.info("SAVED GOLD: " + saveGame.getGold());
-        log.info("SAVED SILVER: " + saveGame.getSilver());
-        log.info("AFTER FETCH SIZE?" + saveGame.getSomethingBig().length);
-        assertEquals("size should be the same ", size, saveGame.getSomethingBig().length);
-
-        saveGame.setSomethingBig(null);
-        session.update(saveGame);
-        session.fetch(saveGame);
-
-        SavedGame sg = session.fetch(SavedGame.class, where("Silver > ?"), params(199));
-        log.warn(sg);
-//        sg = session.fetch(SavedGame.class, proc("spSearchSilver"), params(199));
     }
 
     @Override

@@ -31,7 +31,7 @@ final class MetaData {
     private final Map<Class<?>, Map<String, PropertyInfo>> propertyInfoMap = new ConcurrentHashMap<>(32);
     private final Map<Class<?>, Map<String, ColumnInfo>> columnInfoMap = new ConcurrentHashMap<>(32);
     // not static since this is by column order which may vary
-     final Map<Class<?>, List<String>> propertyNames = new ConcurrentHashMap<>(32); // todo make private again
+    final Map<Class<?>, List<String>> propertyNames = new ConcurrentHashMap<>(32); // todo make private again
 
     // table/view name for each class
     private final Map<Class<?>, String> tableOrViewMap = new ConcurrentHashMap<>(32);
@@ -41,6 +41,9 @@ final class MetaData {
     private final Map<Class<?>, String> insertStatementsMap = new ConcurrentHashMap<>(32);
     private final Map<Class<?>, String> deleteStatementsMap = new ConcurrentHashMap<>(32);
     private final Map<Class<?>, String> selectStatementsMap = new ConcurrentHashMap<>(32);
+
+    // key - class, value - map key: changed columns, value: associated UPDATE statement
+    private final Map<Class<?>, Map<String, String>> variableUpdateStatements = new ConcurrentHashMap<>(32);
 
     // Where clauses for primary key queries for tables
     private final Map<Class<?>, String> primaryWhereClauseMap = new ConcurrentHashMap<>(32);
@@ -521,21 +524,27 @@ final class MetaData {
      */
     String getUpdateStatement(Object object, Connection connection) throws PersismException, NoChangesDetectedForUpdateException {
 
+        String sql;
         if (object instanceof Persistable<?> pojo) {
-            // todo cache these key would be class + changes.keySet().toString() - keySet needs to be SORTED OR IN A CONSISTENT REPEATABLE ORDER
             Map<String, PropertyInfo> changes = getChangedProperties(pojo, connection);
             if (changes.size() == 0) {
                 throw new NoChangesDetectedForUpdateException();
             }
-            // Note we don't add Persistable updates to updateStatementsMap since they will be different each time.
-            String sql = buildUpdateString(pojo, changes.keySet().iterator(), connection);
+
+            Class<?> objectClass = object.getClass();
+            String key = changes.keySet().toString();
+            if (variableUpdateStatements.containsKey(objectClass) && variableUpdateStatements.get(objectClass).containsKey(key)) {
+                sql = variableUpdateStatements.get(objectClass).get(key);
+            } else {
+                sql = determineUpdateStatement(pojo, connection);
+            }
+
             if (log.isDebugEnabled()) {
-                log.debug("getUpdateStatement for %s for changed fields is %s", object.getClass(), sql);
+                log.debug("getUpdateStatement for %s for changed fields is %s", objectClass, sql);
             }
             return sql;
         }
 
-        String sql;
         if (updateStatementsMap.containsKey(object.getClass())) {
             sql = updateStatementsMap.get(object.getClass());
         } else {
@@ -553,15 +562,30 @@ final class MetaData {
             return updateStatementsMap.get(object.getClass());
         }
 
-        Map<String, PropertyInfo> columns = getTableColumnsPropertyInfo(object.getClass(), connection);
-
+        Class<?> objectClass = object.getClass();
+        Map<String, PropertyInfo> columns;
+        if (object instanceof Persistable<?> pojo) {
+            columns = getChangedProperties(pojo, connection);
+        } else {
+            columns = getTableColumnsPropertyInfo(objectClass, connection);
+        }
         String updateStatement = buildUpdateString(object, columns.keySet().iterator(), connection);
 
-        // Store static update statement for future use.
-        updateStatementsMap.put(object.getClass(), updateStatement);
+        if (object instanceof Persistable<?>) {
+            String key = columns.keySet().toString();
+            if (variableUpdateStatements.containsKey(objectClass) && variableUpdateStatements.get(objectClass).containsKey(key)) {
+                return variableUpdateStatements.get(objectClass).get(key);
+            }
+
+            variableUpdateStatements.putIfAbsent(objectClass, new HashMap<>());
+            variableUpdateStatements.get(objectClass).put(key, updateStatement);
+        } else {
+            updateStatementsMap.put(objectClass, updateStatement);
+        }
+
 
         if (log.isDebugEnabled()) {
-            log.debug("determineUpdateStatement for %s is %s", object.getClass(), updateStatement);
+            log.debug("determineUpdateStatement for %s is %s", objectClass, updateStatement);
         }
 
         return updateStatement;
@@ -584,6 +608,8 @@ final class MetaData {
         return sql;
     }
 
+    // The insert statement may vary if the column has a default and the default was not specified but if it WAS specified it should be included.
+    // todo cache this like update statements
     private synchronized String determineInsertStatement(Object object, Connection connection) {
         if (insertStatementsMap.containsKey(object.getClass())) {
             return insertStatementsMap.get(object.getClass());

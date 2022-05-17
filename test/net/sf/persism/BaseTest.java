@@ -5,11 +5,13 @@ import net.sf.persism.dao.*;
 import net.sf.persism.dao.records.*;
 import org.junit.runner.OrderWith;
 
+import java.io.File;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Parameter;
 import java.lang.reflect.RecordComponent;
 import java.math.BigDecimal;
+import java.nio.file.Files;
 import java.sql.Date;
 import java.sql.*;
 import java.text.DateFormat;
@@ -53,6 +55,7 @@ public abstract class BaseTest extends TestCase {
     @Override
     protected void setUp() throws Exception {
         System.out.println("LOG MODE: " + log.getLogMode() + " " + log.getLogName());
+        assertNotNull(connectionType);
         super.setUp();
     }
 
@@ -1314,6 +1317,64 @@ public abstract class BaseTest extends TestCase {
     static java.sql.Date sdate = new java.sql.Date(udate.getTime());
     static java.sql.Timestamp ts = new Timestamp(udate.getTime());
     static java.sql.Time time = new Time(udate.getTime());
+
+    public void testVariousTypesLikeClobAndBlob() throws Exception {
+
+        if (connectionType == ConnectionTypes.Informix) {
+            // https://stackoverflow.com/questions/49441015/informix-no-such-dbspace-error-when-inserting-a-record
+            // todo Invalid default sbspace name (sbspace). needs to be added to docker image
+            return;
+        }
+        // note Data is read as a CLOB
+        SavedGame saveGame = new SavedGame();
+        saveGame.setName("BLAH");
+        saveGame.setSomeDateAndTime(new java.util.Date());
+        saveGame.setData("HJ LHLH H H                     ';lk ;lk ';l k                                K HLHLHH LH LH LH LHLHLHH LH H H H LH HHLGHLJHGHGFHGFGJFDGHFDHFDGJFDKGHDGJFDD KHGD KHG DKHDTG HKG DFGHK  GLJHG LJHG LJH GLJ");
+        saveGame.setGold(100.23f);
+        saveGame.setSilver(200);
+        saveGame.setCopper(100L);
+        saveGame.setWhatTimeIsIt(new Time(System.currentTimeMillis()));
+        saveGame.setSomethingBig(null);
+
+        if (connectionType != ConnectionTypes.H2) {
+            // the only one supporting string auto-inc
+            saveGame.setId("1");
+        }
+
+        File file = new File(getClass().getResource("/logo1.png").toURI());
+        saveGame.setSomethingBig(Files.readAllBytes(file.toPath()));
+        int size = saveGame.getSomethingBig().length;
+        log.info("SIZE?" + saveGame.getSomethingBig().length);
+        session.insert(saveGame);
+
+        SavedGame returnedSavedGame = new SavedGame();
+        returnedSavedGame.setId(saveGame.getId());
+        assertTrue(session.fetch(returnedSavedGame));
+        // test that a util date returned has a time still in it.
+        Calendar cal = Calendar.getInstance();
+        cal.setTime(returnedSavedGame.getSomeDateAndTime());
+        log.info("WHAT DO THESE LOOK LIKE? " + returnedSavedGame.getSomeDateAndTime());
+        log.info(" ETC>>> " + returnedSavedGame.getWhatTimeIsIt());
+        assertTrue("TIME s/b > 0 - we should have time:", cal.get(Calendar.HOUR_OF_DAY) + cal.get(Calendar.MINUTE) + cal.get(Calendar.SECOND) > 0);
+
+        List<SavedGame> savedGames = session.query(SavedGame.class, params("1"));
+        log.info("ALL SAVED GAMES " + savedGames.size() + " " + savedGames.get(0).getName() + " id: " + savedGames.get(0).getId());
+        saveGame = session.fetch(SavedGame.class, sql("select * from SavedGames"), none());
+        assertNotNull(saveGame);
+        log.info("SAVED GOLD: " + saveGame.getGold());
+        log.info("SAVED SILVER: " + saveGame.getSilver());
+        log.info("AFTER FETCH SIZE?" + saveGame.getSomethingBig().length);
+        assertEquals("size should be the same ", size, saveGame.getSomethingBig().length);
+
+        byte[] bytes = {};
+        saveGame.setSomethingBig(bytes);
+        session.update(saveGame);
+        session.fetch(saveGame);
+
+        SavedGame sg = session.fetch(SavedGame.class, where("Silver > ?"), params(199));
+        log.warn(sg);
+//        sg = session.fetch(SavedGame.class, proc("spSearchSilver"), params(199));
+    }
 
     public void testAllDates() {
         SQLDateTypesTests();

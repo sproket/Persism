@@ -138,9 +138,22 @@ final class Reader {
                     break;
 
                 case ClobType:
-                    Clob clob = rs.getClob(column);
-                    if (clob != null) {
-                        try (InputStream in = clob.getAsciiStream()) {
+                    if (metaData.getConnectionType().supportsReadingFromClobType()) {
+                        Clob clob = rs.getClob(column);
+                        if (clob != null) {
+                            try (InputStream in = clob.getAsciiStream()) {
+                                StringWriter writer = new StringWriter();
+
+                                int c = -1;
+                                while ((c = in.read()) != -1) {
+                                    writer.write(c);
+                                }
+                                writer.flush();
+                                value = writer.toString();
+                            }
+                        }
+                    } else {
+                        try (InputStream in = rs.getAsciiStream(column)) {
                             StringWriter writer = new StringWriter();
 
                             int c = -1;
@@ -155,10 +168,20 @@ final class Reader {
 
                 case BlobType:
                     byte[] buffer = new byte[1024];
-                    Blob blob = rs.getBlob(column);
-                    if (blob != null) {
-                        try (InputStream in = blob.getBinaryStream()) {
-                            ByteArrayOutputStream bos = new ByteArrayOutputStream((int) blob.length());
+                    if (metaData.getConnectionType().supportsReadingFromBlobType()) {
+                        Blob blob = rs.getBlob(column);
+                        if (blob != null) {
+                            try (InputStream in = blob.getBinaryStream()) {
+                                ByteArrayOutputStream bos = new ByteArrayOutputStream();
+                                for (int len; (len = in.read(buffer)) != -1; ) {
+                                    bos.write(buffer, 0, len);
+                                }
+                                value = bos.toByteArray();
+                            }
+                        }
+                    } else {
+                        try (InputStream in = rs.getBinaryStream(column)) {
+                            ByteArrayOutputStream bos = new ByteArrayOutputStream();
                             for (int len; (len = in.read(buffer)) != -1; ) {
                                 bos.write(buffer, 0, len);
                             }

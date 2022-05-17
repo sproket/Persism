@@ -17,8 +17,8 @@ public class TestInformix extends BaseTest {
 
     @Override
     public void setUp() throws Exception {
+        connectionType = ConnectionTypes.Informix;
         super.setUp();
-
 
         Properties props = new Properties();
         props.load(getClass().getResourceAsStream("/informix.properties"));
@@ -297,6 +297,21 @@ public class TestInformix extends BaseTest {
                 """;
         executeCommand(sql, con);
 
+        if (isTableInDatabase("SavedGames", con)) {
+            executeCommand("DROP TABLE SavedGames", con);
+        }
+
+        executeCommand("CREATE TABLE SavedGames ( " +
+                " ID VARCHAR(20) PRIMARY KEY, " +
+                " Name VARCHAR(100), " +
+                " Some_Date_And_Time DateTime year to fraction(5) NULL, " +
+                " Platinum REAL NULL, " +
+                " Gold REAL NULL, " +
+                " Silver REAL NULL, " +
+                " Copper REAL NULL, " +
+                " Data CLOB NULL, " +
+                " WhatTimeIsIt DateTime year to fraction(5) NULL, " +
+                " SomethingBig BLOB NULL) ", con);
 
     }
 
