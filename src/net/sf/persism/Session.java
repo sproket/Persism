@@ -245,7 +245,7 @@ public final class Session implements AutoCloseable {
                 if (isRecord) {
                     List<String> propertyNames = metaData.getPropertyNames(objectClass);
                     Constructor<T> selectedConstructor = helper.findConstructor(objectClass, propertyNames);
-                    RecordInfo<T> recordInfo = new RecordInfo<T>(objectClass, selectedConstructor, this, result.rs);
+                    RecordInfo<T> recordInfo = new RecordInfo<T>(objectClass, this, selectedConstructor, propertyNames, result.rs);
                     var ret = reader.readRecord(recordInfo, result.rs);
                     helper.handleJoins(ret, objectClass, sql.toString(), parameters);
                     return ret;
@@ -385,7 +385,6 @@ public final class Session implements AutoCloseable {
         try {
             result = helper.executeQuery(objectClass, sql, parameters);
 
-
             Map<String, PropertyInfo> properties = Collections.emptyMap();
             if (isPOJO) {
                 if (objectClass.getAnnotation(NotTable.class) == null) {
@@ -398,8 +397,7 @@ public final class Session implements AutoCloseable {
             if (isRecord) {
                 List<String> propertyNames = metaData.getPropertyNames(objectClass);
                 Constructor<T> selectedConstructor = helper.findConstructor(objectClass, propertyNames);
-
-                RecordInfo<T> recordInfo = new RecordInfo<>(objectClass, selectedConstructor, this, result.rs);
+                RecordInfo<T> recordInfo = new RecordInfo<>(objectClass, this, selectedConstructor, propertyNames, result.rs);
 
                 while (result.rs.next()) {
                     var record = reader.readRecord(recordInfo, result.rs);

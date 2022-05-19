@@ -8,6 +8,7 @@ import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.util.*;
 
+// todo cache RecordInfo
 class RecordInfo<T> {
 
     Map<String, PropertyInfo> propertiesByColumn;
@@ -17,14 +18,13 @@ class RecordInfo<T> {
     Map<String, Integer> ordinals;
 
 
-    public RecordInfo(Class<T> objectClass, Constructor<T> selectedConstructor, Session session, ResultSet rs) throws SQLException {
+    // todo REFACTOR: methods from helper should be moved here and simplify the constructor
+    public RecordInfo(Class<T> objectClass, Session session, Constructor<T> selectedConstructor, List<String> propertyNames, ResultSet rs) throws SQLException {
 
         // resultset may not have columns in the proper order
         // resultset may not have all columns
         // get column order based on which properties are found
         // get matching constructor
-
-        List<String> propertyNames = session.metaData.getPropertyNames(objectClass);
 
         if (objectClass.getAnnotation(NotTable.class) == null) {
             propertiesByColumn = session.metaData.getTableColumnsPropertyInfo(objectClass, session.connection);

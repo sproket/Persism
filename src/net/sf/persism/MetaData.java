@@ -24,23 +24,26 @@ final class MetaData {
 
     private static final Log log = Log.getLogger(MetaData.class);
 
-    // properties for each class - static because this won't need to change between MetaData instances
+    // properties for each class - static because this won't need to change between MetaData instances (collection is unmodifiable)
     private static final Map<Class<?>, Collection<PropertyInfo>> propertyMap = new ConcurrentHashMap<>(32);
 
     // column to property map for each class
     private final Map<Class<?>, Map<String, PropertyInfo>> propertyInfoMap = new ConcurrentHashMap<>(32);
     private final Map<Class<?>, Map<String, ColumnInfo>> columnInfoMap = new ConcurrentHashMap<>(32);
+
     // not static since this is by column order which may vary
-    final Map<Class<?>, List<String>> propertyNames = new ConcurrentHashMap<>(32); // todo make private again
+    private final Map<Class<?>, List<String>> propertyNames = new ConcurrentHashMap<>(32);
 
     // table/view name for each class
     private final Map<Class<?>, String> tableOrViewMap = new ConcurrentHashMap<>(32);
 
     // SQL for updates/inserts/deletes/selects for each class
     private final Map<Class<?>, String> updateStatementsMap = new ConcurrentHashMap<>(32);
-    private final Map<Class<?>, String> insertStatementsMap = new ConcurrentHashMap<>(32);
     private final Map<Class<?>, String> deleteStatementsMap = new ConcurrentHashMap<>(32);
     private final Map<Class<?>, String> selectStatementsMap = new ConcurrentHashMap<>(32);
+
+    // key - class, value - map key: columns to include, value: associated INSERT statement - this handles defaults on columns which may not need to be specified
+    private final Map<Class<?>, Map<String, String>> insertStatements = new ConcurrentHashMap<>(32);
 
     // key - class, value - map key: changed columns, value: associated UPDATE statement
     private final Map<Class<?>, Map<String, String>> variableUpdateStatements = new ConcurrentHashMap<>(32);
@@ -591,90 +594,71 @@ final class MetaData {
         return updateStatement;
     }
 
-
-    // Note this will not include columns unless they have the associated property.
     String getInsertStatement(Object object, Connection connection) throws PersismException {
         String sql;
-
-        if (insertStatementsMap.containsKey(object.getClass())) {
-            sql = insertStatementsMap.get(object.getClass());
+        String key = getColumnsForInsert(object, connection).stream().map(columnInfo -> columnInfo.columnName).toList().toString();
+        Class<?> objectClass = object.getClass();
+        if (insertStatements.containsKey(objectClass) && insertStatements.get(objectClass).containsKey(key)) {
+            sql = insertStatements.get(objectClass).get(key);
         } else {
             sql = determineInsertStatement(object, connection);
         }
-
         if (log.isDebugEnabled()) {
-            log.debug("getInsertStatement for: %s %s", object.getClass(), sql);
+            log.debug("getInsertStatement for: %s %s", objectClass, sql);
         }
         return sql;
     }
 
     // The insert statement may vary if the column has a default and the default was not specified but if it WAS specified it should be included.
-    // todo cache this like update statements
     private synchronized String determineInsertStatement(Object object, Connection connection) {
-        if (insertStatementsMap.containsKey(object.getClass())) {
-            return insertStatementsMap.get(object.getClass());
+        List<ColumnInfo> columnsForInsert = getColumnsForInsert(object, connection);
+        String key = columnsForInsert.stream().map(columnInfo -> columnInfo.columnName).toList().toString();
+        Class<?> objectClass = object.getClass();
+
+        if (insertStatements.containsKey(objectClass) && insertStatements.get(objectClass).containsKey(key)) {
+            return insertStatements.get(objectClass).get(key);
         }
 
-        try {
-            String tableName = getTableName(object.getClass(), connection);
-            String sd = connectionType.getKeywordStartDelimiter();
-            String ed = connectionType.getKeywordEndDelimiter();
+        String tableName = getTableName(objectClass, connection);
+        String sd = connectionType.getKeywordStartDelimiter();
+        String ed = connectionType.getKeywordEndDelimiter();
 
-            Map<String, ColumnInfo> columns = getColumns(object.getClass(), connection);
-            Map<String, PropertyInfo> properties = getTableColumnsPropertyInfo(object.getClass(), connection);
+        StringBuilder sbi = new StringBuilder();
+        sbi.append("INSERT INTO ").append(sd).append(tableName).append(ed).append(" (");
 
-            StringBuilder sbi = new StringBuilder();
-            sbi.append("INSERT INTO ").append(sd).append(tableName).append(ed).append(" (");
+        StringBuilder sbp = new StringBuilder();
+        sbp.append(") VALUES (");
 
-            StringBuilder sbp = new StringBuilder();
-            sbp.append(") VALUES (");
+        String sep = "";
 
-            String sep = "";
-            boolean saveInMap = true;
-
-            for (ColumnInfo column : columns.values()) {
-                if (!column.autoIncrement) {
-
-                    if (column.hasDefault) {
-
-                        saveInMap = false;
-
-                        // Do not include if this column has a default and no value has been
-                        // set on it's associated property.
-                        if (properties.get(column.columnName).getValue(object) == null) {
-                            continue;
-                        }
-
-                    }
-
-                    sbi.append(sep).append(sd).append(column.columnName).append(ed);
-                    sbp.append(sep).append("?");
-                    sep = ", ";
-                }
-            }
-
-            sbi.append(sbp).append(") ");
-
-            String insertStatement;
-            insertStatement = sbi.toString();
-
-            if (log.isDebugEnabled()) {
-                log.debug("determineInsertStatement for %s is %s", object.getClass(), insertStatement);
-            }
-
-            // Do not put this insert statement into the map if any columns have defaults
-            // because the insert statement will vary by different instances of the data object.
-            if (saveInMap) {
-                insertStatementsMap.put(object.getClass(), insertStatement);
-            } else {
-                insertStatementsMap.remove(object.getClass()); // remove just in case
-            }
-
-            return insertStatement;
-
-        } catch (Exception e) {
-            throw new PersismException(e.getMessage(), e);
+        for (ColumnInfo column : columnsForInsert) {
+            sbi.append(sep).append(sd).append(column.columnName).append(ed);
+            sbp.append(sep).append("?");
+            sep = ", ";
         }
+
+        sbi.append(sbp).append(") ");
+
+        String insertStatement;
+        insertStatement = sbi.toString();
+
+        if (log.isDebugEnabled()) {
+            log.debug("determineInsertStatement for %s is %s", object.getClass(), insertStatement);
+        }
+
+        insertStatements.putIfAbsent(objectClass, new HashMap<>());
+        insertStatements.get(objectClass).put(key, insertStatement);
+
+        return insertStatement;
+    }
+
+    private List<ColumnInfo> getColumnsForInsert(Object object, Connection connection) {
+        Map<String, ColumnInfo> columns = getColumns(object.getClass(), connection);
+        Map<String, PropertyInfo> properties = getTableColumnsPropertyInfo(object.getClass(), connection);
+        return columns.values().stream().
+                filter(columnInfo -> !columnInfo.autoIncrement).
+                filter(columnInfo -> !columnInfo.hasDefault || properties.get(columnInfo.columnName).getValue(object) != null).
+                toList();
     }
 
     String getDeleteStatement(Object object, Connection connection) {
@@ -898,32 +882,28 @@ final class MetaData {
 
     Map<String, PropertyInfo> getChangedProperties(Persistable<?> persistable, Connection connection) throws PersismException {
 
-        try {
-            Persistable<?> original = (Persistable<?>) persistable.readOriginalValue();
+        Persistable<?> original = (Persistable<?>) persistable.readOriginalValue();
 
-            Map<String, PropertyInfo> columns = getTableColumnsPropertyInfo(persistable.getClass(), connection);
+        Map<String, PropertyInfo> columns = getTableColumnsPropertyInfo(persistable.getClass(), connection);
 
-            if (original == null) {
-                // Could happen in the case of cloning or other operation - so it's never read, so it never sets original.
-                return columns;
-            } else {
-                Map<String, PropertyInfo> changedColumns = new LinkedHashMap<>(columns.keySet().size());
+        if (original == null) {
+            // Could happen in the case of cloning or other operation - so it's never read, so it never sets original.
+            return columns;
+        } else {
+            Map<String, PropertyInfo> changedColumns = new LinkedHashMap<>(columns.keySet().size());
 
-                for (String column : columns.keySet()) {
-                    PropertyInfo propertyInfo = columns.get(column);
+            for (String column : columns.keySet()) {
+                PropertyInfo propertyInfo = columns.get(column);
 
-                    Object newValue = propertyInfo.getValue(persistable);
-                    Object orgValue = propertyInfo.getValue(original);
-                    if (!Objects.equals(newValue, orgValue)) {
-                        changedColumns.put(column, propertyInfo);
-                    }
+                Object newValue = propertyInfo.getValue(persistable);
+                Object orgValue = propertyInfo.getValue(original);
+                if (!Objects.equals(newValue, orgValue)) {
+                    changedColumns.put(column, propertyInfo);
                 }
-                return changedColumns;
             }
-
-        } catch (Exception e) {
-            throw new PersismException(e.getMessage(), e);
+            return changedColumns;
         }
+
     }
 
     <T> Map<String, ColumnInfo> getColumns(Class<T> objectClass, Connection connection) throws PersismException {
@@ -961,7 +941,8 @@ final class MetaData {
     }
 
     <T> List<String> getPropertyNames(Class<T> objectClass) {
-        return propertyNames.get(objectClass);
+        // this can be modified by Record findConstructor todo should be unmodifiable. RecordInfo can make it's own copy
+        return new ArrayList<>(propertyNames.get(objectClass));
     }
 
     // internal version to retrieve meta information about this table's columns

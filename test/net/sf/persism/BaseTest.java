@@ -54,7 +54,7 @@ public abstract class BaseTest extends TestCase {
 
     @Override
     protected void setUp() throws Exception {
-        System.out.println("LOG MODE: " + log.getLogMode() + " " + log.getLogName());
+        log.info("LOG MODE: " + log.getLogMode() + " " + log.getLogName());
         assertNotNull(connectionType);
         super.setUp();
     }
@@ -260,6 +260,7 @@ public abstract class BaseTest extends TestCase {
     public void testQueryResult() throws Exception {
         queryDataSetup();
 
+        // Create a query that will fail with not enough columns.
         StringBuilder sb = new StringBuilder();
         sb.append("SELECT c.Customer_ID, c.Company_Name");
         sb.append(" FROM Orders o");
@@ -288,9 +289,6 @@ public abstract class BaseTest extends TestCase {
         sql = sb.toString();
         sql += " WHERE 1 = ?";
         log.info(sql);
-
-        // this should work now since we don't use keys() method - this should not fail any longer if I remove they keys() method
-        results = session.query(CustomerOrder.class, sql(sql), params(1));
 
         // This should not fail - we will refresh the metadata
         results = session.query(CustomerOrder.class, sql(sql), params(1));
@@ -390,7 +388,7 @@ public abstract class BaseTest extends TestCase {
         CustomerRec crec = session.fetch(CustomerRec.class, params(customerRecs.get(0).customerId()));
         assertNotNull(crec);
 
-        CustomerRec crec2 = new CustomerRec(crec.customerId(), crec.companyName(), crec.contactName(), 'x');
+        CustomerRec crec2 = new CustomerRec('x', crec.customerId(), crec.companyName(), crec.contactName());
         Result<CustomerRec> res = session.update(crec2);
         log.warn(res);
     }

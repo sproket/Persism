@@ -402,7 +402,6 @@ to the database URL (example: jdbc:h2:~/test;IGNORECASE=TRUE).
     @Override
     public void testContactTable() throws SQLException {
         super.testContactTable();
-        assertTrue(true);
 
         List<Contact> list2 = session.query(Contact.class);
         log.info(list2);
@@ -417,8 +416,6 @@ to the database URL (example: jdbc:h2:~/test;IGNORECASE=TRUE).
                 "LASTMODIFIED", "NOTES", "AMOUNTOWED", "BIGINT", "SOME_DATE", "WHATMITEISIT", 
                 "WHATTIMEISIT" FROM "PUBLIC"."CONTACTS"                
                 """;
-
-        log.error(sql2);
         Statement st = con.createStatement();
         st.execute(sql2);
 
