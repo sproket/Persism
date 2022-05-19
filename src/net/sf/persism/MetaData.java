@@ -941,8 +941,7 @@ final class MetaData {
     }
 
     <T> List<String> getPropertyNames(Class<T> objectClass) {
-        // this can be modified by Record findConstructor todo should be unmodifiable. RecordInfo can make it's own copy
-        return new ArrayList<>(propertyNames.get(objectClass));
+        return Collections.unmodifiableList(propertyNames.get(objectClass));
     }
 
     // internal version to retrieve meta information about this table's columns

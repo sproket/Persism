@@ -2,25 +2,26 @@ package net.sf.persism;
 
 import net.sf.persism.annotations.NotTable;
 
+import java.beans.ConstructorProperties;
 import java.lang.reflect.Constructor;
+import java.lang.reflect.Parameter;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.util.*;
+import java.util.stream.Collectors;
 
-// todo cache RecordInfo
+import static net.sf.persism.Util.listEqualsIgnoreOrder;
+
+// todo cache RecordInfo key class, map key propertyNames (string) value RecordInfo
 class RecordInfo<T> {
 
     Map<String, PropertyInfo> propertiesByColumn;
     Map<String, PropertyInfo> propertyInfoByConstructorOrder;
-    List<Class<?>> constructorTypes;
     Constructor<T> constructor;
     Map<String, Integer> ordinals;
 
-
-    // todo REFACTOR: methods from helper should be moved here and simplify the constructor
-    public RecordInfo(Class<T> objectClass, Session session, Constructor<T> selectedConstructor, List<String> propertyNames, ResultSet rs) throws SQLException {
-
+    public RecordInfo(Class<T> objectClass, Session session, ResultSet rs) throws SQLException {
         // resultset may not have columns in the proper order
         // resultset may not have all columns
         // get column order based on which properties are found
@@ -32,6 +33,9 @@ class RecordInfo<T> {
             propertiesByColumn = session.metaData.getQueryColumnsPropertyInfo(objectClass, rs);
         }
 
+        List<String> propertyNames = new ArrayList<>(session.metaData.getPropertyNames(objectClass));
+        Constructor<T> selectedConstructor = findConstructor(objectClass, propertyNames);
+
         // now re-arrange by property order
         propertyInfoByConstructorOrder = new LinkedHashMap<>(selectedConstructor.getParameterCount());
         for (String paramName : propertyNames) {
@@ -41,8 +45,8 @@ class RecordInfo<T> {
                 }
             }
         }
-        constructorTypes = new ArrayList<>(12);
 
+        List<Class<?>> constructorTypes = new ArrayList<>(12);
         // put into ordinals the order to read from to match the constructor
         ResultSetMetaData rsmd = rs.getMetaData();
         ordinals = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
@@ -63,5 +67,45 @@ class RecordInfo<T> {
         } catch (NoSuchMethodException e) {
             throw new PersismException(Messages.ReadRecordCouldNotInstantiate.message(objectClass, constructorTypes));
         }
+    }
+
+    private Constructor<T> findConstructor(Class<T> objectClass, List<String> propertyNames) {
+
+        Constructor<?>[] constructors = objectClass.getConstructors();
+        Constructor<T> selectedConstructor = null;
+
+        for (Constructor<?> constructor : constructors) {
+            // Check with canonical or maybe -parameters
+            List<String> parameterNames = Arrays.stream(constructor.getParameters()).
+                    map(Parameter::getName).collect(Collectors.toList());
+
+            // why don't I just use the paremeterNames instead of modifying property list?
+            if (listEqualsIgnoreOrder(propertyNames, parameterNames)) {
+                // re-arrange the propertyNames to match parameterNames
+                propertyNames.clear();
+                propertyNames.addAll(parameterNames);
+                selectedConstructor = (Constructor<T>) constructor;
+                break;
+            }
+
+            // Check with ConstructorProperties
+            ConstructorProperties constructorProperties = constructor.getAnnotation(ConstructorProperties.class);
+            if (constructorProperties != null) {
+                parameterNames = Arrays.asList(constructorProperties.value());
+                if (listEqualsIgnoreOrder(propertyNames, parameterNames)) {
+                    // re-arrange the propertyNames to match parameterNames
+                    propertyNames.clear();
+                    propertyNames.addAll(parameterNames);
+                    selectedConstructor = (Constructor<T>) constructor;
+                    break;
+                }
+            }
+        }
+
+        if (selectedConstructor == null) {
+            throw new PersismException(Messages.CouldNotFindConstructorForRecord.message(objectClass, propertyNames));
+        }
+        return selectedConstructor;
+
     }
 }

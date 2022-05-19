@@ -4,6 +4,8 @@ import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.HashSet;
+import java.util.List;
 
 /**
  * @author Dan Howard
@@ -106,6 +108,11 @@ final class Util {
         for (int j = 0; j < arr.length; j++) {
             arr[j] = arr[j].trim();
         }
+    }
+
+    // https://stackoverflow.com/questions/1075656/simple-way-to-find-if-two-different-lists-contain-exactly-the-same-elements
+    public static <T> boolean listEqualsIgnoreOrder(List<T> list1, List<T> list2) {
+        return new HashSet<>(list1).equals(new HashSet<>(list2));
     }
 
 

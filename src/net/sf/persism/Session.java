@@ -243,9 +243,7 @@ public final class Session implements AutoCloseable {
 
             if (result.rs.next()) {
                 if (isRecord) {
-                    List<String> propertyNames = metaData.getPropertyNames(objectClass);
-                    Constructor<T> selectedConstructor = helper.findConstructor(objectClass, propertyNames);
-                    RecordInfo<T> recordInfo = new RecordInfo<T>(objectClass, this, selectedConstructor, propertyNames, result.rs);
+                    RecordInfo<T> recordInfo = new RecordInfo<>(objectClass, this, result.rs);
                     var ret = reader.readRecord(recordInfo, result.rs);
                     helper.handleJoins(ret, objectClass, sql.toString(), parameters);
                     return ret;
@@ -395,10 +393,7 @@ public final class Session implements AutoCloseable {
             }
 
             if (isRecord) {
-                List<String> propertyNames = metaData.getPropertyNames(objectClass);
-                Constructor<T> selectedConstructor = helper.findConstructor(objectClass, propertyNames);
-                RecordInfo<T> recordInfo = new RecordInfo<>(objectClass, this, selectedConstructor, propertyNames, result.rs);
-
+                RecordInfo<T> recordInfo = new RecordInfo<>(objectClass, this, result.rs);
                 while (result.rs.next()) {
                     var record = reader.readRecord(recordInfo, result.rs);
                     list.add(record);

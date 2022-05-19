@@ -1,5 +1,6 @@
 package net.sf.persism;
 
+// todo verify code coverage for each message
 enum Messages {
     // Errors
     ObjectNotProperlyInitialized("Object %s was not properly initialized. Some properties not initialized in the queried columns (%s)"),

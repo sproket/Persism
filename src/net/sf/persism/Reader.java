@@ -17,14 +17,10 @@ final class Reader {
     private static final Log log = Log.getLogger(Reader.class);
     private static final Log blog = Log.getLogger("net.sf.persism.Benchmarks");
 
-    private final Connection connection;
     private final MetaData metaData;
     private final Converter converter;
-    private final Session session;
 
     Reader(Session session) {
-        this.session = session;
-        this.connection = session.getConnection();
         this.metaData = session.getMetaData();
         this.converter = session.getConverter();
     }
