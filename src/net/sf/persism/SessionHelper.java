@@ -491,7 +491,7 @@ final class SessionHelper {
 
         for (PropertyInfo joinProperty : joinProperties) {
             Join joinAnnotation = (Join) joinProperty.getAnnotation(Join.class);
-            JoinInfo joinInfo = JoinInfo.getJoinInfo(joinAnnotation, joinProperty, parent, parentClass);
+            JoinInfo joinInfo = JoinInfo.getInstance(joinAnnotation, joinProperty, parent, parentClass);
             if (joinInfo.parentIsAQuery()) {
                 // We expect this method not to be called if the result query has 0 rows.
                 assert ((Collection<?>) parent).size() > 0;

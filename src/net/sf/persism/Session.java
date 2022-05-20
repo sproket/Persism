@@ -3,7 +3,6 @@ package net.sf.persism;
 import net.sf.persism.annotations.NotTable;
 import net.sf.persism.annotations.View;
 
-import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
 import java.sql.*;
 import java.util.*;
@@ -243,15 +242,15 @@ public final class Session implements AutoCloseable {
 
             if (result.rs.next()) {
                 if (isRecord) {
-                    RecordInfo<T> recordInfo = new RecordInfo<>(objectClass, this, result.rs);
+                    RecordInfo<T> recordInfo = new RecordInfo<>(objectClass, properties, result.rs);
                     var ret = reader.readRecord(recordInfo, result.rs);
                     helper.handleJoins(ret, objectClass, sql.toString(), parameters);
                     return ret;
 
                 } else if (isPOJO) {
-                    T t = objectClass.getDeclaredConstructor().newInstance();
+                    var pojo = objectClass.getDeclaredConstructor().newInstance();
                     verifyPropertyInfoForQuery(objectClass, properties, result.rs);
-                    var ret = reader.readObject(t, properties, result.rs);
+                    var ret = reader.readObject(pojo, properties, result.rs);
                     helper.handleJoins(ret, objectClass, sql.toString(), parameters);
                     return ret;
 
@@ -393,17 +392,16 @@ public final class Session implements AutoCloseable {
             }
 
             if (isRecord) {
-                RecordInfo<T> recordInfo = new RecordInfo<>(objectClass, this, result.rs);
+                RecordInfo<T> recordInfo = new RecordInfo<>(objectClass, properties, result.rs);
                 while (result.rs.next()) {
                     var record = reader.readRecord(recordInfo, result.rs);
                     list.add(record);
                 }
             } else if (isPOJO) {
                 verifyPropertyInfoForQuery(objectClass, properties, result.rs);
-
                 while (result.rs.next()) {
-                    T t = objectClass.getDeclaredConstructor().newInstance();
-                    list.add(reader.readObject(t, properties, result.rs));
+                    var pojo = objectClass.getDeclaredConstructor().newInstance();
+                    list.add(reader.readObject(pojo, properties, result.rs));
                 }
             } else {
                 ResultSetMetaData rsmd = result.rs.getMetaData();

@@ -31,9 +31,6 @@ final class MetaData {
     private final Map<Class<?>, Map<String, PropertyInfo>> propertyInfoMap = new ConcurrentHashMap<>(32);
     private final Map<Class<?>, Map<String, ColumnInfo>> columnInfoMap = new ConcurrentHashMap<>(32);
 
-    // not static since this is by column order which may vary
-    private final Map<Class<?>, List<String>> propertyNames = new ConcurrentHashMap<>(32);
-
     // table/view name for each class
     private final Map<Class<?>, String> tableOrViewMap = new ConcurrentHashMap<>(32);
 
@@ -147,7 +144,6 @@ final class MetaData {
             return propertyInfoMap.get(objectClass);
         }
 
-        List<String> propertyNames = new ArrayList<>(32);
         try {
             ResultSetMetaData rsmd = rs.getMetaData();
             Collection<PropertyInfo> properties = getPropertyInfo(objectClass);
@@ -182,7 +178,6 @@ final class MetaData {
 
                 if (foundProperty != null) {
                     columns.put(realColumnName, foundProperty);
-                    propertyNames.add(foundProperty.propertyName);
                 } else {
                     log.warn(Messages.NoPropertyFoundForColumn.message(realColumnName, objectClass));
                 }
@@ -200,8 +195,6 @@ final class MetaData {
             if (objectClass.getAnnotation(NotTable.class) == null) {
                 propertyInfoMap.put(objectClass, columns);
             }
-            this.propertyNames.put(objectClass, propertyNames);
-
             return columns;
 
         } catch (SQLException e) {
@@ -908,7 +901,7 @@ final class MetaData {
 
     <T> Map<String, ColumnInfo> getColumns(Class<T> objectClass, Connection connection) throws PersismException {
         // Realistically at this point this objectClass will always be in the map since it's defined early
-        // when we get the table name but I'll double check it for determineColumnInfo anyway.
+        // when we get the table name, but I'll double-check it for determineColumnInfo anyway.
         if (columnInfoMap.containsKey(objectClass)) {
             return columnInfoMap.get(objectClass);
         }
@@ -916,6 +909,8 @@ final class MetaData {
     }
 
     <T> Map<String, PropertyInfo> getQueryColumnsPropertyInfo(Class<T> objectClass, ResultSet rs) throws PersismException {
+
+        // todo get the propertyInfoMap and check it's size against column count - if column count > then clear it from the cache and get it again.
         // should not be mapped since ResultSet could contain different # of columns at different times. OK NOW. If properties > columns we won't cache it
         // nope breaks records tests TODO we should probably cache this and document that MetaData is never refreshed (unless I can somehow).
 //        if (propertyInfoMap.containsKey(objectClass)) {
@@ -938,10 +933,6 @@ final class MetaData {
         }
 
         return determineTable(objectClass);
-    }
-
-    <T> List<String> getPropertyNames(Class<T> objectClass) {
-        return Collections.unmodifiableList(propertyNames.get(objectClass));
     }
 
     // internal version to retrieve meta information about this table's columns

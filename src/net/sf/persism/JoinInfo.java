@@ -23,7 +23,7 @@ final class JoinInfo {
     private final boolean parentIsAQuery;
     private boolean reversed = false;
 
-    JoinInfo(JoinInfo other) {
+    private JoinInfo(JoinInfo other) {
         parentPropertyNames = other.parentPropertyNames;
         childPropertyNames = other.childPropertyNames;
         parentProperties = other.parentProperties;
@@ -37,7 +37,7 @@ final class JoinInfo {
     }
 
     // note parent may be a POJO or a list of POJOs
-    public JoinInfo(Join joinAnnotation, PropertyInfo joinProperty, Object parent, Class<?> parentClass) {
+    private JoinInfo(Join joinAnnotation, PropertyInfo joinProperty, Object parent, Class<?> parentClass) {
         this.joinProperty = joinProperty;
         parentPropertyNames = joinAnnotation.onProperties().split(",");
         childPropertyNames = joinAnnotation.toProperties().split(",");
@@ -99,6 +99,34 @@ final class JoinInfo {
         return info;
     }
 
+    public static JoinInfo getInstance(Join joinAnnotation, PropertyInfo joinProperty, Object parent, Class<?> parentClass) {
+        JoinInfo foundInfo = null;
+        for (JoinInfo joinInfo : joinInfos) {
+            if (joinInfo.joinProperty().equals(joinProperty) && joinInfo.parentClass().equals(parentClass)) {
+                if (Collection.class.isAssignableFrom(parent.getClass())) {
+                    if (joinInfo.parentIsAQuery()) {
+                        foundInfo = joinInfo;
+                        break;
+                    }
+                } else {
+                    if (!joinInfo.parentIsAQuery()) {
+                        foundInfo = joinInfo;
+                        break;
+                    }
+                }
+            }
+        }
+
+        if (foundInfo != null) {
+            return foundInfo;
+        } else {
+            JoinInfo joinInfo = new JoinInfo(joinAnnotation, joinProperty, parent, parentClass);
+            joinInfos.add(joinInfo);
+            return joinInfo;
+        }
+    }
+
+
     public String[] parentPropertyNames() {
         return parentPropertyNames;
     }
@@ -149,32 +177,5 @@ final class JoinInfo {
                 ", CS=" + caseSensitive +
                 ", PQ=" + parentIsAQuery +
                 '}';
-    }
-
-    static JoinInfo getJoinInfo(Join joinAnnotation, PropertyInfo joinProperty, Object parent, Class<?> parentClass) {
-        JoinInfo foundInfo = null;
-        for (JoinInfo joinInfo : joinInfos) {
-            if (joinInfo.joinProperty().equals(joinProperty) && joinInfo.parentClass().equals(parentClass)) {
-                if (Collection.class.isAssignableFrom(parent.getClass())) {
-                    if (joinInfo.parentIsAQuery()) {
-                        foundInfo = joinInfo;
-                        break;
-                    }
-                } else {
-                    if (!joinInfo.parentIsAQuery()) {
-                        foundInfo = joinInfo;
-                        break;
-                    }
-                }
-            }
-        }
-
-        if (foundInfo != null) {
-            return foundInfo;
-        } else {
-            JoinInfo joinInfo = new JoinInfo(joinAnnotation, joinProperty, parent, parentClass);
-            joinInfos.add(joinInfo);
-            return joinInfo;
-        }
     }
 }

@@ -22,7 +22,7 @@ public record CustomerRec(
         @Join(to = Invoice.class, onProperties = "customerId", toProperties = "customerId")
         List<Invoice> invoices) {
 
-    // can only work if we make a constructor without the Join and make it a modifiable list.
+    // JOIN can only work if we make a constructor without the Join and make it a modifiable list.
     @ConstructorProperties({"status", "customerId", "companyName", "contactName"})
     public CustomerRec(Character status, String customerId, String companyName, String contactName) {
         this(customerId, companyName, contactName, status, new ArrayList<>());

@@ -1689,8 +1689,8 @@ public abstract class BaseTest extends TestCase {
         } catch (PersismException e) {
             fail = true;
             log.warn(e.getMessage(), e);
-            assertTrue("msg should start with 'readRecord: Could instantiate the constructor for: class net.sf.persism.dao.records.RecordTest1'",
-                    e.getMessage().startsWith("readRecord: Could instantiate the constructor for: class net.sf.persism.dao.records.RecordTest1"));
+            assertTrue("msg should start with 'readRecord: Could not instantiate the constructor for: class net.sf.persism.dao.records.RecordTest1'",
+                    e.getMessage().startsWith("readRecord: Could not instantiate the constructor for: class net.sf.persism.dao.records.RecordTest1"));
         }
         assertTrue(fail);
 
@@ -1735,6 +1735,7 @@ public abstract class BaseTest extends TestCase {
             log.info(rt23);
 
         } catch (PersismException e) {
+            log.error(e.getMessage(), e);
             fail = true;
             // todo this should be the common object message instead defined by Messages.ObjectNotProperlyInitializedByQuery
             assertEquals("s/b 'readrecord: could not find column in the sql query for class: class net.sf.persism.dao.records.recordtest2. missing column: created_on'".toLowerCase(),

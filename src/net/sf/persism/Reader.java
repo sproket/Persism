@@ -69,12 +69,12 @@ final class Reader {
         now = System.nanoTime();
 
         ResultSetMetaData rsmd = rs.getMetaData();
-        List<Object> constructorParams = new ArrayList<>(recordInfo.propertyInfoByConstructorOrder.keySet().size());
+        List<Object> constructorParams = new ArrayList<>(recordInfo.propertyInfoByConstructorOrder().keySet().size());
 
-        for (String col : recordInfo.propertyInfoByConstructorOrder.keySet()) {
-            Class<?> returnType = recordInfo.propertyInfoByConstructorOrder.get(col).field.getType();
+        for (String col : recordInfo.propertyInfoByConstructorOrder().keySet()) {
+            Class<?> returnType = recordInfo.propertyInfoByConstructorOrder().get(col).field.getType();
 
-            int ncol = recordInfo.ordinals.get(col);
+            int ncol = recordInfo.ordinals().get(col);
             Object value = readColumn(rs, ncol, rsmd.getColumnType(ncol), rsmd.getColumnLabel(ncol), returnType);
             if (value == null && returnType.isPrimitive()) {
                 // Set null primitives to their default, otherwise the constructor will not be found
@@ -87,7 +87,7 @@ final class Reader {
 
         try {
             //noinspection
-            return recordInfo.constructor.newInstance(constructorParams.toArray());
+            return recordInfo.constructor().newInstance(constructorParams.toArray());
         } finally {
             blog.debug("time to get readRecord: %s", (System.nanoTime() - now));
         }
