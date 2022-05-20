@@ -116,6 +116,9 @@ final class MetaData {
             return propertyInfoMap.get(objectClass);
         }
 
+        // Not for @NotTable classes
+        assert objectClass.getAnnotation(NotTable.class) == null;
+
         String sd = connectionType.getKeywordStartDelimiter();
         String ed = connectionType.getKeywordEndDelimiter();
 
@@ -129,7 +132,9 @@ final class MetaData {
                 log.debug("determineColumns: %s", sql);
             }
             rs = st.executeQuery(sql);
-            return determinePropertyInfo(objectClass, rs);
+            Map<String, PropertyInfo> columns = determinePropertyInfoFromResultSet(objectClass, rs);
+            propertyInfoMap.put(objectClass, columns);
+            return columns;
         } catch (SQLException e) {
             throw new PersismException(e.getMessage(), e);
         } finally {
@@ -137,69 +142,45 @@ final class MetaData {
         }
     }
 
-    // Should only be called IF the map does not contain the column meta information yet.
-    private synchronized <T> Map<String, PropertyInfo> determinePropertyInfo(Class<T> objectClass, ResultSet rs) {
-        // double check map - note this could be called with a Query where we never have that in here
-        if (propertyInfoMap.containsKey(objectClass)) {
-            return propertyInfoMap.get(objectClass);
-        }
+    private <T> Map<String, PropertyInfo> determinePropertyInfoFromResultSet(Class<T> objectClass, ResultSet rs) throws SQLException {
+        ResultSetMetaData rsmd = rs.getMetaData();
+        Collection<PropertyInfo> properties = getPropertyInfo(objectClass);
 
-        try {
-            ResultSetMetaData rsmd = rs.getMetaData();
-            Collection<PropertyInfo> properties = getPropertyInfo(objectClass);
+        int columnCount = rsmd.getColumnCount();
 
-            int columnCount = rsmd.getColumnCount();
-
-            Map<String, PropertyInfo> columns = new LinkedHashMap<>(columnCount);
-            for (int j = 1; j <= columnCount; j++) {
-                String realColumnName = rsmd.getColumnLabel(j);
-                String columnName = realColumnName.toLowerCase().replace("_", "").replace(" ", "");
-                // also replace these characters
-                for (int x = 0; x < EXTRA_NAME_CHARACTERS.length(); x++) {
-                    columnName = columnName.replace("" + EXTRA_NAME_CHARACTERS.charAt(x), "");
-                }
-                PropertyInfo foundProperty = null;
-                for (PropertyInfo propertyInfo : properties) {
-                    String checkName = propertyInfo.propertyName.toLowerCase().replace("_", "");
-                    if (checkName.equalsIgnoreCase(columnName)) {
-                        foundProperty = propertyInfo;
-                        break;
-                    } else {
-                        // check annotation against column name
-                        Column column = (Column) propertyInfo.getAnnotation(Column.class);
-                        if (column != null) {
-                            if (column.name().equalsIgnoreCase(realColumnName)) {
-                                foundProperty = propertyInfo;
-                                break;
-                            }
+        Map<String, PropertyInfo> columns = new LinkedHashMap<>(columnCount);
+        for (int j = 1; j <= columnCount; j++) {
+            String realColumnName = rsmd.getColumnLabel(j);
+            String columnName = realColumnName.toLowerCase().replace("_", "").replace(" ", "");
+            // also replace these characters
+            for (int x = 0; x < EXTRA_NAME_CHARACTERS.length(); x++) {
+                columnName = columnName.replace("" + EXTRA_NAME_CHARACTERS.charAt(x), "");
+            }
+            PropertyInfo foundProperty = null;
+            for (PropertyInfo propertyInfo : properties) {
+                String checkName = propertyInfo.propertyName.toLowerCase().replace("_", "");
+                if (checkName.equalsIgnoreCase(columnName)) {
+                    foundProperty = propertyInfo;
+                    break;
+                } else {
+                    // check annotation against column name
+                    Column column = (Column) propertyInfo.getAnnotation(Column.class);
+                    if (column != null) {
+                        if (column.name().equalsIgnoreCase(realColumnName)) {
+                            foundProperty = propertyInfo;
+                            break;
                         }
                     }
                 }
-
-                if (foundProperty != null) {
-                    columns.put(realColumnName, foundProperty);
-                } else {
-                    log.warn(Messages.NoPropertyFoundForColumn.message(realColumnName, objectClass));
-                }
             }
 
-            // Do not put query classes into the metadata. It's possible the 1st run has a query with missing columns
-            // any calls afterward would fail because I never would refresh the columns again. Table is fine since we
-            // can do a SELECT * to get all columns up front but we can't do that with a query.
-            //if (objectClass.getAnnotation(NotTable.class) == null) {
-
-            // If we have properties > columns then we will later have an uninitialized object which is an error
-            // so in that case, we won't cache this. The assumption is that in the case of a long-running app which
-            // may catch and continue, we would always have a bad cache.
-            //if (properties.size() <= columnCount) {
-            if (objectClass.getAnnotation(NotTable.class) == null) {
-                propertyInfoMap.put(objectClass, columns);
+            if (foundProperty != null) {
+                columns.put(realColumnName, foundProperty);
+            } else {
+                log.warn(Messages.NoPropertyFoundForColumn.message(realColumnName, objectClass));
             }
-            return columns;
-
-        } catch (SQLException e) {
-            throw new PersismException(e.getMessage(), e);
         }
+        return columns;
     }
 
     @SuppressWarnings({"JDBCExecuteWithNonConstantString", "SqlDialectInspection"})
@@ -909,15 +890,11 @@ final class MetaData {
     }
 
     <T> Map<String, PropertyInfo> getQueryColumnsPropertyInfo(Class<T> objectClass, ResultSet rs) throws PersismException {
-
-        // todo get the propertyInfoMap and check it's size against column count - if column count > then clear it from the cache and get it again.
-        // should not be mapped since ResultSet could contain different # of columns at different times. OK NOW. If properties > columns we won't cache it
-        // nope breaks records tests TODO we should probably cache this and document that MetaData is never refreshed (unless I can somehow).
-//        if (propertyInfoMap.containsKey(objectClass)) {
-//            return propertyInfoMap.get(objectClass);
-//        }
-
-        return determinePropertyInfo(objectClass, rs);
+        try {
+            return determinePropertyInfoFromResultSet(objectClass, rs);
+        } catch (SQLException e) {
+            throw new PersismException(e.getMessage(), e);
+        }
     }
 
     <T> Map<String, PropertyInfo> getTableColumnsPropertyInfo(Class<T> objectClass, Connection connection) throws PersismException {
