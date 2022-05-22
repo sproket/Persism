@@ -9,8 +9,9 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
+// Should fail with null on lineItems
 @Table("INVOICES")
-public final class InvoiceFail {
+public final class InvoiceFail2 {
 
     private Integer invoiceId;
     private String customerId;
@@ -28,8 +29,8 @@ public final class InvoiceFail {
     // Used as a primitive to test for warning about using primitives on columns with defaults
     private Character status;
 
-    @Join(to = InvoiceLineItem.class, onProperties = "invoiceId, price", toProperties = "invoiceId")
-    private List<InvoiceLineItem> lineItems = new ArrayList<>();
+    @Join(to = InvoiceLineItem.class, onProperties = "invoiceId", toProperties = "invoiceId")
+    private List<InvoiceLineItem> lineItems; // not initialized
 
     public String getCustomerId() {
         return customerId;

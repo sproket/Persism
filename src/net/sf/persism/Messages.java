@@ -1,6 +1,5 @@
 package net.sf.persism;
 
-// todo verify code coverage for each message
 enum Messages {
     // Errors
     ObjectNotProperlyInitialized("Object %s was not properly initialized. Some properties not initialized in the queried columns (%s)"),
@@ -11,7 +10,7 @@ enum Messages {
     ReadRecordColumnNotFound("readRecord: Could not find column in the SQL query for class: %s. Missing column: %s"),
     ReadRecordCouldNotInstantiate("readRecord: Could not instantiate the constructor for: %s (%s)"),
     TableHasNoPrimaryKeys("Cannot perform %s - %s has no primary keys"),
-    TableHasNoPrimaryKeysForWhere("Could not determine WHERE clause for %s. No primary keys detected"),
+    TableHasNoPrimaryKeysForWhere("Could not determine WHERE IN clause for TABLE: %s. No primary keys detected"),
     ClassHasNoGetterForProperty("Class %s has no getter for property %s"),
     NonAutoIncGeneratedNotSupported("Non-auto inc generated primary keys are not supported. Please assign your primary key value before performing an insert"),
     CouldNotFindTableNameInTheDatabase("Could not find a Table in the database named %s. Check the @Table annotation on %s"),

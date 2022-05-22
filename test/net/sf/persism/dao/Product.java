@@ -1,10 +1,21 @@
 package net.sf.persism.dao;
 
+import net.sf.persism.annotations.Column;
+
+import java.math.BigDecimal;
+import java.sql.Timestamp;
+import java.util.Date;
+
 public final class Product {
 
+    @Column(primary = true)
     private int id;
+
     private String description;
     private double cost;
+    private BigDecimal badNumber;
+    private Date badDate;
+    private Timestamp badTimestamp;
 
     public Product() {
     }
@@ -37,6 +48,30 @@ public final class Product {
 
     public void setCost(double cost) {
         this.cost = cost;
+    }
+
+    public BigDecimal getBadNumber() {
+        return badNumber;
+    }
+
+    public void setBadNumber(BigDecimal badNumber) {
+        this.badNumber = badNumber;
+    }
+
+    public Date getBadDate() {
+        return badDate;
+    }
+
+    public void setBadDate(Date badDate) {
+        this.badDate = badDate;
+    }
+
+    public Timestamp getBadTimestamp() {
+        return badTimestamp;
+    }
+
+    public void setBadTimestamp(Timestamp badTimestamp) {
+        this.badTimestamp = badTimestamp;
     }
 
     @Override

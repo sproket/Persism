@@ -639,7 +639,7 @@ public final class Session implements AutoCloseable {
 
                             if (columnInfo.primary) {
                                 // This is supported with PostgreSQL but otherwise throw this an exception
-                                if (!(metaData.getConnectionType() == ConnectionTypes.PostgreSQL)) {
+                                if (metaData.getConnectionType() != ConnectionTypes.PostgreSQL) {
                                     throw new PersismException(Messages.NonAutoIncGeneratedNotSupported.message());
                                 }
                             }
@@ -838,10 +838,10 @@ public final class Session implements AutoCloseable {
     }
 
     // this is a maybe....
-//    public static synchronized void clearMetaData() {
-//        log.warn("Clearing meta data");
-//        MetaData.metaData.clear();
-//        log.warn("meta data cleared");
-//    }
+    static synchronized void clearMetaData() {
+        log.warn("Clearing meta data");
+        MetaData.metaData.clear();
+        log.warn("meta data cleared");
+    }
 
 }

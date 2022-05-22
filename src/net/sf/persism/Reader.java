@@ -41,6 +41,11 @@ final class Reader {
             PropertyInfo columnProperty = getPropertyInfo(columnName, properties);
 
             if (columnProperty != null) {
+
+                if (columnProperty.getter == null) {
+                    throw new PersismException(Messages.ClassHasNoGetterForProperty.message(object.getClass(), columnProperty.propertyName));
+                }
+
                 Class<?> returnType = columnProperty.getter.getReturnType();
 
                 Object value = readColumn(rs, j, rsmd.getColumnType(j), columnName, returnType);

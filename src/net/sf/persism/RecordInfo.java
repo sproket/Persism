@@ -96,7 +96,7 @@ class RecordInfo<T> {
         }
 
         if (selectedConstructor == null) {
-            throw new PersismException(Messages.CouldNotFindConstructorForRecord.message(objectClass, propertyNames));
+            throw new PersismException(Messages.CouldNotFindConstructorForRecord.message(objectClass.getName(), propertyNames));
         }
         return selectedConstructor;
 

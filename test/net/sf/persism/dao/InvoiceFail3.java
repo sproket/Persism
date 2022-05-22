@@ -9,8 +9,9 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
+// parent class join property misspelled.
 @Table("INVOICES")
-public final class InvoiceFail {
+public final class InvoiceFail3 {
 
     private Integer invoiceId;
     private String customerId;
@@ -28,7 +29,7 @@ public final class InvoiceFail {
     // Used as a primitive to test for warning about using primitives on columns with defaults
     private Character status;
 
-    @Join(to = InvoiceLineItem.class, onProperties = "invoiceId, price", toProperties = "invoiceId")
+    @Join(to = InvoiceLineItem.class, onProperties = "invoice0d", toProperties = "invoiceId")
     private List<InvoiceLineItem> lineItems = new ArrayList<>();
 
     public String getCustomerId() {

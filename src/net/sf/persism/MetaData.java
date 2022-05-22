@@ -739,7 +739,7 @@ final class MetaData {
 
         List<String> primaryKeys = getPrimaryKeys(objectClass, connection);
         if (primaryKeys.size() == 0) {
-            throw new PersismException(Messages.TableHasNoPrimaryKeysForWhere.message(objectClass.getName()));
+            throw new PersismException(Messages.TableHasNoPrimaryKeysForWhere.message(getTableName(objectClass)));
         }
 
         sb.append(" WHERE ");

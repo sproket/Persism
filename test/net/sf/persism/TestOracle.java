@@ -291,6 +291,9 @@ grant create trigger, create sequence to pinf;
                 CREATE TABLE Products (
                     ID int,
                     Description VARCHAR(50),
+                    BadNumber VARCHAR(30),
+                    BadDate VARCHAR(30),
+                    BadTimeStamp VARCHAR(30),
                     COST NUMERIC(10,3)
                     )
                 """;

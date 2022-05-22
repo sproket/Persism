@@ -2,15 +2,19 @@ package net.sf.persism;
 
 import net.sf.persism.categories.LocalDB;
 import net.sf.persism.dao.*;
+import net.sf.persism.dao.records.CustomerRec;
+import net.sf.persism.dao.records.RecordTest2;
 import org.junit.experimental.categories.Category;
 
+import java.math.BigDecimal;
 import java.sql.*;
-import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.Date;
 import java.util.*;
 
+import static net.sf.persism.Messages.NumberFormatException;
+import static net.sf.persism.Messages.*;
 import static net.sf.persism.Parameters.params;
 import static net.sf.persism.SQL.sql;
 import static net.sf.persism.UtilsForTests.isTableInDatabase;
@@ -60,12 +64,6 @@ to the database URL (example: jdbc:h2:~/test;IGNORECASE=TRUE).
         createTables();
 
         session = new Session(con, "jdbc:h2/H2!");
-
-        Instant x = new Date().toInstant();
-
-//        new java.sql.Date(x.toEpochMilli()).toInstant();
-        // Method threw 'java.lang.UnsupportedOperationException' exception.
-
     }
 
     @Override
@@ -83,17 +81,17 @@ to the database URL (example: jdbc:h2:~/test;IGNORECASE=TRUE).
         }
 
         sql = "CREATE TABLE Orders ( " +
-                " ID IDENTITY PRIMARY KEY, " +
-                " NAME VARCHAR(30) NULL, " +
-                " PAID BIT NULL, " +
-                " Prepaid BIT NULL," + // would match to getter? Not if it's GETPrePaid FFS
-                " IsCollect BIT NULL," +
-                " IsCancelled BIT NULL," + // property is IsCancelled
-                " Customer_ID VARCHAR(10) NULL, " +
-                " Created TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL, " +
-                " Date_Paid TIMESTAMP NULL, " +
-                " Date_Something TIMESTAMP NULL " +
-                ") ";
+              " ID IDENTITY PRIMARY KEY, " +
+              " NAME VARCHAR(30) NULL, " +
+              " PAID BIT NULL, " +
+              " Prepaid BIT NULL," + // would match to getter? Not if it's GETPrePaid FFS
+              " IsCollect BIT NULL," +
+              " IsCancelled BIT NULL," + // property is IsCancelled
+              " Customer_ID VARCHAR(10) NULL, " +
+              " Created TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL, " +
+              " Date_Paid TIMESTAMP NULL, " +
+              " Date_Something TIMESTAMP NULL " +
+              ") ";
 
         commands.add(sql);
 
@@ -107,40 +105,40 @@ to the database URL (example: jdbc:h2:~/test;IGNORECASE=TRUE).
         }
 
         commands.add("CREATE TABLE Customers ( " +
-                " Customer_ID varchar(10) PRIMARY KEY NOT NULL, " +
-                " GROUP_ID INT NULL, " +
-                " Company_Name VARCHAR(30) NULL, " +
-                " Contact_Name VARCHAR(30) NULL, " +
-                " Contact_Title VARCHAR(10) NULL, " +
-                " Address VARCHAR(40) NULL, " +
-                " City VARCHAR(30) NULL, " +
-                " Region ENUM('North', 'South', 'East', 'West'), " +
-                " Postal_Code VARCHAR(10) NULL, " +
-                " Country VARCHAR(2) DEFAULT 'US', " +
-                " Phone VARCHAR(30) NULL, " +
-                " Fax VARCHAR(30) NULL, " +
-                " Status CHAR(1) NULL, " +
-                " Date_Registered datetime default current_timestamp, " +
-                " Date_Of_Last_Order DATE NULL, " +
-                " TestLocalDate date NULL, " +
-                " TestLocalDateTime datetime NULL" +
-                ") ");
+                     " Customer_ID varchar(10) PRIMARY KEY NOT NULL, " +
+                     " GROUP_ID INT NULL, " +
+                     " Company_Name VARCHAR(30) NULL, " +
+                     " Contact_Name VARCHAR(30) NULL, " +
+                     " Contact_Title VARCHAR(10) NULL, " +
+                     " Address VARCHAR(40) NULL, " +
+                     " City VARCHAR(30) NULL, " +
+                     " Region ENUM('North', 'South', 'East', 'West'), " +
+                     " Postal_Code VARCHAR(10) NULL, " +
+                     " Country VARCHAR(2) DEFAULT 'US', " +
+                     " Phone VARCHAR(30) NULL, " +
+                     " Fax VARCHAR(30) NULL, " +
+                     " Status CHAR(1) NULL, " +
+                     " Date_Registered datetime default current_timestamp, " +
+                     " Date_Of_Last_Order DATE NULL, " +
+                     " TestLocalDate date NULL, " +
+                     " TestLocalDateTime datetime NULL" +
+                     ") ");
 
         if (isTableInDatabase("Invoices", con)) {
             commands.add("DROP TABLE Invoices");
         }
 
         commands.add("CREATE TABLE Invoices ( " +
-                " Invoice_ID IDENTITY PRIMARY KEY, " +
-                " Customer_ID varchar(10) NOT NULL, " +
-                " Paid BIT NOT NULL, " +
-                " Price NUMERIC(7,3) NOT NULL, " +
-                " ActualPrice NUMERIC(7,3) NOT NULL, " +
-                " Status CHAR(1) DEFAULT '1', " +
-                " Created DateTime default current_timestamp, " + // make read-only in Invoice Object
-                " Quantity NUMERIC(10) NOT NULL, " +
-                " Discount NUMERIC(10,3) NOT NULL " +
-                ") ");
+                     " Invoice_ID IDENTITY PRIMARY KEY, " +
+                     " Customer_ID varchar(10) NOT NULL, " +
+                     " Paid BIT NOT NULL, " +
+                     " Price NUMERIC(7,3) NOT NULL, " +
+                     " ActualPrice NUMERIC(7,3) NOT NULL, " +
+                     " Status CHAR(1) DEFAULT '1', " +
+                     " Created DateTime default current_timestamp, " + // make read-only in Invoice Object
+                     " Quantity NUMERIC(10) NOT NULL, " +
+                     " Discount NUMERIC(10,3) NOT NULL " +
+                     ") ");
 
 
         sql = """
@@ -158,12 +156,12 @@ to the database URL (example: jdbc:h2:~/test;IGNORECASE=TRUE).
         }
 
         commands.add("CREATE TABLE TABLEMULTIPRIMARY ( " +
-                " OrderID INT NOT NULL, " +
-                " ProductID VARCHAR(10) NOT NULL, " +
-                " UnitPrice DECIMAL NOT NULL, " +
-                " Quantity SMALLINT NOT NULL, " +
-                " Discount REAL NOT NULL " +
-                ") ");
+                     " OrderID INT NOT NULL, " +
+                     " ProductID VARCHAR(10) NOT NULL, " +
+                     " UnitPrice DECIMAL NOT NULL, " +
+                     " Quantity SMALLINT NOT NULL, " +
+                     " Discount REAL NOT NULL " +
+                     ") ");
 
         commands.add("ALTER TABLE TABLEMULTIPRIMARY ADD PRIMARY KEY (ProductID, OrderID)");
 
@@ -173,16 +171,16 @@ to the database URL (example: jdbc:h2:~/test;IGNORECASE=TRUE).
         }
 
         commands.add("CREATE TABLE SavedGames ( " +
-                " ID VARCHAR(20) IDENTITY PRIMARY KEY, " +
-                " Name VARCHAR(100), " +
-                " Some_Date_And_Time TIMESTAMP NULL, " +
-                " Platinum REAL NULL, " +
-                " Gold REAL NULL, " +
-                " Silver REAL NULL, " +
-                " Copper REAL NULL, " +
-                " Data TEXT NULL, " +
-                " WhatTimeIsIt Time NULL, " +
-                " SomethingBig BLOB NULL) ");
+                     " ID VARCHAR(20) IDENTITY PRIMARY KEY, " +
+                     " Name VARCHAR(100), " +
+                     " Some_Date_And_Time TIMESTAMP NULL, " +
+                     " Platinum REAL NULL, " +
+                     " Gold REAL NULL, " +
+                     " Silver REAL NULL, " +
+                     " Copper REAL NULL, " +
+                     " Data TEXT NULL, " +
+                     " WhatTimeIsIt Time NULL, " +
+                     " SomethingBig BLOB NULL) ");
 
         executeCommands(commands, con);
 
@@ -191,32 +189,32 @@ to the database URL (example: jdbc:h2:~/test;IGNORECASE=TRUE).
         }
 
         sql = "CREATE TABLE Contacts( " +
-                "   identity binary(16) NOT NULL PRIMARY KEY, " +  // test binary(16)
-                "   PartnerID varchar(36) NOT NULL, " + // test varchar(36)
-                "   Type char(2) NOT NULL, " +
-                "   Firstname varchar(50) NOT NULL, " +
-                "   Lastname varchar(50) NOT NULL, " +
-                "   ContactName varchar(50) NOT NULL, " +
-                "   Company varchar(50) NOT NULL, " +
-                "   Division varchar(50) NULL, " +
-                "   Email varchar(50) NULL, " +
-                "   Address1 varchar(50) NULL, " +
-                "   Address2 varchar(50) NULL, " +
-                "   City varchar(50) NULL, " +
-                "   Status TINYINT NULL, " +
-                "   StateProvince varchar(50) NULL, " +
-                "   ZipPostalCode varchar(10) NULL, " +
-                "   Country varchar(50) NULL, " +
-                "   DateAdded Date NULL, " +
-                "   LastModified DateTime NULL, " +
-                "   Notes text NULL, " +
-                "   AmountOwed REAL NULL, " +
-                "   BigInt DECIMAL(20) NULL, " +
-                "   Some_DATE Datetime NULL, " +
-                "   TestInstant Datetime NULL, " +
-                "   TestInstant2 DATE NULL, " + // DATE NOT SUPPORTED MAPPED TO INSTANCE UnsupportedOperationException
-                "   WhatMiteIsIt TIME NULL, " +
-                "   WhatTimeIsIt TIME NULL) ";
+              "   identity binary(16) NOT NULL PRIMARY KEY, " +  // test binary(16)
+              "   PartnerID varchar(36) NOT NULL, " + // test varchar(36)
+              "   Type char(2) NOT NULL, " +
+              "   Firstname varchar(50) NOT NULL, " +
+              "   Lastname varchar(50) NOT NULL, " +
+              "   ContactName varchar(50) NOT NULL, " +
+              "   Company varchar(50) NOT NULL, " +
+              "   Division varchar(50) NULL, " +
+              "   Email varchar(50) NULL, " +
+              "   Address1 varchar(50) NULL, " +
+              "   Address2 varchar(50) NULL, " +
+              "   City varchar(50) NULL, " +
+              "   Status TINYINT NULL, " +
+              "   StateProvince varchar(50) NULL, " +
+              "   ZipPostalCode varchar(10) NULL, " +
+              "   Country varchar(50) NULL, " +
+              "   DateAdded Date NULL, " +
+              "   LastModified DateTime NULL, " +
+              "   Notes text NULL, " +
+              "   AmountOwed REAL NULL, " +
+              "   BigInt DECIMAL(20) NULL, " +
+              "   Some_DATE Datetime NULL, " +
+              "   TestInstant Datetime NULL, " +
+              "   TestInstant2 DATE NULL, " + // DATE NOT SUPPORTED MAPPED TO INSTANCE UnsupportedOperationException
+              "   WhatMiteIsIt TIME NULL, " +
+              "   WhatTimeIsIt TIME NULL) ";
 
         executeCommand(sql, con);
 
@@ -225,24 +223,24 @@ to the database URL (example: jdbc:h2:~/test;IGNORECASE=TRUE).
         }
 
         sql = "CREATE TABLE DateTest ( " +
-                " ID INT, " +
-                " Description VARCHAR(100), " +
-                " SqlDate1 DATETIME, " +
-                " SqlDate2 DATE, " +
-                " LocalDate1 DATETIME, " +
-                " LocalDate2 DATE, " +
-                " UtilDate1 DATETIME, " +
-                " UtilDate2 DATE, " +
-                " Instant1 DATETIME, " +
-                " Instant2 DATE, " +
-                " Timestamp1 DATETIME, " +
-                " Timestamp2 DATE, " +
-                " LocalDateTime1 DATETIME, " +
-                " LocalDateTime2 DATE, " +
-                " Time1 TIME," +
-                " Time2 TIME," +
-                " LocalTime1 TIME," +
-                " LocalTime2 TIME) ";
+              " ID INT, " +
+              " Description VARCHAR(100), " +
+              " SqlDate1 DATETIME, " +
+              " SqlDate2 DATE, " +
+              " LocalDate1 DATETIME, " +
+              " LocalDate2 DATE, " +
+              " UtilDate1 DATETIME, " +
+              " UtilDate2 DATE, " +
+              " Instant1 DATETIME, " +
+              " Instant2 DATE, " +
+              " Timestamp1 DATETIME, " +
+              " Timestamp2 DATE, " +
+              " LocalDateTime1 DATETIME, " +
+              " LocalDateTime2 DATE, " +
+              " Time1 TIME," +
+              " Time2 TIME," +
+              " LocalTime1 TIME," +
+              " LocalTime2 TIME) ";
 
         executeCommand(sql, con);
 
@@ -251,11 +249,11 @@ to the database URL (example: jdbc:h2:~/test;IGNORECASE=TRUE).
         }
 
         sql = "CREATE TABLE DateTestLocalTypes ( " +
-                " ID INT, " +
-                " Description VARCHAR(100), " +
-                " DateOnly DATE, " +
-                " TimeOnly TIME," +
-                " DateAndTime DATETIME) ";
+              " ID INT, " +
+              " Description VARCHAR(100), " +
+              " DateOnly DATE, " +
+              " TimeOnly TIME," +
+              " DateAndTime DATETIME) ";
 
         executeCommand(sql, con);
 
@@ -264,12 +262,12 @@ to the database URL (example: jdbc:h2:~/test;IGNORECASE=TRUE).
         }
 
         sql = "CREATE TABLE DateTestSQLTypes ( " +
-                " ID INT, " +
-                " Description VARCHAR(100), " +
-                " DateOnly DATE, " +
-                " TimeOnly TIME," +
-                " UtilDateAndTime DATETIME," +
-                " DateAndTime DATETIME) ";
+              " ID INT, " +
+              " Description VARCHAR(100), " +
+              " DateOnly DATE, " +
+              " TimeOnly TIME," +
+              " UtilDateAndTime DATETIME," +
+              " DateAndTime DATETIME) ";
 
         executeCommand(sql, con);
 
@@ -277,32 +275,32 @@ to the database URL (example: jdbc:h2:~/test;IGNORECASE=TRUE).
             executeCommand("DROP TABLE ByteData", con);
         }
         sql = "CREATE TABLE ByteData ( " +
-                "ID VARCHAR(1), " +
-                "BYTE1 INT, " +
-                "BYTE2 INT ) ";
+              "ID VARCHAR(1), " +
+              "BYTE1 INT, " +
+              "BYTE2 INT ) ";
         executeCommand(sql, con);
 
         if (isTableInDatabase("RecordTest1", con)) {
             executeCommand("DROP TABLE RecordTest1", con);
         }
         sql = "CREATE TABLE RecordTest1 ( " +
-                "ID binary(16), " +
-                "NAME VARCHAR(20), " +
-                "QTY INT, " +
-                "PRICE REAL " +
-                ") ";
+              "ID binary(16), " +
+              "NAME VARCHAR(20), " +
+              "QTY INT, " +
+              "PRICE REAL " +
+              ") ";
         executeCommand(sql, con);
 
         if (isTableInDatabase("RecordTest2", con)) {
             executeCommand("DROP TABLE RecordTest2", con);
         }
         sql = "CREATE TABLE RecordTest2 ( " +
-                "ID IDENTITY PRIMARY KEY, " +
-                "DESCRIPTION VARCHAR(20), " +
-                "QTY INT, " +
-                "PRICE REAL, " +
-                "CREATED_ON DATETIME default current_timestamp" +
-                ") ";
+              "ID IDENTITY PRIMARY KEY, " +
+              "DESCRIPTION VARCHAR(20), " +
+              "QTY INT, " +
+              "PRICE REAL, " +
+              "CREATED_ON DATETIME default current_timestamp" +
+              ") ";
         executeCommand(sql, con);
 
         if (isTableInDatabase("USERS", con)) {
@@ -310,18 +308,18 @@ to the database URL (example: jdbc:h2:~/test;IGNORECASE=TRUE).
         }
 
         sql = "CREATE TABLE USERS ( " +
-                "   USER_NO int IDENTITY PRIMARY KEY, " +
-                "   USERCODE varchar(23) NULL, " +
-                "   UserPass varchar(32) NULL, " +
-                "   Name varchar(50) NULL, " +
-                "   PasswordLastChg datetime NULL, " +
-                "   Status varchar(1) NULL, " +
-                "   LastLogin datetime NULL, " +
-                "   TypeOfUser varchar(1) NULL, " +
-                "   License_No varchar(20) NULL, " +
-                "   BillingGroup varchar(30) NULL, " +
-                "   Department int NULL, " +
-                "   Phone text NULL ) ";
+              "   USER_NO int IDENTITY PRIMARY KEY, " +
+              "   USERCODE varchar(23) NULL, " +
+              "   UserPass varchar(32) NULL, " +
+              "   Name varchar(50) NULL, " +
+              "   PasswordLastChg datetime NULL, " +
+              "   Status varchar(1) NULL, " +
+              "   LastLogin datetime NULL, " +
+              "   TypeOfUser varchar(1) NULL, " +
+              "   License_No varchar(20) NULL, " +
+              "   BillingGroup varchar(30) NULL, " +
+              "   Department int NULL, " +
+              "   Phone text NULL ) ";
 
         executeCommand(sql, con);
 
@@ -359,11 +357,28 @@ to the database URL (example: jdbc:h2:~/test;IGNORECASE=TRUE).
                 CREATE TABLE Products (
                     ID int,
                     Description VARCHAR(50),
+                    BadNumber VARCHAR(30),
+                    BadDate VARCHAR(30),
+                    BadTimeStamp VARCHAR(30),
                     COST NUMERIC(10,3)
                     )
                 """;
         executeCommand(sql, con);
 
+        if (isTableInDatabase("Postman", con)) {
+            executeCommand("DROP TABLE Postman", con);
+        }
+        sql = """
+                CREATE TABLE Postman (
+                    AUTO VARCHAR(50),
+                    Host VARCHAR(50),
+                    Port NUMERIC(8),
+                    User VARCHAR(50),
+                    Password VARCHAR(50),
+                    missingGetter NUMERIC(10,3)
+                    )
+                """;
+        executeCommand(sql, con);
     }
 
     public void testHolidays() {
@@ -756,4 +771,265 @@ to the database URL (example: jdbc:h2:~/test;IGNORECASE=TRUE).
     public void testAllDates() {
         super.testAllDates();
     }
+
+    // todo move to BaseTest
+    public void testMessages() throws Exception {
+        String sd = connectionType.getKeywordStartDelimiter();
+        String ed = connectionType.getKeywordEndDelimiter();
+        String sql;
+        boolean fail;
+
+        Product product = new Product(0, "test", 10.00);
+        product.setBadNumber(new BigDecimal("10"));
+        session.insert(product);
+
+        session.query(Product.class); // should work
+
+        // set this to something junk
+        sql = "UPDATE PRODUCTS SET BADNUMBER=? WHERE ID=?";
+        session.helper.execute(sql, "NAN JUNK", product.getId());
+
+        fail = false;
+        // should fail with NumberFormatException
+        try {
+            session.query(Product.class);
+        } catch (Exception e) {
+            log.error(e.getMessage(), e);
+            fail = true;
+            assertEquals("s/b number format exception", NumberFormatException.message("BADNUMBER", BigDecimal.class, String.class, "NAN JUNK"), e.getMessage());
+        }
+        assertTrue(fail);
+
+        sql = "UPDATE PRODUCTS SET BADDATE=?, BADNUMBER=? WHERE ID=?";
+        session.helper.execute(sql, "NAD JUNK", "0", product.getId());
+
+        fail = false;
+        // should fail with DateFormatException
+        try {
+            session.query(Product.class);
+        } catch (Exception e) {
+            log.error(e.getMessage(), e);
+            fail = true;
+            assertEquals("s/b date format exception", DateFormatException.message("Unparseable date: \"NAD JUNK\"", "BADDATE", Date.class, String.class, "NAD JUNK"), e.getMessage());
+        }
+        assertTrue(fail);
+
+        sql = "UPDATE PRODUCTS SET BADTIMESTAMP=?, BADDATE=?, BADNUMBER=? WHERE ID=?";
+        session.helper.execute(sql, "NAD JUNK", null, "0", product.getId());
+
+        fail = false;
+        // should fail with DateFormatException
+        try {
+            session.query(Product.class);
+        } catch (Exception e) {
+            log.error(e.getMessage(), e);
+            fail = true;
+            assertEquals("s/b date format exception", DateFormatException.message("Timestamp format must be yyyy-mm-dd hh:mm:ss[.fffffffff]", "BADTIMESTAMP", Timestamp.class, String.class, "NAD JUNK"), e.getMessage());
+        }
+        assertTrue(fail);
+
+        // throw new PersismException(Messages.ReadRecordColumnNotFound.message(objectClass, col));
+
+        RecordTest2 rt2 = new RecordTest2(0, "test 1", 10, 3.99, LocalDateTime.now());
+        session.insert(rt2);
+
+        fail = false;
+        // should fail with ReadRecordColumnNotFound
+        try {
+            session.query(RecordTest2.class, SQL.sql("select description, qty, price FROM RecordTest2"));
+        } catch (Exception e) {
+            log.error(e.getMessage(), e);
+            fail = true;
+            assertEquals("s/b ReadRecordColumnNotFound exception", ReadRecordColumnNotFound.message(RecordTest2.class, "ID"), e.getMessage());
+        }
+        assertTrue(fail);
+
+        // TableHasNoPrimaryKeys
+        String tableName = session.metaData.getTableName(CorporateHoliday.class);
+        CorporateHoliday holiday = new CorporateHoliday("-99", "blah", LocalDate.now());
+        session.insert(holiday);
+
+        fail = false;
+        try {
+            session.fetch(holiday);
+        } catch (PersismException e) {
+            log.error(e.getMessage(), e);
+            assertEquals("s/b Cannot perform FETCH - " + tableName + " has no primary keys", TableHasNoPrimaryKeys.message("FETCH", tableName), e.getMessage());
+            fail = true;
+        }
+        assertTrue(fail);
+
+        fail = false;
+        try {
+            session.fetch(CorporateHoliday.class, params(1, 2, 3));
+        } catch (PersismException e) {
+            log.error(e.getMessage(), e);
+            assertEquals("s/b EQUAL ", TableHasNoPrimaryKeysForWhere.message(tableName), e.getMessage());
+            fail = true;
+        }
+        assertTrue(fail);
+
+        fail = false;
+
+        Postman postman = null;
+        try {
+            postman = new Postman().host("host").port(1).user("dan").password("123");
+            session.insert(postman);
+        } catch (PersismException e) {
+            log.error(e.getMessage(), e);
+            assertEquals("s/b EQUAL ", ClassHasNoGetterForProperty.message(Postman.class, "missingGetter"), e.getMessage());
+            fail = true;
+        }
+        assertTrue(fail);
+
+        fail = false;
+        // insert has the check - so we'll insert outside and test query
+        sql = session.metaData.getInsertStatement(postman, con);
+        System.out.println(sql);
+        session.helper.execute(sql, "host", 1, "dan", "123", 456);
+        try {
+            session.query(Postman.class);
+        } catch (PersismException e) {
+            log.error(e.getMessage(), e);
+            assertEquals("s/b EQUAL ", ClassHasNoGetterForProperty.message(Postman.class, "missingGetter"), e.getMessage());
+            fail = true;
+        }
+        assertTrue(fail);
+
+        fail = false;
+        try {
+            CustomerFail customer = new CustomerFail();
+            customer.setCompanyName("abc inc");
+            session.insert(customer);
+        } catch (PersismException e) {
+            log.error(e.getMessage(), e);
+            assertEquals("s/b EQUAL ", NonAutoIncGeneratedNotSupported.message(), e.getMessage());
+            fail = true;
+        }
+        assertTrue(fail);
+
+        fail = false;
+        try {
+            CustomerFail2 customer2 = new CustomerFail2();
+            customer2.setCompanyName("abc inc");
+            session.insert(customer2);
+        } catch (PersismException e) {
+            log.error(e.getMessage(), e);
+            assertEquals("s/b EQUAL ", CouldNotFindTableNameInTheDatabase.message("CustomerTABLEDOESNTEXIST", CustomerFail2.class.getName()), e.getMessage());
+            fail = true;
+        }
+        assertTrue(fail);
+
+        fail = false;
+        try {
+            session.query(CustomerInvoiceFail.class);
+        } catch (PersismException e) {
+            log.error(e.getMessage(), e);
+            assertEquals("s/b EQUAL ", CouldNotFindViewNameInTheDatabase.message("NOVIEWNAMEDCustomerInvoiceFail", CustomerInvoiceFail.class.getName()), e.getMessage());
+            fail = true;
+        }
+        assertTrue(fail);
+
+        fail = false;
+        try {
+            session.query(CustomerInvoiceFail2.class);
+        } catch (PersismException e) {
+            log.error(e.getMessage(), e);
+            assertEquals("s/b EQUAL ",
+                    CouldNotDetermineTableOrViewForType.message("view",
+                            CustomerInvoiceFail2.class.getName(),
+                            "[CustomerInvoiceFail2, CustomerInvoiceFail2s, Customer Invoice Fail2, Customer_Invoice_Fail2, Customer Invoice Fail2s, Customer_Invoice_Fail2s]"),
+                    e.getMessage());
+            fail = true;
+        }
+        assertTrue(fail);
+
+        fail = false;
+        try {
+            session.fetch("");
+        } catch (PersismException e) {
+            log.error(e.getMessage(), e);
+            assertEquals("s/b EQUAL ",
+                    OperationNotSupportedForJavaType.message(String.class, "FETCH"), e.getMessage());
+            fail = true;
+        }
+        assertTrue(fail);
+
+        fail = false;
+        try {
+            session.fetch(new CustomerRec('a',"123", "name","contact"));
+        } catch (PersismException e) {
+            log.error(e.getMessage(), e);
+            assertEquals("s/b EQUAL ",
+                    OperationNotSupportedForRecord.message(CustomerRec.class, "FETCH"), e.getMessage());
+            fail = true;
+        }
+        assertTrue(fail);
+
+        queryDataSetup();
+
+        fail = false;
+        try {
+            session.query(InvoiceFail2.class);
+        } catch (PersismException e) {
+            log.error(e.getMessage(), e);
+            assertEquals("s/b EQUAL ",
+                    CannotNotJoinToNullProperty.message("lineItems"), e.getMessage());
+            fail = true;
+        }
+        assertTrue(fail);
+
+        fail = false;
+        try {
+            session.query(InvoiceFail3.class);
+        } catch (PersismException e) {
+            log.error(e.getMessage(), e);
+            assertEquals("s/b EQUAL ",
+                    PropertyNotFoundForJoin.message("invoice0d", InvoiceFail3.class), e.getMessage());
+            fail = true;
+        }
+        assertTrue(fail);
+
+        // Create a 2nd match on table search which should fail
+        if (session.metaData.getConnectionType().supportsSpacesInTableNames()) {
+            fail = false;
+            tableName = "Invoice Line Items";
+            try {
+                if (isTableInDatabase(tableName, con)) {
+                    executeCommand("DROP TABLE " + sd + tableName + ed, con);
+                }
+                sql = "CREATE TABLE " + sd + tableName + ed + "(\n" +
+                      "    ID int IDENTITY PRIMARY KEY,\n" +
+                      "    INVOICE_ID int,\n" +
+                      "    Product_ID int,\n" +
+                      "    Quantity int\n" +
+                      "    )\n";
+                executeCommand(sql, con);
+
+                session.close();
+                Session.clearMetaData();
+                setUp();
+                session.query(InvoiceLineItem.class);
+
+            } catch (PersismException e) {
+                fail = true;
+                assertEquals("S/B equal", CouldNotDetermineTableOrViewForTypeMultipleMatches.
+                                message("table", InvoiceLineItem.class.getName(),
+                                        "[InvoiceLineItem, InvoiceLineItems, Invoice Line Item, Invoice_Line_Item, Invoice Line Items, Invoice_Line_Items]",
+                                        "[Invoice Line Items, INVOICELINEITEMS]"),
+                        e.getMessage());
+            } finally {
+                if (isTableInDatabase(tableName, con)) {
+                    executeCommand("DROP TABLE " + sd + tableName + ed, con);
+                }
+                session.close();
+                Session.clearMetaData();
+                setUp();
+            }
+            assertTrue(fail);
+
+
+        }
+    }
+
 }

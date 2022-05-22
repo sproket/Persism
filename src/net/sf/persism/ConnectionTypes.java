@@ -116,4 +116,8 @@ enum ConnectionTypes {
     public boolean supportsReadingFromBlobType() {
         return ConnectionTypes.Oracle == this;
     }
+
+    public boolean supportsSpacesInTableNames() {
+        return Util.isNotEmpty(this.keywordStartDelimiter);
+    }
 }

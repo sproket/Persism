@@ -3,7 +3,6 @@ package net.sf.persism;
 import junit.framework.TestCase;
 import net.sf.persism.dao.*;
 import net.sf.persism.dao.records.*;
-import org.junit.runner.OrderWith;
 
 import java.io.File;
 import java.lang.reflect.Constructor;
@@ -23,6 +22,7 @@ import java.time.temporal.ChronoUnit;
 import java.util.*;
 import java.util.logging.Logger;
 
+import static net.sf.persism.Messages.*;
 import static net.sf.persism.Parameters.none;
 import static net.sf.persism.Parameters.params;
 import static net.sf.persism.SQL.*;
@@ -562,13 +562,11 @@ public abstract class BaseTest extends TestCase {
         boolean failed = false;
 
         try {
-            var fail1 = session.query(CustomerOrderGarbage.class, sql(sql));
+            session.query(CustomerOrderGarbage.class, sql(sql));
         } catch (PersismException e) {
             // should fail since there are other properties on CustomerOrderGarbage not referenced by the query AND we don't do anything with @NotColumn
-            log.error(e.getMessage());
-            assertTrue("startswith",
-                    e.getMessage().startsWith("findConstructor: Could not find a constructor for class: class net.sf.persism.dao.records.CustomerOrderGarbage"));
-            // todo older message was more informative. findConstructor should have some way to provide more info on what's wrong.
+            log.error(e.getMessage(), e);
+            assertEquals("s/b eq", CouldNotFindConstructorForRecord.message(CustomerOrderGarbage.class.getName(), "[customerId]"), e.getMessage());
             failed = true;
         }
         // This will fail if we compile with -parameters
@@ -586,21 +584,19 @@ public abstract class BaseTest extends TestCase {
         // should fail will no appropriate constructor
         // DOESNT FAIL - IGNORES ALL OTHER COLUMNS. WTF
         try {
-            var fail2 = session.query(CustomerOrderGarbage.class, sql(sql));
-
+            session.query(CustomerOrderGarbage.class, sql(sql));
         } catch (PersismException e) {
             // should fail since there are other properties on CustomerOrderGarbage not referenced by the query AND we don't do anything with @NotColumn
             // AND we can't match these property names
-            log.error(e.getMessage());
-            assertTrue("startswith",
-                    e.getMessage().startsWith("findConstructor: Could not find a constructor for class: class net.sf.persism.dao.records.CustomerOrderGarbage"));
+            log.error(e.getMessage(), e);
+            assertEquals("s/b eq", CouldNotFindConstructorForRecord.message(CustomerOrderGarbage.class.getName(), "[customerId]"), e.getMessage());
             failed = true;
         }
         assertTrue(failed);
     }
 
 
-    private void queryDataSetup() throws SQLException {
+    final void queryDataSetup() throws SQLException {
 
         Invoice invoice1 = new Invoice();
         invoice1.setCustomerId("123");
@@ -1151,9 +1147,9 @@ public abstract class BaseTest extends TestCase {
         // As long as they use the query/fetch without the SQL param.
         String columnName = session.getMetaData().getPrimaryKeys(Contact.class, con).get(0);
         String where = session.getMetaData().getConnectionType().getKeywordStartDelimiter() +
-                columnName +
-                session.getMetaData().getConnectionType().getKeywordEndDelimiter() +
-                "=?";
+                       columnName +
+                       session.getMetaData().getConnectionType().getKeywordEndDelimiter() +
+                       "=?";
         log.info("testContactTable " + where);
         // testing that this should not fail.
         List<Contact> results = session.query(Contact.class, params(identity));
@@ -1689,6 +1685,7 @@ public abstract class BaseTest extends TestCase {
         } catch (PersismException e) {
             fail = true;
             log.warn(e.getMessage(), e);
+            log.warn(Messages.ReadRecordCouldNotInstantiate.message(RecordTest1.class, "..."));
             assertTrue("msg should start with 'readRecord: Could not instantiate the constructor for: class net.sf.persism.dao.records.RecordTest1'",
                     e.getMessage().startsWith("readRecord: Could not instantiate the constructor for: class net.sf.persism.dao.records.RecordTest1"));
         }
@@ -1800,7 +1797,7 @@ public abstract class BaseTest extends TestCase {
 
     }
 
-// @OrderWith()
+    // @OrderWith()
     public void testGetDbMetaData() throws SQLException {
 //        if (true) {
 //            return;
@@ -1823,7 +1820,7 @@ public abstract class BaseTest extends TestCase {
 //            for (int i = 1; i <= rsmd.getColumnCount(); i++) {
 //                System.out.println(rsmd.getColumnName(i) + " = " + rs.getObject(i));
 //            }
-          //  tables.add(rs.getString("TABLE_NAME"));
+            //  tables.add(rs.getString("TABLE_NAME"));
             System.out.println(rs.getString("TABLE_NAME") + " " + rs.getString("TABLE_TYPE"));
         }
         System.out.println("----------");
