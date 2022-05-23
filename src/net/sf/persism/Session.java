@@ -603,7 +603,7 @@ public final class Session implements AutoCloseable {
             for (ColumnInfo column : columns.values()) {
                 if (column.autoIncrement) {
                     generatedKeys.add(column.columnName);
-                } else if (metaData.getConnectionType() == ConnectionTypes.PostgreSQL && column.primary && column.hasDefault) {
+                } else if (metaData.getConnectionType().supportsNonNumericGeneratedKeys() && column.primary && column.hasDefault) {
                     generatedKeys.add(column.columnName);
                 }
             }

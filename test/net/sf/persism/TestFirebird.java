@@ -301,6 +301,34 @@ public class TestFirebird extends BaseTest {
                  Data BLOB SUB_TYPE TEXT,\s
                  WhatTimeIsIt TIME,\s
                  SomethingBig BLOB)\s""", con);
+
+        // Test for Y ending table who's plural isn't ies....
+        if (isTableInDatabase("CorporateHolidays", con)) {
+            executeCommand("DROP TABLE CorporateHolidays", con);
+        }
+        sql = """
+                CREATE TABLE CorporateHolidays (
+                    ID varchar(10),
+                    NAME varchar(40),
+                    "DATE" date
+                    )
+                """;
+        executeCommand(sql, con);
+
+        if (isTableInDatabase("Postman", con)) {
+            executeCommand("DROP TABLE Postman", con);
+        }
+        sql = """
+                CREATE TABLE Postman (
+                    AUTO VARCHAR(50),
+                    Host VARCHAR(50),
+                    Port NUMERIC(8),
+                    "User" VARCHAR(50),
+                    Password VARCHAR(50),
+                    missingGetter NUMERIC(10,3)
+                    )
+                """;
+        executeCommand(sql, con);
     }
 
     public void testSomething() {

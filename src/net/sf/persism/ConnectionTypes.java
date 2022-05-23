@@ -1,7 +1,5 @@
 package net.sf.persism;
 
-// todo add isXSupported methods.
-
 enum ConnectionTypes {
     Oracle("%", "\"", "\""),
 
@@ -119,5 +117,9 @@ enum ConnectionTypes {
 
     public boolean supportsSpacesInTableNames() {
         return Util.isNotEmpty(this.keywordStartDelimiter);
+    }
+
+    public boolean supportsNonNumericGeneratedKeys() {
+        return ConnectionTypes.PostgreSQL == this;
     }
 }

@@ -342,6 +342,36 @@ public final class TestHSQLDB extends BaseTest {
                 " Data varchar(1000) NULL, " +
                 " WhatTimeIsIt TIME NULL, " +
                 " SomethingBig BLOB NULL) ", con);
+
+
+        if (isTableInDatabase("Postman", con)) {
+            executeCommand("DROP TABLE Postman", con);
+        }
+        sql = """
+                CREATE TABLE Postman (
+                    AUTO VARCHAR(50),
+                    Host VARCHAR(50),
+                    Port NUMERIC(8),
+                    User VARCHAR(50),
+                    Password VARCHAR(50),
+                    missingGetter NUMERIC(10,3)
+                    )
+                """;
+        executeCommand(sql, con);
+
+        // Test for Y ending table who's plural isn't ies....
+        if (isTableInDatabase("CorporateHolidays", con)) {
+            executeCommand("DROP TABLE CorporateHolidays", con);
+        }
+        sql = """
+                CREATE TABLE CorporateHolidays (
+                    ID varchar(10),
+                    NAME varchar(40),
+                    DATE date
+                    )
+                """;
+        executeCommand(sql, con);
+
     }
 
     @Override

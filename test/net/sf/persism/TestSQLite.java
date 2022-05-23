@@ -15,7 +15,9 @@ import net.sf.persism.dao.TableNoPrimary;
 import org.junit.experimental.categories.Category;
 
 import java.sql.*;
-import java.time.*;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -76,18 +78,18 @@ public final class TestSQLite extends BaseTest {
 
         }
         commands.add("CREATE TABLE Orders ( " +
-                " ID INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT UNIQUE, " +
-                " NAME VARCHAR(30) NULL, " +
-                " ROW_ID VARCHAR(30) NULL, " +
-                " Customer_ID VARCHAR(10) NULL, " +
-                " PAID BIT NULL, " +
-                " Prepaid BIT NULL," +
-                " IsCollect BIT NULL," +
-                " IsCancelled BIT NULL," +
-                " CREATED datetime DEFAULT CURRENT_TIMESTAMP, " +
-                " DATE_PAID datetime NULL, " +
-                " DATE_SOMETHING datetime NULL" +
-                ") ");
+                     " ID INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT UNIQUE, " +
+                     " NAME VARCHAR(30) NULL, " +
+                     " ROW_ID VARCHAR(30) NULL, " +
+                     " Customer_ID VARCHAR(10) NULL, " +
+                     " PAID BIT NULL, " +
+                     " Prepaid BIT NULL," +
+                     " IsCollect BIT NULL," +
+                     " IsCancelled BIT NULL," +
+                     " CREATED datetime DEFAULT CURRENT_TIMESTAMP, " +
+                     " DATE_PAID datetime NULL, " +
+                     " DATE_SOMETHING datetime NULL" +
+                     ") ");
 
         // view first
         if (isViewInDatabase("CustomerInvoice", con)) {
@@ -100,24 +102,24 @@ public final class TestSQLite extends BaseTest {
         }
 
         commands.add("CREATE TABLE Customers ( " +
-                " Customer_ID varchar(10) PRIMARY KEY UNIQUE NOT NULL, " +
-                " GROUP_ID INT NULL, " +
-                " Company_Name VARCHAR(30) NULL, " +
-                " Contact_Name VARCHAR(30) NULL, " +
-                " Contact_Title VARCHAR(10) NULL, " +
-                " Address VARCHAR(40) NULL, " +
-                " City VARCHAR(30) NULL, " +
-                " Region VARCHAR(10) NULL, " +
-                " Postal_Code VARCHAR(10) NULL, " +
-                " Country VARCHAR(2) DEFAULT 'US', " +
-                " Phone VARCHAR(30) NULL, " +
-                " STATUS CHAR(1) NULL, " +
-                " Fax VARCHAR(30) NULL, " +
-                " Date_Registered datetime default  (datetime('now','localtime')), " +
-                " Date_Of_Last_Order DATE, " +
-                " TestLocalDate datetime, " +
-                " TestLocalDateTIme datetime " +
-                ") ");
+                     " Customer_ID varchar(10) PRIMARY KEY UNIQUE NOT NULL, " +
+                     " GROUP_ID INT NULL, " +
+                     " Company_Name VARCHAR(30) NULL, " +
+                     " Contact_Name VARCHAR(30) NULL, " +
+                     " Contact_Title VARCHAR(10) NULL, " +
+                     " Address VARCHAR(40) NULL, " +
+                     " City VARCHAR(30) NULL, " +
+                     " Region VARCHAR(10) NULL, " +
+                     " Postal_Code VARCHAR(10) NULL, " +
+                     " Country VARCHAR(2) DEFAULT 'US', " +
+                     " Phone VARCHAR(30) NULL, " +
+                     " STATUS CHAR(1) NULL, " +
+                     " Fax VARCHAR(30) NULL, " +
+                     " Date_Registered datetime default  (datetime('now','localtime')), " +
+                     " Date_Of_Last_Order DATE, " +
+                     " TestLocalDate datetime, " +
+                     " TestLocalDateTIme datetime " +
+                     ") ");
 
 
         if (isTableInDatabase("Invoices", con)) {
@@ -125,17 +127,17 @@ public final class TestSQLite extends BaseTest {
         }
 
         commands.add("CREATE TABLE Invoices ( " +
-                " Invoice_ID INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT UNIQUE, " +
-                " Customer_ID varchar(10) NOT NULL, " +
-                " Paid BIT NOT NULL, " +
-                " Price REAL NOT NULL, " +
-                " ActualPrice REAL NOT NULL, " +
-                " Status CHAR(1) DEFAULT '1', " +
-                " Created DateTime default (datetime('now','localtime')), " + // make read-only in Invoice Object
-                " Quantity INTEGER NOT NULL, " +
-                //" Total REAL NOT NULL, " +
-                " Discount REAL NOT NULL " +
-                ") ");
+                     " Invoice_ID INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT UNIQUE, " +
+                     " Customer_ID varchar(10) NOT NULL, " +
+                     " Paid BIT NOT NULL, " +
+                     " Price REAL NOT NULL, " +
+                     " ActualPrice REAL NOT NULL, " +
+                     " Status CHAR(1) DEFAULT '1', " +
+                     " Created DateTime default (datetime('now','localtime')), " + // make read-only in Invoice Object
+                     " Quantity INTEGER NOT NULL, " +
+                     //" Total REAL NOT NULL, " +
+                     " Discount REAL NOT NULL " +
+                     ") ");
 
         if (isTableInDatabase("TABLENOPRIMARY", con)) {
             commands.add("DROP TABLE TABLENOPRIMARY");
@@ -144,14 +146,14 @@ public final class TestSQLite extends BaseTest {
         // WHY TF does this not throw an exception????? ANY TYPE?
         // Need to review best practices for SQLite http://www.sqlite.org/datatype3.html
         commands.add("CREATE TABLE TABLENOPRIMARY ( " +
-                " ID INT, " +
-                " Name VARCHAR(30), " +
-                " Field4 VARCHAR(30), " +
-                " Field5 DATETIME, " +
-                " Field6 SHITE, " +
-                " Field7 FACK, " +
-                " Field8 COWABUNGA " +
-                ") ");
+                     " ID INT, " +
+                     " Name VARCHAR(30), " +
+                     " Field4 VARCHAR(30), " +
+                     " Field5 DATETIME, " +
+                     " Field6 SHITE, " +
+                     " Field7 FACK, " +
+                     " Field8 COWABUNGA " +
+                     ") ");
 
         executeCommands(commands, con);
 
@@ -160,33 +162,33 @@ public final class TestSQLite extends BaseTest {
         }
 
         String sql = "CREATE TABLE CONTACTS ( " +
-                " identity VARCHAR(36) PRIMARY KEY UNIQUE NOT NULL, " +
-                " PartnerID BLOB NOT NULL, " +
-                " Type char(2) NOT NULL, " +
-                " Firstname varchar(50) NULL, " +
-                " Lastname varchar(50) NULL, " +
-                " ContactName varchar(50) NULL, " +
-                " Company varchar(50) NULL, " +
-                " Division varchar(50) NULL, " +
-                " Email varchar(50) NULL, " +
-                " Address1 varchar(50) NULL, " +
-                " Address2 varchar(50) NULL, " +
-                " City varchar(50) NULL, " +
-                " StateProvince varchar(50) NULL, " +
-                " ZipPostalCode varchar(10) NULL, " +
-                " Status SMALLINT NOT NULL, " +
-                " Country varchar(50) NULL, " +
-                " DateAdded TIMESTAMP NULL, " + // was DATETIME. What is TIMESTAMP in SQLite? RANDOM I guess.
-                " LastModified DATETIME NULL, " +
-                " Notes text NULL, " +
-                " AmountOwed float NULL, " +
-                " BigInt DECIMAL(20) NULL, " +
-                " Some_DATE DATETIME NULL, " +
-                " TestInstant TIMESTAMP NULL, " +
-                " TestInstant2 DATETIME NULL, " +
-                " WhatMiteIsIt time NULL, " +
-                " WhatTimeIsIt time NULL " +
-                ") ";
+                     " identity VARCHAR(36) PRIMARY KEY UNIQUE NOT NULL, " +
+                     " PartnerID BLOB NOT NULL, " +
+                     " Type char(2) NOT NULL, " +
+                     " Firstname varchar(50) NULL, " +
+                     " Lastname varchar(50) NULL, " +
+                     " ContactName varchar(50) NULL, " +
+                     " Company varchar(50) NULL, " +
+                     " Division varchar(50) NULL, " +
+                     " Email varchar(50) NULL, " +
+                     " Address1 varchar(50) NULL, " +
+                     " Address2 varchar(50) NULL, " +
+                     " City varchar(50) NULL, " +
+                     " StateProvince varchar(50) NULL, " +
+                     " ZipPostalCode varchar(10) NULL, " +
+                     " Status SMALLINT NOT NULL, " +
+                     " Country varchar(50) NULL, " +
+                     " DateAdded TIMESTAMP NULL, " + // was DATETIME. What is TIMESTAMP in SQLite? RANDOM I guess.
+                     " LastModified DATETIME NULL, " +
+                     " Notes text NULL, " +
+                     " AmountOwed float NULL, " +
+                     " BigInt DECIMAL(20) NULL, " +
+                     " Some_DATE DATETIME NULL, " +
+                     " TestInstant TIMESTAMP NULL, " +
+                     " TestInstant2 DATETIME NULL, " +
+                     " WhatMiteIsIt time NULL, " +
+                     " WhatTimeIsIt time NULL " +
+                     ") ";
         executeCommand(sql, con);
 
         if (isTableInDatabase("DateTestLocalTypes", con)) {
@@ -194,11 +196,11 @@ public final class TestSQLite extends BaseTest {
         }
 
         sql = "CREATE TABLE DateTestLocalTypes ( " +
-                " ID INT, " +
-                " Description VARCHAR(100), " +
-                " DateOnly DATE, " +
-                " TimeOnly TIME," +
-                " DateAndTime DATETIME) ";
+              " ID INT, " +
+              " Description VARCHAR(100), " +
+              " DateOnly DATE, " +
+              " TimeOnly TIME," +
+              " DateAndTime DATETIME) ";
 
         executeCommand(sql, con);
 
@@ -207,12 +209,12 @@ public final class TestSQLite extends BaseTest {
         }
 
         sql = "CREATE TABLE DateTestSQLTypes ( " +
-                " ID INT, " +
-                " Description VARCHAR(100), " +
-                " DateOnly DATE, " +
-                " TimeOnly TIME," +
-                " UtilDateAndTime DATETIME, " +
-                " DateAndTime DATETIME) ";
+              " ID INT, " +
+              " Description VARCHAR(100), " +
+              " DateOnly DATE, " +
+              " TimeOnly TIME," +
+              " UtilDateAndTime DATETIME, " +
+              " DateAndTime DATETIME) ";
 
         executeCommand(sql, con);
 
@@ -221,23 +223,23 @@ public final class TestSQLite extends BaseTest {
             executeCommand("DROP TABLE RecordTest1", con);
         }
         sql = "CREATE TABLE RecordTest1 ( " +
-                "ID VARCHAR(36), " +
-                "NAME VARCHAR(20), " +
-                "QTY INT, " +
-                "PRICE REAL " +
-                ") ";
+              "ID VARCHAR(36), " +
+              "NAME VARCHAR(20), " +
+              "QTY INT, " +
+              "PRICE REAL " +
+              ") ";
         executeCommand(sql, con);
 
         if (isTableInDatabase("RecordTest2", con)) {
             executeCommand("DROP TABLE RecordTest2", con);
         }
         sql = "CREATE TABLE RecordTest2 ( " +
-                "ID INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT UNIQUE, " +
-                "DESCRIPTION VARCHAR(20), " +
-                "QTY INT, " +
-                "PRICE REAL, " +
-                "CREATED_ON DATETIME default current_timestamp" +
-                ") ";
+              "ID INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT UNIQUE, " +
+              "DESCRIPTION VARCHAR(20), " +
+              "QTY INT, " +
+              "PRICE REAL, " +
+              "CREATED_ON DATETIME default current_timestamp" +
+              ") ";
         executeCommand(sql, con);
 
         sql = """
@@ -269,9 +271,9 @@ public final class TestSQLite extends BaseTest {
                 CREATE TABLE Products (
                     ID int,
                     Description VARCHAR(50),
-                    BadNumber VARCHAR(30),
-                    BadDate VARCHAR(30),
-                    BadTimeStamp VARCHAR(30),
+                    BADNUMBER VARCHAR(30),
+                    BADDATE VARCHAR(30),
+                    BADTIMESTAMP VARCHAR(30),
                     COST NUMERIC(10,3)
                     )
                 """;
@@ -282,16 +284,44 @@ public final class TestSQLite extends BaseTest {
         }
 
         executeCommand("CREATE TABLE SavedGames ( " +
-                " ID VARCHAR(20) NOT NULL PRIMARY KEY, " +
-                " Name VARCHAR(100), " +
-                " Some_Date_And_Time DATETIME NULL, " +
-                " Platinum REAL NULL, " +
-                " Gold REAL NULL, " +
-                " Silver REAL NULL, " +
-                " Copper REAL NULL, " +
-                " Data CLOB NULL, " +
-                " WhatTimeIsIt DATETIME NULL, " +
-                " SomethingBig BLOB NULL) ", con);
+                       " ID VARCHAR(20) NOT NULL PRIMARY KEY, " +
+                       " Name VARCHAR(100), " +
+                       " Some_Date_And_Time DATETIME NULL, " +
+                       " Platinum REAL NULL, " +
+                       " Gold REAL NULL, " +
+                       " Silver REAL NULL, " +
+                       " Copper REAL NULL, " +
+                       " Data CLOB NULL, " +
+                       " WhatTimeIsIt DATETIME NULL, " +
+                       " SomethingBig BLOB NULL) ", con);
+
+        if (isTableInDatabase("Postman", con)) {
+            executeCommand("DROP TABLE Postman", con);
+        }
+        sql = """
+                CREATE TABLE Postman (
+                    AUTO VARCHAR(50),
+                    Host VARCHAR(50),
+                    Port NUMERIC(8),
+                    User VARCHAR(50),
+                    Password VARCHAR(50),
+                    missingGetter NUMERIC(10,3)
+                    )
+                """;
+        executeCommand(sql, con);
+
+        // Test for Y ending table who's plural isn't ies....
+        if (isTableInDatabase("CorporateHolidays", con)) {
+            executeCommand("DROP TABLE CorporateHolidays", con);
+        }
+        sql = """
+                CREATE TABLE CorporateHolidays (
+                    ID varchar(10),
+                    NAME varchar(40),
+                    DATE date
+                    )
+                """;
+        executeCommand(sql, con);
 
     }
 
