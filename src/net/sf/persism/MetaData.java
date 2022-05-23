@@ -11,7 +11,6 @@ import java.text.MessageFormat;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
-import static java.text.MessageFormat.format;
 import static net.sf.persism.Util.*;
 
 /**
@@ -71,6 +70,9 @@ final class MetaData {
     // list of views in the DB
     private final Set<String> viewNames = new TreeSet<>(String.CASE_INSENSITIVE_ORDER);
 
+    // Map of table/view names mapped to TableInfo
+    private final Map<String, TableInfo> tableInfos = new HashMap<>();
+
     // Map of table names + meta data
     // private Map<String, TableInfo> tableInfoMap = new ConcurrentHashMap<String, TableInfo>(32);
 
@@ -83,6 +85,7 @@ final class MetaData {
     // for non alpha-numeric characters in column names. We'll just use a static set.
     private static final String EXTRA_NAME_CHARACTERS = "`~!@#$%^&*()-+=/|\\{}[]:;'\".,<>*";
     private static final String SELECT_FOR_COLUMNS = "SELECT * FROM {0}{1}{2} WHERE 1=0";
+    private static final String SELECT_FOR_COLUMNS_WITH_SCHEMA = "SELECT * FROM {0}{1}{2}.{3}{4}{5} WHERE 1=0";
 
     private MetaData(Connection con, String sessionKey) throws SQLException {
 
@@ -121,13 +124,19 @@ final class MetaData {
 
         String sd = connectionType.getKeywordStartDelimiter();
         String ed = connectionType.getKeywordEndDelimiter();
+        String schema = tableInfos.get(tableName).schema();
 
         ResultSet rs = null;
         Statement st = null;
         try {
             st = connection.createStatement();
             // gives us real column names with case.
-            String sql = MessageFormat.format(SELECT_FOR_COLUMNS, sd, tableName, ed);
+            String sql;
+            if (isEmpty(schema)) {
+                sql = MessageFormat.format(SELECT_FOR_COLUMNS, sd, tableName, ed);
+            } else {
+                sql = MessageFormat.format(SELECT_FOR_COLUMNS_WITH_SCHEMA, sd, schema, ed, sd, tableName, ed);
+            }
             if (log.isDebugEnabled()) {
                 log.debug("determineColumns: %s", sql);
             }
@@ -194,11 +203,17 @@ final class MetaData {
         Map<String, PropertyInfo> properties = getTableColumnsPropertyInfo(objectClass, connection);
         String sd = connectionType.getKeywordStartDelimiter();
         String ed = connectionType.getKeywordEndDelimiter();
+        String schema = tableInfos.get(tableName).schema();
 
         try {
 
             st = connection.createStatement();
-            String sql = format("SELECT * FROM {0}{1}{2} WHERE 1=0", sd, tableName, ed);
+            String sql;
+            if (isEmpty(schema)) {
+                sql = MessageFormat.format(SELECT_FOR_COLUMNS, sd, tableName, ed);
+            } else {
+                sql = MessageFormat.format(SELECT_FOR_COLUMNS_WITH_SCHEMA, sd, schema, ed, sd, tableName, ed);
+            }
             log.debug("determineColumnInfo %s", sql);
             rs = st.executeQuery(sql);
 
@@ -264,8 +279,11 @@ final class MetaData {
 
             if (objectClass.getAnnotation(View.class) == null) {
 
-                // Iterate primary keys and update column infos
-                rs = dmd.getPrimaryKeys(null, connectionType.getSchemaPattern(), tableName);
+                if (isEmpty(schema)) {
+                    rs = dmd.getPrimaryKeys(null, connectionType.getSchemaPattern(), tableName);
+                } else {
+                    rs = dmd.getPrimaryKeys(null, schema, tableName);
+                }
                 int primaryKeysCount = 0;
                 while (rs.next()) {
                     ColumnInfo columnInfo = map.get(rs.getString("COLUMN_NAME"));
@@ -481,12 +499,15 @@ final class MetaData {
     // http://stackoverflow.com/questions/8988945/java7-sqljdbc4-sql-error-08s01-on-getconnection
     private void populateTableList(Connection con) throws PersismException {
         try (ResultSet rs = con.getMetaData().getTables(null, connectionType.getSchemaPattern(), null, tableTypes)) {
+            String name;
             while (rs.next()) {
+                name = rs.getString("TABLE_NAME");
                 if (VIEW.equalsIgnoreCase(rs.getString("TABLE_TYPE"))) {
-                    viewNames.add(rs.getString("TABLE_NAME"));
+                    viewNames.add(name);
                 } else {
-                    tableNames.add(rs.getString("TABLE_NAME"));
+                    tableNames.add(name);
                 }
+                tableInfos.put(name, new TableInfo(name, rs.getString("TABLE_SCHEM")));
             }
         } catch (SQLException e) {
             throw new PersismException(e.getMessage(), e);
@@ -596,9 +617,14 @@ final class MetaData {
         String tableName = getTableName(objectClass, connection);
         String sd = connectionType.getKeywordStartDelimiter();
         String ed = connectionType.getKeywordEndDelimiter();
+        String schema = tableInfos.get(tableName).schema();
 
         StringBuilder sbi = new StringBuilder();
-        sbi.append("INSERT INTO ").append(sd).append(tableName).append(ed).append(" (");
+        sbi.append("INSERT INTO ");
+        if (isNotEmpty(schema)) {
+            sbi.append(sd).append(schema).append(ed).append(".");
+        }
+        sbi.append(sd).append(tableName).append(ed).append(" (");
 
         StringBuilder sbp = new StringBuilder();
         sbp.append(") VALUES (");
@@ -648,13 +674,19 @@ final class MetaData {
         }
 
         String tableName = getTableName(object.getClass(), connection);
+        String schema = tableInfos.get(tableName).schema();
+
         String sd = connectionType.getKeywordStartDelimiter();
         String ed = connectionType.getKeywordEndDelimiter();
 
         List<String> primaryKeys = getPrimaryKeys(object.getClass(), connection);
 
         StringBuilder sb = new StringBuilder();
-        sb.append("DELETE FROM ").append(sd).append(tableName).append(ed).append(" WHERE ");
+        sb.append("DELETE FROM ");
+        if (isNotEmpty(schema)) {
+            sb.append(sd).append(schema).append(ed).append(".");
+        }
+        sb.append(sd).append(tableName).append(ed).append(" WHERE ");
         String sep = "";
         for (String column : primaryKeys) {
             sb.append(sep).append(sd).append(column).append(ed).append(" = ?");
@@ -797,6 +829,7 @@ final class MetaData {
         String ed = connectionType.getKeywordEndDelimiter();
 
         String tableName = getTableName(objectClass, connection);
+        String schema = tableInfos.get(tableName).schema();
 
         StringBuilder sb = new StringBuilder();
         sb.append("SELECT ");
@@ -809,7 +842,11 @@ final class MetaData {
             sb.append(sep).append(sd).append(columnInfo.columnName).append(ed);
             sep = ", ";
         }
-        sb.append(" FROM ").append(sd).append(tableName).append(ed);
+        sb.append(" FROM ");
+        if (isNotEmpty(schema)) {
+            sb.append(sd).append(schema).append(ed).append('.');
+        }
+        sb.append(sd).append(tableName).append(ed);
 
 
         String selectStatement = sb.toString();
@@ -825,13 +862,18 @@ final class MetaData {
 
     private String buildUpdateString(Object object, Iterator<String> it, Connection connection) throws PersismException {
         String tableName = getTableName(object.getClass(), connection);
+        String schema = tableInfos.get(tableName).schema();
         String sd = connectionType.getKeywordStartDelimiter();
         String ed = connectionType.getKeywordEndDelimiter();
 
         List<String> primaryKeys = getPrimaryKeys(object.getClass(), connection);
 
         StringBuilder sb = new StringBuilder();
-        sb.append("UPDATE ").append(sd).append(tableName).append(ed).append(" SET ");
+        sb.append("UPDATE ");
+        if (isNotEmpty(schema)) {
+            sb.append(sd).append(schema).append(ed).append(".");
+        }
+        sb.append(sd).append(tableName).append(ed).append(" SET ");
         String sep = "";
 
         Map<String, ColumnInfo> columns = getColumns(object.getClass(), connection);

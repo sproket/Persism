@@ -9,6 +9,7 @@ package net.sf.persism;
 
 import net.sf.persism.categories.ExternalDB;
 import net.sf.persism.dao.*;
+import net.sf.persism.dao.wwi1.Application;
 import org.junit.experimental.categories.Category;
 
 import java.math.BigDecimal;
@@ -44,6 +45,8 @@ public class TestMSSQL extends BaseTest {
             createTables();
             session = new Session(con);
         }
+
+        var city = new Application.City();
     }
 
     @Override
