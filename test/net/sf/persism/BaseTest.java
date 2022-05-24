@@ -63,6 +63,14 @@ public abstract class BaseTest extends TestCase {
 
     @Override
     protected void tearDown() throws Exception {
+        String sd = connectionType.getKeywordStartDelimiter();
+        String ed = connectionType.getKeywordEndDelimiter();
+        String tableName = "Invoice Line Items";
+
+        if (isTableInDatabase(tableName, con)) {
+            executeCommand("DROP TABLE " + sd + tableName + ed, con);
+        }
+
         if (con != null) {
             //MetaData.removeInstance(con);
             con.close();
@@ -806,12 +814,7 @@ public abstract class BaseTest extends TestCase {
         }
         assertTrue(fail);
 
-        try {
-            System.out.println("still there? " + isTableInDatabase("Invoice Line Items", con));
-            queryDataSetup();
-        } catch (Exception e) {
-            log.error(e.getMessage(), e);
-        }
+        queryDataSetup();
 
         fail = false;
         try {
