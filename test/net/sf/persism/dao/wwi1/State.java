@@ -1,12 +1,9 @@
 package net.sf.persism.dao.wwi1;
 
-import javax.persistence.*;
-import java.sql.Date;
-import java.util.Objects;
+import net.sf.persism.annotations.Table;
 
-@Entity
-@Table(name = "StateProvinces", schema = "Application", catalog = "WideWorldImporters")
-public class State {
+@Table("StateProvinces")
+public final class State {
     private Integer stateProvinceId;
     private String stateProvinceCode;
     private String stateProvinceName;
@@ -15,11 +12,8 @@ public class State {
     private Object border;
     private Long latestRecordedPopulation;
     private Integer lastEditedBy;
-    private Date validFrom;
-    private Date validTo;
 
-    @Id
-    @Column(name = "StateProvinceID")
+
     public Integer getStateProvinceId() {
         return stateProvinceId;
     }
@@ -28,8 +22,6 @@ public class State {
         this.stateProvinceId = stateProvinceId;
     }
 
-    @Basic
-    @Column(name = "StateProvinceCode")
     public String getStateProvinceCode() {
         return stateProvinceCode;
     }
@@ -38,8 +30,6 @@ public class State {
         this.stateProvinceCode = stateProvinceCode;
     }
 
-    @Basic
-    @Column(name = "StateProvinceName")
     public String getStateProvinceName() {
         return stateProvinceName;
     }
@@ -48,8 +38,6 @@ public class State {
         this.stateProvinceName = stateProvinceName;
     }
 
-    @Basic
-    @Column(name = "CountryID")
     public Integer getCountryId() {
         return countryId;
     }
@@ -58,8 +46,6 @@ public class State {
         this.countryId = countryId;
     }
 
-    @Basic
-    @Column(name = "SalesTerritory")
     public String getSalesTerritory() {
         return salesTerritory;
     }
@@ -68,8 +54,6 @@ public class State {
         this.salesTerritory = salesTerritory;
     }
 
-    @Basic
-    @Column(name = "Border")
     public Object getBorder() {
         return border;
     }
@@ -78,8 +62,6 @@ public class State {
         this.border = border;
     }
 
-    @Basic
-    @Column(name = "LatestRecordedPopulation")
     public Long getLatestRecordedPopulation() {
         return latestRecordedPopulation;
     }
@@ -88,34 +70,12 @@ public class State {
         this.latestRecordedPopulation = latestRecordedPopulation;
     }
 
-    @Basic
-    @Column(name = "LastEditedBy")
     public Integer getLastEditedBy() {
         return lastEditedBy;
     }
 
     public void setLastEditedBy(Integer lastEditedBy) {
         this.lastEditedBy = lastEditedBy;
-    }
-
-    @Basic
-    @Column(name = "ValidFrom")
-    public Date getValidFrom() {
-        return validFrom;
-    }
-
-    public void setValidFrom(Date validFrom) {
-        this.validFrom = validFrom;
-    }
-
-    @Basic
-    @Column(name = "ValidTo")
-    public Date getValidTo() {
-        return validTo;
-    }
-
-    public void setValidTo(Date validTo) {
-        this.validTo = validTo;
     }
 
     @Override
@@ -126,12 +86,57 @@ public class State {
         if (o == null || getClass() != o.getClass()) {
             return false;
         }
+
         State state = (State) o;
-        return Objects.equals(stateProvinceId, state.stateProvinceId) && Objects.equals(stateProvinceCode, state.stateProvinceCode) && Objects.equals(stateProvinceName, state.stateProvinceName) && Objects.equals(countryId, state.countryId) && Objects.equals(salesTerritory, state.salesTerritory) && Objects.equals(border, state.border) && Objects.equals(latestRecordedPopulation, state.latestRecordedPopulation) && Objects.equals(lastEditedBy, state.lastEditedBy) && Objects.equals(validFrom, state.validFrom) && Objects.equals(validTo, state.validTo);
+
+        if (stateProvinceId != null ? !stateProvinceId.equals(state.stateProvinceId) : state.stateProvinceId != null) {
+            return false;
+        }
+        if (stateProvinceCode != null ? !stateProvinceCode.equals(state.stateProvinceCode) : state.stateProvinceCode != null) {
+            return false;
+        }
+        if (stateProvinceName != null ? !stateProvinceName.equals(state.stateProvinceName) : state.stateProvinceName != null) {
+            return false;
+        }
+        if (countryId != null ? !countryId.equals(state.countryId) : state.countryId != null) {
+            return false;
+        }
+        if (salesTerritory != null ? !salesTerritory.equals(state.salesTerritory) : state.salesTerritory != null) {
+            return false;
+        }
+        if (border != null ? !border.equals(state.border) : state.border != null) {
+            return false;
+        }
+        if (latestRecordedPopulation != null ? !latestRecordedPopulation.equals(state.latestRecordedPopulation) : state.latestRecordedPopulation != null) {
+            return false;
+        }
+        return lastEditedBy != null ? lastEditedBy.equals(state.lastEditedBy) : state.lastEditedBy == null;
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(stateProvinceId, stateProvinceCode, stateProvinceName, countryId, salesTerritory, border, latestRecordedPopulation, lastEditedBy, validFrom, validTo);
+        int result = stateProvinceId != null ? stateProvinceId.hashCode() : 0;
+        result = 31 * result + (stateProvinceCode != null ? stateProvinceCode.hashCode() : 0);
+        result = 31 * result + (stateProvinceName != null ? stateProvinceName.hashCode() : 0);
+        result = 31 * result + (countryId != null ? countryId.hashCode() : 0);
+        result = 31 * result + (salesTerritory != null ? salesTerritory.hashCode() : 0);
+        result = 31 * result + (border != null ? border.hashCode() : 0);
+        result = 31 * result + (latestRecordedPopulation != null ? latestRecordedPopulation.hashCode() : 0);
+        result = 31 * result + (lastEditedBy != null ? lastEditedBy.hashCode() : 0);
+        return result;
+    }
+
+    @Override
+    public String toString() {
+        return "State{" +
+               "stateProvinceId=" + stateProvinceId +
+               ", stateProvinceCode='" + stateProvinceCode + '\'' +
+               ", stateProvinceName='" + stateProvinceName + '\'' +
+               ", countryId=" + countryId +
+               ", salesTerritory='" + salesTerritory + '\'' +
+               ", border=" + border +
+               ", latestRecordedPopulation=" + latestRecordedPopulation +
+               ", lastEditedBy=" + lastEditedBy +
+               '}';
     }
 }

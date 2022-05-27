@@ -2,7 +2,8 @@ package net.sf.persism;
 
 import junit.framework.TestCase;
 import net.sf.persism.categories.ExternalDB;
-import net.sf.persism.dao.wwi1.Application;
+import net.sf.persism.dao.wwi1.*;
+import net.sf.persism.dao.wwi1.views.CustomerView;
 import org.junit.experimental.categories.Category;
 
 import java.sql.Connection;
@@ -39,12 +40,57 @@ public final class TestWideWorldImporters extends TestCase {
         }
     }
 
-    public void testAnything() {
-        try {
-            session.query(Application.City.class);
-        } catch (Exception e) {
-            log.error(e.getMessage(), e);
-        }
+    public void testAllClasses() {
+        session.query(Application.City.class);
+        session.query(BuyingGroup.class);
+        session.query(City.class);
+        session.query(Color.class);
+        session.query(Country.class);
+        session.query(Customer.class);
+        session.query(CustomerCategory.class);
+        session.query(CustomerTransaction.class);
+        session.query(DeliveryMethod.class);
+        session.query(Invoice.class);
+        session.query(InvoiceLine.class);
+        session.query(PackageType.class);
+        session.query(PaymentMethod.class);
+        session.query(Person.class);
+        session.query(PurchaseOrder.class);
+        session.query(PurchaseOrderLine.class);
+        session.query(SpecialDeal.class);
+        session.query(State.class);
+        session.query(StockGroup.class);
+        session.query(StockItem.class);
+        session.query(StockItemHolding.class);
+        session.query(StockItemStockGroup.class);
+        session.query(StockItemTransaction.class);
+        session.query(Supplier.class);
+        session.query(SupplierCategory.class);
+        session.query(SupplierTransaction.class);
+        session.query(SystemParameter.class);
+        session.query(TransactionType.class);
+        session.query(VehicleTemperature.class);
+
+        // views
+        session.query(CustomerView.class);
+        session.query(net.sf.persism.dao.wwi1.views.Supplier.class);
+        session.query(net.sf.persism.dao.wwi1.views.VehicleTemperature.class);
+    }
+
+    public void testUpdateWithTemporal() {
+        var buyingGroups = session.query(BuyingGroup.class);
+        System.out.println(buyingGroups);
+        assertTrue(buyingGroups.size() > 0);
+        var bg = buyingGroups.get(0);
+        System.out.println(bg.getValidFrom() + " " + bg.getValidTo());
+        // Tailspin Toys
+        bg.setBuyingGroupName("Tailspin Toys!!");
+        session.update(bg);
+
+        bg = new BuyingGroup();
+        bg.setLastEditedBy(-1);
+        bg.setBuyingGroupName("Some test");
+        session.insert(bg);
     }
 
     @Override

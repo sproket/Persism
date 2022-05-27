@@ -1,12 +1,10 @@
 package net.sf.persism.dao.wwi1;
 
-import javax.persistence.*;
-import java.sql.Date;
-import java.util.Arrays;
-import java.util.Objects;
+import net.sf.persism.annotations.Table;
 
-@Entity
-@Table(name = "People", schema = "Application", catalog = "WideWorldImporters")
+import java.util.Arrays;
+
+@Table("People")
 public class Person {
     private Integer personId;
     private String fullName;
@@ -27,11 +25,7 @@ public class Person {
     private String customFields;
     private String otherLanguages;
     private Integer lastEditedBy;
-    private Date validFrom;
-    private Date validTo;
 
-    @Id
-    @Column(name = "PersonID")
     public Integer getPersonId() {
         return personId;
     }
@@ -40,8 +34,6 @@ public class Person {
         this.personId = personId;
     }
 
-    @Basic
-    @Column(name = "FullName")
     public String getFullName() {
         return fullName;
     }
@@ -50,8 +42,6 @@ public class Person {
         this.fullName = fullName;
     }
 
-    @Basic
-    @Column(name = "PreferredName")
     public String getPreferredName() {
         return preferredName;
     }
@@ -60,8 +50,6 @@ public class Person {
         this.preferredName = preferredName;
     }
 
-    @Basic
-    @Column(name = "SearchName")
     public String getSearchName() {
         return searchName;
     }
@@ -70,8 +58,6 @@ public class Person {
         this.searchName = searchName;
     }
 
-    @Basic
-    @Column(name = "IsPermittedToLogon")
     public Boolean getPermittedToLogon() {
         return isPermittedToLogon;
     }
@@ -80,8 +66,6 @@ public class Person {
         isPermittedToLogon = permittedToLogon;
     }
 
-    @Basic
-    @Column(name = "LogonName")
     public String getLogonName() {
         return logonName;
     }
@@ -90,8 +74,6 @@ public class Person {
         this.logonName = logonName;
     }
 
-    @Basic
-    @Column(name = "IsExternalLogonProvider")
     public Boolean getExternalLogonProvider() {
         return isExternalLogonProvider;
     }
@@ -100,8 +82,6 @@ public class Person {
         isExternalLogonProvider = externalLogonProvider;
     }
 
-    @Basic
-    @Column(name = "HashedPassword")
     public byte[] getHashedPassword() {
         return hashedPassword;
     }
@@ -110,8 +90,6 @@ public class Person {
         this.hashedPassword = hashedPassword;
     }
 
-    @Basic
-    @Column(name = "IsSystemUser")
     public Boolean getSystemUser() {
         return isSystemUser;
     }
@@ -120,8 +98,6 @@ public class Person {
         isSystemUser = systemUser;
     }
 
-    @Basic
-    @Column(name = "IsEmployee")
     public Boolean getEmployee() {
         return isEmployee;
     }
@@ -130,8 +106,6 @@ public class Person {
         isEmployee = employee;
     }
 
-    @Basic
-    @Column(name = "IsSalesperson")
     public Boolean getSalesperson() {
         return isSalesperson;
     }
@@ -140,8 +114,6 @@ public class Person {
         isSalesperson = salesperson;
     }
 
-    @Basic
-    @Column(name = "UserPreferences")
     public String getUserPreferences() {
         return userPreferences;
     }
@@ -150,8 +122,15 @@ public class Person {
         this.userPreferences = userPreferences;
     }
 
-    @Basic
-    @Column(name = "PhoneNumber")
+
+//    public JSONObject getUserPreferences() {
+//        return userPreferences;
+//    }
+//
+//    public void setUserPreferences(JSONObject userPreferences) {
+//        this.userPreferences = userPreferences;
+//    }
+
     public String getPhoneNumber() {
         return phoneNumber;
     }
@@ -160,8 +139,6 @@ public class Person {
         this.phoneNumber = phoneNumber;
     }
 
-    @Basic
-    @Column(name = "FaxNumber")
     public String getFaxNumber() {
         return faxNumber;
     }
@@ -170,8 +147,6 @@ public class Person {
         this.faxNumber = faxNumber;
     }
 
-    @Basic
-    @Column(name = "EmailAddress")
     public String getEmailAddress() {
         return emailAddress;
     }
@@ -180,8 +155,6 @@ public class Person {
         this.emailAddress = emailAddress;
     }
 
-    @Basic
-    @Column(name = "Photo")
     public byte[] getPhoto() {
         return photo;
     }
@@ -190,8 +163,6 @@ public class Person {
         this.photo = photo;
     }
 
-    @Basic
-    @Column(name = "CustomFields")
     public String getCustomFields() {
         return customFields;
     }
@@ -200,8 +171,6 @@ public class Person {
         this.customFields = customFields;
     }
 
-    @Basic
-    @Column(name = "OtherLanguages")
     public String getOtherLanguages() {
         return otherLanguages;
     }
@@ -210,8 +179,6 @@ public class Person {
         this.otherLanguages = otherLanguages;
     }
 
-    @Basic
-    @Column(name = "LastEditedBy")
     public Integer getLastEditedBy() {
         return lastEditedBy;
     }
@@ -220,43 +187,28 @@ public class Person {
         this.lastEditedBy = lastEditedBy;
     }
 
-    @Basic
-    @Column(name = "ValidFrom")
-    public Date getValidFrom() {
-        return validFrom;
-    }
-
-    public void setValidFrom(Date validFrom) {
-        this.validFrom = validFrom;
-    }
-
-    @Basic
-    @Column(name = "ValidTo")
-    public Date getValidTo() {
-        return validTo;
-    }
-
-    public void setValidTo(Date validTo) {
-        this.validTo = validTo;
-    }
-
     @Override
-    public boolean equals(Object o) {
-        if (this == o) {
-            return true;
-        }
-        if (o == null || getClass() != o.getClass()) {
-            return false;
-        }
-        Person person = (Person) o;
-        return Objects.equals(personId, person.personId) && Objects.equals(fullName, person.fullName) && Objects.equals(preferredName, person.preferredName) && Objects.equals(searchName, person.searchName) && Objects.equals(isPermittedToLogon, person.isPermittedToLogon) && Objects.equals(logonName, person.logonName) && Objects.equals(isExternalLogonProvider, person.isExternalLogonProvider) && Arrays.equals(hashedPassword, person.hashedPassword) && Objects.equals(isSystemUser, person.isSystemUser) && Objects.equals(isEmployee, person.isEmployee) && Objects.equals(isSalesperson, person.isSalesperson) && Objects.equals(userPreferences, person.userPreferences) && Objects.equals(phoneNumber, person.phoneNumber) && Objects.equals(faxNumber, person.faxNumber) && Objects.equals(emailAddress, person.emailAddress) && Arrays.equals(photo, person.photo) && Objects.equals(customFields, person.customFields) && Objects.equals(otherLanguages, person.otherLanguages) && Objects.equals(lastEditedBy, person.lastEditedBy) && Objects.equals(validFrom, person.validFrom) && Objects.equals(validTo, person.validTo);
-    }
-
-    @Override
-    public int hashCode() {
-        int result = Objects.hash(personId, fullName, preferredName, searchName, isPermittedToLogon, logonName, isExternalLogonProvider, isSystemUser, isEmployee, isSalesperson, userPreferences, phoneNumber, faxNumber, emailAddress, customFields, otherLanguages, lastEditedBy, validFrom, validTo);
-        result = 31 * result + Arrays.hashCode(hashedPassword);
-        result = 31 * result + Arrays.hashCode(photo);
-        return result;
+    public String toString() {
+        return "Person{" +
+               "personId=" + personId +
+               ", fullName='" + fullName + '\'' +
+               ", preferredName='" + preferredName + '\'' +
+               ", searchName='" + searchName + '\'' +
+               ", isPermittedToLogon=" + isPermittedToLogon +
+               ", logonName='" + logonName + '\'' +
+               ", isExternalLogonProvider=" + isExternalLogonProvider +
+               ", hashedPassword=" + Arrays.toString(hashedPassword) +
+               ", isSystemUser=" + isSystemUser +
+               ", isEmployee=" + isEmployee +
+               ", isSalesperson=" + isSalesperson +
+               ", userPreferences='" + userPreferences + '\'' +
+               ", phoneNumber='" + phoneNumber + '\'' +
+               ", faxNumber='" + faxNumber + '\'' +
+               ", emailAddress='" + emailAddress + '\'' +
+               ", photo=" + Arrays.toString(photo) +
+               ", customFields='" + customFields + '\'' +
+               ", otherLanguages='" + otherLanguages + '\'' +
+               ", lastEditedBy=" + lastEditedBy +
+               '}';
     }
 }
