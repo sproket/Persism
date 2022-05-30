@@ -311,6 +311,13 @@ public final class TestDerby extends BaseTest {
                     )
                 """;
         executeCommand(sql, con);
+
+        if (isTableInDatabase("TABLENOPRIMARY", con)) {
+            executeCommand("DROP TABLE TABLENOPRIMARY", con);
+        }
+
+        executeCommand("CREATE TABLE TABLENOPRIMARY (  ID INT,  Name VARCHAR(30),  Field4 VARCHAR(30),  Field5 DATE,  Field6 INT,  Field7 INT,  Field8 INT )", con);
+
     }
 
     public void testTypes() {

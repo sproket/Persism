@@ -677,7 +677,7 @@ final class SessionHelper {
         }
 
         where.append(" FROM ");
-        where.append(parentTable.toString(connectionType));
+        where.append(parentTable);
 
         if (Util.isNotEmpty(parentAlias)) {
             where.append(" ").append(parentAlias);
@@ -692,11 +692,11 @@ final class SessionHelper {
             if (Util.isNotEmpty(parentAlias)) {
                 where.append(sep).append(parentAlias);
             } else {
-                where.append(sep).append(parentTable.toString(connectionType));
+                where.append(sep).append(parentTable);
             }
 
             where.append(".").append(parentColumnName).append(" = ").
-                    append(childTable.toString(connectionType)).append(".").append(childColumnName);
+                    append(childTable).append(".").append(childColumnName);
             sep = " AND ";
         }
         where.append(") ");

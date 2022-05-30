@@ -139,3 +139,5 @@ todo What do to with read-only (getter only) in POJO (not records) with insert a
 todo test out what happens if I make PersistableObject.originalvalue transient
 
 todo add a join to table with spaces in the name and use OLD toString in TableInfo to see the error
+
+SessionHelper 509 - remove - not used.

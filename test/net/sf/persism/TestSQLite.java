@@ -11,7 +11,6 @@ import net.sf.persism.categories.LocalDB;
 import net.sf.persism.dao.Customer;
 import net.sf.persism.dao.DAOFactory;
 import net.sf.persism.dao.Order;
-import net.sf.persism.dao.TableNoPrimary;
 import org.junit.experimental.categories.Category;
 
 import java.sql.*;
@@ -640,52 +639,6 @@ public final class TestSQLite extends BaseTest {
         }
     }
 
-    public void testColumnAnnotation() {
-        // todo move this to basetest
-        TableNoPrimary junk = new TableNoPrimary();
-        junk.setId(1);
-        junk.setName("JUNK");
-
-        // This should work OK
-        session.insert(junk);
-
-        log.info(session.query(TableNoPrimary.class, sql("SELECT * FROM TableNoPrimary")));
-
-        boolean shouldFail = false;
-
-        junk.setName("NO WORKEE!");
-        try {
-            session.update(junk);
-        } catch (PersismException e) {
-            shouldFail = true;
-            assertEquals("Message s/b 'Cannot perform UPDATE - TABLENOPRIMARY has no primary keys'",
-                    "Cannot perform UPDATE - TABLENOPRIMARY has no primary keys",
-                    e.getMessage());
-        }
-        assertTrue(shouldFail);
-
-        shouldFail = false;
-        try {
-            session.fetch(junk);
-        } catch (PersismException e) {
-            shouldFail = true;
-            assertEquals("Message s/b 'Cannot perform FETCH - TABLENOPRIMARY has no primary keys'",
-                    "Cannot perform FETCH - TABLENOPRIMARY has no primary keys",
-                    e.getMessage());
-        }
-        assertTrue(shouldFail);
-
-        shouldFail = false;
-        try {
-            session.delete(junk);
-        } catch (PersismException e) {
-            shouldFail = true;
-            assertEquals("Message s/b 'Cannot perform DELETE - TABLENOPRIMARY has no primary keys'",
-                    "Cannot perform DELETE - TABLENOPRIMARY has no primary keys",
-                    e.getMessage());
-        }
-        assertTrue(shouldFail);
-    }
 
     public void testColumnDefaults() {
 

@@ -695,7 +695,7 @@ public abstract class BaseTest extends TestCase {
             session.fetch(holiday);
         } catch (PersismException e) {
             log.error(e.getMessage(), e);
-            assertEquals("s/b Cannot perform FETCH - " + table + " has no primary keys", TableHasNoPrimaryKeys.message("FETCH", table), e.getMessage());
+            assertEquals("s/b Cannot perform FETCH - " + table + " has no primary keys", TableHasNoPrimaryKeys.message("FETCH", table.name()), e.getMessage());
             fail = true;
         }
         assertTrue(fail);
@@ -705,7 +705,7 @@ public abstract class BaseTest extends TestCase {
             session.fetch(CorporateHoliday.class, params(1, 2, 3));
         } catch (PersismException e) {
             log.error(e.getMessage(), e);
-            assertEquals("s/b EQUAL ", TableHasNoPrimaryKeysForWhere.message(table), e.getMessage());
+            assertEquals("s/b EQUAL ", TableHasNoPrimaryKeysForWhere.message(table.name()), e.getMessage());
             fail = true;
         }
         assertTrue(fail);
@@ -881,6 +881,51 @@ public abstract class BaseTest extends TestCase {
         }
     }
 
+    public void testTableNoPrimary() {
+        TableNoPrimary junk = new TableNoPrimary();
+        junk.setId(1);
+        junk.setName("JUNK");
+
+        // This should work OK
+        session.insert(junk);
+
+        log.info(session.query(TableNoPrimary.class, sql("SELECT * FROM TableNoPrimary")));
+
+        boolean shouldFail = false;
+
+        junk.setName("NO WORKEE!");
+        try {
+            session.update(junk);
+        } catch (PersismException e) {
+            shouldFail = true;
+            assertEquals("Message s/b eq",
+                    Messages.TableHasNoPrimaryKeys.message("UPDATE", "TableNoPrimary").toLowerCase(),
+                    e.getMessage().toLowerCase());
+        }
+        assertTrue(shouldFail);
+
+        shouldFail = false;
+        try {
+            session.fetch(junk);
+        } catch (PersismException e) {
+            shouldFail = true;
+            assertEquals("Message s/b eq",
+                    Messages.TableHasNoPrimaryKeys.message("FETCH", "TableNoPrimary").toLowerCase(),
+                    e.getMessage().toLowerCase());
+        }
+        assertTrue(shouldFail);
+
+        shouldFail = false;
+        try {
+            session.delete(junk);
+        } catch (PersismException e) {
+            shouldFail = true;
+            assertEquals("Message s/b eq",
+                    Messages.TableHasNoPrimaryKeys.message("DELETE", "TableNoPrimary").toLowerCase(),
+                    e.getMessage().toLowerCase());
+        }
+        assertTrue(shouldFail);
+    }
 
     final void queryDataSetup() throws SQLException {
 

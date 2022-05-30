@@ -493,9 +493,9 @@ final class MetaData {
             while (rs.next()) {
                 name = rs.getString("TABLE_NAME");
                 if (VIEW.equalsIgnoreCase(rs.getString("TABLE_TYPE"))) {
-                    views.add(new TableInfo(name, rs.getString("TABLE_SCHEM")));
+                    views.add(new TableInfo(name, rs.getString("TABLE_SCHEM"), connectionType));
                 } else {
-                    tables.add(new TableInfo(name, rs.getString("TABLE_SCHEM")));
+                    tables.add(new TableInfo(name, rs.getString("TABLE_SCHEM"), connectionType));
                 }
             }
         } catch (SQLException e) {
@@ -765,7 +765,7 @@ final class MetaData {
 
         List<String> primaryKeys = getPrimaryKeys(objectClass, connection);
         if (primaryKeys.size() == 0) {
-            throw new PersismException(Messages.TableHasNoPrimaryKeysForWhere.message(getTableInfo(objectClass)));
+            throw new PersismException(Messages.TableHasNoPrimaryKeysForWhere.message(getTableInfo(objectClass).name()));
         }
 
         sb.append(" WHERE ");
@@ -1103,7 +1103,7 @@ final class MetaData {
             }
         }
         if (log.isDebugEnabled()) {
-            log.debug("getPrimaryKeys for %s %s", tableInfo, primaryKeys);
+            log.debug("getPrimaryKeys for %s %s", tableInfo.name(), primaryKeys);
         }
         return primaryKeys;
     }
