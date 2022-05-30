@@ -649,13 +649,16 @@ final class SessionHelper {
         StringBuilder where = new StringBuilder();
         String sd = session.metaData.getConnectionType().getKeywordStartDelimiter();
         String ed = session.metaData.getConnectionType().getKeywordEndDelimiter();
-        String parentTableName = session.metaData.getTableName(joinInfo.parentClass());
-        String childTableName = session.metaData.getTableName(joinInfo.childClass());
+
+        TableInfo parentTable = session.metaData.getTableInfo(joinInfo.parentClass());
+        TableInfo childTable = session.metaData.getTableInfo(joinInfo.childClass());
+
+        var connectionType = session.metaData.getConnectionType();
 
         String parentAlias = "";
-        if (parentTableName.equals(childTableName)) {
-            // for self join we need an alias
-            parentAlias = session.metaData.getTableName(joinInfo.parentClass()).substring(0, 1).toUpperCase();
+        if (parentTable.equals(childTable)) {
+            // for self join we need an alias todo verify if we can get duplicate aliases!
+            parentAlias = parentTable.name().substring(0, 1).toUpperCase();
         }
 
         int n = parentWhere.toUpperCase().indexOf("ORDER BY");
@@ -672,7 +675,9 @@ final class SessionHelper {
             where.append(sep).append(parentColumnName);
             sep = ",";
         }
-        where.append(" FROM ").append(parentTableName);
+
+        where.append(" FROM ");
+        where.append(parentTable.toString(connectionType));
 
         if (Util.isNotEmpty(parentAlias)) {
             where.append(" ").append(parentAlias);
@@ -687,11 +692,11 @@ final class SessionHelper {
             if (Util.isNotEmpty(parentAlias)) {
                 where.append(sep).append(parentAlias);
             } else {
-                where.append(sep).append(parentTableName);
+                where.append(sep).append(parentTable.toString(connectionType));
             }
 
             where.append(".").append(parentColumnName).append(" = ").
-                    append(childTableName).append(".").append(childColumnName);
+                    append(childTable.toString(connectionType)).append(".").append(childColumnName);
             sep = " AND ";
         }
         where.append(") ");
@@ -699,6 +704,10 @@ final class SessionHelper {
         String sql = where.toString();
         session.metaData.childWhereClauses.putIfAbsent(joinInfo, new HashMap<>());
         session.metaData.childWhereClauses.get(joinInfo).put(parentWhere, sql);
+
+        if (log.isDebugEnabled()) {
+            log.debug("determineChildWhereClause: %s", sql);
+        }
         return sql;
     }
 

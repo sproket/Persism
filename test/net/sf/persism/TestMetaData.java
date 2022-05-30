@@ -16,6 +16,7 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.time.LocalDateTime;
 import java.util.*;
+import java.util.stream.Stream;
 
 import static java.lang.System.out;
 
@@ -70,8 +71,10 @@ public final class TestMetaData extends TestCase {
             session.insert(new TestDerby());
         } catch (PersismException e) {
             failed = true;
-            assertEquals("Message s/b 'Could not determine a table for type: net.sf.persism.TestDerby Guesses were: [TestDerby, TestDerbies, Test Derby, Test_Derby, Test Derbies, Test_Derbies, Test Derbys, Test_Derbys] and we found multiple matching: [TEST_DERBY, TESTDERBY]'",
-                    "Could not determine a table for type: net.sf.persism.TestDerby Guesses were: [TestDerby, TestDerbies, TestDerbys, Test Derby, Test_Derby, Test Derbies, Test_Derbies, Test Derbys, Test_Derbys] and we found multiple matching: [TEST_DERBY, TESTDERBY]",
+            // "Could not determine a table for type: net.sf.persism.TestDerby Guesses were: [TestDerby, TestDerbies, TestDerbys, Test Derby, Test_Derby, Test Derbies, Test_Derbies, Test Derbys, Test_Derbys] and we found multiple matching: [TEST_DERBY, TESTDERBY]",
+            List<String> guesses = List.of("TestDerby", "TestDerbies", "TestDerbys", "Test Derby", "Test_Derby", "Test Derbies", "Test_Derbies", "Test Derbys", "Test_Derbys");
+            assertEquals("Message s/b equal",
+                    Messages.CouldNotDetermineTableOrViewForTypeMultipleMatches.message("table", TestDerby.class.getName(),guesses, List.of("TEST_DERBY", "TESTDERBY")),
                     e.getMessage());
         }
         assertTrue(failed);

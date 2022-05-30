@@ -46,18 +46,17 @@ public class TestMSAccess extends TestCase {
 
         Path from = Paths.get(uri);
         Path to = Paths.get(home + "/Contacts.accdb");
-        if (!to.toFile().exists()) {
+//        if (!to.toFile().exists()) {
             Files.copy(from, to, StandardCopyOption.REPLACE_EXISTING);
-        }
+//        }
 
         String url = String.format(props.getProperty("database.url"), home + "/Contacts.accdb");
         log.info(url);
 
         con = DriverManager.getConnection(url);
+        createTables();
 
         session = new Session(con);
-
-        createTables();
     }
 
     private void createTables() throws SQLException {
@@ -141,10 +140,6 @@ public class TestMSAccess extends TestCase {
     public void testContact() throws SQLException, IOException {
         // test Contacts.accddb should contain 1 row ID 1 with 2 attachments
         // Note Access fails with multiple test methods - so any other testing put here.
-        if (true) {
-            return;
-        }
-
         Contact contact;
 
         contact = new Contact();
@@ -158,14 +153,14 @@ public class TestMSAccess extends TestCase {
         session.insert(contact);
 
         assertTrue("contact id > 0", contact.getId() > 0);
-        assertEquals("id s/b 2", 2, contact.getId());
+        assertEquals("id s/b 2", 2, contact.getId()); // todo we're not resetting the DB?
 
         log.info("created on  " + contact.getCreated());
         assertNotNull("created date defaulted?", contact.getCreated());
 
         List<Contact> list = session.query(Contact.class);
         log.info(list);
-        assertEquals("should be 2", 2, list.size());
+        assertEquals("should be 2", 2, list.size()); // todo we're not resetting the DB?
 
         contact.setEmailAddress("x@Z.com");
         session.update(contact);
@@ -176,7 +171,7 @@ public class TestMSAccess extends TestCase {
 
         // net.ucanaccess.complex.Attachment type returned
         // You will see this type in the log.warn
-        Attachment[] attachments = contact.getAttachments();
+        Attachment[] attachments = (Attachment[]) contact.getAttachments();
         log.info("attachments? " + attachments.length);
         for (int j = 0; j < attachments.length; j++) {
             Attachment attachment = attachments[j];
@@ -185,14 +180,14 @@ public class TestMSAccess extends TestCase {
             log.info("name: " + attachment.getName());
             log.info("time: " + attachment.getTimeStamp());
         }
-        assertEquals("attachmens s/b/2", contact.getAttachments().length, 2);
+        assertEquals("attachmens s/b/2", attachments.length, 2); // todo we're not resetting the DB?
 
         // add to the array?
         // attachments = contact.getAttachments();
         List<Attachment> attachmentList = new ArrayList<>(Arrays.asList(attachments));
         Attachment attachment = new Attachment(null, "test", "png", null, LocalDateTime.now(), 0);
 
-        BufferedImage img = ImageIO.read(getClass().getResourceAsStream("/logo1.png"));
+        BufferedImage img = ImageIO.read(Objects.requireNonNull(getClass().getResourceAsStream("/logo1.png")));
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         ImageIO.write(img, "png", baos);
         baos.flush();
@@ -212,7 +207,7 @@ public class TestMSAccess extends TestCase {
 
         assertEquals(contact.getJobTitle(), "Software Bug Creator!");
 
-        assertEquals("attachmens s/b/3", contact.getAttachments().length, 3);
+        assertEquals("attachmens s/b/3", ((Attachment[])contact.getAttachments()).length, 3);
 
         contact.setId(1);
         assertTrue(session.fetch(contact));

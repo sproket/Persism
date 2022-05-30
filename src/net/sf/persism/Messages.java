@@ -45,7 +45,7 @@ enum Messages {
     UnknownSQLType("Convert: Unknown SQL TYPE: %s"),
     ConverterValueTypeNotYetSupported("%s not yet supported"),
     ConverterDoNotUseClobOrBlobAsAPropertyType("Usually you should not use blob or clob as a property type on a POJO. Blob maps to byteArray, Clob maps to String"),
-    ColumnTypeNotKnownForSQLType("Column type not known for SQL type %s. Reading column: %s as Object"),
+    ColumnTypeNotKnownForSQLType("Column type not known for SQL type %s. Reading column: %s as Object. Actual type: %s"),
     InappropriateMethodUsedForSQLTypeInstance("%s It seems you're using the %s method with %s. You might prefer to use the %s method instead for better 'Find Usages'"),
     UnknownTypeForPrimaryGeneratedKey("Unknown type for primary/generated key: %s. using getObject"),
     UnknownTypeInSetParameters("setParameters: Unknown type: %s"),

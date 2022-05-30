@@ -126,7 +126,7 @@ public final class Session implements AutoCloseable {
 
         List<String> primaryKeys = metaData.getPrimaryKeys(objectClass, connection);
         if (primaryKeys.size() == 0) {
-            throw new PersismException(Messages.TableHasNoPrimaryKeys.message("FETCH", metaData.getTableName(objectClass)));
+            throw new PersismException(Messages.TableHasNoPrimaryKeys.message("FETCH", metaData.getTableInfo(objectClass)));
         }
 
         Map<String, PropertyInfo> properties = metaData.getTableColumnsPropertyInfo(object.getClass(), connection);
@@ -344,7 +344,7 @@ public final class Session implements AutoCloseable {
 
         List<String> primaryKeys = metaData.getPrimaryKeys(objectClass, connection);
         if (primaryKeys.size() == 0) {
-            throw new PersismException(Messages.TableHasNoPrimaryKeys.message("QUERY", metaData.getTableName(objectClass)));
+            throw new PersismException(Messages.TableHasNoPrimaryKeys.message("QUERY", metaData.getTableInfo(objectClass)));
         }
 
         primaryKeyValues.areKeys = true;
@@ -504,7 +504,7 @@ public final class Session implements AutoCloseable {
 
         List<String> primaryKeys = metaData.getPrimaryKeys(object.getClass(), connection);
         if (primaryKeys.size() == 0) {
-            throw new PersismException(Messages.TableHasNoPrimaryKeys.message("UPDATE", metaData.getTableName(object.getClass())));
+            throw new PersismException(Messages.TableHasNoPrimaryKeys.message("UPDATE", metaData.getTableInfo(object.getClass())));
         }
 
         PreparedStatement st = null;
@@ -749,7 +749,7 @@ public final class Session implements AutoCloseable {
 
         List<String> primaryKeys = metaData.getPrimaryKeys(object.getClass(), connection);
         if (primaryKeys.size() == 0) {
-            throw new PersismException(Messages.TableHasNoPrimaryKeys.message("DELETE", metaData.getTableName(object.getClass())));
+            throw new PersismException(Messages.TableHasNoPrimaryKeys.message("DELETE", metaData.getTableInfo(object.getClass())));
         }
 
         PreparedStatement st = null;

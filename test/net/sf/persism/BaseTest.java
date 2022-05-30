@@ -686,7 +686,7 @@ public abstract class BaseTest extends TestCase {
         assertTrue(fail);
 
         // TableHasNoPrimaryKeys
-        String tableName = session.metaData.getTableName(CorporateHoliday.class);
+        TableInfo table = session.metaData.getTableInfo(CorporateHoliday.class);
         CorporateHoliday holiday = new CorporateHoliday("-99", "blah", LocalDate.now());
         session.insert(holiday);
 
@@ -695,7 +695,7 @@ public abstract class BaseTest extends TestCase {
             session.fetch(holiday);
         } catch (PersismException e) {
             log.error(e.getMessage(), e);
-            assertEquals("s/b Cannot perform FETCH - " + tableName + " has no primary keys", TableHasNoPrimaryKeys.message("FETCH", tableName), e.getMessage());
+            assertEquals("s/b Cannot perform FETCH - " + table + " has no primary keys", TableHasNoPrimaryKeys.message("FETCH", table), e.getMessage());
             fail = true;
         }
         assertTrue(fail);
@@ -705,7 +705,7 @@ public abstract class BaseTest extends TestCase {
             session.fetch(CorporateHoliday.class, params(1, 2, 3));
         } catch (PersismException e) {
             log.error(e.getMessage(), e);
-            assertEquals("s/b EQUAL ", TableHasNoPrimaryKeysForWhere.message(tableName), e.getMessage());
+            assertEquals("s/b EQUAL ", TableHasNoPrimaryKeysForWhere.message(table), e.getMessage());
             fail = true;
         }
         assertTrue(fail);
@@ -842,7 +842,7 @@ public abstract class BaseTest extends TestCase {
         // Create a 2nd match on table search which should fail
         if (session.metaData.getConnectionType().supportsSpacesInTableNames()) {
             fail = false;
-            tableName = "Invoice Line Items";
+            String tableName = "Invoice Line Items";
             try {
                 if (isTableInDatabase(tableName, con)) {
                     executeCommand("DROP TABLE " + sd + tableName + ed, con);

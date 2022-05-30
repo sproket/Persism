@@ -124,3 +124,18 @@ https://www.reddit.com/r/java/comments/1hxgrc/jooqs_reason_for_being_compared_to
 
 
 // todo should we have a clear cache in MetaData so in dev when devs reload a web instance this metadata goes away?
+
+
+https://stackoverflow.com/questions/42729444/how-can-i-populate-what-is-indexed-under-the-tags-metadata-field-in-maven-centra
+https://stackoverflow.com/questions/16375204/how-can-i-add-meta-data-to-a-maven-pom
+https://help.sonatype.com/repomanager3/nexus-repository-administration/tagging
+https://s01.oss.sonatype.org/index.html#central-stat to get stats.
+
+
+Try Persism with dropwizard web framework.
+
+todo What do to with read-only (getter only) in POJO (not records) with insert and update
+
+todo test out what happens if I make PersistableObject.originalvalue transient
+
+todo add a join to table with spaces in the name and use OLD toString in TableInfo to see the error

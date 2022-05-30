@@ -259,8 +259,12 @@ final class Reader {
             }
 
         } else {
-            log.warnNoDuplicates(Messages.ColumnTypeNotKnownForSQLType.message(sqlColumnType, columnName));
             value = rs.getObject(column);
+            String objType = "Unknown";
+            if (value != null) {
+                objType = value.getClass().getName();
+            }
+            log.warnNoDuplicates(Messages.ColumnTypeNotKnownForSQLType.message(sqlColumnType, columnName, objType));
         }
 
         // If value is null or column type is unknown - no need to try to convert anything.

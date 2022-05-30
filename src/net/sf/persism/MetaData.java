@@ -30,9 +30,6 @@ final class MetaData {
     private final Map<Class<?>, Map<String, PropertyInfo>> propertyInfoMap = new ConcurrentHashMap<>(32);
     private final Map<Class<?>, Map<String, ColumnInfo>> columnInfoMap = new ConcurrentHashMap<>(32);
 
-    // table/view name for each class
-    private final Map<Class<?>, String> tableOrViewMap = new ConcurrentHashMap<>(32);
-
     // SQL for updates/inserts/deletes/selects for each class
     private final Map<Class<?>, String> updateStatementsMap = new ConcurrentHashMap<>(32);
     private final Map<Class<?>, String> deleteStatementsMap = new ConcurrentHashMap<>(32);
@@ -56,25 +53,14 @@ final class MetaData {
     // WHERE clauses defined by JOIN operations (maintained by SessionHelper)
     Map<JoinInfo, Map<String, String>> childWhereClauses = new ConcurrentHashMap<>(32);
 
-    // Key is SQL with named params, Value is SQL with ?
-    // private Map<String, String> sqlWitNamedParams = new ConcurrentHashMap<String, String>(32);
-
-    // Key is SQL with named params, Value list of named params
-    // private Map<String, List<String>> namedParams = new ConcurrentHashMap<String, List<String>>(32);
-
-    // private Map<Class, List<String>> primaryKeysMap = new ConcurrentHashMap<Class, List<String>>(32); // remove later maybe?
+    // table/view for each class
+    private final Map<Class<?>, TableInfo> tableOrViewMap = new ConcurrentHashMap<>(32);
 
     // list of tables in the DB
-    private final Set<String> tableNames = new TreeSet<>(String.CASE_INSENSITIVE_ORDER);
+    private final Set<TableInfo> tables = new HashSet<>();
 
     // list of views in the DB
-    private final Set<String> viewNames = new TreeSet<>(String.CASE_INSENSITIVE_ORDER);
-
-    // Map of table/view names mapped to TableInfo
-    private final Map<String, TableInfo> tableInfos = new HashMap<>();
-
-    // Map of table names + meta data
-    // private Map<String, TableInfo> tableInfoMap = new ConcurrentHashMap<String, TableInfo>(32);
+    private final Set<TableInfo> views = new HashSet<>();
 
     static final Map<String, MetaData> metaData = new ConcurrentHashMap<>(4);
 
@@ -82,7 +68,7 @@ final class MetaData {
 
     // the "extra" characters that can be used in unquoted identifier names (those beyond a-z, A-Z, 0-9 and _)
     // Was using DatabaseMetaData getExtraNameCharacters() but some drivers don't provide these and still allow
-    // for non alpha-numeric characters in column names. We'll just use a static set.
+    // for non-alphanumeric characters in column names. We'll just use a static set.
     private static final String EXTRA_NAME_CHARACTERS = "`~!@#$%^&*()-+=/|\\{}[]:;'\".,<>*";
     private static final String SELECT_FOR_COLUMNS = "SELECT * FROM {0}{1}{2} WHERE 1=0";
     private static final String SELECT_FOR_COLUMNS_WITH_SCHEMA = "SELECT * FROM {0}{1}{2}.{3}{4}{5} WHERE 1=0";
@@ -113,7 +99,7 @@ final class MetaData {
 
     // Should only be called IF the map does not contain the column meta information yet.
     // Version for Tables
-    private synchronized <T> Map<String, PropertyInfo> determinePropertyInfo(Class<T> objectClass, String tableName, Connection connection) {
+    private synchronized <T> Map<String, PropertyInfo> determinePropertyInfo(Class<T> objectClass, TableInfo table, Connection connection) {
         // double check map
         if (propertyInfoMap.containsKey(objectClass)) {
             return propertyInfoMap.get(objectClass);
@@ -124,7 +110,6 @@ final class MetaData {
 
         String sd = connectionType.getKeywordStartDelimiter();
         String ed = connectionType.getKeywordEndDelimiter();
-        String schema = tableInfos.get(tableName).schema();
 
         ResultSet rs = null;
         Statement st = null;
@@ -132,10 +117,10 @@ final class MetaData {
             st = connection.createStatement();
             // gives us real column names with case.
             String sql;
-            if (isEmpty(schema)) {
-                sql = MessageFormat.format(SELECT_FOR_COLUMNS, sd, tableName, ed);
+            if (isEmpty(table.schema())) {
+                sql = MessageFormat.format(SELECT_FOR_COLUMNS, sd, table.name(), ed);
             } else {
-                sql = MessageFormat.format(SELECT_FOR_COLUMNS_WITH_SCHEMA, sd, schema, ed, sd, tableName, ed);
+                sql = MessageFormat.format(SELECT_FOR_COLUMNS_WITH_SCHEMA, sd, table.schema(), ed, sd, table.name(), ed);
             }
             if (log.isDebugEnabled()) {
                 log.debug("determineColumns: %s", sql);
@@ -193,7 +178,7 @@ final class MetaData {
     }
 
     @SuppressWarnings({"JDBCExecuteWithNonConstantString", "SqlDialectInspection"})
-    private synchronized <T> Map<String, ColumnInfo> determineColumnInfo(Class<T> objectClass, String tableName, Connection connection) {
+    private synchronized <T> Map<String, ColumnInfo> determineColumnInfo(Class<T> objectClass, TableInfo table, Connection connection) {
         if (columnInfoMap.containsKey(objectClass)) {
             return columnInfoMap.get(objectClass);
         }
@@ -203,16 +188,17 @@ final class MetaData {
         Map<String, PropertyInfo> properties = getTableColumnsPropertyInfo(objectClass, connection);
         String sd = connectionType.getKeywordStartDelimiter();
         String ed = connectionType.getKeywordEndDelimiter();
-        String schema = tableInfos.get(tableName).schema();
+
+        String schemaName = table.schema();
+        String tableName = table.name();
 
         try {
-
             st = connection.createStatement();
             String sql;
-            if (isEmpty(schema)) {
+            if (isEmpty(schemaName)) {
                 sql = MessageFormat.format(SELECT_FOR_COLUMNS, sd, tableName, ed);
             } else {
-                sql = MessageFormat.format(SELECT_FOR_COLUMNS_WITH_SCHEMA, sd, schema, ed, sd, tableName, ed);
+                sql = MessageFormat.format(SELECT_FOR_COLUMNS_WITH_SCHEMA, sd, schemaName, ed, sd, tableName, ed);
             }
             log.debug("determineColumnInfo %s", sql);
             rs = st.executeQuery(sql);
@@ -279,10 +265,10 @@ final class MetaData {
 
             if (objectClass.getAnnotation(View.class) == null) {
 
-                if (isEmpty(schema)) {
+                if (isEmpty(schemaName)) {
                     rs = dmd.getPrimaryKeys(null, connectionType.getSchemaPattern(), tableName);
                 } else {
-                    rs = dmd.getPrimaryKeys(null, schema, tableName);
+                    rs = dmd.getPrimaryKeys(null, schemaName, tableName);
                 }
                 int primaryKeysCount = 0;
                 while (rs.next()) {
@@ -298,7 +284,7 @@ final class MetaData {
                 }
 
                 if (primaryKeysCount == 0 && !primaryKeysFound) {
-                    log.warn(Messages.DatabaseMetaDataCouldNotFindPrimaryKeys.message(tableName));
+                    log.warn(Messages.DatabaseMetaDataCouldNotFindPrimaryKeys.message(table));
                 }
             }
 
@@ -306,7 +292,11 @@ final class MetaData {
              Get columns from database metadata since we don't get Type from resultSetMetaData
              with SQLite. + We also need to know if there's a default on a column.
              */
-            rs = dmd.getColumns(null, connectionType.getSchemaPattern(), tableName, null);
+            if (isEmpty(schemaName)) {
+                rs = dmd.getColumns(null, connectionType.getSchemaPattern(), tableName, null);
+            } else {
+                rs = dmd.getColumns(null, schemaName, tableName, null);
+            }
             int columnsCount = 0;
             while (rs.next()) {
                 ColumnInfo columnInfo = map.get(rs.getString("COLUMN_NAME"));
@@ -337,7 +327,7 @@ final class MetaData {
             rs.close();
 
             if (columnsCount == 0) {
-                log.warn(Messages.DatabaseMetaDataCouldNotFindColumns.message(tableName));
+                log.warn(Messages.DatabaseMetaDataCouldNotFindColumns.message(table));
             }
 
             // FOR Oracle which doesn't set autoinc in metadata even if we have:
@@ -365,7 +355,7 @@ final class MetaData {
                 // update, delete or select (by primary).
                 // They may only want to do read operations with specified queries and in that
                 // context we don't need any primary keys. (same with insert)
-                log.warn(Messages.NoPrimaryKeyFoundForTable.message(tableName));
+                log.warn(Messages.NoPrimaryKeyFoundForTable.message(table));
             }
 
             columnInfoMap.put(objectClass, map);
@@ -503,11 +493,10 @@ final class MetaData {
             while (rs.next()) {
                 name = rs.getString("TABLE_NAME");
                 if (VIEW.equalsIgnoreCase(rs.getString("TABLE_TYPE"))) {
-                    viewNames.add(name);
+                    views.add(new TableInfo(name, rs.getString("TABLE_SCHEM")));
                 } else {
-                    tableNames.add(name);
+                    tables.add(new TableInfo(name, rs.getString("TABLE_SCHEM")));
                 }
-                tableInfos.put(name, new TableInfo(name, rs.getString("TABLE_SCHEM")));
             }
         } catch (SQLException e) {
             throw new PersismException(e.getMessage(), e);
@@ -614,15 +603,17 @@ final class MetaData {
             return insertStatements.get(objectClass).get(key);
         }
 
-        String tableName = getTableName(objectClass, connection);
         String sd = connectionType.getKeywordStartDelimiter();
         String ed = connectionType.getKeywordEndDelimiter();
-        String schema = tableInfos.get(tableName).schema();
+
+        TableInfo tableInfo = getTableInfo(objectClass);
+        String tableName = tableInfo.name();
+        String schemaName = tableInfo.schema();
 
         StringBuilder sbi = new StringBuilder();
         sbi.append("INSERT INTO ");
-        if (isNotEmpty(schema)) {
-            sbi.append(sd).append(schema).append(ed).append(".");
+        if (isNotEmpty(schemaName)) {
+            sbi.append(sd).append(schemaName).append(ed).append(".");
         }
         sbi.append(sd).append(tableName).append(ed).append(" (");
 
@@ -669,22 +660,25 @@ final class MetaData {
     }
 
     private synchronized String determineDeleteStatement(Object object, Connection connection) {
-        if (deleteStatementsMap.containsKey(object.getClass())) {
-            return deleteStatementsMap.get(object.getClass());
-        }
+        Class<?> objectClass = object.getClass();
 
-        String tableName = getTableName(object.getClass(), connection);
-        String schema = tableInfos.get(tableName).schema();
+        if (deleteStatementsMap.containsKey(objectClass)) {
+            return deleteStatementsMap.get(objectClass);
+        }
 
         String sd = connectionType.getKeywordStartDelimiter();
         String ed = connectionType.getKeywordEndDelimiter();
 
-        List<String> primaryKeys = getPrimaryKeys(object.getClass(), connection);
+        TableInfo tableInfo = getTableInfo(objectClass);
+        String tableName = tableInfo.name();
+        String schemaName = tableInfo.schema();
+
+        List<String> primaryKeys = getPrimaryKeys(objectClass, connection);
 
         StringBuilder sb = new StringBuilder();
         sb.append("DELETE FROM ");
-        if (isNotEmpty(schema)) {
-            sb.append(sd).append(schema).append(ed).append(".");
+        if (isNotEmpty(schemaName)) {
+            sb.append(sd).append(schemaName).append(ed).append(".");
         }
         sb.append(sd).append(tableName).append(ed).append(" WHERE ");
         String sep = "";
@@ -771,7 +765,7 @@ final class MetaData {
 
         List<String> primaryKeys = getPrimaryKeys(objectClass, connection);
         if (primaryKeys.size() == 0) {
-            throw new PersismException(Messages.TableHasNoPrimaryKeysForWhere.message(getTableName(objectClass)));
+            throw new PersismException(Messages.TableHasNoPrimaryKeysForWhere.message(getTableInfo(objectClass)));
         }
 
         sb.append(" WHERE ");
@@ -828,8 +822,9 @@ final class MetaData {
         String sd = connectionType.getKeywordStartDelimiter();
         String ed = connectionType.getKeywordEndDelimiter();
 
-        String tableName = getTableName(objectClass, connection);
-        String schema = tableInfos.get(tableName).schema();
+        TableInfo tableInfo = getTableInfo(objectClass);
+        String tableName = tableInfo.name();
+        String schemaName = tableInfo.schema();
 
         StringBuilder sb = new StringBuilder();
         sb.append("SELECT ");
@@ -843,8 +838,8 @@ final class MetaData {
             sep = ", ";
         }
         sb.append(" FROM ");
-        if (isNotEmpty(schema)) {
-            sb.append(sd).append(schema).append(ed).append('.');
+        if (isNotEmpty(schemaName)) {
+            sb.append(sd).append(schemaName).append(ed).append('.');
         }
         sb.append(sd).append(tableName).append(ed);
 
@@ -861,17 +856,19 @@ final class MetaData {
     }
 
     private String buildUpdateString(Object object, Iterator<String> it, Connection connection) throws PersismException {
-        String tableName = getTableName(object.getClass(), connection);
-        String schema = tableInfos.get(tableName).schema();
         String sd = connectionType.getKeywordStartDelimiter();
         String ed = connectionType.getKeywordEndDelimiter();
+
+        TableInfo tableInfo = getTableInfo(object.getClass());
+        String tableName = tableInfo.name();
+        String schemaName = tableInfo.schema();
 
         List<String> primaryKeys = getPrimaryKeys(object.getClass(), connection);
 
         StringBuilder sb = new StringBuilder();
         sb.append("UPDATE ");
-        if (isNotEmpty(schema)) {
-            sb.append(sd).append(schema).append(ed).append(".");
+        if (isNotEmpty(schemaName)) {
+            sb.append(sd).append(schemaName).append(ed).append(".");
         }
         sb.append(sd).append(tableName).append(ed).append(" SET ");
         String sep = "";
@@ -928,7 +925,7 @@ final class MetaData {
         if (columnInfoMap.containsKey(objectClass)) {
             return columnInfoMap.get(objectClass);
         }
-        return determineColumnInfo(objectClass, getTableName(objectClass), connection);
+        return determineColumnInfo(objectClass, getTableInfo(objectClass), connection);
     }
 
     <T> Map<String, PropertyInfo> getQueryColumnsPropertyInfo(Class<T> objectClass, ResultSet rs) throws PersismException {
@@ -943,51 +940,41 @@ final class MetaData {
         if (propertyInfoMap.containsKey(objectClass)) {
             return propertyInfoMap.get(objectClass);
         }
-        return determinePropertyInfo(objectClass, getTableName(objectClass), connection);
+        return determinePropertyInfo(objectClass, getTableInfo(objectClass), connection);
     }
 
-    <T> String getTableName(Class<T> objectClass) {
+    <T> TableInfo getTableInfo(Class<T> objectClass) {
         if (tableOrViewMap.containsKey(objectClass)) {
             return tableOrViewMap.get(objectClass);
         }
 
-        return determineTable(objectClass);
+        return determineTableInfo(objectClass);
     }
 
-    // internal version to retrieve meta information about this table's columns
-    // at the same time we find the table name itself.
-    private <T> String getTableName(Class<T> objectClass, Connection connection) {
-
-        String tableName = getTableName(objectClass);
-
-        if (!columnInfoMap.containsKey(objectClass)) {
-            determineColumnInfo(objectClass, tableName, connection);
-        }
-
-        if (!propertyInfoMap.containsKey(objectClass)) {
-            determinePropertyInfo(objectClass, tableName, connection);
-        }
-        return tableName;
-    }
-
-    private synchronized <T> String determineTable(Class<T> objectClass) {
-
+    private synchronized <T> TableInfo determineTableInfo(Class<T> objectClass) {
         if (tableOrViewMap.containsKey(objectClass)) {
             return tableOrViewMap.get(objectClass);
         }
 
         String tableName;
+        String schemaName; // todo schemaName if they specify it in the annotation!
+        TableInfo foundInfo = null;
+
         Table tableAnnotation = objectClass.getAnnotation(Table.class);
         View viewAnnotation = objectClass.getAnnotation(View.class);
-
         if (tableAnnotation != null) {
             tableName = tableAnnotation.value();
+            if (tableName.contains(".")) {
+                // needed....
+            }
             // double check against stored table names to get the actual case of the name
+            // todo also check if there's more than 1 table or view if no schema name is provided.
             boolean found = false;
-            for (String name : tableNames) {
-                if (name.equalsIgnoreCase(tableName)) {
-                    tableName = name;
+            for (TableInfo table : tables) {
+                if (table.name().equalsIgnoreCase(tableName)) {
+                    foundInfo = table;
                     found = true;
+                    break;
                 }
             }
             if (!found) {
@@ -999,9 +986,9 @@ final class MetaData {
 
             // double check against stored view names to get the actual case of the name
             boolean found = false;
-            for (String name : viewNames) {
-                if (name.equalsIgnoreCase(tableName)) {
-                    tableName = name;
+            for (TableInfo view : views) {
+                if (view.name().equalsIgnoreCase(tableName)) {
+                    foundInfo = view;
                     found = true;
                 }
             }
@@ -1009,34 +996,39 @@ final class MetaData {
                 throw new PersismException(Messages.CouldNotFindViewNameInTheDatabase.message(tableName, objectClass.getName()));
             }
         } else {
-            tableName = guessTableOrViewName(objectClass);
+            foundInfo = guessTableOrView(objectClass);
         }
-        tableOrViewMap.put(objectClass, tableName);
-        return tableName;
+        tableOrViewMap.put(objectClass, foundInfo);
+        return foundInfo;
+    }
+
+    private TableInfo parseTableInfo(String tableNameAndSchema) {
+        assert tableNameAndSchema.contains(".");
+        return null; // todo parseTableInfo
     }
 
     // Returns the table/view name found in the DB in the same case as in the DB.
     // throws PersismException if we cannot guess any table/view name for this class.
-    private <T> String guessTableOrViewName(Class<T> objectClass) throws PersismException {
+    private <T> TableInfo guessTableOrView(Class<T> objectClass) throws PersismException {
         Set<String> guesses = new LinkedHashSet<>(6); // guess order is important
-        List<String> guessedTables = new ArrayList<>(6);
+        List<TableInfo> guessedTables = new ArrayList<>(6);
 
         String className = objectClass.getSimpleName();
 
-        Set<String> list;
+        Set<TableInfo> list;
         boolean isView = false;
         if (objectClass.getAnnotation(View.class) != null) {
-            list = viewNames;
+            list = views;
             isView = true;
         } else {
-            list = tableNames;
+            list = tables;
         }
 
         addTableGuesses(className, guesses);
-        for (String tableName : list) {
+        for (TableInfo table : list) {
             for (String guess : guesses) {
-                if (guess.equalsIgnoreCase(tableName)) {
-                    guessedTables.add(tableName);
+                if (guess.equalsIgnoreCase(table.name())) {
+                    guessedTables.add(table);
                 }
             }
         }
@@ -1045,7 +1037,9 @@ final class MetaData {
         }
 
         if (guessedTables.size() > 1) {
-            throw new PersismException(Messages.CouldNotDetermineTableOrViewForTypeMultipleMatches.message(isView ? "view" : "table", objectClass.getName(), guesses, guessedTables));
+            Set<String> multipleGuesses = new TreeSet<>(String.CASE_INSENSITIVE_ORDER);
+            multipleGuesses.addAll(guessedTables.stream().map(TableInfo::name).toList());
+            throw new PersismException(Messages.CouldNotDetermineTableOrViewForTypeMultipleMatches.message(isView ? "view" : "table", objectClass.getName(), guesses, multipleGuesses));
         }
         return guessedTables.get(0);
     }
@@ -1098,8 +1092,8 @@ final class MetaData {
 
     List<String> getPrimaryKeys(Class<?> objectClass, Connection connection) throws PersismException {
 
-        // ensures meta data will be available
-        String tableName = getTableName(objectClass, connection);
+        // ensures meta-data will be available because this method could be called before getting the table info object
+        TableInfo tableInfo = getTableInfo(objectClass);
 
         List<String> primaryKeys = new ArrayList<>(4);
         Map<String, ColumnInfo> map = getColumns(objectClass, connection);
@@ -1109,7 +1103,7 @@ final class MetaData {
             }
         }
         if (log.isDebugEnabled()) {
-            log.debug("getPrimaryKeys for %s %s", tableName, primaryKeys);
+            log.debug("getPrimaryKeys for %s %s", tableInfo, primaryKeys);
         }
         return primaryKeys;
     }
