@@ -119,7 +119,7 @@ enum ConnectionTypes {
         return Util.isNotEmpty(this.keywordStartDelimiter);
     }
 
-    public boolean supportsNonNumericGeneratedKeys() {
-        return ConnectionTypes.PostgreSQL == this;
+    public boolean supportsNonAutoIncGenerated() {
+        return ConnectionTypes.PostgreSQL == this || ConnectionTypes.MSSQL == this;
     }
 }

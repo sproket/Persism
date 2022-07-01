@@ -27,7 +27,9 @@
         </rollingPolicy>
     </appender>
     <logger name="org" level="ERROR"/>
-    <logger name="net.sf.persism" level="DEBUG"/>
+    <logger name="net.sf.persism" level="WARN"/>
+    <logger name="net.sf.persism.SQL" level="DEBUG"/>
+    <logger name="net.sf.persism.Benchmarks" level="OFF"/>
 <!--    <logger name="net.sf.persism.Session" level="INFO"/>-->
 <!--    <logger name="net.sf.persism.Reader" level="INFO"/>-->
 <!--    <logger name="net.sf.persism.MetaData" level="DEBUG"/>-->

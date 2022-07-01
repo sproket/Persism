@@ -5,10 +5,15 @@ import net.sf.persism.categories.ExternalDB;
 import net.sf.persism.dao.wwi1.*;
 import net.sf.persism.dao.wwi1.views.CustomerView;
 import org.junit.experimental.categories.Category;
+import org.junit.runner.Description;
+import org.junit.runner.Runner;
+import org.junit.runner.notification.RunNotifier;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.util.Properties;
+
+import static net.sf.persism.SQL.where;
 
 @Category(ExternalDB.class)
 
@@ -41,6 +46,11 @@ public final class TestWideWorldImporters extends TestCase {
     }
 
     public void testAllClasses() {
+
+
+        session.query(Customer.class);
+
+
         session.query(Application.City.class);
         session.query(BuyingGroup.class);
         session.query(City.class);
@@ -78,19 +88,32 @@ public final class TestWideWorldImporters extends TestCase {
     }
 
     public void testUpdateWithTemporal() {
-        var buyingGroups = session.query(BuyingGroup.class);
+
+        // clowns https://github.com/Microsoft/mssql-jdbc/issues/656
+
+        var person = session.fetch(Person.class, where(":personId = 1"));
+        var buyingGroups = session.query(BuyingGroup.class, where(":buyingGroupId = 1"));
         System.out.println(buyingGroups);
         assertTrue(buyingGroups.size() > 0);
         var bg = buyingGroups.get(0);
-        System.out.println(bg.getValidFrom() + " " + bg.getValidTo());
+        //System.out.println(bg.getValidFrom() + " " + bg.getValidTo());
         // Tailspin Toys
+        bg.setBuyingGroupName("Tailspin Toys");
+        session.update(bg);
+
         bg.setBuyingGroupName("Tailspin Toys!!");
         session.update(bg);
 
         bg = new BuyingGroup();
-        bg.setLastEditedBy(-1);
-        bg.setBuyingGroupName("Some test");
-        session.insert(bg);
+        try {
+            bg.setLastEditedBy(person.getPersonId());
+            bg.setBuyingGroupName("Some test8");
+            session.insert(bg);
+
+        } finally {
+            session.delete(bg);
+        }
+
     }
 
     @Override

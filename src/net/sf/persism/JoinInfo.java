@@ -100,6 +100,9 @@ final class JoinInfo {
     }
 
     public static JoinInfo getInstance(Join joinAnnotation, PropertyInfo joinProperty, Object parent, Class<?> parentClass) {
+//        if (true) {
+//            return new JoinInfo(joinAnnotation, joinProperty, parent, parentClass);
+//        }
         JoinInfo foundInfo = null;
         for (JoinInfo joinInfo : joinInfos) {
             if (joinInfo.joinProperty().equals(joinProperty) && joinInfo.parentClass().equals(parentClass)) {
@@ -170,12 +173,13 @@ final class JoinInfo {
     @Override
     public String toString() {
         return "" +
-                "PPN=" + Arrays.toString(parentPropertyNames) +
-                ", CPN=" + Arrays.toString(childPropertyNames) +
-                ", PC=" + parentClass.getSimpleName() +
-                ", CC=" + childClass.getSimpleName() +
-                ", CS=" + caseSensitive +
-                ", PQ=" + parentIsAQuery +
+                "Parent property name(s)=" + Arrays.toString(parentPropertyNames) +
+                ", Child property name(s)=" + Arrays.toString(childPropertyNames) +
+                ", Parent class=" + parentClass.getSimpleName() +
+                ", Child class=" + childClass.getSimpleName() +
+                ", Join property name=" + joinProperty.propertyName +
+                ", Is parent a query?=" + parentIsAQuery +
+                ", Is reversed?=" + reversed +
                 '}';
     }
 }

@@ -516,7 +516,7 @@ public final class Session implements AutoCloseable {
                 log.debug(updateStatement);
             } catch (NoChangesDetectedForUpdateException e) {
                 log.info("No properties changed. No update required for Object: " + object + " class: " + object.getClass().getName());
-                return new Result<>(0, (T) object);
+                return new Result<>(0, object);
             }
 
             st = connection.prepareStatement(updateStatement);
@@ -561,7 +561,6 @@ public final class Session implements AutoCloseable {
             int ret = st.executeUpdate();
 
             if (object instanceof Persistable<?> pojo) {
-
                 // Save this object state to later detect changed properties
                 pojo.saveReadState();
             }
@@ -603,7 +602,7 @@ public final class Session implements AutoCloseable {
             for (ColumnInfo column : columns.values()) {
                 if (column.autoIncrement) {
                     generatedKeys.add(column.columnName);
-                } else if (metaData.getConnectionType().supportsNonNumericGeneratedKeys() && column.primary && column.hasDefault) {
+                } else if (metaData.getConnectionType().supportsNonAutoIncGenerated() && column.primary && column.hasDefault) {
                     generatedKeys.add(column.columnName);
                 }
             }
@@ -639,7 +638,7 @@ public final class Session implements AutoCloseable {
 
                             if (columnInfo.primary) {
                                 // This is supported with PostgreSQL but otherwise throw this an exception
-                                if (metaData.getConnectionType() != ConnectionTypes.PostgreSQL) {
+                                if (!metaData.getConnectionType().supportsNonAutoIncGenerated()) {
                                     throw new PersismException(Messages.NonAutoIncGeneratedNotSupported.message());
                                 }
                             }

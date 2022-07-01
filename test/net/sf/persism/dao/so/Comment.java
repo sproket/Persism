@@ -123,7 +123,6 @@ public final class Comment {
                 ", creationDate=" + creationDate +
                 ", postId=" + postId +
                 ", score=" + score +
-                ", text='" + text + '\'' +
                 ", userId=" + userId +
                 '}';
     }

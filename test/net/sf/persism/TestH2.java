@@ -379,6 +379,39 @@ to the database URL (example: jdbc:h2:~/test;IGNORECASE=TRUE).
         }
 
         executeCommand("CREATE TABLE TABLENOPRIMARY (  ID INT,  Name VARCHAR(30),  Field4 VARCHAR(30),  Field5 DATETIME,  Field6 INT,  Field7 INT,  Field8 INT )", con);
+
+        if (isTableInDatabase("People", con)) {
+            executeCommand("DROP TABLE People", con);
+        }
+
+        sql = """
+                CREATE TABLE People (
+                    ID int IDENTITY PRIMARY KEY,
+                    Name VARCHAR(50),
+                    FatherID int,
+                    MotherID int
+                    )
+                """;
+        executeCommand(sql, con);
+
+    }
+
+    public void testPeople() {
+        Person fred = new Person();
+        fred.setName("Fred");
+        session.insert(fred);
+
+        Person wilma = new Person();
+        wilma.setName("Wilma");
+        session.insert(wilma);
+
+        Person pebbles = new Person();
+        pebbles.setName("Pebbles");
+        pebbles.setFatherId(fred.getId());
+        pebbles.setMotherId(wilma.getId());
+        session.insert(pebbles);
+
+        System.out.println(session.query(ExtendedPerson.class));
     }
 
     public void testHolidays() {

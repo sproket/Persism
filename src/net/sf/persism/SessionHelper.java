@@ -18,6 +18,7 @@ final class SessionHelper {
     // leave this using the Session.class for logging
     private static final Log log = Log.getLogger(Session.class);
     private static final Log blog = Log.getLogger("net.sf.persism.Benchmarks");
+    private static final Log sqllog = Log.getLogger("net.sf.persism.SQL");
 
     private final Session session;
 
@@ -73,8 +74,8 @@ final class SessionHelper {
     void exec(JDBCResult result, String sql, Object... parameters) throws SQLException {
         long now = System.currentTimeMillis();
 
-        if (log.isDebugEnabled()) {
-            log.debug("exec: %s params: %s", sql, Arrays.asList(parameters));
+        if (sqllog.isDebugEnabled()) {
+            sqllog.debug("%s params: %s", sql, Arrays.asList(parameters));
         }
         try {
             if (isSelect(sql)) {
@@ -503,9 +504,9 @@ final class SessionHelper {
             } else {
                 parentWhere = "";
             }
+
             String whereClause = getChildWhereClause(joinInfo, parentWhere);
             List<Object> params = new ArrayList<>(parentParams.parameters);
-
             if (params.size() > 0) {
                 // normalize params to ? since we may have repeated the SELECT IN query
                 long qmCount = whereClause.chars().filter(ch -> ch == '?').count();
@@ -563,8 +564,8 @@ final class SessionHelper {
 
             // https://stackoverflow.com/questions/32312876/ignore-duplicates-when-producing-map-using-streams
             parentMap = parentList.stream().collect(Collectors.
-                    toMap(obj -> {
-                        Object value = parentPropertyInfo.getValue(obj);
+                    toMap(key -> {
+                        Object value = parentPropertyInfo.getValue(key);
                         if (!joinInfo.caseSensitive() && value instanceof String s) {
                             return s.toUpperCase();
                         }
@@ -573,15 +574,19 @@ final class SessionHelper {
 
             for (Object child : childList) {
                 Object parent = parentMap.get(childPropertyInfo.getValue(child));
-                setPropertyFromJoinInfo(joinInfo, parent, child);
+                if (parent == null) {
+                    log.warnNoDuplicates("parent not found: " + childPropertyInfo.getValue(child) + " : " + joinInfo + "DAO: " + child); // Should not usually occur. Why would we not find a parent?
+                } else {
+                    setPropertyFromJoinInfo(joinInfo, parent, child);
+                }
             }
 
         } else {
             parentMap = parentList.stream().collect(Collectors.
-                    toMap(obj -> {
+                    toMap(key -> {
                         List<Object> values = new ArrayList<>();
                         for (int j = 0; j < joinInfo.parentProperties().size(); j++) {
-                            values.add(joinInfo.parentProperties().get(j).getValue(obj));
+                            values.add(joinInfo.parentProperties().get(j).getValue(key));
                         }
                         return new KeyBox(joinInfo.caseSensitive(), values.toArray());
                     }, o -> o, (o1, o2) -> o1));
@@ -595,7 +600,7 @@ final class SessionHelper {
                 KeyBox keyBox = new KeyBox(joinInfo.caseSensitive(), values.toArray());
                 Object parent = parentMap.get(keyBox);
                 if (parent == null) {
-                    log.warn("parent not found: " + keyBox); // Should not usually occur. Why would we not find a parent?
+                    log.warnNoDuplicates("parent not found: " + keyBox); // Should not usually occur. Why would we not find a parent?
                 } else {
                     setPropertyFromJoinInfo(joinInfo, parent, child);
                 }
@@ -653,7 +658,14 @@ final class SessionHelper {
         TableInfo parentTable = session.metaData.getTableInfo(joinInfo.parentClass());
         TableInfo childTable = session.metaData.getTableInfo(joinInfo.childClass());
 
-        var connectionType = session.metaData.getConnectionType();
+        Map<String, PropertyInfo> parentProperties = session.metaData.getTableColumnsPropertyInfo(joinInfo.parentClass(), session.connection);
+        Map<String, PropertyInfo> childProperties = session.metaData.getTableColumnsPropertyInfo(joinInfo.childClass(), session.connection);
+        String sep = "";
+
+        int n = parentWhere.toUpperCase().indexOf("ORDER BY");
+        if (n > -1) {
+            parentWhere = parentWhere.substring(0, n);
+        }
 
         String parentAlias = "";
         if (parentTable.equals(childTable)) {
@@ -661,15 +673,7 @@ final class SessionHelper {
             parentAlias = parentTable.name().substring(0, 1).toUpperCase();
         }
 
-        int n = parentWhere.toUpperCase().indexOf("ORDER BY");
-        if (n > -1) {
-            parentWhere = parentWhere.substring(0, n);
-        }
-
-        Map<String, PropertyInfo> parentProperties = session.metaData.getTableColumnsPropertyInfo(joinInfo.parentClass(), session.connection);
-        Map<String, PropertyInfo> childProperties = session.metaData.getTableColumnsPropertyInfo(joinInfo.childClass(), session.connection);
         where.append("EXISTS (SELECT ");
-        String sep = "";
         for (int j = 0; j < joinInfo.parentPropertyNames().length; j++) {
             String parentColumnName = sd + getColumnName(joinInfo.parentPropertyNames()[j], parentProperties) + ed;
             where.append(sep).append(parentColumnName);

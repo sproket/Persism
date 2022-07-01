@@ -1,15 +1,12 @@
 package net.sf.persism.dao.wwi1;
 
-import java.sql.Date;
-
 // Sales
 public class BuyingGroup {
     private Integer buyingGroupId;
     private String buyingGroupName;
     private Integer lastEditedBy;
-
-    private Date validFrom;
-    private Date validTo;
+//    private Date validFrom;
+//    private Date validTo;
 
     public Integer buyingGroupId() {
         return buyingGroupId;
@@ -38,13 +35,13 @@ public class BuyingGroup {
         return this;
     }
 
-    public Date getValidFrom() {
-        return validFrom;
-    }
-
-    public Date getValidTo() {
-        return validTo;
-    }
+//    public Date getValidFrom() {
+//        return validFrom;
+//    }
+//
+//    public Date getValidTo() {
+//        return validTo;
+//    }
 
     @Override
     public boolean equals(Object o) {

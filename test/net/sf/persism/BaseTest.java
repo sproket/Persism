@@ -611,7 +611,7 @@ public abstract class BaseTest extends TestCase {
         String sql;
         boolean fail;
 
-        Product product = new Product(0, "test", 10.00);
+        Product product = new Product(4, "test", 10.00);
         product.setBadNumber(new BigDecimal("10"));
         session.insert(product);
 
@@ -741,7 +741,7 @@ public abstract class BaseTest extends TestCase {
         }
 
 
-        if (!connectionType.supportsNonNumericGeneratedKeys()) {
+        if (!connectionType.supportsNonAutoIncGenerated()) {
             // PostgreSQL does support string or other generated keys
             fail = false;
             try {

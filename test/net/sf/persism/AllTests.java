@@ -41,6 +41,7 @@ public class AllTests {
         theTestSuite.addTestSuite(TestNorthwind.class);
         theTestSuite.addTestSuite(TestPubs.class);
         theTestSuite.addTestSuite(TestStackOverflow.class);
+//        theTestSuite.addTestSuite(TestWideWorldImporters.class);
 
         return theTestSuite;
     }
