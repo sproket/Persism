@@ -17,7 +17,7 @@ public class TestInformix extends BaseTest {
 
     @Override
     public void setUp() throws Exception {
-        connectionType = ConnectionTypes.Informix;
+        connectionType = ConnectionType.Informix;
         super.setUp();
 
         Properties props = new Properties();

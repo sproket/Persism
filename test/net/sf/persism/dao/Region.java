@@ -6,6 +6,6 @@ package net.sf.persism.dao;
  * Date: 12-05-14
  * Time: 6:27 AM
  */
-public enum Regions {
+public enum Region {
     North, South, East, West;
 }

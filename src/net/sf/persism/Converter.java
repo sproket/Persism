@@ -35,10 +35,10 @@ final class Converter {
     Object convert(Object value, Class<?> targetType, String columnName) {
         assert value != null;
 
-        Types valueType = Types.getType(value.getClass());
+        JavaType valueType = JavaType.getType(value.getClass());
 
         if (valueType == null) {
-            log.warn(Messages.NoConversionForUnknownType.message(value.getClass()));
+            log.warn(Message.NoConversionForUnknownType.message(value.getClass()));
             return value;
         }
 
@@ -53,7 +53,7 @@ final class Converter {
 
             case byteType:
             case ByteType:
-                log.warnNoDuplicates(Messages.TinyIntMSSQL.message(columnName));
+                log.warnNoDuplicates(Message.TinyIntMSSQL.message(columnName));
                 break;
 
             case shortType:
@@ -74,13 +74,13 @@ final class Converter {
                 }
 
                 if (targetType == Short.class || targetType == short.class) {
-                    log.warnNoDuplicates(Messages.PossibleOverflow.message(columnName, "SHORT", "INT"));
+                    log.warnNoDuplicates(Message.PossibleOverflow.message(columnName, "SHORT", "INT"));
                     returnValue = Short.parseShort("" + value);
                     break;
                 }
 
                 if (targetType == Byte.class || targetType == byte.class) {
-                    log.warnNoDuplicates(Messages.PossibleOverflow.message(columnName, "BYTE", "INT"));
+                    log.warnNoDuplicates(Message.PossibleOverflow.message(columnName, "BYTE", "INT"));
                     returnValue = Byte.parseByte("" + value);
                     break;
                 }
@@ -123,7 +123,7 @@ final class Converter {
                 }
 
                 if (targetType == Integer.class || targetType == int.class) {
-                    log.warnNoDuplicates(Messages.PossibleOverflow.message(columnName, "INT", "LONG"));
+                    log.warnNoDuplicates(Message.PossibleOverflow.message(columnName, "INT", "LONG"));
                     returnValue = Integer.parseInt("" + lval);
                     break;
                 }
@@ -154,13 +154,13 @@ final class Converter {
 
                 Float flt = (Float) value;
                 if (targetType == Integer.class || targetType == int.class) {
-                    log.warnNoDuplicates(Messages.PossibleOverflow.message(columnName, "INT", "DOUBLE"));
+                    log.warnNoDuplicates(Message.PossibleOverflow.message(columnName, "INT", "DOUBLE"));
                     returnValue = flt.intValue();
                     break;
                 }
 
                 if (targetType == Long.class || targetType == long.class) {
-                    log.warnNoDuplicates(Messages.PossibleOverflow.message(columnName, "LONG", "DOUBLE"));
+                    log.warnNoDuplicates(Message.PossibleOverflow.message(columnName, "LONG", "DOUBLE"));
                     returnValue = flt.longValue();
                     break;
                 }
@@ -180,19 +180,19 @@ final class Converter {
                 }
 
                 if (targetType == Float.class || targetType == float.class) {
-                    log.warnNoDuplicates(Messages.PossibleOverflow.message(columnName, "FLOAT", "DOUBLE"));
+                    log.warnNoDuplicates(Message.PossibleOverflow.message(columnName, "FLOAT", "DOUBLE"));
                     returnValue = dbl.floatValue();
                     break;
                 }
 
                 if (targetType == Integer.class || targetType == int.class) {
-                    log.warnNoDuplicates(Messages.PossibleOverflow.message(columnName, "INT", "DOUBLE"));
+                    log.warnNoDuplicates(Message.PossibleOverflow.message(columnName, "INT", "DOUBLE"));
                     returnValue = dbl.intValue();
                     break;
                 }
 
                 if (targetType == Long.class || targetType == long.class) {
-                    log.warnNoDuplicates(Messages.PossibleOverflow.message(columnName, "LONG", "DOUBLE"));
+                    log.warnNoDuplicates(Message.PossibleOverflow.message(columnName, "LONG", "DOUBLE"));
                     returnValue = dbl.longValue();
                     break;
                 }
@@ -205,19 +205,19 @@ final class Converter {
 
                 if (targetType == Float.class || targetType == float.class) {
                     returnValue = ((Number) value).floatValue();
-                    log.warnNoDuplicates(Messages.PossibleOverflow.message(columnName, "FLOAT", "BigDecimal"));
+                    log.warnNoDuplicates(Message.PossibleOverflow.message(columnName, "FLOAT", "BigDecimal"));
                     break;
                 }
 
                 if (targetType == Double.class || targetType == double.class) {
                     returnValue = ((Number) value).doubleValue();
-                    log.warnNoDuplicates(Messages.PossibleOverflow.message(columnName, "DOUBLE", "BigDecimal"));
+                    log.warnNoDuplicates(Message.PossibleOverflow.message(columnName, "DOUBLE", "BigDecimal"));
                     break;
                 }
 
                 if (targetType == Long.class || targetType == long.class) {
                     returnValue = ((Number) value).longValue();
-                    log.warnNoDuplicates(Messages.PossibleOverflow.message(columnName, "LONG", "BigDecimal"));
+                    log.warnNoDuplicates(Message.PossibleOverflow.message(columnName, "LONG", "BigDecimal"));
                     break;
                 }
 
@@ -228,20 +228,20 @@ final class Converter {
 
                 if (targetType == Integer.class || targetType == int.class) {
                     returnValue = ((Number) value).intValue();
-                    log.warnNoDuplicates(Messages.PossibleOverflow.message(columnName, "INT", "BigDecimal"));
+                    log.warnNoDuplicates(Message.PossibleOverflow.message(columnName, "INT", "BigDecimal"));
                     break;
                 }
 
                 if (targetType == Short.class || targetType == short.class) {
                     returnValue = ((Number) value).shortValue();
-                    log.warnNoDuplicates(Messages.PossibleOverflow.message(columnName, "SHORT", "BigDecimal"));
+                    log.warnNoDuplicates(Message.PossibleOverflow.message(columnName, "SHORT", "BigDecimal"));
                     break;
                 }
 
                 if (targetType == Boolean.class || targetType == boolean.class) {
                     // BigDecimal to Boolean. Oracle (sigh) - Additional for a Char to Boolean as then (see TestOracle for links)
                     returnValue = ((Number) value).intValue() == 1;
-                    log.warnNoDuplicates(Messages.PossibleOverflow.message(columnName, "BOOLEAN", "BigDecimal"));
+                    log.warnNoDuplicates(Message.PossibleOverflow.message(columnName, "BOOLEAN", "BigDecimal"));
                     break;
                 }
 
@@ -345,7 +345,7 @@ final class Converter {
                     try {
                         returnValue = new BigDecimal("" + value);
                     } catch (NumberFormatException e) {
-                        throw new PersismException(Messages.NumberFormatException.message(columnName, targetType, value.getClass(), value), e);
+                        throw new PersismException(Message.NumberFormatException.message(columnName, targetType, value.getClass(), value), e);
                     }
                     break;
                 }
@@ -499,7 +499,7 @@ final class Converter {
             case InstantType:
             case OffsetDateTimeType:
             case ZonedDateTimeType:
-                log.warn(Messages.ConverterValueTypeNotYetSupported.message(valueType.getJavaType()), new Throwable());
+                log.warn(Message.ConverterValueTypeNotYetSupported.message(valueType.getJavaType()), new Throwable());
                 break;
 
             case byteArrayType:
@@ -511,7 +511,7 @@ final class Converter {
 
             case ClobType:
             case BlobType:
-                log.warn(Messages.ConverterDoNotUseClobOrBlobAsAPropertyType.message(), new Throwable());
+                log.warn(Message.ConverterDoNotUseClobOrBlobAsAPropertyType.message(), new Throwable());
                 break;
 
             case EnumType:
@@ -541,7 +541,7 @@ final class Converter {
         try {
             return df.parse("" + value);
         } catch (ParseException e) {
-            throw new PersismException(Messages.DateFormatException.message(e.getMessage(), columnName, targetType, value.getClass(), value), e);
+            throw new PersismException(Message.DateFormatException.message(e.getMessage(), columnName, targetType, value.getClass(), value), e);
         }
     }
 
@@ -549,7 +549,7 @@ final class Converter {
         try {
             return Timestamp.valueOf("" + value);
         } catch (IllegalArgumentException e) {
-            throw new PersismException(Messages.DateFormatException.message(e.getMessage(), columnName, targetType, value.getClass(), value), e);
+            throw new PersismException(Message.DateFormatException.message(e.getMessage(), columnName, targetType, value.getClass(), value), e);
         }
     }
 

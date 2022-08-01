@@ -24,7 +24,7 @@ public final class Customer {
     private String contactTitle;
     private String address;
     private String city;
-    private Regions region;
+    private Region region;
     private String postalCode;
     private String country;
     private String phone;
@@ -94,11 +94,11 @@ public final class Customer {
         this.city = city;
     }
 
-    public Regions getRegion() {
+    public Region getRegion() {
         return region;
     }
 
-    public void setRegion(Regions region) {
+    public void setRegion(Region region) {
         this.region = region;
     }
 

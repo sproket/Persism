@@ -19,7 +19,6 @@ final class PropertyInfo {
     Method getter;
     Method setter;
     Field field;
-    boolean readOnly;
     boolean isJoin;
 
     Map<Class<? extends Annotation>, Annotation> annotations = new HashMap<>(4);
@@ -63,7 +62,6 @@ final class PropertyInfo {
                 ", getter=" + getter +
                 ", setter=" + setter +
                 ", annotations=" + annotations +
-                ", readOnly=" + readOnly +
                 '}';
     }
 }

@@ -20,6 +20,8 @@ public class OracleDataSource {
 
     private OracleDataSource() throws Exception {
 
+        // fix expired user https://www.mirsayeedhassan.com/1578-2/
+
         Properties props = new Properties();
         props.load(getClass().getResourceAsStream("/oracle.properties"));
 

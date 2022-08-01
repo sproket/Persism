@@ -119,10 +119,10 @@ public class TestUtil extends TestCase {
         result = String.format("a b c %o %o", 1, 2);
         log.info(result);
 
-        log.info(Messages.ObjectNotProperlyInitialized.message("Junk", "col, col2m, cop;le"));
+        log.info(Message.ObjectNotProperlyInitialized.message("Junk", "col, col2m, cop;le"));
 
-        log.warn(Messages.UnknownSQLType.message(1));
-        log.warn(Messages.ConverterValueTypeNotYetSupported.message(Types.InstantType.getJavaType()));
+        log.warn(Message.UnknownSQLType.message(1));
+        log.warn(Message.ConverterValueTypeNotYetSupported.message(JavaType.InstantType.getJavaType()));
     }
 
     public void testStringToArray() {

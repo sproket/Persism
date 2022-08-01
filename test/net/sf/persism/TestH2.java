@@ -42,7 +42,7 @@ to the database URL (example: jdbc:h2:~/test;IGNORECASE=TRUE).
 
     @Override
     protected void setUp() throws Exception {
-        connectionType = ConnectionTypes.H2;
+        connectionType = ConnectionType.H2;
         super.setUp();
 
         Properties props = new Properties();
@@ -576,7 +576,7 @@ to the database URL (example: jdbc:h2:~/test;IGNORECASE=TRUE).
         customer.setFax("123-456-7890");
         customer.setPhone("456-678-1234");
         customer.setPostalCode("54321");
-        customer.setRegion(Regions.East);
+        customer.setRegion(Region.East);
 
         log.info("testColumnDefaults before: " + customer);
         assertNull("date registered should be null", customer.getDateRegistered());

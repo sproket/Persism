@@ -123,7 +123,7 @@ public final class Parameters {
         mistypeSet.removeAll(parameterMap.keySet());
 
         if (paramsNotFound.size() > 0) {
-            throw new PersismException(Messages.QueryParameterNamesMissingOrNotFound.message(paramsNotFound, mistypeSet));
+            throw new PersismException(Message.QueryParameterNamesMissingOrNotFound.message(paramsNotFound, mistypeSet));
         }
         parameters.clear();
         parameters.addAll(Arrays.asList(arr));

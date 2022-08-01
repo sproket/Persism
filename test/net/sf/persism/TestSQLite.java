@@ -38,7 +38,7 @@ public final class TestSQLite extends BaseTest {
 
     @Override
     protected void setUp() throws Exception {
-        connectionType = ConnectionTypes.SQLite;
+        connectionType = ConnectionType.SQLite;
         super.setUp();
 
         Properties props = new Properties();
@@ -691,5 +691,24 @@ public final class TestSQLite extends BaseTest {
     @Override
     public void testGetDbMetaData() throws SQLException {
         super.testGetDbMetaData();
+    }
+
+    public void testFunnyNames() throws SQLException {
+        String sql = """
+        CREATE TABLE FUNNYNAMES (
+                ID INT,
+                Name VARCHAR(30),
+                Field4 VARCHAR(30),
+                Field5 DATETIME,
+                Field6 JUNK,
+                Field7 FACK,
+                Field8 COWABUNGA
+        )
+        """;
+
+        if (isTableInDatabase("FUNNYNAMES", con)) {
+            executeCommand("DROP TABLE FUNNYNAMES", con);
+        }
+        executeCommand(sql, con);
     }
 }

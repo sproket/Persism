@@ -1,7 +1,7 @@
 package net.sf.persism;
 
 import junit.framework.TestCase;
-import net.sf.persism.dao.Regions;
+import net.sf.persism.dao.Region;
 import net.sf.persism.dao.access.Contact;
 import net.sf.persism.dao.access.Customer;
 import net.ucanaccess.complex.Attachment;
@@ -107,7 +107,7 @@ public class TestMSAccess extends TestCase {
         customer.setFax("fax");
         customer.setPhone("phone");
         customer.setPostalCode("12345");
-        customer.setRegion(Regions.East);
+        customer.setRegion(Region.East);
         customer.setStatus('2');
 
         session.insert(customer);

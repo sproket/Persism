@@ -3,20 +3,15 @@ package net.sf.persism;
 import junit.framework.TestCase;
 import net.sf.persism.categories.LocalDB;
 import net.sf.persism.dao.ByteData;
-import net.sf.persism.dao.CustomerOrder;
 import net.sf.persism.dao.OracleOrder;
-import net.sf.persism.dao.records.CustomerOrderRec;
 import org.junit.experimental.categories.Category;
 
 import java.lang.annotation.Annotation;
-import java.lang.invoke.MethodHandles;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.sql.Connection;
 import java.sql.DriverManager;
-import java.time.LocalDateTime;
 import java.util.*;
-import java.util.stream.Stream;
 
 import static java.lang.System.out;
 
@@ -74,7 +69,7 @@ public final class TestMetaData extends TestCase {
             // "Could not determine a table for type: net.sf.persism.TestDerby Guesses were: [TestDerby, TestDerbies, TestDerbys, Test Derby, Test_Derby, Test Derbies, Test_Derbies, Test Derbys, Test_Derbys] and we found multiple matching: [TEST_DERBY, TESTDERBY]",
             List<String> guesses = List.of("TestDerby", "TestDerbies", "TestDerbys", "Test Derby", "Test_Derby", "Test Derbies", "Test_Derbies", "Test Derbys", "Test_Derbys");
             assertEquals("Message s/b equal",
-                    Messages.CouldNotDetermineTableOrViewForTypeMultipleMatches.message("table", TestDerby.class.getName(),guesses, List.of("TEST_DERBY", "TESTDERBY")),
+                    Message.CouldNotDetermineTableOrViewForTypeMultipleMatches.message("table", TestDerby.class.getName(),guesses, List.of("TEST_DERBY", "TESTDERBY")),
                     e.getMessage());
         }
         assertTrue(failed);
@@ -170,7 +165,6 @@ public final class TestMetaData extends TestCase {
                 }
             }
 
-            propertyInfo.readOnly = propertyInfo.setter == null;
             propertyNames.put(propertyName, propertyInfo);
         });
 

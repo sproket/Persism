@@ -1,6 +1,6 @@
 package net.sf.persism;
 
-enum Messages {
+enum Message {
     // Errors
     ObjectNotProperlyInitialized("Object %s was not properly initialized. Some properties not initialized in the queried columns (%s)"),
     ObjectNotProperlyInitializedByQuery("Object %s was not properly initialized. Some properties not initialized by the queried columns: %s  Missing: %s"),
@@ -16,7 +16,7 @@ enum Messages {
     CouldNotFindTableNameInTheDatabase("Could not find a Table in the database named %s. Check the @Table annotation on %s"),
     CouldNotFindViewNameInTheDatabase("Could not find a View in the database named %s. Check the @View annotation on %s"),
     CouldNotDetermineTableOrViewForType("Could not determine a %s for type: %s Guesses were: %s"),
-    CouldNotDetermineTableOrViewForTypeMultipleMatches("Could not determine a %s for type: %s Guesses were: %s and we found multiple matching: %s"),
+    CouldNotDetermineTableOrViewForTypeMultipleMatches("Could not determine a %s for type: %s Guesses were: %s and Persism found multiple matching: %s"),
     CouldNotFindConstructorForRecord("findConstructor: Could not find a constructor for class: %s properties: %s"),
     OperationNotSupportedForView("s: %s operation not supported for Views"),
     OperationNotSupportedForNotTableQuery("%s: %s operation not supported for @NotTable classes"),
@@ -57,7 +57,7 @@ enum Messages {
 
     private final String message;
 
-    Messages(String message) {
+    Message(String message) {
         this.message = message;
     }
 

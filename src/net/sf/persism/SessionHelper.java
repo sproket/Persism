@@ -34,7 +34,7 @@ final class SessionHelper {
 
         if (parameters.areNamed) {
             if (sql.storedProc) {
-                log.warn(Messages.NamedParametersUsedWithStoredProc.message());
+                log.warn(Message.NamedParametersUsedWithStoredProc.message());
             }
             char delim = '@';
             Map<String, List<Integer>> paramMap = new HashMap<>();
@@ -59,7 +59,7 @@ final class SessionHelper {
 
         if (sql.whereOnly) {
             if (objectClass.getAnnotation(NotTable.class) != null) {
-                throw new PersismException(Messages.WhereNotSupportedForNotTableQueries.message());
+                throw new PersismException(Message.WhereNotSupportedForNotTableQueries.message());
             }
             sqlQuery = parsePropertyNames(sqlQuery, objectClass, session.connection);
             sql.processedSQL = sqlQuery;
@@ -79,7 +79,7 @@ final class SessionHelper {
         }
         try {
             if (isSelect(sql)) {
-                if (session.metaData.getConnectionType() == ConnectionTypes.Firebird) {
+                if (session.metaData.getConnectionType() == ConnectionType.Firebird) {
                     // https://stackoverflow.com/questions/935511/how-can-i-avoid-resultset-is-closed-exception-in-java
                     result.st = session.connection.prepareStatement(sql, ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY, ResultSet.HOLD_CURSORS_OVER_COMMIT);
                 } else {
@@ -286,7 +286,7 @@ final class SessionHelper {
         }
 
         if (propertiesNotFound.size() > 0) {
-            throw new PersismException(Messages.QueryPropertyNamesMissingOrNotFound.message(propertiesNotFound, sql));
+            throw new PersismException(Message.QueryPropertyNamesMissingOrNotFound.message(propertiesNotFound, sql));
         }
         String select = session.metaData.getSelectStatement(objectClass, session.connection);
         String parsedSql = select + " " + parsedQuery;
@@ -296,26 +296,27 @@ final class SessionHelper {
         return parsedSql;
     }
 
-    void checkIfOkForWriteOperation(Object object, String operation) {
-        Class<?> objectClass = object.getClass();
+    void checkIfOkForWriteOperation(Class<?> objectClass, String operation) {
         if (objectClass.getAnnotation(View.class) != null) {
-            throw new PersismException(Messages.OperationNotSupportedForView.message(objectClass, operation));
+            throw new PersismException(Message.OperationNotSupportedForView.message(objectClass, operation));
         }
         if (objectClass.getAnnotation(NotTable.class) != null) {
-            throw new PersismException(Messages.OperationNotSupportedForNotTableQuery.message(objectClass, operation));
+            throw new PersismException(Message.OperationNotSupportedForNotTableQuery.message(objectClass, operation));
         }
-        if (Types.getType(objectClass) != null) {
-            throw new PersismException(Messages.OperationNotSupportedForJavaType.message(objectClass, operation));
+        if (JavaType.getType(objectClass) != null) {
+            throw new PersismException(Message.OperationNotSupportedForJavaType.message(objectClass, operation));
         }
     }
 
     Object getTypedValueReturnedFromGeneratedKeys(Class<?> objectClass, ResultSet rs) throws SQLException {
 
+        // todo possible bug since we assume column 1 - in case of using OUTPUT inserted.* not sure can guarantee that
+
         Object value;
-        Types type = Types.getType(objectClass);
+        JavaType type = JavaType.getType(objectClass);
 
         if (type == null) {
-            log.warn(Messages.UnknownTypeForPrimaryGeneratedKey.message(objectClass));
+            log.warn(Message.UnknownTypeForPrimaryGeneratedKey.message(objectClass));
             return rs.getObject(1);
         }
 
@@ -338,10 +339,10 @@ final class SessionHelper {
 
             if (param != null) {
 
-                Types paramType = Types.getType(param.getClass());
+                JavaType paramType = JavaType.getType(param.getClass());
                 if (paramType == null) {
-                    log.warn(Messages.UnknownTypeInSetParameters.message(param.getClass()));
-                    paramType = Types.ObjectType;
+                    log.warn(Message.UnknownTypeInSetParameters.message(param.getClass()));
+                    paramType = JavaType.ObjectType;
                 }
 
                 switch (paramType) {
@@ -425,7 +426,7 @@ final class SessionHelper {
                     case OffsetDateTimeType:
                     case ZonedDateTimeType:
                     case InstantType:
-                        log.warn(Messages.UnSupportedTypeInSetParameters.message(paramType));
+                        log.warn(Message.UnSupportedTypeInSetParameters.message(paramType));
                         st.setObject(n, param);
                         break;
 
@@ -440,12 +441,12 @@ final class SessionHelper {
                         // Clob is converted to String Blob is converted to byte array
                         // so this should not occur unless they were passed in by the user.
                         // We are most probably about to fail here.
-                        log.warn(Messages.ParametersDoNotUseClobOrBlob.message(), new Throwable());
+                        log.warn(Message.ParametersDoNotUseClobOrBlob.message(), new Throwable());
                         st.setObject(n, param);
                         break;
 
                     case EnumType:
-                        if (session.metaData.getConnectionType() == ConnectionTypes.PostgreSQL) {
+                        if (session.metaData.getConnectionType() == ConnectionType.PostgreSQL) {
                             st.setObject(n, param.toString(), java.sql.Types.OTHER);
                         } else {
                             st.setString(n, param.toString());
@@ -453,7 +454,7 @@ final class SessionHelper {
                         break;
 
                     case UUIDType:
-                        if (session.metaData.getConnectionType() == ConnectionTypes.PostgreSQL) {
+                        if (session.metaData.getConnectionType() == ConnectionType.PostgreSQL) {
                             st.setObject(n, param);
                         } else {
                             st.setString(n, param.toString());
@@ -469,7 +470,7 @@ final class SessionHelper {
 
             } else {
                 // param is null
-                if (session.metaData.getConnectionType() == ConnectionTypes.UCanAccess) {
+                if (session.metaData.getConnectionType() == ConnectionType.UCanAccess) {
                     st.setNull(n, java.sql.Types.OTHER);
                 } else {
                     st.setObject(n, null);
@@ -615,7 +616,7 @@ final class SessionHelper {
         if (Collection.class.isAssignableFrom(joinInfo.joinProperty().field.getType())) {
             var list = (Collection) joinInfo.joinProperty().getValue(parent);
             if (list == null) {
-                throw new PersismException(Messages.CannotNotJoinToNullProperty.message(joinInfo.joinProperty().propertyName));
+                throw new PersismException(Message.CannotNotJoinToNullProperty.message(joinInfo.joinProperty().propertyName));
             }
             list.add(child);
         } else {
@@ -633,7 +634,7 @@ final class SessionHelper {
         // no null test - the object should have some List initialized.
         List joinedList = (List) joinProperty.getValue(parentObject);
         if (joinedList == null) {
-            throw new PersismException(Messages.CannotNotJoinToNullProperty.message(joinProperty.propertyName));
+            throw new PersismException(Message.CannotNotJoinToNullProperty.message(joinProperty.propertyName));
         }
         joinedList.clear();
         joinedList.addAll(list);
@@ -737,11 +738,11 @@ final class SessionHelper {
         boolean startsWithSelect = isSelect(sql.sql);
         if (sql.storedProc) {
             if (startsWithSelect) {
-                log.warnNoDuplicates(Messages.InappropriateMethodUsedForSQLTypeInstance.message(objectClass, "sql()", "a stored proc", "proc()"));
+                log.warnNoDuplicates(Message.InappropriateMethodUsedForSQLTypeInstance.message(objectClass, "sql()", "a stored proc", "proc()"));
             }
         } else {
             if (!startsWithSelect) {
-                log.warnNoDuplicates(Messages.InappropriateMethodUsedForSQLTypeInstance.message(objectClass, "proc()", "an SQL query", "sql()"));
+                log.warnNoDuplicates(Message.InappropriateMethodUsedForSQLTypeInstance.message(objectClass, "proc()", "an SQL query", "sql()"));
             }
         }
     }

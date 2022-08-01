@@ -1,8 +1,9 @@
 package net.sf.persism.dao.wwi1;
 
+import net.sf.persism.annotations.Table;
+
 import java.math.BigDecimal;
 import java.sql.Date;
-
 public final class Customer {
     private Integer customerId;
     private String customerName;

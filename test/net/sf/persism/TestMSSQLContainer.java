@@ -33,7 +33,7 @@ public final class TestMSSQLContainer extends TestMSSQL {
             mustCreateTables = true;
         }
 
-        connectionType = ConnectionTypes.MSSQL;
+        connectionType = ConnectionType.MSSQL;
         Class.forName(DB_CONTAINER.getDriverClassName());
 
 

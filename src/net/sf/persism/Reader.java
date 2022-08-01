@@ -29,7 +29,7 @@ final class Reader {
         Class<?> objectClass = object.getClass();
 
         // We should never call this method with a primitive type.
-        assert Types.getType(objectClass) == null;
+        assert JavaType.getType(objectClass) == null;
 
         ResultSetMetaData rsmd = rs.getMetaData();
         int columnCount = rsmd.getColumnCount();
@@ -43,7 +43,7 @@ final class Reader {
             if (columnProperty != null) {
 
                 if (columnProperty.getter == null) {
-                    throw new PersismException(Messages.ClassHasNoGetterForProperty.message(object.getClass(), columnProperty.propertyName));
+                    throw new PersismException(Message.ClassHasNoGetterForProperty.message(object.getClass(), columnProperty.propertyName));
                 }
 
                 Class<?> returnType = columnProperty.getter.getReturnType();
@@ -55,7 +55,7 @@ final class Reader {
                         columnProperty.setValue(object, value);
                     } catch (IllegalArgumentException e) {
                         // A IllegalArgumentException (which is a RuntimeException) occurs if we're setting an unmatched ENUM
-                        throw new PersismException(Messages.IllegalArgumentReadingColumn.message(columnProperty.propertyName, objectClass, columnName, returnType, value.getClass(), value), e);
+                        throw new PersismException(Message.IllegalArgumentReadingColumn.message(columnProperty.propertyName, objectClass, columnName, returnType, value.getClass(), value), e);
                     }
                 }
             }
@@ -83,7 +83,7 @@ final class Reader {
             Object value = readColumn(rs, ncol, rsmd.getColumnType(ncol), rsmd.getColumnLabel(ncol), returnType);
             if (value == null && returnType.isPrimitive()) {
                 // Set null primitives to their default, otherwise the constructor will not be found
-                value = Types.getDefaultValue(returnType);
+                value = JavaType.getDefaultValue(returnType);
             }
 
             constructorParams.add(value);
@@ -107,7 +107,7 @@ final class Reader {
             sqlColumnType = java.sql.Types.CHAR;
         }
 
-        Types columnType = Types.convert(sqlColumnType); // note this could be null if we can't match a type
+        JavaType columnType = JavaType.convert(sqlColumnType); // note this could be null if we can't match a type
 
         Object value = null;
 
@@ -193,7 +193,7 @@ final class Reader {
 
                 case IntegerType:
                     // stupid SQLite reports LONGS as Integers for date types which WRAPS past Integer.MAX - Clowns.
-                    if (metaData.getConnectionType() == ConnectionTypes.SQLite) {
+                    if (metaData.getConnectionType() == ConnectionType.SQLite) {
                         value = rs.getObject(column);
                         if (value != null) {
                             if (value instanceof Long) {
@@ -264,7 +264,7 @@ final class Reader {
             if (value != null) {
                 objType = value.getClass().getName();
             }
-            log.warnNoDuplicates(Messages.ColumnTypeNotKnownForSQLType.message(sqlColumnType, columnName, objType));
+            log.warnNoDuplicates(Message.ColumnTypeNotKnownForSQLType.message(sqlColumnType, columnName, objType));
         }
 
         // If value is null or column type is unknown - no need to try to convert anything.

@@ -2,7 +2,7 @@ package net.sf.persism;
 
 import net.sf.persism.categories.ExternalDB;
 import net.sf.persism.dao.Customer;
-import net.sf.persism.dao.Regions;
+import net.sf.persism.dao.Region;
 import org.junit.experimental.categories.Category;
 
 import java.sql.*;
@@ -26,7 +26,7 @@ public class TestMySQL extends BaseTest {
 
     @Override
     protected void setUp() throws Exception {
-        connectionType = ConnectionTypes.MySQL;
+        connectionType = ConnectionType.MySQL;
         super.setUp();
 
         Properties props = new Properties();
@@ -305,7 +305,7 @@ public class TestMySQL extends BaseTest {
         Customer customer = new Customer();
         customer.setCustomerId("123");
         customer.setContactName("Fred");
-        customer.setRegion(Regions.East);
+        customer.setRegion(Region.East);
         customer.setStatus('1');
         customer.setAddress("123 Sesame Street");
 
@@ -318,7 +318,7 @@ public class TestMySQL extends BaseTest {
         log.info(result);
         assertEquals("should be Fred", "Fred", result);
 
-        Integer count = session.fetch(Integer.class, sql("select count(*) from Customers where Region = ?"), params(Regions.East));
+        Integer count = session.fetch(Integer.class, sql("select count(*) from Customers where Region = ?"), params(Region.East));
         assertEquals("should be 1", "1", "" + count);
         log.info("count " + count);
 

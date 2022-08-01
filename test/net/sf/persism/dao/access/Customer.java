@@ -1,15 +1,11 @@
 package net.sf.persism.dao.access;
 
 import net.sf.persism.annotations.Column;
-import net.sf.persism.annotations.Join;
-import net.sf.persism.annotations.NotColumn;
-import net.sf.persism.dao.Invoice;
-import net.sf.persism.dao.Regions;
+import net.sf.persism.dao.Region;
 
 import java.sql.Timestamp;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.List;
 
 /**
  * General customer class for database types.
@@ -24,7 +20,7 @@ public class Customer {
     private String contactTitle;
     private String address;
     private String city;
-    private Regions region;
+    private Region region;
     private String postalCode;
     private String country;
     private String phone;
@@ -87,11 +83,11 @@ public class Customer {
         this.city = city;
     }
 
-    public Regions getRegion() {
+    public Region getRegion() {
         return region;
     }
 
-    public void setRegion(Regions region) {
+    public void setRegion(Region region) {
         this.region = region;
     }
 

@@ -22,8 +22,8 @@ import java.time.temporal.ChronoUnit;
 import java.util.*;
 import java.util.logging.Logger;
 
-import static net.sf.persism.Messages.NumberFormatException;
-import static net.sf.persism.Messages.*;
+import static net.sf.persism.Message.NumberFormatException;
+import static net.sf.persism.Message.*;
 import static net.sf.persism.Parameters.none;
 import static net.sf.persism.Parameters.params;
 import static net.sf.persism.SQL.*;
@@ -43,7 +43,7 @@ public abstract class BaseTest extends TestCase {
 
     Session session;
 
-    ConnectionTypes connectionType;
+    ConnectionType connectionType;
 
     static String UUID1 = "d316ad81-946d-416b-98e3-3f3b03aa73db";
     static String UUID2 = "a0d00c5a-3de6-4ae8-ba11-e3e02c2b3a83";
@@ -94,7 +94,7 @@ public abstract class BaseTest extends TestCase {
         customer.setFax("fax");
         customer.setPhone("phone");
         customer.setPostalCode("12345");
-        customer.setRegion(Regions.East);
+        customer.setRegion(Region.East);
         customer.setStatus('2');
 
         String dateOfLastOrder = "20120528000000"; //sql.date - no time in it.
@@ -117,7 +117,7 @@ public abstract class BaseTest extends TestCase {
 
         session.fetch(customer2);
 
-        if (connectionType == ConnectionTypes.SQLite || connectionType == ConnectionTypes.Oracle) {
+        if (connectionType == ConnectionType.SQLite || connectionType == ConnectionType.Oracle) {
             // SQLite does not support DATE on it's own
             // Oracle DATE also includes time so JDBC driver reports it as timestamp
         } else {
@@ -143,7 +143,7 @@ public abstract class BaseTest extends TestCase {
         // add ;sendTimeAsDateTime=false to connection string
         // https://stackoverflow.com/questions/38954422/the-data-types-time-and-datetime-are-incompatible-in-the-greater-than-or-equal-t
         // Doesn't work at all with JTDS
-        if (connectionType != ConnectionTypes.JTDS) {
+        if (connectionType != ConnectionType.JTDS) {
             LocalTime time = LocalTime.now();
             session.query(Contact.class,
                     where(":whatMiteIsIt between ? AND ?"),
@@ -228,13 +228,13 @@ public abstract class BaseTest extends TestCase {
         customer.setFax("123-456-7890");
         customer.setPhone("456-678-1234");
         customer.setPostalCode("54321");
-        customer.setRegion(Regions.East);
+        customer.setRegion(Region.East);
         customer.setStatus('1');
 
         session.delete(customer); // i case it already exists.
         session.insert(customer);
 
-        customer.setRegion(Regions.North);
+        customer.setRegion(Region.North);
         session.update(customer);
 
         boolean failOnMissingProperties = false;
@@ -261,7 +261,7 @@ public abstract class BaseTest extends TestCase {
         assertEquals("list should be 1", 1, list.size());
 
         Customer c2 = list.get(0);
-        assertEquals("region s/b north ", Regions.North, c2.getRegion());
+        assertEquals("region s/b north ", Region.North, c2.getRegion());
 
         // test util date as param
         session.query(Customer.class, where("DATE_REGISTERED = ?"), params(new java.util.Date(customer.getDateRegistered().getTime())));
@@ -323,7 +323,7 @@ public abstract class BaseTest extends TestCase {
         customer.setCustomerId("1234");
         customer.setContactName("Fred");
         customer.setCompanyName("Slate Quarry");
-        customer.setRegion(Regions.East);
+        customer.setRegion(Region.East);
         customer.setStatus('1');
         customer.setAddress("123 Sesame Street");
 
@@ -339,7 +339,7 @@ public abstract class BaseTest extends TestCase {
         log.info(result);
         assertEquals("should be Fred", "Fred", result);
 
-        Integer count = session.fetch(Integer.class, sql("select count(*) from Customers where Region = ?"), params(Regions.East));
+        Integer count = session.fetch(Integer.class, sql("select count(*) from Customers where Region = ?"), params(Region.East));
         log.info("count " + count);
         assertEquals("should be 1", "1", "" + count);
 
@@ -710,7 +710,7 @@ public abstract class BaseTest extends TestCase {
         }
         assertTrue(fail);
 
-        if (connectionType != ConnectionTypes.Informix) {
+        if (connectionType != ConnectionType.Informix) {
             // Informix doesn't allow a manually specified primary on the POJO
             // Error In Specifying Automatically (Server) Generated Keys.
             fail = false;
@@ -740,9 +740,13 @@ public abstract class BaseTest extends TestCase {
             assertTrue(fail);
         }
 
-
-        if (!connectionType.supportsNonAutoIncGenerated()) {
-            // PostgreSQL does support string or other generated keys
+        if (connectionType.supportsNonAutoIncGenerated()) {
+            CustomerFail customer = new CustomerFail();
+            customer.setCompanyName("abc inc");
+            session.insert(customer);
+            System.out.println("ASS! *********** " + customer.customerId());
+            assertNotNull(customer.customerId());
+        } else {
             fail = false;
             try {
                 CustomerFail customer = new CustomerFail();
@@ -899,7 +903,7 @@ public abstract class BaseTest extends TestCase {
         } catch (PersismException e) {
             shouldFail = true;
             assertEquals("Message s/b eq",
-                    Messages.TableHasNoPrimaryKeys.message("UPDATE", "TableNoPrimary").toLowerCase(),
+                    Message.TableHasNoPrimaryKeys.message("UPDATE", "TableNoPrimary").toLowerCase(),
                     e.getMessage().toLowerCase());
         }
         assertTrue(shouldFail);
@@ -910,7 +914,7 @@ public abstract class BaseTest extends TestCase {
         } catch (PersismException e) {
             shouldFail = true;
             assertEquals("Message s/b eq",
-                    Messages.TableHasNoPrimaryKeys.message("FETCH", "TableNoPrimary").toLowerCase(),
+                    Message.TableHasNoPrimaryKeys.message("FETCH", "TableNoPrimary").toLowerCase(),
                     e.getMessage().toLowerCase());
         }
         assertTrue(shouldFail);
@@ -921,7 +925,7 @@ public abstract class BaseTest extends TestCase {
         } catch (PersismException e) {
             shouldFail = true;
             assertEquals("Message s/b eq",
-                    Messages.TableHasNoPrimaryKeys.message("DELETE", "TableNoPrimary").toLowerCase(),
+                    Message.TableHasNoPrimaryKeys.message("DELETE", "TableNoPrimary").toLowerCase(),
                     e.getMessage().toLowerCase());
         }
         assertTrue(shouldFail);
@@ -1038,7 +1042,7 @@ public abstract class BaseTest extends TestCase {
         customer.setFax("123-456-7890");
         customer.setPhone("456-678-1234");
         customer.setPostalCode("54321");
-        customer.setRegion(Regions.East);
+        customer.setRegion(Region.East);
         customer.setStatus('2');
 
 
@@ -1172,12 +1176,20 @@ public abstract class BaseTest extends TestCase {
         assertNotNull(customerInvoiceTestView);
         assertTrue(list2.size() > 0);
 
+
+        if (connectionType.supportsNonAutoIncGenerated()) {
+            Customer customer2 = new Customer();
+            customer.setCompanyName("abc inc");
+            session.insert(customer2);
+            assertNotNull(customer2.getCustomerId());
+        }
+
         boolean fail = false;
         try {
             session.insert(customerInvoiceTestView);
         } catch (PersismException e) {
             fail = true;
-            assertEquals("s/b", Messages.OperationNotSupportedForView.message(customerInvoiceTestView.getClass(), "Insert"), e.getMessage());
+            assertEquals("s/b", Message.OperationNotSupportedForView.message(customerInvoiceTestView.getClass(), "Insert"), e.getMessage());
         }
         assertTrue(fail);
 
@@ -1186,7 +1198,7 @@ public abstract class BaseTest extends TestCase {
             session.update(customerInvoiceTestView);
         } catch (PersismException e) {
             fail = true;
-            assertEquals("s/b", Messages.OperationNotSupportedForView.message(customerInvoiceTestView.getClass(), "Update"), e.getMessage());
+            assertEquals("s/b", Message.OperationNotSupportedForView.message(customerInvoiceTestView.getClass(), "Update"), e.getMessage());
         }
         assertTrue(fail);
 
@@ -1195,7 +1207,7 @@ public abstract class BaseTest extends TestCase {
             session.delete(customerInvoiceTestView);
         } catch (PersismException e) {
             fail = true;
-            assertEquals("s/b", Messages.OperationNotSupportedForView.message(customerInvoiceTestView.getClass(), "Delete"), e.getMessage());
+            assertEquals("s/b", Message.OperationNotSupportedForView.message(customerInvoiceTestView.getClass(), "Delete"), e.getMessage());
         }
         assertTrue(fail);
 
@@ -1208,7 +1220,7 @@ public abstract class BaseTest extends TestCase {
 
             fail = true;
             assertEquals("s/b",
-                    Messages.OperationNotSupportedForNotTableQuery.message(CustomerInvoiceResult.class, "QUERY w/o specifying the SQL"),
+                    Message.OperationNotSupportedForNotTableQuery.message(CustomerInvoiceResult.class, "QUERY w/o specifying the SQL"),
                     e.getMessage());
         }
         assertTrue(fail);
@@ -1244,7 +1256,7 @@ public abstract class BaseTest extends TestCase {
             session.insert(customerInvoiceTestView); // not supported error
         } catch (PersismException e) {
             log.info(e.getMessage());
-            assertEquals("s/b Operation not supported for Views.", Messages.OperationNotSupportedForView.message(customerInvoiceTestView.getClass(), "Insert"), e.getMessage());
+            assertEquals("s/b Operation not supported for Views.", Message.OperationNotSupportedForView.message(customerInvoiceTestView.getClass(), "Insert"), e.getMessage());
             fail = true;
         }
         assertTrue(fail);
@@ -1254,7 +1266,7 @@ public abstract class BaseTest extends TestCase {
             session.update(customerInvoiceTestView);
         } catch (PersismException e) {
             log.info(e.getMessage());
-            assertEquals("s/b Operation not supported for Views.", Messages.OperationNotSupportedForView.message(customerInvoiceTestView.getClass(), "Update"), e.getMessage());
+            assertEquals("s/b Operation not supported for Views.", Message.OperationNotSupportedForView.message(customerInvoiceTestView.getClass(), "Update"), e.getMessage());
             fail = true;
         }
         assertTrue(fail);
@@ -1264,7 +1276,7 @@ public abstract class BaseTest extends TestCase {
             session.delete(customerInvoiceTestView);
         } catch (PersismException e) {
             log.info(e.getMessage());
-            assertEquals("s/b Operation not supported for Views.", Messages.OperationNotSupportedForView.message(customerInvoiceTestView.getClass(), "Delete"), e.getMessage());
+            assertEquals("s/b Operation not supported for Views.", Message.OperationNotSupportedForView.message(customerInvoiceTestView.getClass(), "Delete"), e.getMessage());
             fail = true;
         }
         assertTrue(fail);
@@ -1274,7 +1286,7 @@ public abstract class BaseTest extends TestCase {
             session.insert(customerInvoiceTestView);
         } catch (PersismException e) {
             log.info(e.getMessage());
-            assertEquals("s/b Operation not supported for Views.", Messages.OperationNotSupportedForView.message(customerInvoiceTestView.getClass(), "Upsert"), e.getMessage());
+            assertEquals("s/b Operation not supported for Views.", Message.OperationNotSupportedForView.message(customerInvoiceTestView.getClass(), "Upsert"), e.getMessage());
             fail = true;
         }
         assertTrue(fail);
@@ -1290,7 +1302,7 @@ public abstract class BaseTest extends TestCase {
             // should fail with WHERE clause not supported
             List<CustomerOrder> junk = session.query(CustomerOrder.class, where(":customerId = ?"), params("x"));
         } catch (PersismException e) {
-            assertEquals("message should be WHERE clause not supported...", Messages.WhereNotSupportedForNotTableQueries.message(), e.getMessage());
+            assertEquals("message should be WHERE clause not supported...", Message.WhereNotSupportedForNotTableQueries.message(), e.getMessage());
             fail = true;
         }
         assertTrue(fail);
@@ -1333,7 +1345,11 @@ public abstract class BaseTest extends TestCase {
         log.info("Local Date: " + ldt4 + " INSTANT: " + contact.getTestInstant());
         log.info("Local Date: " + LocalDateTime.now() + " INSTANT: " + Instant.now());
 
+        assertNotNull(contact.getIdentity());
+
         assertEquals("expect 1", 1, session.insert(contact).rows());
+
+        assertNotNull(contact.getIdentity());
 
         // query back with the identity UUID
         Contact resultX = session.fetch(Contact.class, params(identity));
@@ -1380,7 +1396,7 @@ public abstract class BaseTest extends TestCase {
 
         // TODO we can't convert parameters that are not primary keys since we don't know for sure which column they may refer to,
         Object param = partnerId;
-        if (ConnectionTypes.Firebird == session.metaData.getConnectionType()) {
+        if (ConnectionType.Firebird == session.metaData.getConnectionType()) {
             param = Converter.asBytesFromUUID(partnerId);
         }
         contacts = session.query(Contact.class, where(":partnerId = ?"), params(param));
@@ -1398,7 +1414,7 @@ public abstract class BaseTest extends TestCase {
         // Actual   :1997-02-17 10:23:43.0
         // https://dev.mysql.com/doc/refman/5.7/en/date-and-time-types.html
         // Has the accuracy in v8 so once we update the DB and driver we should retest
-        if (connectionType == ConnectionTypes.MySQL) {
+        if (connectionType == ConnectionType.MySQL) {
             assertEquals("last modified util.Date s/b '1997-02-17 10:23:43.0'", "1997-02-17 10:23:43.0", "" + contact1.getLastModified());
         } else {
             assertEquals("last modified util.Date s/b '1997-02-17 10:23:43.123'", "1997-02-17 10:23:43.123", "" + contact1.getLastModified());
@@ -1486,9 +1502,9 @@ public abstract class BaseTest extends TestCase {
         List<Contact> results = session.query(Contact.class, params(identity));
         log.info(results);
 
-        Contact result = session.fetch(Contact.class, params(identity));
-        log.info(result);
-        assertNotNull(result);
+        Contact contactx = session.fetch(Contact.class, params(identity));
+        log.info(contactx);
+        assertNotNull(contactx);
 
 
         var sd = session.getMetaData().getConnectionType().getKeywordStartDelimiter();
@@ -1540,7 +1556,7 @@ public abstract class BaseTest extends TestCase {
         } catch (PersismException e) {
             failed = true;
             log.info(e.getMessage(), e);
-            String msg = Messages.QueryParameterNamesMissingOrNotFound.message("[last, name]", "[Xame, Xast]");
+            String msg = Message.QueryParameterNamesMissingOrNotFound.message("[last, name]", "[Xame, Xast]");
             assertEquals("s/b " + msg, msg, e.getMessage());
         }
         assertTrue(failed);
@@ -1556,7 +1572,7 @@ public abstract class BaseTest extends TestCase {
         } catch (PersismException e) {
             failed = true;
             log.info(e.getMessage(), e);
-            String msg = Messages.QueryPropertyNamesMissingOrNotFound.message("[firstXame, Xompany]", "");
+            String msg = Message.QueryPropertyNamesMissingOrNotFound.message("[firstXame, Xompany]", "");
             assertTrue("s/b (starts with) " + msg, e.getMessage().startsWith(msg));
         }
         assertTrue(failed);
@@ -1645,7 +1661,7 @@ public abstract class BaseTest extends TestCase {
 
     public void testVariousTypesLikeClobAndBlob() throws Exception {
 
-        if (connectionType == ConnectionTypes.Informix) {
+        if (connectionType == ConnectionType.Informix) {
             // https://stackoverflow.com/questions/49441015/informix-no-such-dbspace-error-when-inserting-a-record
             // todo Invalid default sbspace name (sbspace). needs to be added to docker image
             return;
@@ -1661,7 +1677,7 @@ public abstract class BaseTest extends TestCase {
         saveGame.setWhatTimeIsIt(new Time(System.currentTimeMillis()));
         saveGame.setSomethingBig(null);
 
-        if (connectionType != ConnectionTypes.H2) {
+        if (connectionType != ConnectionType.H2) {
             // the only one supporting string auto-inc
             saveGame.setId("1");
         }
@@ -1736,7 +1752,7 @@ public abstract class BaseTest extends TestCase {
 
             assertEquals("date s/b '1992-02-17'", sdate.toString(), testSQLTypes2.getDateOnly().toString());
             assertEquals("time s/b '22:23:41'", time.toString(), testSQLTypes2.getTimeOnly().toString());
-            if (connectionType == ConnectionTypes.MySQL) {
+            if (connectionType == ConnectionType.MySQL) {
                 // MySQL rounds off milliseconds - comes out like 1992-02-17 10:23:41.0
                 String s1 = ts.toString();
                 String s2 = testSQLTypes2.getDateAndTime().toString();
@@ -1789,7 +1805,7 @@ public abstract class BaseTest extends TestCase {
             assertEquals("date s/b '1997-02-17'", ld.format(DateTimeFormatter.ISO_DATE), testLocalTypes2.getDateOnly().format(DateTimeFormatter.ISO_DATE));
             assertEquals("time s/b '10:23:43'", localTime, testLocalTypes2.getTimeOnly().format(DateTimeFormatter.ISO_TIME));
 
-            if (connectionType == ConnectionTypes.MySQL) {
+            if (connectionType == ConnectionType.MySQL) {
                 // MySQL rounds off milliseconds - 1998-02-17T10:23:43.567 comes out like 1998-02-17T10:23:43
                 String s = ldt.format(DateTimeFormatter.ISO_DATE_TIME);
                 assertEquals("datetime s/b '1998-02-17 10:23:43'",
@@ -1923,7 +1939,7 @@ public abstract class BaseTest extends TestCase {
         customer.setFax("123-456-7890");
         customer.setPhone("456-678-1234");
         customer.setPostalCode("54321");
-        customer.setRegion(Regions.East);
+        customer.setRegion(Region.East);
         //customer.setStatus('1');
         session.insert(customer);
 
@@ -1971,7 +1987,7 @@ public abstract class BaseTest extends TestCase {
             session.query(InvoiceFail.class, where("CUSTOMER_ID=? ORDER BY CUSTOMER_ID"), params("123"));
         } catch (PersismException e) {
             fail = true;
-            String msg = Messages.PropertyCountMismatchForJoin.message(InvoiceFail.class, "invoiceId, price", "invoiceId");
+            String msg = Message.PropertyCountMismatchForJoin.message(InvoiceFail.class, "invoiceId, price", "invoiceId");
             assertEquals("msg s/b ' " + msg + "' ", msg, e.getMessage());
         }
         assertTrue(fail);
@@ -2016,7 +2032,7 @@ public abstract class BaseTest extends TestCase {
         } catch (PersismException e) {
             fail = true;
             log.warn(e.getMessage(), e);
-            log.warn(Messages.ReadRecordCouldNotInstantiate.message(RecordTest1.class, "..."));
+            log.warn(Message.ReadRecordCouldNotInstantiate.message(RecordTest1.class, "..."));
             assertTrue("msg should start with 'readRecord: Could not instantiate the constructor for: class net.sf.persism.dao.records.RecordTest1'",
                     e.getMessage().startsWith("readRecord: Could not instantiate the constructor for: class net.sf.persism.dao.records.RecordTest1"));
         }

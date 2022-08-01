@@ -142,4 +142,11 @@ todo add a join to table with spaces in the name and use OLD toString in TableIn
 
 SessionHelper 509 - remove - not used.
 
-todo how to test caseSensitive JoinInfo
+todo how to test caseSensitive where clause values JoinInfo
+
+PostgreSQL generating UUID https://stackoverflow.com/questions/12505158/generating-a-uuid-in-postgres-for-insert-statement
+We use 9.1 which is the minimum for this. Should document all minimums.
+SELECT uuid_in(md5(random()::text || random()::text)::cstring);
+SELECT uuid_in(overlay(overlay(md5(random()::text || ':' || random()::text) placing '4' from 13) placing to_hex(floor(random()*(11-8+1) + 8)::int)::text from 17)::cstring);
+SELECT * FROM pg_available_extensions;
+

@@ -17,7 +17,6 @@ import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.sql.*;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Properties;
@@ -32,7 +31,7 @@ public final class TestOracle extends BaseTest {
 
     @Override
     protected void setUp() throws Exception {
-        connectionType = ConnectionTypes.Oracle;
+        connectionType = ConnectionType.Oracle;
         super.setUp();
 
         Properties props = new Properties();
@@ -442,7 +441,7 @@ grant create trigger, create sequence to pinf;
             ResultSetMetaData rsmd = rs.getMetaData();
 
             while (rs.next()) {
-                log.info("testTimeStamp: TYPE: " + rsmd.getColumnType(2) + " " + Types.convert(rsmd.getColumnType(2))); // second column
+                log.info("testTimeStamp: TYPE: " + rsmd.getColumnType(2) + " " + JavaType.convert(rsmd.getColumnType(2))); // second column
                 Date dt = rs.getDate("TS"); // loses time component
                 Object obj = rs.getObject("TS"); // returns fucken oracle.sql.TIMESTAMP class
                 Timestamp ts = rs.getTimestamp("TS");

@@ -42,7 +42,7 @@ final class JoinInfo {
         parentPropertyNames = joinAnnotation.onProperties().split(",");
         childPropertyNames = joinAnnotation.toProperties().split(",");
         if (parentPropertyNames.length != childPropertyNames.length) {
-            throw new PersismException(Messages.PropertyCountMismatchForJoin.message(parentClass, joinAnnotation.onProperties(), joinAnnotation.toProperties()));
+            throw new PersismException(Message.PropertyCountMismatchForJoin.message(parentClass, joinAnnotation.onProperties(), joinAnnotation.toProperties()));
         }
         Util.trimArray(parentPropertyNames);
         Util.trimArray(childPropertyNames);
@@ -64,7 +64,7 @@ final class JoinInfo {
                 parentProperties.add(opt.get());
                 parentPropertyNames[j] = opt.get().propertyName; // ensure names match exact
             } else {
-                throw new PersismException(Messages.PropertyNotFoundForJoin.message(prop, parentClass));
+                throw new PersismException(Message.PropertyNotFoundForJoin.message(prop, parentClass));
             }
         }
 
@@ -75,7 +75,7 @@ final class JoinInfo {
                 childProperties.add(opt.get());
                 childPropertyNames[j] = opt.get().propertyName; // ensure names match exact
             } else {
-                throw new PersismException(Messages.PropertyNotFoundForJoin.message(prop, childClass));
+                throw new PersismException(Message.PropertyNotFoundForJoin.message(prop, childClass));
             }
         }
     }

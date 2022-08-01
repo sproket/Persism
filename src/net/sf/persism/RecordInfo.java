@@ -49,7 +49,7 @@ class RecordInfo<T> {
                 constructorTypes.add(propertyInfoByConstructorOrder.get(col).field.getType());
             } else {
                 // can happen if a user manually constructs the SQL and misses a column
-                throw new PersismException(Messages.ReadRecordColumnNotFound.message(objectClass, col));
+                throw new PersismException(Message.ReadRecordColumnNotFound.message(objectClass, col));
             }
         }
 
@@ -57,7 +57,7 @@ class RecordInfo<T> {
             constructor = objectClass.getConstructor(constructorTypes.toArray(new Class<?>[0]));
             assert constructor.equals(selectedConstructor);
         } catch (NoSuchMethodException e) {
-            throw new PersismException(Messages.ReadRecordCouldNotInstantiate.message(objectClass, constructorTypes));
+            throw new PersismException(Message.ReadRecordCouldNotInstantiate.message(objectClass, constructorTypes));
         }
     }
 
@@ -96,7 +96,7 @@ class RecordInfo<T> {
         }
 
         if (selectedConstructor == null) {
-            throw new PersismException(Messages.CouldNotFindConstructorForRecord.message(objectClass.getName(), propertyNames));
+            throw new PersismException(Message.CouldNotFindConstructorForRecord.message(objectClass.getName(), propertyNames));
         }
         return selectedConstructor;
 

@@ -1,6 +1,6 @@
 package net.sf.persism;
 
-record TableInfo(String name, String schema, ConnectionTypes connectionType) {
+record TableInfo(String name, String schema, ConnectionType connectionType) {
 
     @Override
     public String toString() {

@@ -29,7 +29,7 @@ public final class TestPostgreSQLContainer extends TestPostgreSQL {
         if(!DB_CONTAINER.isRunning()) {
             DB_CONTAINER.start();
         }
-        connectionType = ConnectionTypes.PostgreSQL;
+        connectionType = ConnectionType.PostgreSQL;
         super.setUp();
 
         log.info("PostgreSQLContainer");

@@ -18,7 +18,7 @@ public class CustomerFail {
     private String contactTitle;
     private String address;
     private String city;
-    private Regions region;
+    private Region region;
     private String postalCode;
     private String country;
     private String phone;
@@ -94,11 +94,11 @@ public class CustomerFail {
         return this;
     }
 
-    public Regions region() {
+    public Region region() {
         return region;
     }
 
-    public CustomerFail setRegion(Regions region) {
+    public CustomerFail setRegion(Region region) {
         this.region = region;
         return this;
     }

@@ -2,16 +2,10 @@ package net.sf.persism;
 
 import net.sf.persism.categories.ExternalDB;
 import net.sf.persism.dao.*;
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
-import org.junit.Rule;
 import org.junit.experimental.categories.Category;
-import org.junit.rules.TestRule;
 
 import java.sql.DriverManager;
-import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Statement;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -48,7 +42,7 @@ public class TestFirebird extends BaseTest {
 
     @Override
     public void setUp() throws Exception {
-        connectionType = ConnectionTypes.Firebird;
+        connectionType = ConnectionType.Firebird;
         super.setUp();
 
         if (getClass().equals(TestFirebird.class)) {
@@ -396,7 +390,7 @@ public class TestFirebird extends BaseTest {
         Customer c1 = new Customer();
         c1.setCustomerId("123");
         c1.setCompanyName("ABC INC");
-        c1.setRegion(Regions.East);
+        c1.setRegion(Region.East);
         c1.setStatus('1');
         session.insert(c1);
         session.fetch(c1);
@@ -406,7 +400,7 @@ public class TestFirebird extends BaseTest {
         Customer cx = new Customer();
         cx.setCustomerId("123");
         cx.setCompanyName("ABC INC");
-        cx.setRegion(Regions.East);
+        cx.setRegion(Region.East);
         cx.setAddress("asasasas");
         cx.setStatus('e');
         session.update(cx);

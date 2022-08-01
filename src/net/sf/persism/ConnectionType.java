@@ -1,6 +1,6 @@
 package net.sf.persism;
 
-enum ConnectionTypes {
+enum ConnectionType {
     Oracle("%", "\"", "\""),
 
     MSSQL(null, "[", "]"),
@@ -33,13 +33,13 @@ enum ConnectionTypes {
     private final String keywordStartDelimiter;
     private final String keywordEndDelimiter;
 
-    ConnectionTypes(String schemaPattern, String keywordStartDelimiter, String keywordEndDelimiter) {
+    ConnectionType(String schemaPattern, String keywordStartDelimiter, String keywordEndDelimiter) {
         this.schemaPattern = schemaPattern;
         this.keywordStartDelimiter = keywordStartDelimiter;
         this.keywordEndDelimiter = keywordEndDelimiter;
     }
 
-    public static ConnectionTypes get(String connectionUrl) {
+    public static ConnectionType get(String connectionUrl) {
         if (connectionUrl == null) {
             return null;
         }
@@ -108,11 +108,11 @@ enum ConnectionTypes {
     }
 
     public boolean supportsReadingFromClobType() {
-        return ConnectionTypes.H2 == this || ConnectionTypes.Oracle == this || ConnectionTypes.HSQLDB == this || ConnectionTypes.Derby == this;
+        return ConnectionType.H2 == this || ConnectionType.Oracle == this || ConnectionType.HSQLDB == this || ConnectionType.Derby == this;
     }
 
     public boolean supportsReadingFromBlobType() {
-        return ConnectionTypes.Oracle == this;
+        return ConnectionType.Oracle == this;
     }
 
     public boolean supportsSpacesInTableNames() {
@@ -120,6 +120,6 @@ enum ConnectionTypes {
     }
 
     public boolean supportsNonAutoIncGenerated() {
-        return ConnectionTypes.PostgreSQL == this || ConnectionTypes.MSSQL == this;
+        return ConnectionType.PostgreSQL == this || ConnectionType.MSSQL == this;
     }
 }

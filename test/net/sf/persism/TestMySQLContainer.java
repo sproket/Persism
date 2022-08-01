@@ -27,7 +27,7 @@ public final class TestMySQLContainer extends TestMySQL {
         if(!DB_CONTAINER.isRunning()) {
             DB_CONTAINER.start();
         }
-        connectionType = ConnectionTypes.MySQL;
+        connectionType = ConnectionType.MySQL;
         super.setUp();
 
         Class.forName(DB_CONTAINER.getDriverClassName());

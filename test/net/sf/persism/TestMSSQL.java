@@ -35,7 +35,7 @@ public class TestMSSQL extends BaseTest {
         // LIST SYSTEM PROPERTIES
         // System.getProperties().list(System.out);
 
-        connectionType = ConnectionTypes.MSSQL;
+        connectionType = ConnectionType.MSSQL;
         super.setUp();
 
         // Subclass TestMSSQLContainer does its own connection
@@ -87,19 +87,19 @@ public class TestMSSQL extends BaseTest {
 
         }
         commands.add("CREATE TABLE Orders ( " +
-                " [ID] [int] IDENTITY(1,1) NOT NULL, " +
-                " NAME VARCHAR(30) NULL, " +
-                " ROW_ID VARCHAR(30) NULL, " +
-                " Customer_ID VARCHAR(10) NULL, " +
-                " PAID BIT NULL, " +
-                " Prepaid BIT NULL," +
-                " IsCollect BIT NULL," +
-                " IsCancelled BIT NULL," +
-                " STATUS CHAR(1) NULL, " +
-                " CREATED datetime, " +
-                " DATE_PAID datetime, " +
-                " DATESOMETHING datetime " +
-                ") ");
+                     " [ID] [int] IDENTITY(1,1) NOT NULL, " +
+                     " NAME VARCHAR(30) NULL, " +
+                     " ROW_ID VARCHAR(30) NULL, " +
+                     " Customer_ID VARCHAR(10) NULL, " +
+                     " PAID BIT NULL, " +
+                     " Prepaid BIT NULL," +
+                     " IsCollect BIT NULL," +
+                     " IsCancelled BIT NULL," +
+                     " STATUS CHAR(1) NULL, " +
+                     " CREATED datetime, " +
+                     " DATE_PAID datetime, " +
+                     " DATESOMETHING datetime " +
+                     ") ");
 
         commands.add("ALTER TABLE [dbo].[Orders] ADD  CONSTRAINT [DF_Orders_CREATED]  DEFAULT (getdate()) FOR [CREATED]");
 
@@ -125,41 +125,41 @@ public class TestMSSQL extends BaseTest {
         }
 
         commands.add("CREATE TABLE Customers ( " +
-                " Customer_ID varchar(10) PRIMARY KEY NOT NULL, " +
-                " GROUP_ID INT NULL, " +
-                " Company_Name VARCHAR(30) NULL, " +
-                " Contact_Name VARCHAR(30) NULL, " +
-                " Contact_Title VARCHAR(10) NULL, " +
-                " Address VARCHAR(40) NULL, " +
-                " City VARCHAR(30) NULL, " +
-                " Region VARCHAR(10) NULL, " +
-                " Postal_Code VARCHAR(10) NULL, " +
-                " Country VARCHAR(2) DEFAULT 'US', " +
-                " Phone VARCHAR(30) NULL, " +
-                " Fax VARCHAR(30) NULL, " +
-                " STATUS CHAR(1) DEFAULT '1', " +
-                " Date_Registered datetime  default current_timestamp, " +
-                " Date_Of_Last_Order DATE, " +
-                " TestLocalDate datetime, " +
-                " TestLocalDateTime datetime " +
-                ") ");
+                     " Customer_ID varchar(64) PRIMARY KEY NOT NULL default CONVERT(varchar(64), NEWID()), " +
+                     " GROUP_ID INT NULL, " +
+                     " Company_Name VARCHAR(30) NULL, " +
+                     " Contact_Name VARCHAR(30) NULL, " +
+                     " Contact_Title VARCHAR(10) NULL, " +
+                     " Address VARCHAR(40) NULL, " +
+                     " City VARCHAR(30) NULL, " +
+                     " Region VARCHAR(10) NULL, " +
+                     " Postal_Code VARCHAR(10) NULL, " +
+                     " Country VARCHAR(2) DEFAULT 'US', " +
+                     " Phone VARCHAR(30) NULL, " +
+                     " Fax VARCHAR(30) NULL, " +
+                     " STATUS CHAR(1) DEFAULT '1', " +
+                     " Date_Registered datetime  default current_timestamp, " +
+                     " Date_Of_Last_Order DATE, " +
+                     " TestLocalDate datetime, " +
+                     " TestLocalDateTime datetime " +
+                     ") ");
 
         if (UtilsForTests.isTableInDatabase("Invoices", con)) {
             commands.add("DROP TABLE Invoices");
         }
 
         commands.add("CREATE TABLE Invoices ( " +
-                " Invoice_ID [int] IDENTITY(1,1) NOT NULL," +
-                " Customer_ID varchar(10) NOT NULL, " +
-                " Paid BIT NOT NULL, " +
-                " Price NUMERIC(7,3) NOT NULL, " +
-                " ACTUAL_Price NUMERIC(7,3) NOT NULL, " +
-                " Status CHAR(1) DEFAULT '1', " +
-                " Created DateTime default current_timestamp, " + // make read-only in Invoice Object
-                " Quantity NUMERIC(10) NOT NULL, " +
-                //" Total NUMERIC(10,3) NOT NULL, " +
-                " Discount NUMERIC(10,3) NOT NULL " +
-                ") ");
+                     " Invoice_ID [int] IDENTITY(1,1) NOT NULL," +
+                     " Customer_ID varchar(10) NOT NULL, " +
+                     " Paid BIT NOT NULL, " +
+                     " Price NUMERIC(7,3) NOT NULL, " +
+                     " ACTUAL_Price NUMERIC(7,3) NOT NULL, " +
+                     " Status CHAR(1) DEFAULT '1', " +
+                     " Created DateTime default current_timestamp, " + // make read-only in Invoice Object
+                     " Quantity NUMERIC(10) NOT NULL, " +
+                     //" Total NUMERIC(10,3) NOT NULL, " +
+                     " Discount NUMERIC(10,3) NOT NULL " +
+                     ") ");
 
 
         sql = """
@@ -175,57 +175,56 @@ public class TestMSSQL extends BaseTest {
         }
 
         commands.add("CREATE TABLE TABLENOPRIMARY ( " +
-                " ID INT, " +
-                " Name VARCHAR(30), " +
-                " Field4 VARCHAR(30), " +
-                " Field5 DATETIME " +
-                ") ");
+                     " ID INT, " +
+                     " Name VARCHAR(30), " +
+                     " Field4 VARCHAR(30), " +
+                     " Field5 DATETIME " +
+                     ") ");
 
         if (isTableInDatabase("DumbTableStringAutoInc", con)) {
             commands.add("DROP TABLE DumbTableStringAutoInc");
         }
 
         commands.add("CREATE TABLE DumbTableStringAutoInc ( " +
-                " ID VARCHAR(10)," +
-                // "ID VARCHAR(10) IDENTITY(1,1) NOT NULL," +
-                " Description VARCHAR(60) )");
+                     " ID VARCHAR(10)," +
+                     " Description VARCHAR(60) )");
 
         if (isTableInDatabase("Contacts", con)) {
             commands.add("DROP TABLE Contacts");
         }
 
         sql = "CREATE TABLE Contacts ( " +
-                "   [identity] [uniqueidentifier] NOT NULL, " +
-                "   [PartnerID] [uniqueidentifier] NULL, " +
-                "   [Type] [char](2) NOT NULL, " +
-                "   [First Name] [nvarchar](50) NULL, " +
-                "   [Last Name] [nvarchar](50) NULL, " +
-                "   [ContactName] [nvarchar](50) NULL, " +
-                "   [Company] [nvarchar](50) NULL, " +
-                "   [Division] [nvarchar](50) NULL, " +
-                "   [Email] [nvarchar](50) NULL, " +
-                "   [Address1] [nvarchar](50) NULL, " +
-                "   [Address2] [nvarchar](50) NULL, " +
-                "   [City] [nvarchar](50) NULL, " +
-                "   [StateProvince] [nvarchar](50) NULL, " +
-                "   [ZipPostalCode] [varchar](10) NULL, " +
-                "   [Country] [nvarchar](50) NULL, " +
-                "   [DateAdded] [smalldatetime] NULL, " +
-                "   [LastModified] [datetime] NULL, " +
-                "   [Notes] [text] NULL, " +
-                "   [Status] [tinyint], " + // NOT NULL CHECK ([Status] >= 0 AND [Status] <= 10)
-                "   [AmountOwed] [float] NULL, " +
-                "   [BigInt] [DECIMAL](20) NULL, " +
-                "   [SomeDate] [datetime2] NULL, " +
-                "   [TestInstant] [datetime2] NULL, " +
-                "   [TestInstant2] [datetime] NULL, " +
-                "   [WhatMiteIsIt] [time](7) NULL, " +
-                "   [WhatTimeIsIt] [time](7) NULL, " +
-                " CONSTRAINT [PK_Contacts] PRIMARY KEY CLUSTERED  " +
-                "( " +
-                "   [identity] ASC " +
-                ")WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY] " +
-                ") ON [PRIMARY] TEXTIMAGE_ON [PRIMARY] ";
+              "   [identity] [uniqueidentifier] NOT NULL, " +
+              "   [PartnerID] [uniqueidentifier] NULL, " +
+              "   [Type] [char](2) NOT NULL, " +
+              "   [First Name] [nvarchar](50) NULL, " +
+              "   [Last Name] [nvarchar](50) NULL, " +
+              "   [ContactName] [nvarchar](50) NULL, " +
+              "   [Company] [nvarchar](50) NULL, " +
+              "   [Division] [nvarchar](50) NULL, " +
+              "   [Email] [nvarchar](50) NULL, " +
+              "   [Address1] [nvarchar](50) NULL, " +
+              "   [Address2] [nvarchar](50) NULL, " +
+              "   [City] [nvarchar](50) NULL, " +
+              "   [StateProvince] [nvarchar](50) NULL, " +
+              "   [ZipPostalCode] [varchar](10) NULL, " +
+              "   [Country] [nvarchar](50) NULL, " +
+              "   [DateAdded] [smalldatetime] NULL, " +
+              "   [LastModified] [datetime] NULL, " +
+              "   [Notes] [text] NULL, " +
+              "   [Status] [tinyint], " + // NOT NULL CHECK ([Status] >= 0 AND [Status] <= 10)
+              "   [AmountOwed] [float] NULL, " +
+              "   [BigInt] [DECIMAL](20) NULL, " +
+              "   [SomeDate] [datetime2] NULL, " +
+              "   [TestInstant] [datetime2] NULL, " +
+              "   [TestInstant2] [datetime] NULL, " +
+              "   [WhatMiteIsIt] [time](7) NULL, " +
+              "   [WhatTimeIsIt] [time](7) NULL, " +
+              " CONSTRAINT [PK_Contacts] PRIMARY KEY CLUSTERED  " +
+              "( " +
+              "   [identity] ASC " +
+              ")WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY] " +
+              ") ON [PRIMARY] TEXTIMAGE_ON [PRIMARY] ";
         commands.add(sql);
 
         sql = "ALTER TABLE [dbo].[Contacts] ADD  CONSTRAINT [DF_Contacts_identity]  DEFAULT (newid()) FOR [identity]";
@@ -237,107 +236,107 @@ public class TestMSSQL extends BaseTest {
         }
 
         sql = "CREATE TABLE [dbo].[EXAMCODE]( " +
-                "   [ExamCode_no] [int] IDENTITY(1,1) NOT NULL, " +
-                "   [ExamType_No] [int] NULL, " +
-                "   [Desc_e] [varchar](60) NULL, " +
-                "   [Desc_f] [varchar](60) NULL, " +
-                "   [ExamSubType] [varchar](20) NULL, " +
-                "   [Points] [numeric](10, 3) NULL, " +
-                "   [ActCodeForInjection] [varchar](5) NULL, " +
-                "   [AbdomenSpineOrOther] [varchar](1) NULL, " +
-                "   [AccompanyingExamCode_No] [int] NULL, " +
-                "   [AcExamCode_No2] [int] NULL, " +
-                "   [AcExamCode_No3] [int] NULL, " +
-                "   [SideRequired] [bit] NULL, " +
-                "   [StatCode] [char](20) NULL, " +
-                "   [SuppressRole7ForUltrasound] [bit] NULL, " +
-                "   [BodyPartNo] [int] NULL, " +
-                "   [PreferredAptDuration] [numeric](3, 0) NULL, " +
-                "   [PrepInstructions] [text] NULL, " +
-                "   [AllowInRooms] [varchar](60) NULL, " +
-                "   [ReservationType] [int] NULL, " +
-                "   [ProfessionalFeeCode] [varchar](10) NULL, " +
-                "   [ProfessionalFeeCode1] [varchar](10) NULL, " +
-                "   [ProfessionalFeeCode2] [varchar](10) NULL, " +
-                "   [ProfessionalFeeCode3] [varchar](10) NULL, " +
-                "   [ProfessionalFeeCode4] [varchar](10) NULL, " +
-                "   [TechnicalFeeCode] [varchar](11) NULL, " +
-                "   [TechnicalFeeCode1] [varchar](11) NULL, " +
-                "   [TechnicalFeeCode2] [varchar](11) NULL, " +
-                "   [TechnicalFeeCode3] [varchar](11) NULL, " +
-                "   [TechnicalFeeCode4] [varchar](11) NULL, " +
-                "   [ICD9RequiredForBilling] [varchar](1) NULL, " +
-                "   [ProFeeUnits] [numeric](2, 0) NULL, " +
-                "   [ProFeeUnits1] [numeric](2, 0) NULL, " +
-                "   [ProFeeUnits2] [numeric](2, 0) NULL, " +
-                "   [ProFeeUnits3] [numeric](2, 0) NULL, " +
-                "   [ProFeeUnits4] [numeric](2, 0) NULL, " +
-                "   [TechFeeUnits] [numeric](2, 0) NULL, " +
-                "   [TechFeeUnits1] [numeric](2, 0) NULL, " +
-                "   [TechFeeUnits2] [numeric](2, 0) NULL, " +
-                "   [TechFeeUnits3] [numeric](2, 0) NULL, " +
-                "   [TechFeeUnits4] [numeric](2, 0) NULL, " +
-                "   [NumberOfUnitsToBill] [numeric](2, 0) NULL, " +
-                "   [QuickNormalText] [text] NULL, " +
-                "   [CIHIGroupCode] [varchar](2) NULL, " +
-                "   [ProfessionalFeeCode5] [varchar](10) NULL, " +
-                "   [ProfessionalFeeCode6] [varchar](10) NULL, " +
-                "   [TechnicalFeeCode5] [varchar](10) NULL, " +
-                "   [TechnicalFeeCode6] [varchar](10) NULL, " +
-                "   [ProFeeUnits5] [numeric](2, 0) NULL, " +
-                "   [ProFeeUnits6] [numeric](2, 0) NULL, " +
-                "   [TechFeeUnits5] [numeric](2, 0) NULL, " +
-                "   [TechFeeUnits6] [numeric](2, 0) NULL, " +
-                "   [EnableBirads] [bit] NULL, " +
-                "   [PrintPatientLetter] [bit] NULL, " +
-                "   [InstructionsForStaff] [text] NULL, " +
-                "   [Retired] [bit] NULL, " +
-                "   [ExternalID1] [varchar](32) NULL, " +
-                "   [ExternalID2] [varchar](32) NULL, " +
-                "   [ExternalID3] [varchar](32) NULL, " +
-                "   [MaxDaysAgoForSameProcedure] [int] NULL, " +
-                "   [RepeatWarningThresholdDays] [char](5) NULL, " +
-                "   [MammoType] [varchar](1) NULL, " +
-                "   [ProximityWarningHours] [int] NULL, " +
-                "   [ProximityWarningMessage] [text] NULL, " +
-                "   [ScheduleWithPhases] [bit] NULL, " +
-                "   [AllowRefMdsAndNursesToSchedule] [bit] NULL, " +
-                "   [NumberOfPhases] [int] NULL, " +
-                "   [ExamCount] [int] NULL, " +
-                "   [M1] [int] NULL, " +
-                "   [M2] [int] NULL, " +
-                "   [M3] [int] NULL, " +
-                "   [M4] [int] NULL, " +
-                "   [M5] [int] NULL, " +
-                "   [InstructionsForStaffVisibility] [varchar](8) NULL, " +
-                "   [DefaultImpression] [varchar](60) NULL, " +
-                "   [ExcludeFromOtherPriors] [bit] NULL, " +
-                "   [ExcludeFromGroupable] [bit] NULL, " +
-                "   [DefaultModifiers] [varchar](15) NULL, " +
-                "   [AlwaysPrintDoNotFaxReport] [bit] NULL, " +
-                "   [RequiresProtocol] [bit] NULL, " +
-                "   [NeverRequiresInterpretation] [bit] NULL, " +
-                "   [ProfFeeDescrip] [varchar](200) NULL, " +
-                "   [ProfFeeDescrip1] [varchar](200) NULL, " +
-                "   [ProfFeeDescrip2] [varchar](200) NULL, " +
-                "   [ProfFeeDescrip3] [varchar](200) NULL, " +
-                "   [ProfFeeDescrip4] [varchar](200) NULL, " +
-                "   [ProfFeeDescrip5] [varchar](200) NULL, " +
-                "   [ProfFeeDescrip6] [varchar](200) NULL, " +
-                "   [TechFeeDescrip] [varchar](200) NULL, " +
-                "   [TechFeeDescrip1] [varchar](200) NULL, " +
-                "   [TechFeeDescrip2] [varchar](200) NULL, " +
-                "   [TechFeeDescrip3] [varchar](200) NULL, " +
-                "   [TechFeeDescrip4] [varchar](200) NULL, " +
-                "   [TechFeeDescrip5] [varchar](200) NULL, " +
-                "   [TechFeeDescrip6] [varchar](200) NULL, " +
-                "   [PromptTech4Supplies] [bit] NULL, " +
-                "   [SCMUniqueID] [varchar](50) NULL, " +
-                " CONSTRAINT [PK_EXAMCODE] PRIMARY KEY CLUSTERED  " +
-                "( " +
-                "   [ExamCode_no] ASC " +
-                ")WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, FILLFACTOR = 90) ON [PRIMARY] " +
-                ") ON [PRIMARY] TEXTIMAGE_ON [PRIMARY] ";
+              "   [ExamCode_no] [int] IDENTITY(1,1) NOT NULL, " +
+              "   [ExamType_No] [int] NULL, " +
+              "   [Desc_e] [varchar](60) NULL, " +
+              "   [Desc_f] [varchar](60) NULL, " +
+              "   [ExamSubType] [varchar](20) NULL, " +
+              "   [Points] [numeric](10, 3) NULL, " +
+              "   [ActCodeForInjection] [varchar](5) NULL, " +
+              "   [AbdomenSpineOrOther] [varchar](1) NULL, " +
+              "   [AccompanyingExamCode_No] [int] NULL, " +
+              "   [AcExamCode_No2] [int] NULL, " +
+              "   [AcExamCode_No3] [int] NULL, " +
+              "   [SideRequired] [bit] NULL, " +
+              "   [StatCode] [char](20) NULL, " +
+              "   [SuppressRole7ForUltrasound] [bit] NULL, " +
+              "   [BodyPartNo] [int] NULL, " +
+              "   [PreferredAptDuration] [numeric](3, 0) NULL, " +
+              "   [PrepInstructions] [text] NULL, " +
+              "   [AllowInRooms] [varchar](60) NULL, " +
+              "   [ReservationType] [int] NULL, " +
+              "   [ProfessionalFeeCode] [varchar](10) NULL, " +
+              "   [ProfessionalFeeCode1] [varchar](10) NULL, " +
+              "   [ProfessionalFeeCode2] [varchar](10) NULL, " +
+              "   [ProfessionalFeeCode3] [varchar](10) NULL, " +
+              "   [ProfessionalFeeCode4] [varchar](10) NULL, " +
+              "   [TechnicalFeeCode] [varchar](11) NULL, " +
+              "   [TechnicalFeeCode1] [varchar](11) NULL, " +
+              "   [TechnicalFeeCode2] [varchar](11) NULL, " +
+              "   [TechnicalFeeCode3] [varchar](11) NULL, " +
+              "   [TechnicalFeeCode4] [varchar](11) NULL, " +
+              "   [ICD9RequiredForBilling] [varchar](1) NULL, " +
+              "   [ProFeeUnits] [numeric](2, 0) NULL, " +
+              "   [ProFeeUnits1] [numeric](2, 0) NULL, " +
+              "   [ProFeeUnits2] [numeric](2, 0) NULL, " +
+              "   [ProFeeUnits3] [numeric](2, 0) NULL, " +
+              "   [ProFeeUnits4] [numeric](2, 0) NULL, " +
+              "   [TechFeeUnits] [numeric](2, 0) NULL, " +
+              "   [TechFeeUnits1] [numeric](2, 0) NULL, " +
+              "   [TechFeeUnits2] [numeric](2, 0) NULL, " +
+              "   [TechFeeUnits3] [numeric](2, 0) NULL, " +
+              "   [TechFeeUnits4] [numeric](2, 0) NULL, " +
+              "   [NumberOfUnitsToBill] [numeric](2, 0) NULL, " +
+              "   [QuickNormalText] [text] NULL, " +
+              "   [CIHIGroupCode] [varchar](2) NULL, " +
+              "   [ProfessionalFeeCode5] [varchar](10) NULL, " +
+              "   [ProfessionalFeeCode6] [varchar](10) NULL, " +
+              "   [TechnicalFeeCode5] [varchar](10) NULL, " +
+              "   [TechnicalFeeCode6] [varchar](10) NULL, " +
+              "   [ProFeeUnits5] [numeric](2, 0) NULL, " +
+              "   [ProFeeUnits6] [numeric](2, 0) NULL, " +
+              "   [TechFeeUnits5] [numeric](2, 0) NULL, " +
+              "   [TechFeeUnits6] [numeric](2, 0) NULL, " +
+              "   [EnableBirads] [bit] NULL, " +
+              "   [PrintPatientLetter] [bit] NULL, " +
+              "   [InstructionsForStaff] [text] NULL, " +
+              "   [Retired] [bit] NULL, " +
+              "   [ExternalID1] [varchar](32) NULL, " +
+              "   [ExternalID2] [varchar](32) NULL, " +
+              "   [ExternalID3] [varchar](32) NULL, " +
+              "   [MaxDaysAgoForSameProcedure] [int] NULL, " +
+              "   [RepeatWarningThresholdDays] [char](5) NULL, " +
+              "   [MammoType] [varchar](1) NULL, " +
+              "   [ProximityWarningHours] [int] NULL, " +
+              "   [ProximityWarningMessage] [text] NULL, " +
+              "   [ScheduleWithPhases] [bit] NULL, " +
+              "   [AllowRefMdsAndNursesToSchedule] [bit] NULL, " +
+              "   [NumberOfPhases] [int] NULL, " +
+              "   [ExamCount] [int] NULL, " +
+              "   [M1] [int] NULL, " +
+              "   [M2] [int] NULL, " +
+              "   [M3] [int] NULL, " +
+              "   [M4] [int] NULL, " +
+              "   [M5] [int] NULL, " +
+              "   [InstructionsForStaffVisibility] [varchar](8) NULL, " +
+              "   [DefaultImpression] [varchar](60) NULL, " +
+              "   [ExcludeFromOtherPriors] [bit] NULL, " +
+              "   [ExcludeFromGroupable] [bit] NULL, " +
+              "   [DefaultModifiers] [varchar](15) NULL, " +
+              "   [AlwaysPrintDoNotFaxReport] [bit] NULL, " +
+              "   [RequiresProtocol] [bit] NULL, " +
+              "   [NeverRequiresInterpretation] [bit] NULL, " +
+              "   [ProfFeeDescrip] [varchar](200) NULL, " +
+              "   [ProfFeeDescrip1] [varchar](200) NULL, " +
+              "   [ProfFeeDescrip2] [varchar](200) NULL, " +
+              "   [ProfFeeDescrip3] [varchar](200) NULL, " +
+              "   [ProfFeeDescrip4] [varchar](200) NULL, " +
+              "   [ProfFeeDescrip5] [varchar](200) NULL, " +
+              "   [ProfFeeDescrip6] [varchar](200) NULL, " +
+              "   [TechFeeDescrip] [varchar](200) NULL, " +
+              "   [TechFeeDescrip1] [varchar](200) NULL, " +
+              "   [TechFeeDescrip2] [varchar](200) NULL, " +
+              "   [TechFeeDescrip3] [varchar](200) NULL, " +
+              "   [TechFeeDescrip4] [varchar](200) NULL, " +
+              "   [TechFeeDescrip5] [varchar](200) NULL, " +
+              "   [TechFeeDescrip6] [varchar](200) NULL, " +
+              "   [PromptTech4Supplies] [bit] NULL, " +
+              "   [SCMUniqueID] [varchar](50) NULL, " +
+              " CONSTRAINT [PK_EXAMCODE] PRIMARY KEY CLUSTERED  " +
+              "( " +
+              "   [ExamCode_no] ASC " +
+              ")WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, FILLFACTOR = 90) ON [PRIMARY] " +
+              ") ON [PRIMARY] TEXTIMAGE_ON [PRIMARY] ";
         commands.add(sql);
 
         if (isTableInDatabase("EXAMS", con)) {
@@ -345,100 +344,100 @@ public class TestMSSQL extends BaseTest {
         }
 
         sql = "CREATE TABLE [dbo].[EXAMS]( " +
-                "   [ExamID] [int] IDENTITY(1,1) NOT NULL, " +
-                "   [Accession_no] [varchar](20) NULL, " +
-                "   [Patient_no] [int] NULL, " +
-                "   [RequestedBy] [int] NULL, " +
-                "   [DateRequested] [datetime] NULL, " +
-                "   [TimeRequested] [varchar](4) NULL, " +
-                "   [ExamType_No] [int] NULL, " +
-                "   [ExamStatus_No] [int] NULL, " +
-                "   [MasterStatus] [varchar](10) NULL, " +
-                "   [CancelReason] [int] NULL, " +
-                "   [Room_No] [int] NULL, " +
-                "   [ExamDate] [datetime] NULL, " +
-                "   [StartTime] [varchar](4) NULL, " +
-                "   [EndTime] [varchar](4) NULL, " +
-                "   [BookHist_No] [int] NULL, " +
-                "   [Technician] [int] NULL, " +
-                "   [SourceOfReferral] [int] NULL, " +
-                "   [PatientLocation] [int] NULL, " +
-                "   [BillStatus] [varchar](10) NULL, " +
-                "   [DiagnosisCodes] [varchar](254) NULL, " +
-                "   [EnteredBy] [int] NULL, " +
-                "   [Abnormality] [char](1) NULL, " +
-                "   [TransferredInFrom] [int] NULL, " +
-                "   [ExamCode_no] [int] NULL, " +
-                "   [ViewOrTarget] [int] NULL, " +
-                "   [SuspectedDiagnosis] [int] NULL, " +
-                "   [SignOrSymptom] [int] NULL, " +
-                "   [BodyStructureNo] [int] NULL, " +
-                "   [Radiologist] [int] NULL, " +
-                "   [AppointmentNote] [varchar](1024) NULL, " +
-                "   [ClinicalNotes] [text] NULL, " +
-                "   [TechNotes] [text] NULL, " +
-                "   [PriorityNo] [int] NULL, " +
-                "   [Pregnant] [char](1) NULL, " +
-                "   [FacilityNo] [int] NULL, " +
-                "   [AccountingNumber] [varchar](12) NULL, " +
-                "   [RecommendedExam] [int] NULL, " +
-                "   [PathologyResultsCategoryNo] [int] NULL, " +
-                "   [PathologyResultsText] [text] NULL, " +
-                "   [BiradsNo] [int] NULL, " +
-                "   [LockDateAndTime] [datetime] NULL, " +
-                "   [LockedBy] [int] NULL, " +
-                "   [BillMethodNo] [int] NULL, " +
-                "   [ReferralDate] [datetime] NULL, " +
-                "   [ImpressionNo] [int] NULL, " +
-                "   [ExternalID] [varchar](32) NULL, " +
-                "   [Iris] [int] NULL, " +
-                "   [sideOrLevelNo] [int] NULL, " +
-                "   [RecommendedExamCreated] [int] NULL, " +
-                "   [NodalStatusNo] [int] NULL, " +
-                "   [TumorSizeNo] [int] NULL, " +
-                "   [BiopsyTypeNo] [int] NULL, " +
-                "   [FilmLocation] [int] NULL, " +
-                "   [FilmHomeLocation] [int] NULL, " +
-                "   [FilmFolderNo] [int] NULL, " +
-                "   [DefaultFilmLocation] [int] NULL, " +
-                "   [trackingNote] [text] NULL, " +
-                "   [ExternalID2] [varchar](32) NULL, " +
-                "   [Transportation] [varchar](1) NULL, " +
-                "   [ImagesTransferredToStorage] [bit] NULL, " +
-                "   [LMP] [datetime] NULL, " +
-                "   [BillTechnicalFeesOnly] [bit] NULL, " +
-                "   [AppointmentConfirmed] [bit] NULL, " +
-                "   [ReportChangeDateTime] [datetime] NULL, " +
-                "   [ProtocoledDate] [datetime] NULL, " +
-                "   [Previous_ExamStatus_No] [int] NULL, " +
-                "   [Field1] [numeric](9, 2) NULL, " +
-                "   [Field2] [numeric](12, 2) NULL, " +
-                "   [Field4] [varchar](80) NULL, " +
-                "   [Field5] [varchar](40) NULL, " +
-                "   [Field6] [bit] NULL, " +
-                "   [Field7] [datetime] NULL, " +
-                "   [Field8] [text] NULL, " +
-                "   [Field9] [numeric](9, 2) NULL, " +
-                "   [Field15] [text] NULL, " +
-                "   [Field16] [text] NULL, " +
-                "   [Field17] [datetime] NULL, " +
-                "   [Field19] [varchar](40) NULL, " +
-                "   [Field20] [varchar](40) NULL, " +
-                "   [Field21] [varchar](40) NULL, " +
-                "   [Field18] [varchar](40) NULL, " +
-                "   [Field24] [varchar](40) NULL, " +
-                "   [Field34] [text] NULL, " +
-                "   [SurgicalPathologyNo] [int] NULL, " +
-                "   [ProtocoledBy] [int] NULL, " +
-                "   [Biohazard] [text] NULL, " +
-                "   [PrimaryPolicyNo] [int] NULL, " +
-                "   [SecondaryPolicyNo] [int] NULL, " +
-                "   [PrimaryAuthorization] [varchar](20) NULL, " +
-                "   [SecondaryAuthorization] [varchar](20) NULL, " +
-                "   [Field42] [varchar](40) NULL, " +
-                "   [Modifiers] [varchar](15) NULL, " +
-                "   [OriginalValue] int NULL, " +
-                ") ON [PRIMARY] TEXTIMAGE_ON [PRIMARY] ";
+              "   [ExamID] [int] IDENTITY(1,1) NOT NULL, " +
+              "   [Accession_no] [varchar](20) NULL, " +
+              "   [Patient_no] [int] NULL, " +
+              "   [RequestedBy] [int] NULL, " +
+              "   [DateRequested] [datetime] NULL, " +
+              "   [TimeRequested] [varchar](4) NULL, " +
+              "   [ExamType_No] [int] NULL, " +
+              "   [ExamStatus_No] [int] NULL, " +
+              "   [MasterStatus] [varchar](10) NULL, " +
+              "   [CancelReason] [int] NULL, " +
+              "   [Room_No] [int] NULL, " +
+              "   [ExamDate] [datetime] NULL, " +
+              "   [StartTime] [varchar](4) NULL, " +
+              "   [EndTime] [varchar](4) NULL, " +
+              "   [BookHist_No] [int] NULL, " +
+              "   [Technician] [int] NULL, " +
+              "   [SourceOfReferral] [int] NULL, " +
+              "   [PatientLocation] [int] NULL, " +
+              "   [BillStatus] [varchar](10) NULL, " +
+              "   [DiagnosisCodes] [varchar](254) NULL, " +
+              "   [EnteredBy] [int] NULL, " +
+              "   [Abnormality] [char](1) NULL, " +
+              "   [TransferredInFrom] [int] NULL, " +
+              "   [ExamCode_no] [int] NULL, " +
+              "   [ViewOrTarget] [int] NULL, " +
+              "   [SuspectedDiagnosis] [int] NULL, " +
+              "   [SignOrSymptom] [int] NULL, " +
+              "   [BodyStructureNo] [int] NULL, " +
+              "   [Radiologist] [int] NULL, " +
+              "   [AppointmentNote] [varchar](1024) NULL, " +
+              "   [ClinicalNotes] [text] NULL, " +
+              "   [TechNotes] [text] NULL, " +
+              "   [PriorityNo] [int] NULL, " +
+              "   [Pregnant] [char](1) NULL, " +
+              "   [FacilityNo] [int] NULL, " +
+              "   [AccountingNumber] [varchar](12) NULL, " +
+              "   [RecommendedExam] [int] NULL, " +
+              "   [PathologyResultsCategoryNo] [int] NULL, " +
+              "   [PathologyResultsText] [text] NULL, " +
+              "   [BiradsNo] [int] NULL, " +
+              "   [LockDateAndTime] [datetime] NULL, " +
+              "   [LockedBy] [int] NULL, " +
+              "   [BillMethodNo] [int] NULL, " +
+              "   [ReferralDate] [datetime] NULL, " +
+              "   [ImpressionNo] [int] NULL, " +
+              "   [ExternalID] [varchar](32) NULL, " +
+              "   [Iris] [int] NULL, " +
+              "   [sideOrLevelNo] [int] NULL, " +
+              "   [RecommendedExamCreated] [int] NULL, " +
+              "   [NodalStatusNo] [int] NULL, " +
+              "   [TumorSizeNo] [int] NULL, " +
+              "   [BiopsyTypeNo] [int] NULL, " +
+              "   [FilmLocation] [int] NULL, " +
+              "   [FilmHomeLocation] [int] NULL, " +
+              "   [FilmFolderNo] [int] NULL, " +
+              "   [DefaultFilmLocation] [int] NULL, " +
+              "   [trackingNote] [text] NULL, " +
+              "   [ExternalID2] [varchar](32) NULL, " +
+              "   [Transportation] [varchar](1) NULL, " +
+              "   [ImagesTransferredToStorage] [bit] NULL, " +
+              "   [LMP] [datetime] NULL, " +
+              "   [BillTechnicalFeesOnly] [bit] NULL, " +
+              "   [AppointmentConfirmed] [bit] NULL, " +
+              "   [ReportChangeDateTime] [datetime] NULL, " +
+              "   [ProtocoledDate] [datetime] NULL, " +
+              "   [Previous_ExamStatus_No] [int] NULL, " +
+              "   [Field1] [numeric](9, 2) NULL, " +
+              "   [Field2] [numeric](12, 2) NULL, " +
+              "   [Field4] [varchar](80) NULL, " +
+              "   [Field5] [varchar](40) NULL, " +
+              "   [Field6] [bit] NULL, " +
+              "   [Field7] [datetime] NULL, " +
+              "   [Field8] [text] NULL, " +
+              "   [Field9] [numeric](9, 2) NULL, " +
+              "   [Field15] [text] NULL, " +
+              "   [Field16] [text] NULL, " +
+              "   [Field17] [datetime] NULL, " +
+              "   [Field19] [varchar](40) NULL, " +
+              "   [Field20] [varchar](40) NULL, " +
+              "   [Field21] [varchar](40) NULL, " +
+              "   [Field18] [varchar](40) NULL, " +
+              "   [Field24] [varchar](40) NULL, " +
+              "   [Field34] [text] NULL, " +
+              "   [SurgicalPathologyNo] [int] NULL, " +
+              "   [ProtocoledBy] [int] NULL, " +
+              "   [Biohazard] [text] NULL, " +
+              "   [PrimaryPolicyNo] [int] NULL, " +
+              "   [SecondaryPolicyNo] [int] NULL, " +
+              "   [PrimaryAuthorization] [varchar](20) NULL, " +
+              "   [SecondaryAuthorization] [varchar](20) NULL, " +
+              "   [Field42] [varchar](40) NULL, " +
+              "   [Modifiers] [varchar](15) NULL, " +
+              "   [OriginalValue] int NULL, " +
+              ") ON [PRIMARY] TEXTIMAGE_ON [PRIMARY] ";
 
         commands.add(sql);
 
@@ -446,93 +445,93 @@ public class TestMSSQL extends BaseTest {
             commands.add("DROP TABLE ROOMS");
         }
         sql = "CREATE TABLE [dbo].[ROOMS]( " +
-                "   [Room_No] [int] IDENTITY(1,1) NOT NULL, " +
-                "   [Desc_e] [varchar](20) NULL, " +
-                "   [Desc_f] [varchar](20) NULL, " +
-                "   [StartTime1] [varchar](4) NULL, " +
-                "   [EndTime1] [varchar](4) NULL, " +
-                "   [StartTime2] [varchar](4) NULL, " +
-                "   [EndTime2] [varchar](4) NULL, " +
-                "   [StartTime3] [varchar](4) NULL, " +
-                "   [EndTime3] [varchar](4) NULL, " +
-                "   [StartTime4] [varchar](4) NULL, " +
-                "   [EndTime4] [varchar](4) NULL, " +
-                "   [StartTime5] [varchar](4) NULL, " +
-                "   [EndTime5] [varchar](4) NULL, " +
-                "   [StartTime6] [varchar](4) NULL, " +
-                "   [EndTime6] [varchar](4) NULL, " +
-                "   [StartTime7] [varchar](4) NULL, " +
-                "   [EndTime7] [varchar](4) NULL, " +
-                "   [Intervals] [numeric](2, 0) NULL, " +
-                "   [ExamType_No] [int] NULL, " +
-                "   [ExternalID] [varchar](16) NULL, " +
-                "   [FacilityNo] [int] NULL, " +
-                "   [ProcsAllowed] [varchar](1) NULL, " +
-                "   [ppn_room] [varchar](25) NULL, " +
-                "   [DefaultCostcenterNo] [int] NULL, " +
-                "   [EnableFilmTracking] [bit] NULL, " +
-                "   [Retired] [bit] NULL, " +
-                "   [DefaultFilmLocation] [int] NULL, " +
-                "   [FilmHomeLocation] [int] NULL, " +
-                "   [DigitalImaging] [bit] NULL, " +
-                "   [Weird$#@] [nchar](10) NULL, " +
-                " CONSTRAINT [PK_ROOMS] PRIMARY KEY CLUSTERED  " +
-                "( " +
-                "   [Room_No] ASC " +
-                ")WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, FILLFACTOR = 90) ON [PRIMARY] " +
-                ") ON [PRIMARY]";
+              "   [Room_No] [int] IDENTITY(1,1) NOT NULL, " +
+              "   [Desc_e] [varchar](20) NULL, " +
+              "   [Desc_f] [varchar](20) NULL, " +
+              "   [StartTime1] [varchar](4) NULL, " +
+              "   [EndTime1] [varchar](4) NULL, " +
+              "   [StartTime2] [varchar](4) NULL, " +
+              "   [EndTime2] [varchar](4) NULL, " +
+              "   [StartTime3] [varchar](4) NULL, " +
+              "   [EndTime3] [varchar](4) NULL, " +
+              "   [StartTime4] [varchar](4) NULL, " +
+              "   [EndTime4] [varchar](4) NULL, " +
+              "   [StartTime5] [varchar](4) NULL, " +
+              "   [EndTime5] [varchar](4) NULL, " +
+              "   [StartTime6] [varchar](4) NULL, " +
+              "   [EndTime6] [varchar](4) NULL, " +
+              "   [StartTime7] [varchar](4) NULL, " +
+              "   [EndTime7] [varchar](4) NULL, " +
+              "   [Intervals] [numeric](2, 0) NULL, " +
+              "   [ExamType_No] [int] NULL, " +
+              "   [ExternalID] [varchar](16) NULL, " +
+              "   [FacilityNo] [int] NULL, " +
+              "   [ProcsAllowed] [varchar](1) NULL, " +
+              "   [ppn_room] [varchar](25) NULL, " +
+              "   [DefaultCostcenterNo] [int] NULL, " +
+              "   [EnableFilmTracking] [bit] NULL, " +
+              "   [Retired] [bit] NULL, " +
+              "   [DefaultFilmLocation] [int] NULL, " +
+              "   [FilmHomeLocation] [int] NULL, " +
+              "   [DigitalImaging] [bit] NULL, " +
+              "   [Weird$#@] [nchar](10) NULL, " +
+              " CONSTRAINT [PK_ROOMS] PRIMARY KEY CLUSTERED  " +
+              "( " +
+              "   [Room_No] ASC " +
+              ")WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, FILLFACTOR = 90) ON [PRIMARY] " +
+              ") ON [PRIMARY]";
         commands.add(sql);
 
 
         sql = "CREATE TABLE [dbo].[USERS]( " +
-                "   [User_No] [int] IDENTITY(1,1) NOT NULL, " +
-                "   [UserCode] [varchar](23) NULL, " +
-                "   [UserPass] [varchar](32) NULL, " +
-                "   [Name] [varchar](50) NULL, " +
-                "   [PasswordLastChg] [datetime] NULL, " +
-                "   [Status] [varchar](1) NULL, " +
-                "   [LastLogin] [datetime] NULL, " +
-                "   [TypeOfUser] [varchar](1) NULL, " +
-                "   [License_No] [varchar](20) NULL, " +
-                "   [BillingGroup] [varchar](30) NULL, " +
-                "   [Department] [int] NULL, " +
-                "   [Phone] [text] NULL, " +
-                "   [Street1] [varchar](50) NULL, " +
-                "   [Street2] [varchar](50) NULL, " +
-                "   [City] [varchar](30) NULL, " +
-                "   [State] [varchar](2) NULL, " +
-                "   [Zip] [varchar](10) NULL, " +
-                "   [Country] [varchar](30) NULL, " +
-                "   [PreferredLanguage] [varchar](1) NULL, " +
-                "   [IpAddress] [varchar](15) NULL, " +
-                "   [LastWebActivity] [varchar](15) NULL, " +
-                "   [PasswordViolation] [int] NULL, " +
-                "   [PaLayout_no] [int] NULL, " +
-                "   [LastURL] [varchar](254) NULL, " +
-                "   [EmailAddress] [varchar](100) NULL, " +
-                "   [FaxNumber] [varchar](20) NULL, " +
-                "   [PasswordReminder] [varchar](60) NULL, " +
-                "   [currentMachineLoggedInto] [varchar](20) NULL, " +
-                "   [FacilityNO] [int] NULL, " +
-                "   [License_No2] [varchar](20) NULL, " +
-                "   [Title] [varchar](10) NULL, " +
-                "   [Suffix] [varchar](50) NULL, " +
-                "   [AmountOwed] [money] NULL, " +
-                "   [AmountOwedAfterHeadRemoval] [smallmoney] NULL, " +
-                "   [SpecialityNo] [int] NULL, " +
-                "   [AlertWhenRadSendsNoteToPhys] [text] NULL, " +
-                "   [OldUserNo] [int] NULL, " +
-                "   [TypeOfRadiologist] [varchar](1) NULL, " +
-                "   [npi] [varchar](10) NULL, " +
-                "   [PermissionTemplate_ID] [int] NULL, " +
-                "   [forceUserToChangePwd] [bit] NULL, " +
-                "   [defaultState] [varchar](2) NULL, " +
-                "   [defaultCity] [varchar](30) NULL, " +
-                "   [defaultCountry] [varchar](30) NULL, " +
-                "   [clearUserCode] [bit] NULL, " +
-                "   [residentsLevelOfExperience] [varchar](1) NULL, " +
-                "   [SomeDate] [datetimeoffset](7) NULL " +
-                ") ON [PRIMARY] TEXTIMAGE_ON [PRIMARY] ";
+              "   [User_No] [int] IDENTITY(1,1) NOT NULL, " +
+              "   [UserCode] [varchar](23) NULL, " +
+              "   [UserPass] [varchar](32) NULL, " +
+              "   [Name] [varchar](50) NULL, " +
+              "   [PasswordLastChg] [datetime] NULL, " +
+              "   [Status] [varchar](1) NULL, " +
+              "   [LastLogin] [datetime] NULL, " +
+              "   [TypeOfUser] [varchar](1) NULL, " +
+              "   [License_No] [varchar](20) NULL, " +
+              "   [BillingGroup] [varchar](30) NULL, " +
+              "   [Department] [int] NULL, " +
+              "   [Phone] [text] NULL, " +
+              "   [Street1] [varchar](50) NULL, " +
+              "   [Street2] [varchar](50) NULL, " +
+              "   [City] [varchar](30) NULL, " +
+              "   [State] [varchar](2) NULL, " +
+              "   [Zip] [varchar](10) NULL, " +
+              "   [Country] [varchar](30) NULL, " +
+              "   [PreferredLanguage] [varchar](1) NULL, " +
+              "   [IpAddress] [varchar](15) NULL, " +
+              "   [LastWebActivity] [varchar](15) NULL, " +
+              "   [PasswordViolation] [int] NULL, " +
+              "   [PaLayout_no] [int] NULL, " +
+              "   [LastURL] [varchar](254) NULL, " +
+              "   [EmailAddress] [varchar](100) NULL, " +
+              "   [FaxNumber] [varchar](20) NULL, " +
+              "   [PasswordReminder] [varchar](60) NULL, " +
+              "   [currentMachineLoggedInto] [varchar](20) NULL, " +
+              "   [FacilityNO] [int] NULL, " +
+              "   [License_No2] [varchar](20) NULL, " +
+              "   [Title] [varchar](10) NULL, " +
+              "   [Suffix] [varchar](50) NULL, " +
+              "   [AmountOwed] [money] NULL, " +
+              "   [AmountOwedAfterHeadRemoval] [smallmoney] NULL, " +
+              "   [SpecialityNo] [int] NULL, " +
+              "   [AlertWhenRadSendsNoteToPhys] [text] NULL, " +
+              "   [OldUserNo] [int] NULL, " +
+              "   [TypeOfRadiologist] [varchar](1) NULL, " +
+              "   [npi] [varchar](10) NULL, " +
+              "   [PermissionTemplate_ID] [int] NULL, " +
+              "   [forceUserToChangePwd] [bit] NULL, " +
+              "   [defaultState] [varchar](2) NULL, " +
+              "   [defaultCity] [varchar](30) NULL, " +
+              "   [defaultCountry] [varchar](30) NULL, " +
+              "   [clearUserCode] [bit] NULL, " +
+              "   [residentsLevelOfExperience] [varchar](1) NULL, " +
+              "   [SomeDate] [datetimeoffset](7) NULL " +
+              ") ON [PRIMARY] TEXTIMAGE_ON [PRIMARY] ";
 
         if (isTableInDatabase("USERS", con)) {
             commands.add("DROP TABLE USERS");
@@ -544,16 +543,16 @@ public class TestMSSQL extends BaseTest {
         }
 
         commands.add("CREATE TABLE SavedGames ( " +
-                " ID VARCHAR(20) PRIMARY KEY NOT NULL, " +
-                " Name VARCHAR(100), " +
-                " Some_Date_And_Time DateTime NULL, " +
-                " Platinum REAL NULL, " +
-                " Gold REAL NULL, " +
-                " Silver REAL NULL, " +
-                " Copper REAL NULL, " +
-                " Data TEXT NULL, " +
-                " WhatTimeIsIt Time NULL, " +
-                " SomethingBig varbinary(MAX) NULL) ");
+                     " ID VARCHAR(20) PRIMARY KEY NOT NULL, " +
+                     " Name VARCHAR(100), " +
+                     " Some_Date_And_Time DateTime NULL, " +
+                     " Platinum REAL NULL, " +
+                     " Gold REAL NULL, " +
+                     " Silver REAL NULL, " +
+                     " Copper REAL NULL, " +
+                     " Data TEXT NULL, " +
+                     " WhatTimeIsIt Time NULL, " +
+                     " SomethingBig varbinary(MAX) NULL) ");
 
 
         executeCommands(commands, con);
@@ -565,11 +564,11 @@ public class TestMSSQL extends BaseTest {
         }
 
         sql = "CREATE TABLE DateTestLocalTypes ( " +
-                " ID INT, " +
-                " Description VARCHAR(100), " +
-                " DateOnly DATE, " +
-                " TimeOnly TIME," +
-                " DateAndTime DATETIME) ";
+              " ID INT, " +
+              " Description VARCHAR(100), " +
+              " DateOnly DATE, " +
+              " TimeOnly TIME," +
+              " DateAndTime DATETIME) ";
 
         executeCommand(sql, con);
 
@@ -578,12 +577,12 @@ public class TestMSSQL extends BaseTest {
         }
 
         sql = "CREATE TABLE DateTestSQLTypes ( " +
-                " ID INT, " +
-                " Description VARCHAR(100), " +
-                " DateOnly DATE, " +
-                " TimeOnly TIME," +
-                " UtilDateAndTime DATETIME," +
-                " DateAndTime DATETIME) ";
+              " ID INT, " +
+              " Description VARCHAR(100), " +
+              " DateOnly DATE, " +
+              " TimeOnly TIME," +
+              " UtilDateAndTime DATETIME," +
+              " DateAndTime DATETIME) ";
 
         executeCommand(sql, con);
 
@@ -591,23 +590,23 @@ public class TestMSSQL extends BaseTest {
             executeCommand("DROP TABLE RecordTest1", con);
         }
         sql = "CREATE TABLE RecordTest1 ( " +
-                "ID [uniqueidentifier] NOT NULL, " +
-                "NAME VARCHAR(20), " +
-                "QTY INT, " +
-                "PRICE REAL " +
-                ") ";
+              "ID [uniqueidentifier] NOT NULL, " +
+              "NAME VARCHAR(20), " +
+              "QTY INT, " +
+              "PRICE REAL " +
+              ") ";
         executeCommand(sql, con);
 
         if (UtilsForTests.isTableInDatabase("RecordTest2", con)) {
             executeCommand("DROP TABLE RecordTest2", con);
         }
         sql = "CREATE TABLE RecordTest2 ( " +
-                "ID [int] IDENTITY(1,1) NOT NULL, " +
-                "DESCRIPTION VARCHAR(20), " +
-                "QTY INT, " +
-                "PRICE REAL, " +
-                "CREATED_ON DATETIME default current_timestamp" +
-                ") ";
+              "ID [int] IDENTITY(1,1) NOT NULL, " +
+              "DESCRIPTION VARCHAR(20), " +
+              "QTY INT, " +
+              "PRICE REAL, " +
+              "CREATED_ON DATETIME default current_timestamp" +
+              ") ";
         executeCommand(sql, con);
 
         if (isTableInDatabase("InvoiceLineItems", con)) {
@@ -697,27 +696,30 @@ public class TestMSSQL extends BaseTest {
         barney.setStatus((byte) 1);
         barney.setDateAdded(new Date(System.currentTimeMillis()));
         barney.setAmountOwed(100.23f);
-        barney.setNotes("B:AH B:AH VBLAH\r  BLAH BLAY!");
+        barney.setNotes("BLAH BLAH BLAH");
 
         int count = session.query(Contact.class, sql("select * from Contacts")).size();
 
-        boolean failed = false;
-        try {
-            session.insert(barney);
-        } catch (PersismException e) {
-            failed = true;
-            assertEquals("message s/b 'Non-auto inc generated primary keys are not supported. Please assign your primary key value before performing an insert'",
-                    "Non-auto inc generated primary keys are not supported. Please assign your primary key value before performing an insert",
-                    e.getMessage());
-        }
-        assertTrue(failed);
-
-        assertEquals("should have same count in Contacts",
-                count,
-                session.query(Contact.class, sql("select * from Contacts")).size());
-
-        barney.setIdentity(UUID.randomUUID());
         session.insert(barney);
+        assertNotNull(barney.getIdentity());
+
+//        boolean failed = false;
+//        try {
+//            session.insert(barney);
+//        } catch (PersismException e) {
+//            failed = true;
+//            assertEquals("message s/b 'Non-auto inc generated primary keys are not supported. Please assign your primary key value before performing an insert'",
+//                    "Non-auto inc generated primary keys are not supported. Please assign your primary key value before performing an insert",
+//                    e.getMessage());
+//        }
+//        assertTrue(failed);
+
+//        assertEquals("should have same count in Contacts",
+//                count,
+//                session.query(Contact.class, sql("select * from Contacts")).size());
+//
+//        barney.setIdentity(UUID.randomUUID());
+//        session.insert(barney);
 
         log.info(session.query(Contact.class, sql("select * from Contacts")));
 
@@ -873,8 +875,8 @@ public class TestMSSQL extends BaseTest {
         session.insert(customer);
 
         String sql = "INSERT INTO [Customers] ([GROUP_ID], [Customer_ID], [Company_Name], [Contact_Name], [Contact_Title], " +
-                "[Address], [City], [Region], [Postal_Code], [Country], [Phone], " +
-                "[Fax], [STATUS], [Date_Of_Last_Order]) VALUES (?,  ? ,  ? ,  ? ,  ? ,  ? ,  ? ,  ? ,  ? ,  ? ,  ? ,  ? ,  ? ,  ? )";
+                     "[Address], [City], [Region], [Postal_Code], [Country], [Phone], " +
+                     "[Fax], [STATUS], [Date_Of_Last_Order]) VALUES (?,  ? ,  ? ,  ? ,  ? ,  ? ,  ? ,  ? ,  ? ,  ? ,  ? ,  ? ,  ? ,  ? )";
 
         session.helper.execute(sql, 1, "X", "Name", "Contact", "Title", "Address", "City", "NOTAREGION", "CODe", "CA", "1", "2", "3", null);
 
@@ -890,7 +892,7 @@ public class TestMSSQL extends BaseTest {
             log.info(e.getMessage(), e);
 
             assertEquals("message s/b 'IllegalArgumentReadingColumn'",
-                    Messages.IllegalArgumentReadingColumn.message("region", Customer.class, "Region", Regions.class, String.class, "NOTAREGION"),
+                    Message.IllegalArgumentReadingColumn.message("region", Customer.class, "Region", Region.class, String.class, "NOTAREGION"),
                     e.getMessage());
         }
         assertTrue(failed);
@@ -903,7 +905,7 @@ public class TestMSSQL extends BaseTest {
             failed = true;
             log.error(e.getMessage(), e);
             assertEquals("msg s/b Illegal Argument",
-                    "Illegal Argument occurred setting property: region. Object class net.sf.persism.dao.Customer. Column: Region Type of property: class net.sf.persism.dao.Regions - Type read: class java.lang.String VALUE: NOTAREGION",
+                    "Illegal Argument occurred setting property: region. Object class net.sf.persism.dao.Customer. Column: Region Type of property: class net.sf.persism.dao.Region - Type read: class java.lang.String VALUE: NOTAREGION",
                     e.getMessage());
         }
         assertTrue(failed);
@@ -915,26 +917,26 @@ public class TestMSSQL extends BaseTest {
         }
         // DO NOT remove line feeds
         String sql = "CREATE PROCEDURE [dbo].[spCustomerOrders]\n" +
-                "   @custId varchar(10)\n" +
-                "AS\n" +
-                "BEGIN\n" +
-                "   -- SET NOCOUNT ON added to prevent extra result sets from\n" +
-                "   -- interfering with SELECT statements.\n" +
-                "   SET NOCOUNT ON;\n" +
-                "\n" +
-                "    -- Insert statements for procedure here\n" +
-                "   SELECT c.Customer_ID, c.Company_Name, o.ID Order_ID, \n" +
-                "      o.Name AS Description, o.Date_Paid, o.Created AS DateCreated, o.PAID \n" +
-                "        FROM ORDERS o\n" +
-                "        JOIN Customers c ON o.Customer_ID = c.Customer_ID\n" +
-                "   WHERE c.Customer_ID = @custId        \n" +
-                "END";
+                     "   @custId varchar(10)\n" +
+                     "AS\n" +
+                     "BEGIN\n" +
+                     "   -- SET NOCOUNT ON added to prevent extra result sets from\n" +
+                     "   -- interfering with SELECT statements.\n" +
+                     "   SET NOCOUNT ON;\n" +
+                     "\n" +
+                     "    -- Insert statements for procedure here\n" +
+                     "   SELECT c.Customer_ID, c.Company_Name, o.ID Order_ID, \n" +
+                     "      o.Name AS Description, o.Date_Paid, o.Created AS DateCreated, o.PAID \n" +
+                     "        FROM ORDERS o\n" +
+                     "        JOIN Customers c ON o.Customer_ID = c.Customer_ID\n" +
+                     "   WHERE c.Customer_ID = @custId        \n" +
+                     "END";
         executeCommand(sql, con);
 
         Customer c1 = new Customer();
         c1.setCustomerId("123");
         c1.setCompanyName("ABC INC");
-        c1.setRegion(Regions.East);
+        c1.setRegion(Region.East);
         c1.setStatus('1');
         session.insert(c1);
         session.fetch(c1);
@@ -944,7 +946,7 @@ public class TestMSSQL extends BaseTest {
         Customer cx = new Customer();
         cx.setCustomerId("123");
         cx.setCompanyName("ABC INC");
-        cx.setRegion(Regions.East);
+        cx.setRegion(Region.East);
         cx.setAddress("asasasas");
         cx.setStatus('e');
         session.update(cx);
@@ -1032,8 +1034,8 @@ public class TestMSSQL extends BaseTest {
 
         String sql;
         sql = "select top 10 ExamID, p.DESC_E ProcedureDescription, r.DESC_E RoomDescription, eXaMdAtE from exams " +
-                "left join EXAMCODE as p ON Exams.ExamCode_No = p.ExamCode_No " +
-                "left join ROOMS as r ON Exams.Room_No = r.Room_No ";
+              "left join EXAMCODE as p ON Exams.ExamCode_No = p.ExamCode_No " +
+              "left join ROOMS as r ON Exams.Room_No = r.Room_No ";
 
         List<QueryResult> list = session.query(QueryResult.class, sql(sql));
         log.info(list.toString());
@@ -1041,8 +1043,8 @@ public class TestMSSQL extends BaseTest {
 
         // Try again changing case of some fields.
         sql = "select top 10 ExamID, p.Desc_E ProcedureDescription, r.Desc_E RoomDescription, ExamDate from exams " +
-                "left join EXAMCODE as p ON Exams.ExamCode_No = p.ExamCode_No " +
-                "left join ROOMS as r ON Exams.Room_No = r.Room_No ";
+              "left join EXAMCODE as p ON Exams.ExamCode_No = p.ExamCode_No " +
+              "left join ROOMS as r ON Exams.Room_No = r.Room_No ";
 
         list = session.query(QueryResult.class, sql(sql));
         log.info(list.toString());
@@ -1050,8 +1052,8 @@ public class TestMSSQL extends BaseTest {
 
         List<Integer> simpleList;
         sql = "select top 10 ExamID from exams " +
-                "left join EXAMCODE as p ON Exams.ExamCode_No = p.ExamCode_No " +
-                "left join ROOMS as r ON Exams.Room_No = r.Room_No ";
+              "left join EXAMCODE as p ON Exams.ExamCode_No = p.ExamCode_No " +
+              "left join ROOMS as r ON Exams.Room_No = r.Room_No ";
 
         simpleList = session.query(Integer.class, sql(sql));
         log.info(simpleList.toString());
@@ -1075,7 +1077,7 @@ public class TestMSSQL extends BaseTest {
             shouldHaveFailed = true;
             log.info(e.getMessage(), e);
             assertEquals("message should be ",
-                    Messages.ObjectNotProperlyInitializedByQuery.message(contact.getClass(), "[identity]", "[PartnerID, Type, First Name, Last Name, ContactName, Company, Division, Email, Address1, Address2, City, StateProvince, ZipPostalCode, Country, DateAdded, LastModified, Notes, Status, AmountOwed, BigInt, SomeDate, WhatMiteIsIt, WhatTimeIsIt]"),
+                    Message.ObjectNotProperlyInitializedByQuery.message(contact.getClass(), "[identity]", "[PartnerID, Type, First Name, Last Name, ContactName, Company, Division, Email, Address1, Address2, City, StateProvince, ZipPostalCode, Country, DateAdded, LastModified, Notes, Status, AmountOwed, BigInt, SomeDate, WhatMiteIsIt, WhatTimeIsIt]"),
                     e.getMessage());
         }
         assertTrue("should have failed", shouldHaveFailed);
@@ -1205,26 +1207,16 @@ public class TestMSSQL extends BaseTest {
 
         DumbTableStringAutoInc dumb = new DumbTableStringAutoInc();
         dumb.setDescription("test");
-        session.insert(dumb);
-        // should not actually do anything since there is no autoinc.
-        // the table is defined with VARCHAR
-        log.info(dumb);
-        assertNull(dumb.getId());
+        boolean fail = false;
 
-        // query = new Query(con);
         try {
-            Statement st = con.createStatement();
-            java.sql.ResultSet rs = st.executeQuery("SELECT * FROM ORDERS WHERE 1=2");
-            ResultSetMetaData rsMetaData = rs.getMetaData();
-            for (int i = 1; i <= rsMetaData.getColumnCount(); i++) {
-                log.info(rsMetaData.getColumnName(i));
-                log.info(rsMetaData.isAutoIncrement(i));
-            }
-        } catch (SQLException e) {
-            log.error(e.getMessage(), e);
-            fail(e.getMessage());
+            session.insert(dumb); // should fail since we marked the ID property as autoinc which makes no sense
+        } catch (PersismException e) {
+            log.warn(e.getMessage(), e);
+            fail = true;
+            assertEquals("s/b Could not retrieve value from column ID for table [dbo].[DumbTableStringAutoInc]", "Could not retrieve value from column ID for table [dbo].[DumbTableStringAutoInc]", e.getMessage());
         }
-
+        assertTrue(fail);
     }
 
     public void testUserDAO() throws Exception {

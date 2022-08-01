@@ -27,7 +27,7 @@ public final class TestHSQLDB extends BaseTest {
 
     @Override
     public void setUp() throws Exception {
-        connectionType = ConnectionTypes.HSQLDB;
+        connectionType = ConnectionType.HSQLDB;
         super.setUp();
 
         Properties props = new Properties();

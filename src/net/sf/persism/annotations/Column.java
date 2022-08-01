@@ -60,4 +60,11 @@ public @interface Column {
      */
     boolean hasDefault() default false;
 
+    /**
+     * Indicates this column is read-only. It will be included in the SELECT to be initialized but will not be included
+     * in INSERT or UPDATE statements.
+     * @return true if this column is identified by the annotation as read-only.
+     */
+    boolean readOnly() default false;
+
 }

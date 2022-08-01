@@ -156,7 +156,7 @@ public class UtilsForTests {
         String sep = "";
         for (FieldDef field : fields) {
 
-            Types type = Types.getType(field.getType());
+            JavaType type = JavaType.getType(field.getType());
             String sqlType = null;
             switch (type) {
 

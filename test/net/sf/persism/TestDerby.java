@@ -29,7 +29,7 @@ public final class TestDerby extends BaseTest {
 
     @Override
     public void setUp() throws Exception {
-        connectionType = ConnectionTypes.Derby;
+        connectionType = ConnectionType.Derby;
         super.setUp();
 
         Properties props = new Properties();

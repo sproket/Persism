@@ -34,7 +34,7 @@ public class TestPostgreSQL extends BaseTest {
 
     @Override
     protected void setUp() throws Exception {
-        connectionType = ConnectionTypes.PostgreSQL;
+        connectionType = ConnectionType.PostgreSQL;
         super.setUp();
 
         if (getClass().equals(TestPostgreSQL.class)) {
@@ -49,7 +49,7 @@ public class TestPostgreSQL extends BaseTest {
             Class.forName(driver);
 
             con = DriverManager.getConnection(url, props);
-
+            log.error("PRODUCT? " + con.getMetaData().getDriverName() + " - " + con.getMetaData().getDriverVersion() + " " + con.getMetaData().getDatabaseProductName() + " " + con.getMetaData().getDatabaseProductVersion());
             createTables();
 
             session = new Session(con);

@@ -22,6 +22,7 @@ public final class Session implements AutoCloseable {
 
     private static final Log log = Log.getLogger(Session.class);
     private static final Log blog = Log.getLogger("net.sf.persism.Benchmarks");
+    private static final Log sqllog = Log.getLogger("net.sf.persism.SQL");
 
     final SessionHelper helper;
 
@@ -107,26 +108,26 @@ public final class Session implements AutoCloseable {
         Class<?> objectClass = object.getClass();
 
         // If we know this type it means it's a primitive type. This method cannot be used for primitives
-        boolean readPrimitive = Types.getType(objectClass) != null;
+        boolean readPrimitive = JavaType.getType(objectClass) != null;
         if (readPrimitive) {
-            throw new PersismException(Messages.OperationNotSupportedForJavaType.message(objectClass, "FETCH"));
+            throw new PersismException(Message.OperationNotSupportedForJavaType.message(objectClass, "FETCH"));
         }
 
         if (isRecord(objectClass)) {
-            throw new PersismException(Messages.OperationNotSupportedForRecord.message(objectClass, "FETCH"));
+            throw new PersismException(Message.OperationNotSupportedForRecord.message(objectClass, "FETCH"));
         }
 
         if (objectClass.getAnnotation(View.class) != null) {
-            throw new PersismException(Messages.OperationNotSupportedForView.message(objectClass, "FETCH"));
+            throw new PersismException(Message.OperationNotSupportedForView.message(objectClass, "FETCH"));
         }
 
         if (objectClass.getAnnotation(NotTable.class) != null) {
-            throw new PersismException(Messages.OperationNotSupportedForNotTableQuery.message(objectClass, "FETCH"));
+            throw new PersismException(Message.OperationNotSupportedForNotTableQuery.message(objectClass, "FETCH"));
         }
 
         List<String> primaryKeys = metaData.getPrimaryKeys(objectClass, connection);
         if (primaryKeys.size() == 0) {
-            throw new PersismException(Messages.TableHasNoPrimaryKeys.message("FETCH", metaData.getTableInfo(objectClass).name()));
+            throw new PersismException(Message.TableHasNoPrimaryKeys.message("FETCH", metaData.getTableInfo(objectClass).name()));
         }
 
         Map<String, PropertyInfo> properties = metaData.getTableColumnsPropertyInfo(object.getClass(), connection);
@@ -181,16 +182,16 @@ public final class Session implements AutoCloseable {
      */
     public <T> T fetch(Class<T> objectClass, Parameters primaryKeyValues) {
         if (objectClass.getAnnotation(NotTable.class) != null) {
-            throw new PersismException(Messages.OperationNotSupportedForNotTableQuery.message(objectClass, "FETCH w/o specifying the SQL"));
+            throw new PersismException(Message.OperationNotSupportedForNotTableQuery.message(objectClass, "FETCH w/o specifying the SQL"));
         }
 
         // View does not have any good way to know about primary keys
         if (objectClass.getAnnotation(View.class) != null) {
-            throw new PersismException(Messages.OperationNotSupportedForView.message(objectClass, "FETCH w/o specifying the SQL with @View"));
+            throw new PersismException(Message.OperationNotSupportedForView.message(objectClass, "FETCH w/o specifying the SQL with @View"));
         }
 
-        if (Types.getType(objectClass) != null) {
-            throw new PersismException(Messages.OperationNotSupportedForJavaType.message(objectClass, "FETCH"));
+        if (JavaType.getType(objectClass) != null) {
+            throw new PersismException(Message.OperationNotSupportedForJavaType.message(objectClass, "FETCH"));
         }
         primaryKeyValues.areKeys = true;
 
@@ -224,7 +225,7 @@ public final class Session implements AutoCloseable {
      */
     public <T> T fetch(Class<T> objectClass, SQL sql, Parameters parameters) {
         // If we know this type it means it's a primitive type. Not a DAO so we use a different rule to read those
-        boolean isPOJO = Types.getType(objectClass) == null;
+        boolean isPOJO = JavaType.getType(objectClass) == null;
         boolean isRecord = isPOJO && isRecord(objectClass);
 
         JDBCResult result = JDBCResult.DEFAULT;
@@ -289,11 +290,11 @@ public final class Session implements AutoCloseable {
      */
     public <T> List<T> query(Class<T> objectClass) {
         if (objectClass.getAnnotation(NotTable.class) != null) {
-            throw new PersismException(Messages.OperationNotSupportedForNotTableQuery.message(objectClass, "QUERY w/o specifying the SQL"));
+            throw new PersismException(Message.OperationNotSupportedForNotTableQuery.message(objectClass, "QUERY w/o specifying the SQL"));
         }
 
-        if (Types.getType(objectClass) != null) {
-            throw new PersismException(Messages.OperationNotSupportedForJavaType.message(objectClass, "QUERY w/o specifying the SQL"));
+        if (JavaType.getType(objectClass) != null) {
+            throw new PersismException(Message.OperationNotSupportedForJavaType.message(objectClass, "QUERY w/o specifying the SQL"));
         }
         SQL sql = sql(metaData.getSelectStatement(objectClass, connection));
         return query(objectClass, sql, none());
@@ -325,17 +326,17 @@ public final class Session implements AutoCloseable {
 
         // NotTable requires SQL - we don't know what SQL to use here.
         if (objectClass.getAnnotation(NotTable.class) != null) {
-            throw new PersismException(Messages.OperationNotSupportedForNotTableQuery.message(objectClass, "QUERY w/o specifying the SQL"));
+            throw new PersismException(Message.OperationNotSupportedForNotTableQuery.message(objectClass, "QUERY w/o specifying the SQL"));
         }
 
         // View does not have any good way to know about primary keys
         if (objectClass.getAnnotation(View.class) != null && primaryKeyValues.size() > 0) {
-            throw new PersismException(Messages.OperationNotSupportedForView.message(objectClass, "QUERY w/o specifying the SQL with @View since we don't have Primary Keys"));
+            throw new PersismException(Message.OperationNotSupportedForView.message(objectClass, "QUERY w/o specifying the SQL with @View since we don't have Primary Keys"));
         }
 
         // Requires a POJO or Record
-        if (Types.getType(objectClass) != null) {
-            throw new PersismException(Messages.OperationNotSupportedForJavaType.message(objectClass, "QUERY"));
+        if (JavaType.getType(objectClass) != null) {
+            throw new PersismException(Message.OperationNotSupportedForJavaType.message(objectClass, "QUERY"));
         }
 
         if (primaryKeyValues.size() == 0) {
@@ -344,7 +345,7 @@ public final class Session implements AutoCloseable {
 
         List<String> primaryKeys = metaData.getPrimaryKeys(objectClass, connection);
         if (primaryKeys.size() == 0) {
-            throw new PersismException(Messages.TableHasNoPrimaryKeys.message("QUERY", metaData.getTableInfo(objectClass)));
+            throw new PersismException(Message.TableHasNoPrimaryKeys.message("QUERY", metaData.getTableInfo(objectClass)));
         }
 
         primaryKeyValues.areKeys = true;
@@ -374,7 +375,7 @@ public final class Session implements AutoCloseable {
         List<T> list = new ArrayList<>(32);
 
         // If we know this type it means it's a primitive type. Not a DAO so we use a different rule to read those
-        boolean isPOJO = Types.getType(objectClass) == null;
+        boolean isPOJO = JavaType.getType(objectClass) == null;
         boolean isRecord = isPOJO && isRecord(objectClass);
 
         long now = System.currentTimeMillis();
@@ -452,7 +453,7 @@ public final class Session implements AutoCloseable {
                 sep = ",";
             }
 
-            throw new PersismException(Messages.ObjectNotProperlyInitialized.message(objectClass, sb));
+            throw new PersismException(Message.ObjectNotProperlyInitialized.message(objectClass, sb));
         }
 
         ResultSetMetaData rsmd = rs.getMetaData();
@@ -476,7 +477,7 @@ public final class Session implements AutoCloseable {
             missing.addAll(properties.keySet());
             foundColumns.forEach(missing::remove);
 
-            throw new PersismException(Messages.ObjectNotProperlyInitializedByQuery.message(objectClass, foundColumns, missing));
+            throw new PersismException(Message.ObjectNotProperlyInitializedByQuery.message(objectClass, foundColumns, missing));
         }
 
     }
@@ -500,11 +501,11 @@ public final class Session implements AutoCloseable {
      * @throws PersismException Indicating the upcoming robot uprising.
      */
     public <T> Result<T> update(T object) throws PersismException {
-        helper.checkIfOkForWriteOperation(object, "UPDATE");
+        helper.checkIfOkForWriteOperation(object.getClass(), "UPDATE");
 
         List<String> primaryKeys = metaData.getPrimaryKeys(object.getClass(), connection);
         if (primaryKeys.size() == 0) {
-            throw new PersismException(Messages.TableHasNoPrimaryKeys.message("UPDATE", metaData.getTableInfo(object.getClass()).name()));
+            throw new PersismException(Message.TableHasNoPrimaryKeys.message("UPDATE", metaData.getTableInfo(object.getClass()).name()));
         }
 
         PreparedStatement st = null;
@@ -585,13 +586,14 @@ public final class Session implements AutoCloseable {
      * @throws PersismException When planet of the apes starts happening.
      */
     public <T> Result<T> insert(T object) throws PersismException {
-        helper.checkIfOkForWriteOperation(object, "INSERT");
+        helper.checkIfOkForWriteOperation(object.getClass(), "INSERT");
 
         String insertStatement = metaData.getInsertStatement(object, connection);
-        log.debug(insertStatement);
 
         PreparedStatement st = null;
         ResultSet rs = null;
+
+        ConnectionType connectionType = metaData.getConnectionType();
 
         try {
             // These keys should always be in sorted order.
@@ -602,7 +604,7 @@ public final class Session implements AutoCloseable {
             for (ColumnInfo column : columns.values()) {
                 if (column.autoIncrement) {
                     generatedKeys.add(column.columnName);
-                } else if (metaData.getConnectionType().supportsNonAutoIncGenerated() && column.primary && column.hasDefault) {
+                } else if (connectionType.supportsNonAutoIncGenerated() && column.primary && column.hasDefault && properties.get(column.columnName).getValue(object) == null) {
                     generatedKeys.add(column.columnName);
                 }
             }
@@ -623,7 +625,7 @@ public final class Session implements AutoCloseable {
 
                 PropertyInfo propertyInfo = properties.get(columnInfo.columnName);
                 if (propertyInfo.getter == null) {
-                    throw new PersismException(Messages.ClassHasNoGetterForProperty.message(object.getClass(), propertyInfo.propertyName));
+                    throw new PersismException(Message.ClassHasNoGetterForProperty.message(object.getClass(), propertyInfo.propertyName));
                 }
                 if (!columnInfo.autoIncrement) {
 
@@ -631,15 +633,15 @@ public final class Session implements AutoCloseable {
                         // Do not include if this column has a default and no value has been
                         // set on it's associated property.
                         if (propertyInfo.getter.getReturnType().isPrimitive()) {
-                            log.warnNoDuplicates(Messages.PropertyShouldBeAnObjectType.message(propertyInfo.propertyName, columnInfo.columnName, object.getClass()));
+                            log.warnNoDuplicates(Message.PropertyShouldBeAnObjectType.message(propertyInfo.propertyName, columnInfo.columnName, object.getClass()));
                         }
 
                         if (propertyInfo.getValue(object) == null) {
 
                             if (columnInfo.primary) {
-                                // This is supported with PostgreSQL but otherwise throw this an exception
-                                if (!metaData.getConnectionType().supportsNonAutoIncGenerated()) {
-                                    throw new PersismException(Messages.NonAutoIncGeneratedNotSupported.message());
+                                // This is supported with PostgreSQL/MSSQL but otherwise throw this an exception
+                                if (!connectionType.supportsNonAutoIncGenerated()) {
+                                    throw new PersismException(Message.NonAutoIncGeneratedNotSupported.message());
                                 }
                             }
 
@@ -648,10 +650,14 @@ public final class Session implements AutoCloseable {
                         }
                     }
 
-                    Object value = propertyInfo.getValue(object);
-
-                    params.add(value);
-                    columnInfos.add(columnInfo);
+                    // if any column is read only it usually means there's a default to read back - we don't include in the INSERT or the params.
+                    if (columnInfo.readOnly) {
+                        refreshAfterInsert = true;
+                    } else {
+                        Object value = propertyInfo.getValue(object);
+                        params.add(value);
+                        columnInfos.add(columnInfo);
+                    }
                 }
             }
 
@@ -664,29 +670,55 @@ public final class Session implements AutoCloseable {
                 }
             }
 
-            helper.setParameters(st, params.toArray());
-            st.execute();
-            int ret = st.getUpdateCount();
+            if (sqllog.isDebugEnabled()) {
+                sqllog.debug("%s params: %s", insertStatement, params);
+            }
 
-            log.debug("insert return count after insert: %s", ret);
+            helper.setParameters(st, params.toArray());
+            boolean insertReturnedResults = st.execute();
+            int rowCount = st.getUpdateCount();
 
             List<Object> primaryKeyValues = new ArrayList<>();
             if (generatedKeys.size() > 0) {
-                rs = st.getGeneratedKeys();
+                if (insertReturnedResults) {
+                    rs = st.getResultSet();
+//                    ResultSetMetaData rsmd = rs.getMetaData();
+//                    System.out.println("insertReturnedResults");
+//                    for (int i = 1; i <= rsmd.getColumnCount(); i++) {
+//                        System.out.println(rsmd.getColumnName(i));
+//                    }
+//                    System.out.println("***");
+                } else {
+                    rs = st.getGeneratedKeys();
+//                    ResultSetMetaData rsmd = rs.getMetaData();
+//                    System.out.println("NOT insertReturnedResults");
+//                    for (int i = 1; i <= rsmd.getColumnCount(); i++) {
+//                        System.out.println(rsmd.getColumnName(i));
+//                    }
+//                    System.out.println("***");
+                }
+                log.debug("insert return count after insert: %s", rowCount);
                 PropertyInfo propertyInfo;
                 for (String column : generatedKeys) {
                     if (rs.next()) {
 
                         propertyInfo = properties.get(column);
-
                         Method setter = propertyInfo.setter;
                         Object value;
                         if (setter != null) {
                             value = helper.getTypedValueReturnedFromGeneratedKeys(setter.getParameterTypes()[0], rs);
+                            if (value == null) {
+                                throw new PersismException("Could not retrieve value from column " + column + " for table " + metaData.getTableInfo(object.getClass()));
+                            }
+                            value = converter.convert(value, setter.getParameterTypes()[0], column);
                             setter.invoke(object, value);
                         } else {
                             // Set read-only property by field ONLY FOR NON-RECORDS.
                             value = helper.getTypedValueReturnedFromGeneratedKeys(propertyInfo.field.getType(), rs);
+                            if (value == null) {
+                                throw new PersismException("Could not retrieve value from column " + column + " for table " + metaData.getTableInfo(object.getClass()));
+                            }
+                            value = converter.convert(value, propertyInfo.field.getType(), column);
                             if (!isRecord(object.getClass())) {
                                 propertyInfo.field.setAccessible(true);
                                 propertyInfo.field.set(object, value);
@@ -726,7 +758,7 @@ public final class Session implements AutoCloseable {
             }
 
             //noinspection unchecked
-            return new Result<>(ret, (T) returnObject);
+            return new Result<>(rowCount, (T) returnObject);
         } catch (Exception e) {
             Util.rollback(connection);
             throw new PersismException(e.getMessage(), e);
@@ -744,11 +776,11 @@ public final class Session implements AutoCloseable {
      */
     public <T> Result<T> delete(T object) throws PersismException {
 
-        helper.checkIfOkForWriteOperation(object, "DELETE");
+        helper.checkIfOkForWriteOperation(object.getClass(), "DELETE");
 
         List<String> primaryKeys = metaData.getPrimaryKeys(object.getClass(), connection);
         if (primaryKeys.size() == 0) {
-            throw new PersismException(Messages.TableHasNoPrimaryKeys.message("DELETE", metaData.getTableInfo(object.getClass()).name()));
+            throw new PersismException(Message.TableHasNoPrimaryKeys.message("DELETE", metaData.getTableInfo(object.getClass()).name()));
         }
 
         PreparedStatement st = null;
@@ -784,6 +816,24 @@ public final class Session implements AutoCloseable {
         } finally {
             Util.cleanup(st, null);
         }
+    }
+
+    public <T> List<Result<T>> delete(Class<T> objectClass) {
+        // delete ALL!
+        helper.checkIfOkForWriteOperation(objectClass, "DELETE");
+        return Collections.emptyList();
+    }
+
+    public <T> List<Result<T>> delete(Class<T> objectClass, Parameters parameters) {
+        // delete primary key
+        helper.checkIfOkForWriteOperation(objectClass, "DELETE");
+        return Collections.emptyList();
+    }
+
+    public <T> List<Result<T>> delete(Class<T> objectClass, SQL sql, Parameters parameters) {
+        // delete where.
+        helper.checkIfOkForWriteOperation(objectClass, "DELETE");
+        return Collections.emptyList();
     }
 
     /**

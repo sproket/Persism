@@ -5,14 +5,12 @@ import net.sf.persism.categories.ExternalDB;
 import net.sf.persism.dao.wwi1.*;
 import net.sf.persism.dao.wwi1.views.CustomerView;
 import org.junit.experimental.categories.Category;
-import org.junit.runner.Description;
-import org.junit.runner.Runner;
-import org.junit.runner.notification.RunNotifier;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.util.Properties;
 
+import static net.sf.persism.Parameters.params;
 import static net.sf.persism.SQL.where;
 
 @Category(ExternalDB.class)
@@ -45,12 +43,7 @@ public final class TestWideWorldImporters extends TestCase {
         }
     }
 
-    public void testAllClasses() {
-
-
-        session.query(Customer.class);
-
-
+    public void testAllClassesQuery() {
         session.query(Application.City.class);
         session.query(BuyingGroup.class);
         session.query(City.class);
@@ -87,6 +80,38 @@ public final class TestWideWorldImporters extends TestCase {
         session.query(net.sf.persism.dao.wwi1.views.VehicleTemperature.class);
     }
 
+    public void testInsertWithSequence() {
+        // insert specifying ID
+        City city = new City();
+        city.setCityId(38189);
+        if (session.fetch(city)) {
+            assertNotNull(city.getValidFrom());
+            assertNotNull(city.getValidTo());
+            session.delete(city);
+        }
+        city.setCityName("SOMEWHERE");
+        city.setStateProvinceId(1);
+        city.setLastEditedBy(1);
+        session.insert(city);
+        assertNotNull(city.getValidFrom());
+        assertNotNull(city.getValidTo());
+
+        // insert not specifying id
+        City city2 = session.fetch(City.class, where(":cityName = ?"), params("SOMEWHERE2"));
+        if (city2 != null) {
+            session.delete(city2);
+        }
+        city2 = new City();
+        city2.setCityName("SOMEWHERE2");
+        city2.setStateProvinceId(1);
+        city2.setLastEditedBy(1);
+        session.insert(city2);
+        assertTrue(city2.getCityId() > 0);
+
+        city2.setStateProvinceId(2);
+        session.update(city2);
+    }
+
     public void testUpdateWithTemporal() {
 
         // clowns https://github.com/Microsoft/mssql-jdbc/issues/656
@@ -107,9 +132,11 @@ public final class TestWideWorldImporters extends TestCase {
         bg = new BuyingGroup();
         try {
             bg.setLastEditedBy(person.getPersonId());
-            bg.setBuyingGroupName("Some test8");
+            bg.setBuyingGroupName("Some test102");
             session.insert(bg);
-
+            log.error("BuyingGroup: " + bg);
+        } catch (Exception e) {
+            log.error(e.getMessage(), e);
         } finally {
             session.delete(bg);
         }

@@ -1,6 +1,7 @@
 package net.sf.persism.dao.wwi1;
 
 import net.sf.persism.PersistableObject;
+import net.sf.persism.annotations.Column;
 
 import java.sql.Date;
 import java.util.Objects;
@@ -15,7 +16,9 @@ public final class City extends PersistableObject<City> {
     private Object location;
     private Long latestRecordedPopulation;
     private Integer lastEditedBy;
+    @Column(readOnly = true)
     private Date validFrom; // these are used by temporal tables - should not be referenced
+    @Column(readOnly = true)
     private Date validTo;
 
     public Integer getCityId() {
