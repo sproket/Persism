@@ -28,6 +28,9 @@ enum Message {
     CannotNotJoinToNullProperty("Cannot join to null for property: %s. Instantiate the property as a modifiable collection in your constructor."),
     PropertyNotFoundForJoin("Join property %s not found in %s"),
     PropertyCountMismatchForJoin("You need the same number of Properties on both sides of a join %s %s vs %s"),
+    DeleteCanOnlyUseWhereClause("DELETE can only use sql.where()"),
+    DeleteExpectsInstanceOfDataObjectNotAClass("DELETE expects an instance of a Data object, not a class: %s"),
+    CannotDeleteWithNoPrimaryKeys("Cannot DELETE with no primary keys provided"),
 
 
     // WARNINGS

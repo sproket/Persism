@@ -130,7 +130,7 @@ public final class Session implements AutoCloseable {
             throw new PersismException(Message.TableHasNoPrimaryKeys.message("FETCH", metaData.getTableInfo(objectClass).name()));
         }
 
-        Map<String, PropertyInfo> properties = metaData.getTableColumnsPropertyInfo(object.getClass(), connection);
+        Map<String, PropertyInfo> properties = metaData.getTableColumnsPropertyInfo(objectClass, connection);
         Parameters params = new Parameters();
 
         List<ColumnInfo> columnInfos = new ArrayList<>(properties.size());
@@ -144,7 +144,7 @@ public final class Session implements AutoCloseable {
             }
             assert params.size() == columnInfos.size();
 
-            String sql = metaData.getDefaultSelectStatement(object.getClass(), connection);
+            String sql = metaData.getDefaultSelectStatement(objectClass, connection);
             log.debug("FETCH %s PARAMS: %s", sql, params);
             for (int j = 0; j < params.size(); j++) {
                 if (params.get(j) != null) {
@@ -355,7 +355,7 @@ public final class Session implements AutoCloseable {
             return query(objectClass, sql(metaData.getDefaultSelectStatement(objectClass, connection)), primaryKeyValues);
         }
 
-        String query = metaData.getPrimaryInClause(objectClass, primaryKeyValues.size(), connection);
+        String query = metaData.getSelectStatement(objectClass, connection) + metaData.getPrimaryInClause(objectClass, primaryKeyValues.size(), connection);
         SQL sql = sql(query);
         return query(objectClass, sql, primaryKeyValues);
     }
@@ -501,11 +501,13 @@ public final class Session implements AutoCloseable {
      * @throws PersismException Indicating the upcoming robot uprising.
      */
     public <T> Result<T> update(T object) throws PersismException {
-        helper.checkIfOkForWriteOperation(object.getClass(), "UPDATE");
+        Class<?> objectClass = object.getClass();
 
-        List<String> primaryKeys = metaData.getPrimaryKeys(object.getClass(), connection);
+        helper.checkIfOkForWriteOperation(objectClass, "UPDATE");
+
+        List<String> primaryKeys = metaData.getPrimaryKeys(objectClass, connection);
         if (primaryKeys.size() == 0) {
-            throw new PersismException(Message.TableHasNoPrimaryKeys.message("UPDATE", metaData.getTableInfo(object.getClass()).name()));
+            throw new PersismException(Message.TableHasNoPrimaryKeys.message("UPDATE", metaData.getTableInfo(objectClass).name()));
         }
 
         PreparedStatement st = null;
@@ -516,14 +518,14 @@ public final class Session implements AutoCloseable {
                 updateStatement = metaData.getUpdateStatement(object, connection);
                 log.debug(updateStatement);
             } catch (NoChangesDetectedForUpdateException e) {
-                log.info("No properties changed. No update required for Object: " + object + " class: " + object.getClass().getName());
+                log.info("No properties changed. No update required for Object: " + object + " class: " + objectClass.getName());
                 return new Result<>(0, object);
             }
 
             st = connection.prepareStatement(updateStatement);
 
             // These keys should always be in sorted order.
-            Map<String, PropertyInfo> allProperties = metaData.getTableColumnsPropertyInfo(object.getClass(), connection);
+            Map<String, PropertyInfo> allProperties = metaData.getTableColumnsPropertyInfo(objectClass, connection);
             Map<String, PropertyInfo> changedProperties;
             if (object instanceof Persistable<?> pojo) {
                 changedProperties = metaData.getChangedProperties(pojo, connection);
@@ -534,7 +536,7 @@ public final class Session implements AutoCloseable {
             List<Object> params = new ArrayList<>(primaryKeys.size());
             List<ColumnInfo> columnInfos = new ArrayList<>(changedProperties.size());
 
-            Map<String, ColumnInfo> columns = metaData.getColumns(object.getClass(), connection);
+            Map<String, ColumnInfo> columns = metaData.getColumns(objectClass, connection);
 
             for (String column : changedProperties.keySet()) {
                 ColumnInfo columnInfo = columns.get(column);
@@ -550,7 +552,7 @@ public final class Session implements AutoCloseable {
 
             for (String column : primaryKeys) {
                 params.add(allProperties.get(column).getValue(object));
-                columnInfos.add(metaData.getColumns(object.getClass(), connection).get(column));
+                columnInfos.add(metaData.getColumns(objectClass, connection).get(column));
             }
             assert params.size() == columnInfos.size();
             for (int j = 0; j < params.size(); j++) {
@@ -586,7 +588,9 @@ public final class Session implements AutoCloseable {
      * @throws PersismException When planet of the apes starts happening.
      */
     public <T> Result<T> insert(T object) throws PersismException {
-        helper.checkIfOkForWriteOperation(object.getClass(), "INSERT");
+        Class<?> objectClass = object.getClass();
+
+        helper.checkIfOkForWriteOperation(objectClass, "INSERT");
 
         String insertStatement = metaData.getInsertStatement(object, connection);
 
@@ -597,8 +601,8 @@ public final class Session implements AutoCloseable {
 
         try {
             // These keys should always be in sorted order.
-            Map<String, PropertyInfo> properties = metaData.getTableColumnsPropertyInfo(object.getClass(), connection);
-            Map<String, ColumnInfo> columns = metaData.getColumns(object.getClass(), connection);
+            Map<String, PropertyInfo> properties = metaData.getTableColumnsPropertyInfo(objectClass, connection);
+            Map<String, ColumnInfo> columns = metaData.getColumns(objectClass, connection);
 
             List<String> generatedKeys = new ArrayList<>(1);
             for (ColumnInfo column : columns.values()) {
@@ -625,7 +629,7 @@ public final class Session implements AutoCloseable {
 
                 PropertyInfo propertyInfo = properties.get(columnInfo.columnName);
                 if (propertyInfo.getter == null) {
-                    throw new PersismException(Message.ClassHasNoGetterForProperty.message(object.getClass(), propertyInfo.propertyName));
+                    throw new PersismException(Message.ClassHasNoGetterForProperty.message(objectClass, propertyInfo.propertyName));
                 }
                 if (!columnInfo.autoIncrement) {
 
@@ -633,7 +637,7 @@ public final class Session implements AutoCloseable {
                         // Do not include if this column has a default and no value has been
                         // set on it's associated property.
                         if (propertyInfo.getter.getReturnType().isPrimitive()) {
-                            log.warnNoDuplicates(Message.PropertyShouldBeAnObjectType.message(propertyInfo.propertyName, columnInfo.columnName, object.getClass()));
+                            log.warnNoDuplicates(Message.PropertyShouldBeAnObjectType.message(propertyInfo.propertyName, columnInfo.columnName, objectClass));
                         }
 
                         if (propertyInfo.getValue(object) == null) {
@@ -682,20 +686,8 @@ public final class Session implements AutoCloseable {
             if (generatedKeys.size() > 0) {
                 if (insertReturnedResults) {
                     rs = st.getResultSet();
-//                    ResultSetMetaData rsmd = rs.getMetaData();
-//                    System.out.println("insertReturnedResults");
-//                    for (int i = 1; i <= rsmd.getColumnCount(); i++) {
-//                        System.out.println(rsmd.getColumnName(i));
-//                    }
-//                    System.out.println("***");
                 } else {
                     rs = st.getGeneratedKeys();
-//                    ResultSetMetaData rsmd = rs.getMetaData();
-//                    System.out.println("NOT insertReturnedResults");
-//                    for (int i = 1; i <= rsmd.getColumnCount(); i++) {
-//                        System.out.println(rsmd.getColumnName(i));
-//                    }
-//                    System.out.println("***");
                 }
                 log.debug("insert return count after insert: %s", rowCount);
                 PropertyInfo propertyInfo;
@@ -708,7 +700,7 @@ public final class Session implements AutoCloseable {
                         if (setter != null) {
                             value = helper.getTypedValueReturnedFromGeneratedKeys(setter.getParameterTypes()[0], rs);
                             if (value == null) {
-                                throw new PersismException("Could not retrieve value from column " + column + " for table " + metaData.getTableInfo(object.getClass()));
+                                throw new PersismException("Could not retrieve value from column " + column + " for table " + metaData.getTableInfo(objectClass));
                             }
                             value = converter.convert(value, setter.getParameterTypes()[0], column);
                             setter.invoke(object, value);
@@ -716,10 +708,10 @@ public final class Session implements AutoCloseable {
                             // Set read-only property by field ONLY FOR NON-RECORDS.
                             value = helper.getTypedValueReturnedFromGeneratedKeys(propertyInfo.field.getType(), rs);
                             if (value == null) {
-                                throw new PersismException("Could not retrieve value from column " + column + " for table " + metaData.getTableInfo(object.getClass()));
+                                throw new PersismException("Could not retrieve value from column " + column + " for table " + metaData.getTableInfo(objectClass));
                             }
                             value = converter.convert(value, propertyInfo.field.getType(), column);
-                            if (!isRecord(object.getClass())) {
+                            if (!isRecord(objectClass)) {
                                 propertyInfo.field.setAccessible(true);
                                 propertyInfo.field.set(object, value);
                                 propertyInfo.field.setAccessible(false);
@@ -733,7 +725,7 @@ public final class Session implements AutoCloseable {
             }
 
             // If it's a record we can't assign the autoinc so we need a refresh
-            if (generatedKeys.size() > 0 && isRecord(object.getClass())) {
+            if (generatedKeys.size() > 0 && isRecord(objectClass)) {
                 refreshAfterInsert = true;
             }
 
@@ -741,9 +733,9 @@ public final class Session implements AutoCloseable {
             if (refreshAfterInsert) {
                 // these 2 fetches need a fetchAfterInsert flag
                 // Read the full object back to update any properties which had defaults
-                if (isRecord(object.getClass())) {
-                    SQL sql = new SQL(metaData.getDefaultSelectStatement(object.getClass(), connection));
-                    returnObject = fetch(object.getClass(), sql, params(primaryKeyValues.toArray()));
+                if (isRecord(objectClass)) {
+                    SQL sql = new SQL(metaData.getDefaultSelectStatement(objectClass, connection));
+                    returnObject = fetch(objectClass, sql, params(primaryKeyValues.toArray()));
                 } else {
                     fetch(object);
                     returnObject = object;
@@ -771,33 +763,40 @@ public final class Session implements AutoCloseable {
      * Deletes the data object from the database.
      *
      * @param object data object to delete
-     * @return usually 1 to indicate rows changed via JDBC.
-     * @throws PersismException Perhaps when asteroid 1999 RQ36 hits us?
+     * @return Result with usually 1 to indicate rows changed via JDBC.
+     * @throws PersismException If you mistakenly pass a Class rather than a data object, or other SQL Exception.
      */
     public <T> Result<T> delete(T object) throws PersismException {
 
-        helper.checkIfOkForWriteOperation(object.getClass(), "DELETE");
+        // Catch if user mistakenly passes a class to this method
+        if (object instanceof java.lang.Class c) {
+            throw new PersismException(Message.DeleteExpectsInstanceOfDataObjectNotAClass.message(c.getName()));
+        }
 
-        List<String> primaryKeys = metaData.getPrimaryKeys(object.getClass(), connection);
+        Class<?> objectClass = object.getClass();
+
+        helper.checkIfOkForWriteOperation(objectClass, "DELETE");
+
+        List<String> primaryKeys = metaData.getPrimaryKeys(objectClass, connection);
         if (primaryKeys.size() == 0) {
-            throw new PersismException(Message.TableHasNoPrimaryKeys.message("DELETE", metaData.getTableInfo(object.getClass()).name()));
+            throw new PersismException(Message.TableHasNoPrimaryKeys.message("DELETE", metaData.getTableInfo(objectClass).name()));
         }
 
         PreparedStatement st = null;
         try {
-            String deleteStatement = metaData.getDeleteStatement(object, connection);
+            String deleteStatement = metaData.getDefaultDeleteStatement(objectClass, connection);
             log.debug(deleteStatement);
 
             st = connection.prepareStatement(deleteStatement);
 
             // These keys should always be in sorted order.
-            Map<String, PropertyInfo> columns = metaData.getTableColumnsPropertyInfo(object.getClass(), connection);
+            Map<String, PropertyInfo> columns = metaData.getTableColumnsPropertyInfo(objectClass, connection);
 
             List<Object> params = new ArrayList<>(primaryKeys.size());
             List<ColumnInfo> columnInfos = new ArrayList<>(columns.size());
             for (String column : primaryKeys) {
                 params.add(columns.get(column).getValue(object));
-                columnInfos.add(metaData.getColumns(object.getClass(), connection).get(column));
+                columnInfos.add(metaData.getColumns(objectClass, connection).get(column));
             }
 
             for (int j = 0; j < params.size(); j++) {
@@ -818,22 +817,80 @@ public final class Session implements AutoCloseable {
         }
     }
 
-    public <T> List<Result<T>> delete(Class<T> objectClass) {
-        // delete ALL!
+    /**
+     * Deletes data from the database based on the specified WHERE clause
+     *
+     * @param objectClass class of data object where to delete from.
+     * @param whereClause WHERE clause condition.
+     * @return int rows affected
+     * @throws PersismException If something goes wrong in the Db.
+     */
+    public int delete(Class<?> objectClass, SQL whereClause) {
         helper.checkIfOkForWriteOperation(objectClass, "DELETE");
-        return Collections.emptyList();
+        return delete(objectClass, whereClause, none());
     }
 
-    public <T> List<Result<T>> delete(Class<T> objectClass, Parameters parameters) {
-        // delete primary key
+    /**
+     * Deletes data from the database based on the specified primary keys provided
+     *
+     * @param objectClass      class of data object where to delete from.
+     * @param primaryKeyValues primary key values
+     * @return int rows affected
+     * @throws PersismException If something goes wrong in the Db OR if you accidentally call this with 0 parameters.
+     */
+    public int delete(Class<?> objectClass, Parameters primaryKeyValues) {
+        // delete by primary keys
         helper.checkIfOkForWriteOperation(objectClass, "DELETE");
-        return Collections.emptyList();
+
+        if (primaryKeyValues.size() == 0) {
+            // should fail here. We don't want to accidentally delete all
+            throw new PersismException(Message.CannotDeleteWithNoPrimaryKeys.message());
+        }
+
+        List<String> primaryKeys = metaData.getPrimaryKeys(objectClass, connection);
+        if (primaryKeys.size() == 0) {
+            throw new PersismException(Message.TableHasNoPrimaryKeys.message("DELETE", metaData.getTableInfo(objectClass)));
+        }
+
+        primaryKeyValues.areKeys = true;
+
+        String sql = metaData.getDeleteStatement(objectClass, connection) + metaData.getPrimaryInClause(objectClass, primaryKeyValues.size(), connection);
+        sqllog.debug(sql);
+        try (PreparedStatement st = connection.prepareStatement(sql)) {
+            helper.setParameters(st, primaryKeyValues.toArray());
+            return st.executeUpdate();
+        } catch (SQLException e) {
+            Util.rollback(connection);
+            throw new PersismException(e.getMessage(), e);
+        }
     }
 
-    public <T> List<Result<T>> delete(Class<T> objectClass, SQL sql, Parameters parameters) {
+    /**
+     * Deletes data from the database based on the specified WHERE clause and parameters
+     *
+     * @param objectClass class of data object where to delete from.
+     * @param whereClause WHERE clause condition.
+     * @param parameters  parameters for the WHERE clause
+     * @return int rows affected
+     * @throws PersismException If something goes wrong in the Db.
+     */
+    public int delete(Class<?> objectClass, SQL whereClause, Parameters parameters) {
         // delete where.
         helper.checkIfOkForWriteOperation(objectClass, "DELETE");
-        return Collections.emptyList();
+        if (!whereClause.whereOnly) {
+            throw new PersismException(Message.DeleteCanOnlyUseWhereClause.message());
+        }
+
+        String sql = metaData.getDeleteStatement(objectClass, connection) + " " + helper.parsePropertyNames(whereClause.sql, objectClass, connection);
+        sqllog.debug(sql);
+
+        try (PreparedStatement st = connection.prepareStatement(sql)) {
+            helper.setParameters(st, parameters.toArray());
+            return st.executeUpdate();
+        } catch (SQLException e) {
+            Util.rollback(connection);
+            throw new PersismException(e.getMessage(), e);
+        }
     }
 
     /**

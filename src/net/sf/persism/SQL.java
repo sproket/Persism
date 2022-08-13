@@ -76,7 +76,7 @@ public final class SQL {
      * @return new SQL object
      */
     public static SQL where(String where) {
-        SQL sql = new SQL(" WHERE " + where);
+        SQL sql = new SQL("WHERE " + where);
         sql.whereOnly = true;
         return sql;
     }

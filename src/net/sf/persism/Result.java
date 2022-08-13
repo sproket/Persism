@@ -32,4 +32,13 @@ public final class Result<T> {
     public T dataObject() {
         return dataObject;
     }
+
+    @Override
+    public String toString() {
+        final StringBuilder sb = new StringBuilder("Result{");
+        sb.append("rows=").append(rows);
+        sb.append(", dataObject=").append(dataObject);
+        sb.append('}');
+        return sb.toString();
+    }
 }

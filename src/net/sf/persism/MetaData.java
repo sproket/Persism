@@ -47,7 +47,7 @@ final class MetaData {
     // Where ID IN (?, ?, ?) kinds of queries when no SQL is used.
     private final Map<Class<?>, Map<Integer, String>> primaryInClauseMap = new ConcurrentHashMap<>(32);
 
-    // SQL parsed from SQL.where() - key is WHERE, value is full SELECT (maintained by SessionHelper)
+    // SQL parsed from SQL.where() - key is WHERE, value is parsed where clause
     Map<Class<?>, Map<String, String>> whereClauses = new ConcurrentHashMap<>(32);
 
     // WHERE clauses defined by JOIN operations (maintained by SessionHelper)
@@ -678,16 +678,18 @@ final class MetaData {
                 findFirst();
     }
 
-    String getDeleteStatement(Object object, Connection connection) {
-        if (deleteStatementsMap.containsKey(object.getClass())) {
-            return deleteStatementsMap.get(object.getClass());
+    String getDeleteStatement(Class<?> objectClass, Connection connection) {
+        if (deleteStatementsMap.containsKey(objectClass)) {
+            return deleteStatementsMap.get(objectClass);
         }
-        return determineDeleteStatement(object, connection);
+        return determineDeleteStatement(objectClass, connection);
     }
 
-    private synchronized String determineDeleteStatement(Object object, Connection connection) {
-        Class<?> objectClass = object.getClass();
+    String getDefaultDeleteStatement(Class<?> objectClass, Connection connection) {
+        return getDeleteStatement(objectClass, connection) + getWhereClause(objectClass, connection);
+    }
 
+    private synchronized String determineDeleteStatement(Class<?> objectClass, Connection connection) {
         if (deleteStatementsMap.containsKey(objectClass)) {
             return deleteStatementsMap.get(objectClass);
         }
@@ -699,27 +701,19 @@ final class MetaData {
         String tableName = tableInfo.name();
         String schemaName = tableInfo.schema();
 
-        List<String> primaryKeys = getPrimaryKeys(objectClass, connection);
-
         StringBuilder sb = new StringBuilder();
         sb.append("DELETE FROM ");
         if (isNotEmpty(schemaName)) {
             sb.append(sd).append(schemaName).append(ed).append(".");
         }
-        sb.append(sd).append(tableName).append(ed).append(" WHERE ");
-        String sep = "";
-        for (String column : primaryKeys) {
-            sb.append(sep).append(sd).append(column).append(ed).append(" = ?");
-            sep = " AND ";
-        }
-
+        sb.append(sd).append(tableName).append(ed);
         String deleteStatement = sb.toString();
 
         if (log.isDebugEnabled()) {
-            log.debug("determineDeleteStatement for %s is %s", object.getClass(), deleteStatement);
+            log.debug("determineDeleteStatement for %s is %s", objectClass, deleteStatement);
         }
 
-        deleteStatementsMap.put(object.getClass(), deleteStatement);
+        deleteStatementsMap.put(objectClass, deleteStatement);
         return deleteStatement;
     }
 
@@ -744,9 +738,7 @@ final class MetaData {
         String ed = connectionType.getKeywordEndDelimiter();
         String andSep = "";
 
-        String query = getDefaultSelectStatement(objectClass, connection);
-        int n = query.indexOf(" WHERE");
-        query = query.substring(0, n + 7);
+        String query = " WHERE ";
 
         List<String> primaryKeys = getPrimaryKeys(objectClass, connection);
 

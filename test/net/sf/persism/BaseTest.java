@@ -1334,8 +1334,6 @@ public abstract class BaseTest extends TestCase {
             fail = true;
         }
         assertTrue(fail);
-
-
     }
 
     public void testContactTable() throws SQLException {
@@ -2115,6 +2113,51 @@ public abstract class BaseTest extends TestCase {
             System.out.println(n);
         }
 
+    }
+
+    public void testDelete() {
+        log.info(session.metaData.getDeleteStatement(Customer.class, con));
+        log.info(session.metaData.getDefaultDeleteStatement(Customer.class, con));
+
+        Customer customer = new Customer();
+        customer.setCustomerId("DELETEME");
+        customer.setRegion(Region.North);
+        customer.setCompanyName("test 1243");
+        session.insert(customer);
+        int result = session.delete(Customer.class, where(":region = ?"), params(Region.North));
+        log.info(result);
+        assertEquals("s/b 1", 1, result);
+
+        result = session.delete(Customer.class, params("1", "3", "hello"));
+        assertEquals("s/b 0", 0, result);
+
+
+        boolean fail = false;
+        try {
+            session.delete(Customer.class);
+        } catch (PersismException e) {
+            fail = true;
+            assertEquals("s/b same ", DeleteExpectsInstanceOfDataObjectNotAClass.message(Customer.class.getName()), e.getMessage());
+        }
+        assertTrue(fail);
+
+        fail = false;
+        try {
+            session.delete(Customer.class, params());
+        } catch (PersismException e) {
+            fail = true;
+            assertEquals("s/b same", CannotDeleteWithNoPrimaryKeys.message(), e.getMessage());
+        }
+        assertTrue(fail);
+
+        fail = false;
+        try {
+            session.delete(Customer.class, sql("should fail"));
+        } catch (PersismException e) {
+            fail = true;
+            assertEquals("s/b same", DeleteCanOnlyUseWhereClause.message(), e.getMessage());
+        }
+        assertTrue(fail);
     }
 
     public void testRecords() {

@@ -61,7 +61,7 @@ final class SessionHelper {
             if (objectClass.getAnnotation(NotTable.class) != null) {
                 throw new PersismException(Message.WhereNotSupportedForNotTableQueries.message());
             }
-            sqlQuery = parsePropertyNames(sqlQuery, objectClass, session.connection);
+            sqlQuery = session.metaData.getSelectStatement(objectClass, session.connection) + parsePropertyNames(sqlQuery, objectClass, session.connection);
             sql.processedSQL = sqlQuery;
         } else {
             checkIfStoredProcOrSQL(objectClass, sql);
@@ -288,8 +288,7 @@ final class SessionHelper {
         if (propertiesNotFound.size() > 0) {
             throw new PersismException(Message.QueryPropertyNamesMissingOrNotFound.message(propertiesNotFound, sql));
         }
-        String select = session.metaData.getSelectStatement(objectClass, session.connection);
-        String parsedSql = select + " " + parsedQuery;
+        String parsedSql = " " + parsedQuery;
         log.debug("parsePropertyNames SQL: %s", parsedSql);
         session.metaData.whereClauses.putIfAbsent(objectClass, new HashMap<>());
         session.metaData.whereClauses.get(objectClass).put(sql, parsedSql);

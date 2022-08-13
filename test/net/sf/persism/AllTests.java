@@ -30,7 +30,7 @@ public class AllTests {
         theTestSuite.addTestSuite(TestSQLite.class);
         theTestSuite.addTestSuite(TestMSAccess.class);
 
-        theTestSuite.addTestSuite(TestInformix.class);
+//         theTestSuite.addTestSuite(TestInformix.class); todo restore docker again...
         theTestSuite.addTestSuite(TestMSSQL.class);
         theTestSuite.addTestSuite(TestOracle.class);
         theTestSuite.addTestSuite(TestMySQL.class);

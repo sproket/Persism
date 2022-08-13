@@ -6,7 +6,7 @@
 
     <groupId>io.github.sproket</groupId>
     <artifactId>persism</artifactId>
-    <version>2.2.0-exp</version>
+    <version>2.3.0-exp1</version>
     <packaging>jar</packaging>
 
     <name>persism</name>
