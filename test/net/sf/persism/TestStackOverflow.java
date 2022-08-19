@@ -38,8 +38,10 @@ public class TestStackOverflow extends TestCase {
     }
 
     public void testExtendedUsers() {
+
         long ms = System.currentTimeMillis();
-        List<ExtendedUser> users = session.query(ExtendedUser.class, where("Id < ?"), params(1000));
+        // List<ExtendedUser> users = session.query(ExtendedUser.class, where("Id < ?"), params(1000));
+        List<ExtendedUser> users = session.query(ExtendedUser.class, where("Id = ?"), params(36));
         System.out.println(users.size());
         System.out.println("time: " + (System.currentTimeMillis() - ms));
     }

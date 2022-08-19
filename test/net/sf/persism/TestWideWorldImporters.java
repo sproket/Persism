@@ -13,14 +13,21 @@ import java.util.Properties;
 import static net.sf.persism.Parameters.params;
 import static net.sf.persism.SQL.where;
 
-@Category(ExternalDB.class)
+/*
+    To test I added some duplicate tables
+    Copied Sales.Customers to Application.Customers
+    Copied Application.Cites to Sales.Cities
+ */
 
+@Category(ExternalDB.class)
 public final class TestWideWorldImporters extends TestCase {
 
     private static final Log log = Log.getLogger(TestWideWorldImporters.class);
 
     Connection con;
     Session session;
+
+    // todo add a test around Multiple Views - same name and use the Schema.ViewName annotation + have a fail one with duplicates
 
     @Override
     protected void setUp() throws Exception {
@@ -44,7 +51,16 @@ public final class TestWideWorldImporters extends TestCase {
     }
 
     public void testAllClassesQuery() {
-        session.query(Application.City.class);
+
+        boolean fail = false;
+        try {
+            session.query(Application.City.class);
+        } catch (PersismException e) {
+            assertEquals("s/b same", Message.MoreThanOneTableOrViewInDifferentSchemas.message("TABLE", "Cities"), e.getMessage());
+            fail = true;
+        }
+        assertTrue(fail);
+
         session.query(BuyingGroup.class);
         session.query(City.class);
         session.query(Color.class);
@@ -78,6 +94,31 @@ public final class TestWideWorldImporters extends TestCase {
         session.query(CustomerView.class);
         session.query(net.sf.persism.dao.wwi1.views.Supplier.class);
         session.query(net.sf.persism.dao.wwi1.views.VehicleTemperature.class);
+    }
+
+    public void testReadOnlyTemporal() {
+        var cities = session.query(City.class, where(":cityName = ?"), params("Aberdeen"));
+        log.info("count: " + cities.size());
+        assertTrue(cities.size() > 0);
+        log.info(cities);
+        var city = cities.get(0);
+        var pop = city.getLatestRecordedPopulation();
+        city.setLatestRecordedPopulation(0L);
+        session.update(city);
+        city.setLatestRecordedPopulation(pop);
+        session.update(city);
+
+        city = session.fetch(City.class, where(":cityName = ?"), params("my city"));
+        if (city != null) {
+            session.delete(city);
+        }
+        city = new City();
+        city.setLatestRecordedPopulation(100L);
+        city.setCityName("my city");
+        city.setStateProvinceId(1);
+        city.setLastEditedBy(1);
+        session.insert(city);
+        assertTrue(city.getCityId() > 0);
     }
 
     public void testInsertWithSequence() {

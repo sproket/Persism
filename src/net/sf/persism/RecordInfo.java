@@ -11,6 +11,7 @@ import java.util.stream.Collectors;
 
 import static net.sf.persism.Util.listEqualsIgnoreOrder;
 
+// todo Cache RecordInfo
 class RecordInfo<T> {
 
     private final Map<String, PropertyInfo> propertyInfoByConstructorOrder;

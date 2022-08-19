@@ -802,17 +802,12 @@ final class MetaData {
         return where;
     }
 
-    /**
-     * Default SELECT including WHERE Primary Keys
-     *
-     * @param objectClass
-     * @param connection
-     * @return
+    /*
+     * Default SELECT including WHERE Primary Keys - should only be called for tables
      */
     String getDefaultSelectStatement(Class<?> objectClass, Connection connection) {
-        if (objectClass.getAnnotation(View.class) != null) {
-            return getSelectStatement(objectClass, connection);
-        }
+        assert objectClass.getAnnotation(View.class) == null;
+        assert objectClass.getAnnotation(NotTable.class) == null;
 
         return getSelectStatement(objectClass, connection) + getWhereClause(objectClass, connection);
     }
@@ -975,39 +970,71 @@ final class MetaData {
         }
 
         String tableName;
-        String schemaName; // todo schemaName if they specify it in the annotation!
+        String schemaName = null;
         TableInfo foundInfo = null;
 
         Table tableAnnotation = objectClass.getAnnotation(Table.class);
         View viewAnnotation = objectClass.getAnnotation(View.class);
+
         if (tableAnnotation != null) {
             tableName = tableAnnotation.value();
             if (tableName.contains(".")) {
-                // needed....
+                schemaName = tableName.substring(0, tableName.indexOf("."));
+                tableName = tableName.substring(tableName.indexOf(".") + 1);
             }
-            // double check against stored table names to get the actual case of the name
-            // todo also check if there's more than 1 table or view if no schema name is provided.
+
             boolean found = false;
             for (TableInfo table : tables) {
                 if (table.name().equalsIgnoreCase(tableName)) {
-                    foundInfo = table;
-                    found = true;
-                    break;
+                    if (schemaName != null) {
+                        if (table.schema().equalsIgnoreCase(schemaName)) {
+                            foundInfo = table;
+                            found = true;
+                            break;
+                        }
+                    } else {
+                        foundInfo = table;
+                        found = true;
+                        break;
+                    }
+                }
+            }
+            if (schemaName == null) {
+                final String table = tableName;
+                if (tables.stream().filter(tableInfo -> tableInfo.name().equalsIgnoreCase(table)).count() > 1) {
+                    throw new PersismException(Message.MoreThanOneTableOrViewInDifferentSchemas.message("TABLE", table));
                 }
             }
             if (!found) {
                 throw new PersismException(Message.CouldNotFindTableNameInTheDatabase.message(tableName, objectClass.getName()));
             }
         } else if (viewAnnotation != null && isNotEmpty(viewAnnotation.value())) {
-
             tableName = viewAnnotation.value();
+            if (tableName.contains(".")) {
+                schemaName = tableName.substring(0, tableName.indexOf("."));
+                tableName = tableName.substring(tableName.indexOf(".") + 1);
+            }
 
-            // double check against stored view names to get the actual case of the name
             boolean found = false;
             for (TableInfo view : views) {
                 if (view.name().equalsIgnoreCase(tableName)) {
-                    foundInfo = view;
-                    found = true;
+                    if (schemaName != null) {
+                        if (view.schema().equalsIgnoreCase(schemaName)) {
+                            foundInfo = view;
+                            found = true;
+                            break;
+                        }
+                    } else {
+                        foundInfo = view;
+                        found = true;
+                        break;
+                    }
+                }
+            }
+            if (schemaName == null) {
+                final String table = tableName;
+                if (views.stream().filter(tableInfo -> tableInfo.name().equalsIgnoreCase(table)).count() > 1) {
+                    throw new PersismException(Message.MoreThanOneTableOrViewInDifferentSchemas.message("VIEW", table));
                 }
             }
             if (!found) {

@@ -560,6 +560,9 @@ public final class Session implements AutoCloseable {
                     params.set(j, converter.convert(params.get(j), columnInfos.get(j).columnType.getJavaType(), columnInfos.get(j).columnName));
                 }
             }
+            if (sqllog.isDebugEnabled()) {
+                sqllog.debug("%s params: %s", updateStatement, params);
+            }
             helper.setParameters(st, params.toArray());
             int ret = st.executeUpdate();
 
@@ -804,6 +807,11 @@ public final class Session implements AutoCloseable {
                     params.set(j, converter.convert(params.get(j), columnInfos.get(j).columnType.getJavaType(), columnInfos.get(j).columnName));
                 }
             }
+
+            if (sqllog.isDebugEnabled()) {
+                sqllog.debug("%s params: %s", deleteStatement, params);
+            }
+
             helper.setParameters(st, params.toArray());
             int rows = st.executeUpdate();
             return new Result<>(rows, object);
@@ -854,9 +862,11 @@ public final class Session implements AutoCloseable {
 
         primaryKeyValues.areKeys = true;
 
-        String sql = metaData.getDeleteStatement(objectClass, connection) + metaData.getPrimaryInClause(objectClass, primaryKeyValues.size(), connection);
-        sqllog.debug(sql);
-        try (PreparedStatement st = connection.prepareStatement(sql)) {
+        String deleteStatement = metaData.getDeleteStatement(objectClass, connection) + metaData.getPrimaryInClause(objectClass, primaryKeyValues.size(), connection);
+        if (sqllog.isDebugEnabled()) {
+            sqllog.debug("%s params: %s", deleteStatement, primaryKeyValues);
+        }
+        try (PreparedStatement st = connection.prepareStatement(deleteStatement)) {
             helper.setParameters(st, primaryKeyValues.toArray());
             return st.executeUpdate();
         } catch (SQLException e) {
@@ -881,10 +891,12 @@ public final class Session implements AutoCloseable {
             throw new PersismException(Message.DeleteCanOnlyUseWhereClause.message());
         }
 
-        String sql = metaData.getDeleteStatement(objectClass, connection) + " " + helper.parsePropertyNames(whereClause.sql, objectClass, connection);
-        sqllog.debug(sql);
+        String deleteStatement = metaData.getDeleteStatement(objectClass, connection) + " " + helper.parsePropertyNames(whereClause.sql, objectClass, connection);
+        if (sqllog.isDebugEnabled()) {
+            sqllog.debug("%s params: %s", deleteStatement, parameters);
+        }
 
-        try (PreparedStatement st = connection.prepareStatement(sql)) {
+        try (PreparedStatement st = connection.prepareStatement(deleteStatement)) {
             helper.setParameters(st, parameters.toArray());
             return st.executeUpdate();
         } catch (SQLException e) {

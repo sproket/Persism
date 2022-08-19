@@ -19,7 +19,8 @@ public class AllTests {
 
     private AllTests() {
     }
-// check commit
+
+    // check commit
     public static Test suite() throws Exception {
 
         TestSuite theTestSuite = new TestSuite();
@@ -29,8 +30,7 @@ public class AllTests {
         theTestSuite.addTestSuite(TestDerby.class);
         theTestSuite.addTestSuite(TestSQLite.class);
         theTestSuite.addTestSuite(TestMSAccess.class);
-
-//         theTestSuite.addTestSuite(TestInformix.class); todo restore docker again...
+        theTestSuite.addTestSuite(TestInformix.class);
         theTestSuite.addTestSuite(TestMSSQL.class);
         theTestSuite.addTestSuite(TestOracle.class);
         theTestSuite.addTestSuite(TestMySQL.class);
@@ -41,7 +41,7 @@ public class AllTests {
         theTestSuite.addTestSuite(TestNorthwind.class);
         theTestSuite.addTestSuite(TestPubs.class);
         theTestSuite.addTestSuite(TestStackOverflow.class);
-//        theTestSuite.addTestSuite(TestWideWorldImporters.class);
+        theTestSuite.addTestSuite(TestWideWorldImporters.class);
 
         return theTestSuite;
     }

@@ -2,14 +2,12 @@ package net.sf.persism.dao.wwi1;
 
 import net.sf.persism.PersistableObject;
 import net.sf.persism.annotations.Column;
+import net.sf.persism.annotations.Table;
 
 import java.sql.Date;
 import java.util.Objects;
-
-//@Table("Application.Cities")
-//   extends PersistableObject because columns location, validFrom, validTo can not be set
+@Table("Sales.Cities")
 public final class City extends PersistableObject<City> {
-
     private Integer cityId;
     private String cityName;
     private Integer stateProvinceId;

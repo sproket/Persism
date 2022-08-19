@@ -1189,7 +1189,7 @@ public abstract class BaseTest extends TestCase {
             session.insert(customerInvoiceTestView);
         } catch (PersismException e) {
             fail = true;
-            assertEquals("s/b", Message.OperationNotSupportedForView.message(customerInvoiceTestView.getClass(), "Insert"), e.getMessage());
+            assertEquals("s/b", Message.OperationNotSupportedForView.message(customerInvoiceTestView.getClass(), "INSERT"), e.getMessage());
         }
         assertTrue(fail);
 
@@ -1198,7 +1198,7 @@ public abstract class BaseTest extends TestCase {
             session.update(customerInvoiceTestView);
         } catch (PersismException e) {
             fail = true;
-            assertEquals("s/b", Message.OperationNotSupportedForView.message(customerInvoiceTestView.getClass(), "Update"), e.getMessage());
+            assertEquals("s/b", Message.OperationNotSupportedForView.message(customerInvoiceTestView.getClass(), "UPDATE"), e.getMessage());
         }
         assertTrue(fail);
 
@@ -1207,7 +1207,7 @@ public abstract class BaseTest extends TestCase {
             session.delete(customerInvoiceTestView);
         } catch (PersismException e) {
             fail = true;
-            assertEquals("s/b", Message.OperationNotSupportedForView.message(customerInvoiceTestView.getClass(), "Delete"), e.getMessage());
+            assertEquals("s/b", Message.OperationNotSupportedForView.message(customerInvoiceTestView.getClass(), "DELETE"), e.getMessage());
         }
         assertTrue(fail);
 
@@ -1256,7 +1256,7 @@ public abstract class BaseTest extends TestCase {
             session.insert(customerInvoiceTestView); // not supported error
         } catch (PersismException e) {
             log.info(e.getMessage());
-            assertEquals("s/b Operation not supported for Views.", Message.OperationNotSupportedForView.message(customerInvoiceTestView.getClass(), "Insert"), e.getMessage());
+            assertEquals("s/b Operation not supported for Views.", Message.OperationNotSupportedForView.message(customerInvoiceTestView.getClass(), "INSERT"), e.getMessage());
             fail = true;
         }
         assertTrue(fail);
@@ -1266,7 +1266,7 @@ public abstract class BaseTest extends TestCase {
             session.update(customerInvoiceTestView);
         } catch (PersismException e) {
             log.info(e.getMessage());
-            assertEquals("s/b Operation not supported for Views.", Message.OperationNotSupportedForView.message(customerInvoiceTestView.getClass(), "Update"), e.getMessage());
+            assertEquals("s/b Operation not supported for Views.", Message.OperationNotSupportedForView.message(customerInvoiceTestView.getClass(), "UPDATE"), e.getMessage());
             fail = true;
         }
         assertTrue(fail);
@@ -1276,7 +1276,7 @@ public abstract class BaseTest extends TestCase {
             session.delete(customerInvoiceTestView);
         } catch (PersismException e) {
             log.info(e.getMessage());
-            assertEquals("s/b Operation not supported for Views.", Message.OperationNotSupportedForView.message(customerInvoiceTestView.getClass(), "Delete"), e.getMessage());
+            assertEquals("s/b Operation not supported for Views.", Message.OperationNotSupportedForView.message(customerInvoiceTestView.getClass(), "DELETE"), e.getMessage());
             fail = true;
         }
         assertTrue(fail);
@@ -1286,7 +1286,7 @@ public abstract class BaseTest extends TestCase {
             session.insert(customerInvoiceTestView);
         } catch (PersismException e) {
             log.info(e.getMessage());
-            assertEquals("s/b Operation not supported for Views.", Message.OperationNotSupportedForView.message(customerInvoiceTestView.getClass(), "Upsert"), e.getMessage());
+            assertEquals("s/b Operation not supported for Views.", Message.OperationNotSupportedForView.message(customerInvoiceTestView.getClass(), "INSERT"), e.getMessage());
             fail = true;
         }
         assertTrue(fail);
@@ -2185,6 +2185,68 @@ public abstract class BaseTest extends TestCase {
         }
         assertTrue(fail);
 
+    }
+
+    public void testFetchOnViewShouldFail() {
+
+        boolean fail = false;
+        try {
+            CustomerInvoice ci = new CustomerInvoice();
+            session.fetch(ci); // fail can't fetch view
+        } catch (PersismException e) {
+            assertEquals("s/b same", Message.OperationNotSupportedForView.message(CustomerInvoice.class, "FETCH"), e.getMessage());
+            fail = true;
+        }
+        assertTrue(fail);
+
+        // this should work
+        session.fetch(CustomerInvoice.class, where("1=1"));
+    }
+
+    public void testQueryOnViewWithPrimaryKeysShouldFail() {
+        boolean fail = false;
+
+        try {
+            session.query(CustomerInvoice.class, params(1, 2, 3));
+        } catch (PersismException e) {
+            assertEquals("s/b same",
+                    Message.OperationNotSupportedForView.message(CustomerInvoice.class, "QUERY w/o specifying the SQL with @View since we don't have Primary Keys"),
+                    e.getMessage());
+            fail = true;
+        }
+        assertTrue(fail);
+    }
+
+    public void testFetchOnNonTableClass() {
+        // todo fetch(Class<T> objectClass, SQL sql, Parameters parameters) with a Class not @Table or @View
+    }
+
+    public void testQueryWithPrimitiveShouldFail() {
+        // todo test query and query with sql and query with sql and primary keys
+    }
+
+    public void testDeleteWithPrimaryKeysNoParamsShouldFail() {
+        // delete(Class<?> objectClass, Parameters primaryKeyValues
+    }
+
+    public void testCheckIfOkForWriteOperationForInvalidCases() {
+        // session helper checkIfOkForWriteOperation
+    }
+
+    public void testJoinToNullCollection() {
+        // assignJoinedList
+    }
+
+    // todo setPropertyFromJoinInfo never has non-reversed?
+
+    // todo variableUpdateStatements - call more than once to get from map (same with insert)
+
+    // todo metadata call getDefaultSelectStatement on view?
+
+    // todo test pluralClassName with X name Like Tax -> Taxes
+
+    public void testCheckIfStoredProcOrSQLWHEREInversed() {
+        // checkIfStoredProcOrSQL warnings coverage
     }
 
     // @OrderWith()

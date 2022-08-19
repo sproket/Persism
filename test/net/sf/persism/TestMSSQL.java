@@ -1208,7 +1208,7 @@ public class TestMSSQL extends BaseTest {
         DumbTableStringAutoInc dumb = new DumbTableStringAutoInc();
         dumb.setDescription("test");
         boolean fail = false;
-
+// todo test with field only this tests setter
         try {
             session.insert(dumb); // should fail since we marked the ID property as autoinc which makes no sense
         } catch (PersismException e) {

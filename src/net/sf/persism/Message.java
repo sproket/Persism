@@ -18,7 +18,7 @@ enum Message {
     CouldNotDetermineTableOrViewForType("Could not determine a %s for type: %s Guesses were: %s"),
     CouldNotDetermineTableOrViewForTypeMultipleMatches("Could not determine a %s for type: %s Guesses were: %s and Persism found multiple matching: %s"),
     CouldNotFindConstructorForRecord("findConstructor: Could not find a constructor for class: %s properties: %s"),
-    OperationNotSupportedForView("s: %s operation not supported for Views"),
+    OperationNotSupportedForView("%s: %s operation not supported for Views"),
     OperationNotSupportedForNotTableQuery("%s: %s operation not supported for @NotTable classes"),
     OperationNotSupportedForJavaType("%s: %s operation not supported for Java types"),
     OperationNotSupportedForRecord("%s: %s operation not supported for record types"),
@@ -31,6 +31,7 @@ enum Message {
     DeleteCanOnlyUseWhereClause("DELETE can only use sql.where()"),
     DeleteExpectsInstanceOfDataObjectNotAClass("DELETE expects an instance of a Data object, not a class: %s"),
     CannotDeleteWithNoPrimaryKeys("Cannot DELETE with no primary keys provided"),
+    MoreThanOneTableOrViewInDifferentSchemas("MORE THAN 1 %s in different schemas found for %s (use an annotation to specify the schema)"),
 
 
     // WARNINGS

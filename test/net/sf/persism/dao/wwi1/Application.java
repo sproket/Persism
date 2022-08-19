@@ -1,13 +1,17 @@
 package net.sf.persism.dao.wwi1;
 
 import net.sf.persism.PersistableObject;
+import net.sf.persism.annotations.Column;
+import net.sf.persism.annotations.Table;
 
+import java.util.Date;
 import java.util.Objects;
 
 public interface Application {
-    //@Table("Application.Cities")
-//   extends PersistableObject because columns location, validFrom, validTo can not be set
-     final class City extends PersistableObject<City> {
+    // should fail because we didn't specify the Schema name and there's more than 1 table with the same name.
+
+    @Table("Cities")
+    final class City extends PersistableObject<City> {
 
         private Integer cityId;
         private String cityName;
@@ -15,8 +19,12 @@ public interface Application {
         private Object location;
         private Long latestRecordedPopulation;
         private Integer lastEditedBy;
-//    private Date validFrom; // these are used by temporal tables - should not be referenced
-//    private Date validTo;
+
+        @Column(readOnly = true)
+        private Date validFrom;
+
+        @Column(readOnly = true)
+        private Date validTo;
 
         public Integer getCityId() {
             return cityId;
@@ -62,13 +70,13 @@ public interface Application {
             this.lastEditedBy = lastEditedBy;
         }
 
-//    public Date getValidFrom() {
-//        return validFrom;
-//    }
-//
-//    public Date getValidTo() {
-//        return validTo;
-//    }
+        public Date getValidFrom() {
+            return validFrom;
+        }
+
+        public Date getValidTo() {
+            return validTo;
+        }
 
         @Override
         public boolean equals(Object o) {
