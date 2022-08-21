@@ -78,6 +78,18 @@ public abstract class BaseTest extends TestCase {
         super.tearDown();
     }
 
+    public final void messageTester(String message, Runnable block) {
+        boolean fail = false;
+
+        try {
+            block.run();
+        } catch (PersismException e) {
+            assertEquals("s/b same", message, e.getMessage());
+            fail = true;
+        }
+        assertTrue(fail);
+    }
+
     public void testDates() {
         List<Customer> list = session.query(Customer.class, sql("select * from Customers"), none());
         log.info(list);
@@ -343,54 +355,24 @@ public abstract class BaseTest extends TestCase {
         log.info("count " + count);
         assertEquals("should be 1", "1", "" + count);
 
-        fail = false;
-        try {
-            session.query(Logger.class); // this kind of shit fails too
-        } catch (PersismException e) {
-            fail = true;
-            assertEquals("s/b 'Could not determine a table for type: java.util.logging.Logger Guesses were: [Logger, Loggers]'",
-                    "Could not determine a table for type: java.util.logging.Logger Guesses were: [Logger, Loggers]",
-                    e.getMessage());
-        }
-        assertTrue(fail);
+        // Arbitrary object query for table non in db.
+        messageTester("Could not determine a table for type: java.util.logging.Logger Guesses were: [Logger, Loggers]",
+                () -> session.query(Logger.class));
 
-        // Test Query on NotTable with no SQL provided
-        fail = false;
-        try {
-
-            session.query(CustomerOrder.class, params("junk"));
-        } catch (PersismException e) {
-            fail = true;
-            assertEquals("s/b class net.sf.persism.dao.CustomerOrder: QUERY w/o specifying the SQL operation not supported for @NotTable classes",
-                    "class net.sf.persism.dao.CustomerOrder: QUERY w/o specifying the SQL operation not supported for @NotTable classes",
-                    e.getMessage());
-        }
-        assertTrue(fail);
+        messageTester("class net.sf.persism.dao.CustomerOrder: QUERY w/o specifying the SQL operation not supported for @NotTable classes",
+                () -> session.query(CustomerOrder.class, params("junk")));
 
         // Test Fetch on NotTable with no SQL provided
-        fail = false;
-        try {
-
-            session.fetch(CustomerOrder.class, params("junk"));
-        } catch (PersismException e) {
-            fail = true;
-            assertEquals("s/b class net.sf.persism.dao.CustomerOrder: FETCH w/o specifying the SQL operation not supported for @NotTable classes",
-                    "class net.sf.persism.dao.CustomerOrder: FETCH w/o specifying the SQL operation not supported for @NotTable classes",
-                    e.getMessage());
-        }
-        assertTrue(fail);
+        messageTester("class net.sf.persism.dao.CustomerOrder: FETCH w/o specifying the SQL operation not supported for @NotTable classes",
+                () -> session.fetch(CustomerOrder.class, params("junk")));
 
         // Test simple object Fetch with NotTable
-        fail = false;
-        try {
-            session.fetch(customerOrder);
-        } catch (PersismException e) {
-            fail = true;
-            assertEquals("s/b class net.sf.persism.dao.CustomerOrder: FETCH operation not supported for @NotTable classes",
-                    "class net.sf.persism.dao.CustomerOrder: FETCH operation not supported for @NotTable classes",
-                    e.getMessage());
-        }
-        assertTrue(fail);
+        messageTester("class net.sf.persism.dao.CustomerOrder: FETCH operation not supported for @NotTable classes",
+                () -> session.fetch(customerOrder));
+
+        messageTester("class net.sf.persism.dao.CustomerInvoice: FETCH operation not supported for Views", () -> session.fetch(new CustomerInvoice()));
+
+        messageTester("WHERE clause not supported for Queries (using @NotTable). If this is a View annotate the class as @View", () -> session.fetch(CustomerOrder.class, where("1=1")));
 
         List<CustomerRec> customerRecs = session.query(CustomerRec.class);
         assertTrue(customerRecs.size() > 0);
@@ -403,7 +385,7 @@ public abstract class BaseTest extends TestCase {
         log.warn(res);
     }
 
-    public void testJoinsCustomer() throws SQLException {
+    public void testJoinsCustomer() {
         queryDataSetup();
 
         var customer = session.fetch(Customer.class, where(":customerId = ?"), params("123"));
@@ -442,16 +424,9 @@ public abstract class BaseTest extends TestCase {
         assertNotNull(invoiceLineItem);
         assertNotNull(invoiceLineItem.getProduct());
 
-
-        // this should fail miserably
-        boolean fail = false;
-        try {
-            InvoiceLineItemRec invoiceLineItemRec = session.fetch(InvoiceLineItemRec.class, params(1));
-        } catch (PersismException e) {
-            fail = true;
-            assertEquals("msg s/b ?", "Can not set final net.sf.persism.dao.Product field net.sf.persism.dao.records.InvoiceLineItemRec.product to net.sf.persism.dao.Product", e.getMessage());
-        }
-        assertTrue(fail);
+        // this should fail miserably as we can't set fields on records
+        messageTester("Can not set final net.sf.persism.dao.Product field net.sf.persism.dao.records.InvoiceLineItemRec.product to net.sf.persism.dao.Product",
+                () -> session.fetch(InvoiceLineItemRec.class, params(1)));
     }
 
     public void testJoinsParentQuery() throws SQLException {
@@ -690,25 +665,18 @@ public abstract class BaseTest extends TestCase {
         CorporateHoliday holiday = new CorporateHoliday("-99", "blah", LocalDate.now());
         session.insert(holiday);
 
-        fail = false;
-        try {
-            session.fetch(holiday);
-        } catch (PersismException e) {
-            log.error(e.getMessage(), e);
-            assertEquals("s/b Cannot perform FETCH - " + table + " has no primary keys", TableHasNoPrimaryKeys.message("FETCH", table.name()), e.getMessage());
-            fail = true;
-        }
-        assertTrue(fail);
+        messageTester(TableHasNoPrimaryKeys.message("FETCH", table.name()), () -> session.fetch(holiday));
 
-        fail = false;
-        try {
-            session.fetch(CorporateHoliday.class, params(1, 2, 3));
-        } catch (PersismException e) {
-            log.error(e.getMessage(), e);
-            assertEquals("s/b EQUAL ", TableHasNoPrimaryKeysForWhere.message(table.name()), e.getMessage());
-            fail = true;
-        }
-        assertTrue(fail);
+        messageTester(TableHasNoPrimaryKeysForWhere.message(table.name()), () -> session.fetch(CorporateHoliday.class, params(1, 2, 3)));
+
+        messageTester("class java.lang.String: QUERY w/o specifying the SQL operation not supported for Java types", () -> session.query(String.class));
+
+        messageTester("class java.lang.String: QUERY operation not supported for Java types", () -> session.query(String.class, params(1, 2, 3)));
+
+        var tableInfo = session.metaData.getTableInfo(TableNoPrimary.class);
+        messageTester("Cannot perform QUERY - " + tableInfo + " has no primary keys", () -> session.query(TableNoPrimary.class, params(1, 2, 3)));
+
+        messageTester("Cannot perform DELETE - " + tableInfo + " has no primary keys", () -> session.delete(TableNoPrimary.class, params(1, 2, 3)));
 
         if (connectionType != ConnectionType.Informix) {
             // Informix doesn't allow a manually specified primary on the POJO
@@ -931,7 +899,7 @@ public abstract class BaseTest extends TestCase {
         assertTrue(shouldFail);
     }
 
-    final void queryDataSetup() throws SQLException {
+    final void queryDataSetup() {
 
         Invoice invoice1 = new Invoice();
         invoice1.setCustomerId("123");
@@ -1238,16 +1206,15 @@ public abstract class BaseTest extends TestCase {
         invoice.setStatus((char) 1);
         session.insert(invoice);
 
-        customerInvoice = session.fetch(CustomerInvoice.class, where(":companyName = ?"), params("ABC Inc"));
-        List<CustomerInvoice> list = session.query(CustomerInvoice.class);
-        list = session.query(CustomerInvoice.class, where(":companyName = ?"), params("ABC Inc"));
-        list = session.query(CustomerInvoice.class, sql("SELECT * FROM CustomerInvoice"));
+        session.fetch(CustomerInvoice.class, where(":companyName = ?"), params("ABC Inc"));
+        session.query(CustomerInvoice.class);
+        session.query(CustomerInvoice.class, where(":companyName = ?"), params("ABC Inc"));
+        session.query(CustomerInvoice.class, sql("SELECT * FROM CustomerInvoice"));
 
         customerInvoiceTestView = session.fetch(CustomerInvoiceTestView.class, where(":companyName = ?"), params("ABC Inc"));
-        list2 = session.query(CustomerInvoiceTestView.class);
-        list2 = session.query(CustomerInvoiceTestView.class, where(":companyName = ?"), params("ABC Inc"));
-        list2 = session.query(CustomerInvoiceTestView.class, sql("SELECT * FROM CustomerInvoice"));
-
+        session.query(CustomerInvoiceTestView.class);
+        session.query(CustomerInvoiceTestView.class, where(":companyName = ?"), params("ABC Inc"));
+        session.query(CustomerInvoiceTestView.class, sql("SELECT * FROM CustomerInvoice"));
 
         assertNotNull(customerInvoiceTestView);
 
@@ -1307,17 +1274,17 @@ public abstract class BaseTest extends TestCase {
         }
         assertTrue(fail);
 
-        list = session.query(CustomerInvoice.class, none());
+        session.query(CustomerInvoice.class, none());
 
         String sql =
                 """
                         SELECT * FROM CUSTOMERINVOICE
                         """;
-        list = session.query(CustomerInvoice.class, sql(sql), none());
+        session.query(CustomerInvoice.class, sql(sql), none());
         sql = """
                 SELECT Customer_ID, Company_Name, Invoice_ID, Status, DateCreated, PAID, Quantity FROM CUSTOMERINVOICE
                 """;
-        list = session.query(CustomerInvoice.class, sql(sql), none());
+        session.query(CustomerInvoice.class, sql(sql), none());
 
         // we ARE NOT supporting property names for general SQL. Not really worth it. - YES IT IS! NO IT ISNT!
         fail = false;
@@ -1326,7 +1293,7 @@ public abstract class BaseTest extends TestCase {
                     SELECT :customerId, :companyName, :invoiceId, :status, :dateCreated, :paid, :quantity
                     FROM "CUSTOMERINVOICE"
                     """;
-            list = session.query(CustomerInvoice.class, sql(sql), none());
+            session.query(CustomerInvoice.class, sql(sql), none());
 
         } catch (PersismException e) {
             // message would be different for different DBS.
@@ -2132,32 +2099,9 @@ public abstract class BaseTest extends TestCase {
         assertEquals("s/b 0", 0, result);
 
 
-        boolean fail = false;
-        try {
-            session.delete(Customer.class);
-        } catch (PersismException e) {
-            fail = true;
-            assertEquals("s/b same ", DeleteExpectsInstanceOfDataObjectNotAClass.message(Customer.class.getName()), e.getMessage());
-        }
-        assertTrue(fail);
-
-        fail = false;
-        try {
-            session.delete(Customer.class, params());
-        } catch (PersismException e) {
-            fail = true;
-            assertEquals("s/b same", CannotDeleteWithNoPrimaryKeys.message(), e.getMessage());
-        }
-        assertTrue(fail);
-
-        fail = false;
-        try {
-            session.delete(Customer.class, sql("should fail"));
-        } catch (PersismException e) {
-            fail = true;
-            assertEquals("s/b same", DeleteCanOnlyUseWhereClause.message(), e.getMessage());
-        }
-        assertTrue(fail);
+        messageTester(DeleteExpectsInstanceOfDataObjectNotAClass.message(Customer.class.getName()), () -> session.delete(Customer.class));
+        messageTester(CannotDeleteWithNoPrimaryKeys.message(), () -> session.delete(Customer.class, params()));
+        messageTester(DeleteCanOnlyUseWhereClause.message(), () -> session.delete(Customer.class, sql("should fail")));
     }
 
     public void testRecords() {
@@ -2173,68 +2117,51 @@ public abstract class BaseTest extends TestCase {
         assertEquals("Object ID s/b 1", 1, result.dataObject().id());
         assertNotNull("should have createdOn ", result.dataObject().createdOn());
         log.info("after: " + result.dataObject());
-        boolean fail = false;
-        try {
-            session.fetch(rt2);
 
-        } catch (PersismException e) {
-            fail = true;
-            assertEquals("s/b 'class net.sf.persism.dao.records.RecordTest2: FETCH operation not supported for record types'",
-                    "class net.sf.persism.dao.records.RecordTest2: FETCH operation not supported for record types",
-                    e.getMessage());
-        }
-        assertTrue(fail);
-
+        messageTester(OperationNotSupportedForRecord.message(RecordTest2.class, "FETCH"), () -> session.fetch(rt2));
     }
 
     public void testFetchOnViewShouldFail() {
 
-        boolean fail = false;
-        try {
+        messageTester(Message.OperationNotSupportedForView.message(CustomerInvoice.class, "FETCH"), () -> {
             CustomerInvoice ci = new CustomerInvoice();
             session.fetch(ci); // fail can't fetch view
-        } catch (PersismException e) {
-            assertEquals("s/b same", Message.OperationNotSupportedForView.message(CustomerInvoice.class, "FETCH"), e.getMessage());
-            fail = true;
-        }
-        assertTrue(fail);
+        });
 
         // this should work
         session.fetch(CustomerInvoice.class, where("1=1"));
     }
 
     public void testQueryOnViewWithPrimaryKeysShouldFail() {
-        boolean fail = false;
-
-        try {
-            session.query(CustomerInvoice.class, params(1, 2, 3));
-        } catch (PersismException e) {
-            assertEquals("s/b same",
-                    Message.OperationNotSupportedForView.message(CustomerInvoice.class, "QUERY w/o specifying the SQL with @View since we don't have Primary Keys"),
-                    e.getMessage());
-            fail = true;
-        }
-        assertTrue(fail);
+        String message = Message.OperationNotSupportedForView.message(CustomerInvoice.class, "QUERY w/o specifying the SQL with @View since we don't have Primary Keys");
+        messageTester(message, () -> session.query(CustomerInvoice.class, params(1, 2, 3)));
     }
 
     public void testFetchOnNonTableClass() {
-        // todo fetch(Class<T> objectClass, SQL sql, Parameters parameters) with a Class not @Table or @View
+        CustomerInvoice customerInvoice = new CustomerInvoice();
+        messageTester(OperationNotSupportedForView.message(CustomerInvoice.class, "FETCH"), () -> session.fetch(customerInvoice));
     }
 
-    public void testQueryWithPrimitiveShouldFail() {
-        // todo test query and query with sql and query with sql and primary keys
+    public void testFetchWithPrimitiveShouldFail() {
+        messageTester(OperationNotSupportedForJavaType.message(String.class, "FETCH"), () -> session.fetch(""));
     }
 
     public void testDeleteWithPrimaryKeysNoParamsShouldFail() {
-        // delete(Class<?> objectClass, Parameters primaryKeyValues
+        messageTester(CannotDeleteWithNoPrimaryKeys.message(), () -> session.delete(Customer.class, none()));
     }
 
+
     public void testCheckIfOkForWriteOperationForInvalidCases() {
-        // session helper checkIfOkForWriteOperation
+        messageTester(OperationNotSupportedForView.message(CustomerInvoice.class, "INSERT"), () -> session.insert(new CustomerInvoice()));
+        messageTester(OperationNotSupportedForNotTableQuery.message(CustomerOrder.class, "INSERT"), () -> session.insert(new CustomerOrder()));
+        messageTester(OperationNotSupportedForJavaType.message(java.util.Date.class, "INSERT"), () -> session.insert(new java.util.Date()));
     }
 
     public void testJoinToNullCollection() {
-        // assignJoinedList
+        queryDataSetup();
+
+        messageTester(CannotNotJoinToNullProperty.message("invoices"), () -> session.query(CustomerFail3.class, none()));
+        messageTester(CannotNotJoinToNullProperty.message("invoices"), () -> session.fetch(CustomerFail3.class, params("123")));
     }
 
     // todo setPropertyFromJoinInfo never has non-reversed?
@@ -2245,9 +2172,6 @@ public abstract class BaseTest extends TestCase {
 
     // todo test pluralClassName with X name Like Tax -> Taxes
 
-    public void testCheckIfStoredProcOrSQLWHEREInversed() {
-        // checkIfStoredProcOrSQL warnings coverage
-    }
 
     // @OrderWith()
     public void testGetDbMetaData() throws SQLException {

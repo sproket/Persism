@@ -4,6 +4,7 @@ import junit.framework.TestCase;
 import net.sf.persism.dao.Region;
 import net.sf.persism.dao.access.Contact;
 import net.sf.persism.dao.access.Customer;
+import net.sf.persism.logging.LogMode;
 import net.ucanaccess.complex.Attachment;
 
 import javax.imageio.ImageIO;
@@ -26,7 +27,7 @@ import static net.sf.persism.UtilsForTests.isTableInDatabase;
 
 public class TestMSAccess extends TestCase {
 
-    private static final Log log = Log.getLogger(TestMSAccess.class);
+    private static final Log log = Log.getLogger(TestMSAccess.class, LogMode.LOG4J2);
     public static final Attachment[] ATTACHMENTS = new Attachment[0];
 
     Connection con;

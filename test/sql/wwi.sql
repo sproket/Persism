@@ -2,7 +2,7 @@
 
 USE [WideWorldImporters]
 GO
-
+/*
 INSERT INTO [Sales].[Cities] (
            [CityName]
            ,[StateProvinceID]
@@ -14,3 +14,4 @@ SELECT [CityName]
         ,[Location]
         ,[LatestRecordedPopulation]
         ,[LastEditedBy] from Application.Cities
+ */

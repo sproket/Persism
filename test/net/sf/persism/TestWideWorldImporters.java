@@ -4,6 +4,7 @@ import junit.framework.TestCase;
 import net.sf.persism.categories.ExternalDB;
 import net.sf.persism.dao.wwi1.*;
 import net.sf.persism.dao.wwi1.views.CustomerView;
+import net.sf.persism.logging.LogMode;
 import org.junit.experimental.categories.Category;
 
 import java.sql.Connection;
@@ -22,7 +23,7 @@ import static net.sf.persism.SQL.where;
 @Category(ExternalDB.class)
 public final class TestWideWorldImporters extends TestCase {
 
-    private static final Log log = Log.getLogger(TestWideWorldImporters.class);
+    private static final Log log = Log.getLogger(TestWideWorldImporters.class, LogMode.JUL);
 
     Connection con;
     Session session;

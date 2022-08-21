@@ -30,11 +30,10 @@ final class SessionHelper {
 
         JDBCResult result = new JDBCResult();
         String sqlQuery = sql.sql;
-        sql.storedProc = !sql.whereOnly && isStoredProc(sqlQuery);
-
         if (parameters.areNamed) {
-            if (sql.storedProc) {
-                log.warn(Message.NamedParametersUsedWithStoredProc.message());
+            if (sql.type == SQL.SQLType.StoredProc) {
+                //log.warnNoDuplicates(Message.NamedParametersUsedWithStoredProc.message(sql.sql));
+                throw new PersismException(Message.NamedParametersUsedWithStoredProc.message(sql.sql));
             }
             char delim = '@';
             Map<String, List<Integer>> paramMap = new HashMap<>();
@@ -57,20 +56,18 @@ final class SessionHelper {
             }
         }
 
-        if (sql.whereOnly) {
+        if (sql.type == SQL.SQLType.Where) {
             if (objectClass.getAnnotation(NotTable.class) != null) {
                 throw new PersismException(Message.WhereNotSupportedForNotTableQueries.message());
             }
             sqlQuery = session.metaData.getSelectStatement(objectClass, session.connection) + parsePropertyNames(sqlQuery, objectClass, session.connection);
             sql.processedSQL = sqlQuery;
-        } else {
-            checkIfStoredProcOrSQL(objectClass, sql);
         }
-
         exec(result, sqlQuery, parameters.toArray());
         return result;
     }
 
+    // this method should only be used by query or fetch
     void exec(JDBCResult result, String sql, Object... parameters) throws SQLException {
         long now = System.currentTimeMillis();
 
@@ -723,24 +720,21 @@ final class SessionHelper {
 
     boolean isSelect(String sql) {
         assert sql != null;
-        return sql.trim().substring(0, 7).trim().equalsIgnoreCase("select");
+        return sql.trim().substring(0, 7).equalsIgnoreCase("select ");
     }
 
-    boolean isStoredProc(String sql) {
-        return !isSelect(sql);
-    }
-
-    private <T> void checkIfStoredProcOrSQL(Class<T> objectClass, SQL sql) {
+    <T> void checkIfStoredProcOrSQL(Class<T> objectClass, SQL sql) {
         boolean startsWithSelect = isSelect(sql.sql);
-        if (sql.storedProc) {
-            if (startsWithSelect) {
-                log.warnNoDuplicates(Message.InappropriateMethodUsedForSQLTypeInstance.message(objectClass, "sql()", "a stored proc", "proc()"));
-            }
-        } else {
+        if (sql.type == SQL.SQLType.Select) {
             if (!startsWithSelect) {
                 log.warnNoDuplicates(Message.InappropriateMethodUsedForSQLTypeInstance.message(objectClass, "proc()", "an SQL query", "sql()"));
             }
+        } else {
+            if (startsWithSelect) {
+                log.warnNoDuplicates(Message.InappropriateMethodUsedForSQLTypeInstance.message(objectClass, "sql()", "a stored proc", "proc()"));
+            }
         }
     }
+
 
 }

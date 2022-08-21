@@ -14,13 +14,17 @@ public class DAOFactory {
     private DAOFactory() {
     }
 
-    public static Order newOrder(Connection con) throws SQLException {
-        if (con.getMetaData().getDatabaseProductName().toUpperCase().contains("ORACLE")) {
-            return new OracleOrder();
-//        } else if (con.getMetaData().getDatabaseProductName().toUpperCase().contains("FIREBIRD")) {
-//            return new FirebirdOrder();
-        } else {
-            return new Order();
+    public static Order newOrder(Connection con)  {
+        try {
+            if (con.getMetaData().getDatabaseProductName().toUpperCase().contains("ORACLE")) {
+                return new OracleOrder();
+    //        } else if (con.getMetaData().getDatabaseProductName().toUpperCase().contains("FIREBIRD")) {
+    //            return new FirebirdOrder();
+            } else {
+                return new Order();
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
         }
     }
 }

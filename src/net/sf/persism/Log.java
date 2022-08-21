@@ -30,6 +30,23 @@ final class Log {
 
     private static final List<String> warnings = new ArrayList<>(32);
 
+    public Log(String logName, LogMode logMode) {
+        switch (logMode) {
+            case SLF4J -> {
+                logger = new Slf4jLogger(logName);
+            }
+            case LOG4J2 -> {
+                logger = new Log4j2Logger(logName);
+            }
+            case LOG4J -> {
+                logger = new Log4jLogger(logName);
+            }
+            case JUL -> {
+                logger = new JulLogger(logName);
+            }
+        }
+    }
+
     Log(String logName) {
         try {
             Class.forName("org.slf4j.Logger");
@@ -72,6 +89,16 @@ final class Log {
         return getLogger(logName.getName());
     }
 
+    // for unit tests
+    static Log getLogger(Class<?> logName, LogMode logMode) {
+        if (loggers.containsKey(logName.getName())) {
+            return loggers.get(logName.getName());
+        }
+        Log log = new Log(logName.getName(), logMode);
+        loggers.put(logName.getName(), log);
+        return log;
+    }
+
     public static Log getLogger(String logName) {
         if (loggers.containsKey(logName)) {
             return loggers.get(logName);
@@ -79,6 +106,10 @@ final class Log {
         Log log = new Log(logName);
         loggers.put(logName, log);
         return log;
+    }
+
+    List<String> warnings() {
+        return warnings;
     }
 
 

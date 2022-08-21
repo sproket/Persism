@@ -10,6 +10,7 @@ import java.util.*;
 import static net.sf.persism.Parameters.none;
 import static net.sf.persism.Parameters.params;
 import static net.sf.persism.SQL.sql;
+import static net.sf.persism.SQL.where;
 import static net.sf.persism.Util.isRecord;
 
 /**
@@ -228,6 +229,8 @@ public final class Session implements AutoCloseable {
         boolean isPOJO = JavaType.getType(objectClass) == null;
         boolean isRecord = isPOJO && isRecord(objectClass);
 
+        helper.checkIfStoredProcOrSQL(objectClass, sql);
+
         JDBCResult result = JDBCResult.DEFAULT;
         try {
             result = helper.executeQuery(objectClass, sql, parameters);
@@ -372,6 +375,9 @@ public final class Session implements AutoCloseable {
      * @throws PersismException If something goes wrong you get a big stack trace.
      */
     public <T> List<T> query(Class<T> objectClass, SQL sql, Parameters parameters) {
+
+        helper.checkIfStoredProcOrSQL(objectClass, sql);
+
         List<T> list = new ArrayList<>(32);
 
         // If we know this type it means it's a primitive type. Not a DAO so we use a different rule to read those
@@ -887,7 +893,7 @@ public final class Session implements AutoCloseable {
     public int delete(Class<?> objectClass, SQL whereClause, Parameters parameters) {
         // delete where.
         helper.checkIfOkForWriteOperation(objectClass, "DELETE");
-        if (!whereClause.whereOnly) {
+        if (whereClause.type != SQL.SQLType.Where) {
             throw new PersismException(Message.DeleteCanOnlyUseWhereClause.message());
         }
 

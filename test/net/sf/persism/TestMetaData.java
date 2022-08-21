@@ -4,6 +4,7 @@ import junit.framework.TestCase;
 import net.sf.persism.categories.LocalDB;
 import net.sf.persism.dao.ByteData;
 import net.sf.persism.dao.OracleOrder;
+import net.sf.persism.logging.LogMode;
 import org.junit.experimental.categories.Category;
 
 import java.lang.annotation.Annotation;
@@ -18,7 +19,7 @@ import static java.lang.System.out;
 @Category(LocalDB.class)
 public final class TestMetaData extends TestCase {
 
-    private static final Log log = Log.getLogger(TestMetaData.class);
+    private static final Log log = Log.getLogger(TestMetaData.class, LogMode.LOG4J);
 
     Connection con;
     Session session;

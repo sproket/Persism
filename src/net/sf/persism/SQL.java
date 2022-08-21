@@ -10,10 +10,11 @@ import java.util.regex.Pattern;
  */
 public final class SQL {
 
-    final String sql;
+    enum SQLType {Select, Where, StoredProc}
 
-    boolean whereOnly; // flags this as WHERE only - we add the SELECT part.
-    boolean storedProc; // indicates this is a stored proc rather than an SQL statement
+    SQLType type;
+
+    final String sql;
 
     String processedSQL = null;
 
@@ -43,6 +44,12 @@ public final class SQL {
         }
 
         this.sql = sql;
+        this.type = SQLType.Select;
+    }
+
+    SQL(String sql, SQLType type) {
+        this.sql = sql.trim();
+        this.type = type;
     }
 
     /**
@@ -76,9 +83,7 @@ public final class SQL {
      * @return new SQL object
      */
     public static SQL where(String where) {
-        SQL sql = new SQL("WHERE " + where);
-        sql.whereOnly = true;
-        return sql;
+        return new SQL("WHERE " + where, SQLType.Where);
     }
 
     /**
@@ -92,9 +97,7 @@ public final class SQL {
      * @return new SQL object
      */
     public static SQL proc(String storedProc) {
-        SQL sql = new SQL(storedProc);
-        sql.storedProc = true;
-        return sql;
+        return new SQL(storedProc, SQLType.StoredProc);
     }
 
     /**

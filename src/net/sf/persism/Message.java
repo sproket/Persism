@@ -32,7 +32,7 @@ enum Message {
     DeleteExpectsInstanceOfDataObjectNotAClass("DELETE expects an instance of a Data object, not a class: %s"),
     CannotDeleteWithNoPrimaryKeys("Cannot DELETE with no primary keys provided"),
     MoreThanOneTableOrViewInDifferentSchemas("MORE THAN 1 %s in different schemas found for %s (use an annotation to specify the schema)"),
-
+    NamedParametersUsedWithStoredProc("Using named parameters with a stored proc (%s) can't work."),
 
     // WARNINGS
     UnknownConnectionType("Unknown connection type. Please contact Persism to add support for %s"),
@@ -55,7 +55,6 @@ enum Message {
     UnknownTypeInSetParameters("setParameters: Unknown type: %s"),
     UnSupportedTypeInSetParameters("setParameters: %s type not supported yet. We're probably about to fail....."),
     ParametersDoNotUseClobOrBlob("Usually you should not use blob or clob as an SQL parameter type. Blob maps to byteArray, Clob maps to String"),
-    NamedParametersUsedWithStoredProc("Using named parameters with a stored proc doesn't buy you anything..."),
     PrimaryAnnotationOnViewOrQueryMakesNoSense("Primary annotation on %s:%s is only useful on POJOs for tables. Not for queries or views."),
     ;
 

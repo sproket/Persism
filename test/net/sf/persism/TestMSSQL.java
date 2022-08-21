@@ -980,6 +980,7 @@ public class TestMSSQL extends BaseTest {
         log.info(list);
         assertTrue(list.size() > 0);
 
+        messageTester(Message.NamedParametersUsedWithStoredProc.message("[spCustomerOrders](?)"), () -> session.query(CustomerOrder.class, proc("[spCustomerOrders](?)"), params(Map.of("x","y", "b", "z"))));
 
         // Checking for warning
         list = session.query(CustomerOrder.class, sql("[spCustomerOrders](?)"), params("123"));
@@ -1335,6 +1336,23 @@ public class TestMSSQL extends BaseTest {
     public void testAllDates() {
         super.testAllDates();
     }
+
+    public void testCheckIfStoredProcOrSQLWHEREInversed() {
+
+        String m1 = Message.InappropriateMethodUsedForSQLTypeInstance.message(Customer.class, "sql()", "a stored proc", "proc()");
+        String m2 = Message.InappropriateMethodUsedForSQLTypeInstance.message(CustomerOrder.class, "proc()", "an SQL query", "sql()");
+        log.warnings().clear();
+        assertEquals("s/b 0", 0, log.warnings().stream().filter(s -> s.startsWith(m1)).count());
+        assertEquals("s/b 0", 0, log.warnings().stream().filter(s -> s.startsWith(m2)).count());
+
+        // for code coverage since these produce warnings
+        session.query(Customer.class, proc("select * from customers"));
+        session.query(CustomerOrder.class, sql("spCustomerOrders(123)"));
+
+        assertEquals("s/b 1", 1, log.warnings().stream().filter(s -> s.startsWith(m1)).count());
+        assertEquals("s/b 1", 1, log.warnings().stream().filter(s -> s.startsWith(m2)).count());
+    }
+
 
     public void testCheckConstaints() throws SQLException {
         String sql;
