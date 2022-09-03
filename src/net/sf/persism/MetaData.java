@@ -329,6 +329,10 @@ final class MetaData {
             rs.close();
 
             if (columnsCount == 0) {
+                // Shouldn't this be a fail? It would mean the user connecting to the DB
+                // has no permission to get the column meta-data
+                // It's a warning because it is possible to specify the column information
+                // with annotations rather than having Persism discover it.
                 log.warn(Message.DatabaseMetaDataCouldNotFindColumns.message(table));
             }
 
@@ -1045,11 +1049,6 @@ final class MetaData {
         }
         tableOrViewMap.put(objectClass, foundInfo);
         return foundInfo;
-    }
-
-    private TableInfo parseTableInfo(String tableNameAndSchema) {
-        assert tableNameAndSchema.contains(".");
-        return null; // todo parseTableInfo
     }
 
     // Returns the table/view name found in the DB in the same case as in the DB.

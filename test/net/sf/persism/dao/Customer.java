@@ -7,8 +7,8 @@ import net.sf.persism.annotations.NotColumn;
 import java.sql.Timestamp;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  * General customer class for database types.
@@ -38,7 +38,10 @@ public final class Customer {
 
     // properties are case Insensitive
     @Join(to = Invoice.class, onProperties = " CustomerId , sTatuS ", toProperties = "cusTomerId , status ")
-    private List<Invoice> invoices = new ArrayList<>();
+    private Set<Invoice> invoices = new HashSet<>();
+
+    @Join(to = Invoice.class, onProperties = " CustomerId , sTatuS ", toProperties = "cusTomerId , status ")
+    private Invoice whatever;
 
     @NotColumn
     private Contact contact;
@@ -190,32 +193,40 @@ public final class Customer {
         this.groupId = groupId;
     }
 
-    public List<Invoice> getInvoices() {
+    public Set<Invoice> getInvoices() {
         return invoices;
     }
 
-    public void setInvoices(List<Invoice> invoices) {
+    public void setInvoices(Set<Invoice> invoices) {
         this.invoices = invoices;
+    }
+
+    public Invoice getWhatever() {
+        return whatever;
+    }
+
+    public void setWhatever(Invoice whatever) {
+        this.whatever = whatever;
     }
 
     @Override
     public String toString() {
         return "Customer{" +
-                "customerId='" + customerId + '\'' +
-                ", companyName='" + companyName + '\'' +
-                ", contactName='" + contactName + '\'' +
-                ", contactTitle='" + contactTitle + '\'' +
-                ", address='" + address + '\'' +
-                ", city='" + city + '\'' +
-                ", region=" + region +
-                ", postalCode='" + postalCode + '\'' +
-                ", country='" + country + '\'' +
-                ", phone='" + phone + '\'' +
-                ", fax='" + fax + '\'' +
-                ", dateRegistered=" + dateRegistered +
-                ", dateOfLastOrder=" + dateOfLastOrder +
-                ", status=" + status +
-                ", group=" + groupId +
-                '}';
+               "customerId='" + customerId + '\'' +
+               ", companyName='" + companyName + '\'' +
+               ", contactName='" + contactName + '\'' +
+               ", contactTitle='" + contactTitle + '\'' +
+               ", address='" + address + '\'' +
+               ", city='" + city + '\'' +
+               ", region=" + region +
+               ", postalCode='" + postalCode + '\'' +
+               ", country='" + country + '\'' +
+               ", phone='" + phone + '\'' +
+               ", fax='" + fax + '\'' +
+               ", dateRegistered=" + dateRegistered +
+               ", dateOfLastOrder=" + dateOfLastOrder +
+               ", status=" + status +
+               ", group=" + groupId +
+               '}';
     }
 }

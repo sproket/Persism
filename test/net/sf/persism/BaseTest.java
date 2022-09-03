@@ -312,6 +312,10 @@ public abstract class BaseTest extends TestCase {
         sql += " WHERE 1 = ?";
         log.info(sql);
 
+        // test a fetch too
+        var co2 = session.fetch(CustomerOrder.class, sql(sql), params(1));
+        assertNotNull(co2);
+
         // This should not fail - we will refresh the metadata
         results = session.query(CustomerOrder.class, sql(sql), params(1));
         log.info(results);
@@ -414,8 +418,8 @@ public abstract class BaseTest extends TestCase {
         var customerRec = session.fetch(CustomerRec.class, where(":customerId = ?"), params);
         assertNotNull(customerRec);
 
-        invoices = customerRec.invoices();
-        assertEquals(2, invoices.size());
+        var invoices2 = customerRec.invoices();
+        assertEquals(2, invoices2.size());
 
 
         InvoiceLineItem invoiceLineItem = session.fetch(InvoiceLineItem.class, params(1));
@@ -443,13 +447,15 @@ public abstract class BaseTest extends TestCase {
         assertEquals(2, list2.size());
         assertEquals(2, list2.get(0).invoices().size());
         assertEquals(0, list2.get(1).invoices().size());
+        var invoices = list1.get(0).getInvoices();
+        var invoice = invoices.stream().filter(invoice1 -> invoice1.getInvoiceId() == 1).findFirst().get();
+        assertNotNull(invoice.getLineItems().get(0).getProduct());
+    }
 
-        assertNotNull(list1.get(0).getInvoices().get(0).getLineItems().get(0).getProduct());
-
-        // todo parse for child property name if there's an alias. The "i" needs to match the alias specified in the annotation THIS WONT REALLY WORK
-        // session.query(Customer.class, where(":contactName=? and (:i.quantity > ? or :city=?)"), params("Fred", 10, "MTL"));
-
-
+    public void testUnknonwnConnectionType() throws SQLException {
+        var con = DriverManager.getConnection("jdbc:xbib:csv:" + System.getProperty("user.home"));
+        Session session2 = new Session(con);
+        assertNotNull(session2);
     }
 
     public void testSelectMultipleByPrimaryKey() throws SQLException {
@@ -668,6 +674,8 @@ public abstract class BaseTest extends TestCase {
         messageTester(TableHasNoPrimaryKeys.message("FETCH", table.name()), () -> session.fetch(holiday));
 
         messageTester(TableHasNoPrimaryKeysForWhere.message(table.name()), () -> session.fetch(CorporateHoliday.class, params(1, 2, 3)));
+
+        messageTester("class net.sf.persism.dao.CustomerInvoice: FETCH w/o specifying the SQL with @View operation not supported for Views", () -> session.fetch(CustomerInvoice.class, params(1, 2, 3)));
 
         messageTester("class java.lang.String: QUERY w/o specifying the SQL operation not supported for Java types", () -> session.query(String.class));
 
@@ -2164,20 +2172,13 @@ public abstract class BaseTest extends TestCase {
         messageTester(CannotNotJoinToNullProperty.message("invoices"), () -> session.fetch(CustomerFail3.class, params("123")));
     }
 
-    // todo setPropertyFromJoinInfo never has non-reversed?
-
-    // todo variableUpdateStatements - call more than once to get from map (same with insert)
-
     // todo metadata call getDefaultSelectStatement on view?
-
-    // todo test pluralClassName with X name Like Tax -> Taxes
-
 
     // @OrderWith()
     public void testGetDbMetaData() throws SQLException {
-//        if (true) {
-//            return;
-//        }
+        if (true) {
+            return;
+        }
         DatabaseMetaData dmd = con.getMetaData();
         System.out.println("GetDbMetaData for " + dmd.getDatabaseProductName());
 

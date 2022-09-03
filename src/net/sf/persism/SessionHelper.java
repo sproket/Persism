@@ -479,7 +479,7 @@ final class SessionHelper {
     // parent is a POJO or a List of POJOs
     void handleJoins(Object parent, Class<?> parentClass, String parentSql, Parameters parentParams) {
         // maybe we could add a check for fetch after insert. In those cases there's no need to query for child lists
-        // BUT we do need query for child SINGLES AND ITS POSSIBLE THAT CHILD RECORDS GET INSERTED 1st!
+        // BUT we do need query for child SINGLES AND IT'S POSSIBLE THAT CHILD RECORDS GET INSERTED 1st!
         // NOT really important. At most 1 extra query per type will be run (and no child queries after that)
 
         List<PropertyInfo> joinProperties = MetaData.getPropertyInfo(parentClass).stream().filter(PropertyInfo::isJoin).toList();
@@ -491,7 +491,7 @@ final class SessionHelper {
                 // We expect this method not to be called if the result query has 0 rows.
                 assert ((Collection<?>) parent).size() > 0;
             }
-
+// todo what if we have a complex query with multiple where clauses????
             String parentWhere;
             if (parentSql.toUpperCase().contains(" WHERE ")) {
                 parentWhere = parentSql.substring(parentSql.toUpperCase().indexOf(" WHERE ") + 7);
@@ -542,6 +542,7 @@ final class SessionHelper {
         }
     }
 
+    // called with many to many or many to one
     private void stitch(JoinInfo joinInfo, List<?> parentList, List<?> childList) {
         blog.debug("STITCH " + joinInfo);
 
@@ -613,11 +614,8 @@ final class SessionHelper {
             }
             list.add(child);
         } else {
-            if (joinInfo.reversed()) {
-                joinInfo.joinProperty().setValue(child, parent);
-            } else {
-                joinInfo.joinProperty().setValue(parent, child);
-            }
+            assert joinInfo.reversed(); // many to 1 which is reversed.
+            joinInfo.joinProperty().setValue(child, parent);
         }
     }
 
@@ -625,12 +623,12 @@ final class SessionHelper {
     private void assignJoinedList(PropertyInfo joinProperty, Object parentObject, List list) {
 
         // no null test - the object should have some List initialized.
-        List joinedList = (List) joinProperty.getValue(parentObject);
-        if (joinedList == null) {
+        Collection joinTo = (Collection) joinProperty.getValue(parentObject);
+        if (joinTo == null) {
             throw new PersismException(Message.CannotNotJoinToNullProperty.message(joinProperty.propertyName));
         }
-        joinedList.clear();
-        joinedList.addAll(list);
+        joinTo.clear();
+        joinTo.addAll(list);
     }
 
     private String getChildWhereClause(JoinInfo joinInfo, String parentWhere) {

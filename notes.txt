@@ -82,3 +82,32 @@ Options:
  mvn install -Dmaven.test.skip
 
  C:\Users\Dan\WebstormProjects\Persism\coverage\persism2
+
+CODE COVERAGE
+code coverage MetaData
+    * Add Table Mailbox - for Mailboxes "es" test
+    * Multiple view same name different schema names
+    * Test variable update statements + maybe insert statements
+
+code coverage SessionHelper
+    * have a table with ZonedDateTimeType or similar for warning coverage
+    * have a table with direct Clob or Blob fields (which is a bad idea) for warning coverage
+    * log.warnNoDuplicates("parent not found:").....
+
+code coverage Session
+    * throw new PersismException("Could not retrieve value from column "... from field with no setter
+
+code coverage Reader
+    * case for byte as boolean or byte as byte...?
+
+code coverage Convertor
+    * String to Time
+    * String to LocalTime
+    * util.Date to Time - this is retarded but ok....
+    * sql.Date to Time
+    * sql.Date to LocalTime
+    * ZonedDateTimeType or similar for warning coverage
+    * direct Clob or Blob fields for warning coverage
+
+
+

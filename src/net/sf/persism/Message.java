@@ -39,7 +39,7 @@ enum Message {
     NoPropertyFoundForColumn("No property found for column: %s class: %s"),
     ColumnAnnotatedAsAutoIncButNAN("Column %s is annotated as auto-increment but it is not a number type (%s)"),
     DatabaseMetaDataCouldNotFindPrimaryKeys("DatabaseMetaData could not find primary keys for table %s"),
-    DatabaseMetaDataCouldNotFindColumns("DatabaseMetaData could not find columns for table %s!"),
+    DatabaseMetaDataCouldNotFindColumns("DatabaseMetaData could not find columns for table %s! Your database account may not have that permission."),
     NoPrimaryKeyFoundForTable("No primary key found for table %s. Do not use with insert/update/delete/fetch or add a primary key"),
     NoConversionForUnknownType("Conversion: Unknown type: %s - no conversion performed"),
     TinyIntMSSQL("COLUMN: %s: MSSQL Sees tinyint as 0 - 254 - Others -127 - +127 - no conversion performed - recommend changing it to SMALLINT/Short"),

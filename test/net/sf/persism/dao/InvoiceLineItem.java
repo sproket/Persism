@@ -60,14 +60,47 @@ public final class InvoiceLineItem {
 //        this.product = product;
 //    }
 
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+
+        InvoiceLineItem that = (InvoiceLineItem) o;
+
+        if (id != that.id) {
+            return false;
+        }
+        if (invoiceId != that.invoiceId) {
+            return false;
+        }
+        if (productId != that.productId) {
+            return false;
+        }
+        return quantity == that.quantity;
+    }
+
+    @Override
+    public int hashCode() {
+        int result = id;
+        result = 31 * result + invoiceId;
+        result = 31 * result + productId;
+        result = 31 * result + quantity;
+        return result;
+    }
+
     @Override
     public String toString() {
         return "InvoiceLineItem{" +
-                "id=" + id +
-                ", invoiceId=" + invoiceId +
-                ", productId=" + productId +
-                ", quantity=" + quantity +
-                ", product=" + product +
-                '}';
+               "id=" + id +
+               ", invoiceId=" + invoiceId +
+               ", productId=" + productId +
+               ", quantity=" + quantity +
+               ", product=" + product +
+               '}';
     }
 }
