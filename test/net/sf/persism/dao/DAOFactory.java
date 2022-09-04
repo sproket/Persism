@@ -18,8 +18,6 @@ public class DAOFactory {
         try {
             if (con.getMetaData().getDatabaseProductName().toUpperCase().contains("ORACLE")) {
                 return new OracleOrder();
-    //        } else if (con.getMetaData().getDatabaseProductName().toUpperCase().contains("FIREBIRD")) {
-    //            return new FirebirdOrder();
             } else {
                 return new Order();
             }

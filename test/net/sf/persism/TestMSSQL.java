@@ -1239,12 +1239,12 @@ public class TestMSSQL extends BaseTest {
     }
 
 
-    public void testDetectAutoInc() {
+    public void testDetectAutoInc() throws SQLException {
 
         DumbTableStringAutoInc dumb = new DumbTableStringAutoInc();
         dumb.setDescription("test");
         boolean fail = false;
-// todo test with field only this tests setter
+        log.info(session.getConnection().getMetaData().getDatabaseProductName());
         try {
             session.insert(dumb); // should fail since we marked the ID property as autoinc which makes no sense
         } catch (PersismException e) {
@@ -1253,6 +1253,20 @@ public class TestMSSQL extends BaseTest {
             assertEquals("s/b Could not retrieve value from column ID for table [dbo].[DumbTableStringAutoInc]", "Could not retrieve value from column ID for table [dbo].[DumbTableStringAutoInc]", e.getMessage());
         }
         assertTrue(fail);
+
+        DumbTableStringAutoInc2 dumb2 = new DumbTableStringAutoInc2();
+        dumb2.setDescription("test");
+        fail = false;
+        try {
+            session.insert(dumb2); // should fail since we marked the ID property as autoinc which makes no sense
+        } catch (PersismException e) {
+            log.warn(e.getMessage(), e);
+            fail = true;
+            assertEquals("s/b Could not retrieve value from column ID for table [dbo].[DumbTableStringAutoInc]", "Could not retrieve value from column ID for table [dbo].[DumbTableStringAutoInc]", e.getMessage());
+        }
+        assertTrue(fail);
+
+
     }
 
     public void testUserDAO() throws Exception {

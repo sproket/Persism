@@ -1,11 +1,11 @@
 package net.sf.persism;
 
 import net.sf.persism.categories.ExternalDB;
-import net.sf.persism.dao.Customer;
-import net.sf.persism.dao.Region;
+import net.sf.persism.dao.*;
 import org.junit.experimental.categories.Category;
 
-import java.sql.*;
+import java.sql.DriverManager;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
@@ -69,37 +69,37 @@ public class TestMySQL extends BaseTest {
         }
 
         commands.add("CREATE TABLE Customers ( " +
-                " Customer_ID varchar(10) PRIMARY KEY NOT NULL, " +
-                " GROUP_ID INT NULL, " +
-                " Company_Name VARCHAR(30) NULL, " +
-                " Contact_Name VARCHAR(30) NULL, " +
-                " Contact_Title VARCHAR(10) NULL, " +
-                " Address VARCHAR(40) NULL, " +
-                " City VARCHAR(30) NULL, " +
-                " Region ENUM('North', 'South', 'East', 'West'), " +
-                " Postal_Code VARCHAR(10) NULL, " +
-                " Country VARCHAR(2) NOT NULL DEFAULT 'US', " +
-                " STATUS CHAR(1) NOT NULL DEFAULT ' ', " +
-                " Phone VARCHAR(30) NULL, " +
-                " Fax VARCHAR(30) NULL, " +
-                " Date_Registered TIMESTAMP, " +
-                " Date_Of_Last_Order DATE NULL, " +
-                " TestLocalDate DATETIME NULL, " +
-                " TestLocalDateTime TIMESTAMP NULL " +
-                ") ");
+                     " Customer_ID varchar(10) PRIMARY KEY NOT NULL, " +
+                     " GROUP_ID INT NULL, " +
+                     " Company_Name VARCHAR(30) NULL, " +
+                     " Contact_Name VARCHAR(30) NULL, " +
+                     " Contact_Title VARCHAR(10) NULL, " +
+                     " Address VARCHAR(40) NULL, " +
+                     " City VARCHAR(30) NULL, " +
+                     " Region ENUM('North', 'South', 'East', 'West'), " +
+                     " Postal_Code VARCHAR(10) NULL, " +
+                     " Country VARCHAR(2) NOT NULL DEFAULT 'US', " +
+                     " STATUS CHAR(1) NOT NULL DEFAULT ' ', " +
+                     " Phone VARCHAR(30) NULL, " +
+                     " Fax VARCHAR(30) NULL, " +
+                     " Date_Registered TIMESTAMP, " +
+                     " Date_Of_Last_Order DATE NULL, " +
+                     " TestLocalDate DATETIME NULL, " +
+                     " TestLocalDateTime TIMESTAMP NULL " +
+                     ") ");
 
         commands.add("CREATE TABLE Orders ( " +
-                " ID INT NOT NULL AUTO_INCREMENT, PRIMARY KEY(ID), " +
-                " NAME VARCHAR(30) NULL, " +
-                " PAID BIT NULL, " +
-                " Prepaid BIT NULL," +
-                " IsCollect BIT NULL," +
-                " IsCancelled BIT NULL," +
-                " Customer_ID VARCHAR(10) NULL, " +
-                " Created TIMESTAMP, " +
-                " Date_Paid DATE NULL, " +
-                " Date_Something DATE NULL" +
-                ") ");
+                     " ID INT NOT NULL AUTO_INCREMENT, PRIMARY KEY(ID), " +
+                     " NAME VARCHAR(30) NULL, " +
+                     " PAID BIT NULL, " +
+                     " Prepaid BIT NULL," +
+                     " IsCollect BIT NULL," +
+                     " IsCancelled TINYINT NULL," +
+                     " Customer_ID VARCHAR(10) NULL, " +
+                     " Created TIMESTAMP, " +
+                     " Date_Paid DATE NULL, " +
+                     " Date_Something DATE NULL" +
+                     ") ");
 
         executeCommands(commands, con);
 
@@ -108,16 +108,16 @@ public class TestMySQL extends BaseTest {
         }
 
         String sql = "CREATE TABLE Invoices ( " +
-                " Invoice_ID INT NOT NULL AUTO_INCREMENT, PRIMARY KEY(Invoice_ID), " +
-                " Customer_ID varchar(10) NOT NULL, " +
-                " Paid BIT NOT NULL, " +
-                " Price NUMERIC(7,3) NOT NULL, " +
-                " ActualPrice NUMERIC(7,3) NOT NULL, " +
-                " Status CHAR(1) DEFAULT '1', " +
-                " Created TIMESTAMP DEFAULT CURRENT_TIMESTAMP, " + // make read-only in Invoice Object
-                " Quantity NUMERIC(10) NOT NULL, " +
-                //" Total NUMERIC(10,3) NOT NULL, " +
-                " Discount NUMERIC(10,3) NOT NULL )";
+                     " Invoice_ID INT NOT NULL AUTO_INCREMENT, PRIMARY KEY(Invoice_ID), " +
+                     " Customer_ID varchar(10) NOT NULL, " +
+                     " Paid BIT NOT NULL, " +
+                     " Price NUMERIC(7,3) NOT NULL, " +
+                     " ActualPrice NUMERIC(7,3) NOT NULL, " +
+                     " Status CHAR(1) DEFAULT '1', " +
+                     " Created TIMESTAMP DEFAULT CURRENT_TIMESTAMP, " + // make read-only in Invoice Object
+                     " Quantity NUMERIC(10) NOT NULL, " +
+                     //" Total NUMERIC(10,3) NOT NULL, " +
+                     " Discount NUMERIC(10,3) NOT NULL )";
 
         executeCommand(sql, con);
 
@@ -136,32 +136,32 @@ public class TestMySQL extends BaseTest {
 
         // https://mysqlserverteam.com/storing-uuid-values-in-mysql-tables/
         sql = "CREATE TABLE Contacts( " +
-                "   identity binary(16) NOT NULL, PRIMARY KEY(identity), " +  // test binary(16)
-                "   PartnerID varchar(36) NOT NULL, " + // test varchar(36)
-                "   Type char(2) NOT NULL, " +
-                "   Firstname varchar(50) NOT NULL, " +
-                "   Lastname varchar(50) NOT NULL, " +
-                "   ContactName varchar(50) NOT NULL, " +
-                "   Company varchar(50) NOT NULL, " +
-                "   Division varchar(50) NULL, " +
-                "   Email varchar(50) NULL, " +
-                "   Address1 varchar(50) NULL, " +
-                "   Address2 varchar(50) NULL, " +
-                "   City varchar(50) NULL, " +
-                "   StateProvince varchar(50) NULL, " +
-                "   ZipPostalCode varchar(10) NULL, " +
-                "   Country nvarchar(50) NULL, " +
-                "   Status TINYINT NOT NULL, " +
-                "   DateAdded Date NULL, " +
-                "   LastModified DATETIME NULL, " +
-                "   Notes text NULL, " +
-                "   AmountOwed FLOAT NULL, " +
-                "   `BigInt` DECIMAL(20) NULL, " +
-                "   SOME_DATE TIMESTAMP NULL, " +
-                "   tesTInstanT DateTime NULL, " +
-                "   tesTInstanT2 TIMESTAMP NULL, " +
-                "   WhatMiteIsIt TIME NULL, " +
-                "   WhatTimeIsIt TIME NULL) ";
+              "   identity binary(16) NOT NULL, PRIMARY KEY(identity), " +  // test binary(16)
+              "   PartnerID varchar(36) NOT NULL, " + // test varchar(36)
+              "   Type char(2) NOT NULL, " +
+              "   Firstname varchar(50) NOT NULL, " +
+              "   Lastname varchar(50) NOT NULL, " +
+              "   ContactName varchar(50) NOT NULL, " +
+              "   Company varchar(50) NOT NULL, " +
+              "   Division varchar(50) NULL, " +
+              "   Email varchar(50) NULL, " +
+              "   Address1 varchar(50) NULL, " +
+              "   Address2 varchar(50) NULL, " +
+              "   City varchar(50) NULL, " +
+              "   StateProvince varchar(50) NULL, " +
+              "   ZipPostalCode varchar(10) NULL, " +
+              "   Country nvarchar(50) NULL, " +
+              "   Status TINYINT NOT NULL, " +
+              "   DateAdded Date NULL, " +
+              "   LastModified DATETIME NULL, " +
+              "   Notes text NULL, " +
+              "   AmountOwed FLOAT NULL, " +
+              "   `BigInt` DECIMAL(20) NULL, " +
+              "   SOME_DATE TIMESTAMP NULL, " +
+              "   tesTInstanT DateTime NULL, " +
+              "   tesTInstanT2 TIMESTAMP NULL, " +
+              "   WhatMiteIsIt TIME NULL, " +
+              "   WhatTimeIsIt TIME NULL) ";
 
         executeCommand(sql, con);
 
@@ -170,11 +170,11 @@ public class TestMySQL extends BaseTest {
         }
 
         sql = "CREATE TABLE DateTestLocalTypes ( " +
-                " ID INT, " +
-                " Description VARCHAR(100), " +
-                " DateOnly DATE, " +
-                " TimeOnly TIME," +
-                " DateAndTime DATETIME) ";
+              " ID INT, " +
+              " Description VARCHAR(100), " +
+              " DateOnly DATE, " +
+              " TimeOnly TIME," +
+              " DateAndTime DATETIME) ";
 
         executeCommand(sql, con);
 
@@ -183,12 +183,12 @@ public class TestMySQL extends BaseTest {
         }
 
         sql = "CREATE TABLE DateTestSQLTypes ( " +
-                " ID INT, " +
-                " Description VARCHAR(100), " +
-                " DateOnly DATE, " +
-                " TimeOnly TIME," +
-                " UtilDateAndTime DATETIME," +
-                " DateAndTime DATETIME) ";
+              " ID INT, " +
+              " Description VARCHAR(100), " +
+              " DateOnly DATE, " +
+              " TimeOnly TIME," +
+              " UtilDateAndTime DATETIME," +
+              " DateAndTime DATETIME) ";
 
         executeCommand(sql, con);
 
@@ -196,23 +196,23 @@ public class TestMySQL extends BaseTest {
             executeCommand("DROP TABLE RecordTest1", con);
         }
         sql = "CREATE TABLE RecordTest1 ( " +
-                "ID binary(16) NOT NULL, PRIMARY KEY(ID), " +
-                "NAME VARCHAR(20), " +
-                "QTY INT, " +
-                "PRICE DECIMAL(10) " +
-                ") ";
+              "ID binary(16) NOT NULL, PRIMARY KEY(ID), " +
+              "NAME VARCHAR(20), " +
+              "QTY INT, " +
+              "PRICE DECIMAL(10) " +
+              ") ";
         executeCommand(sql, con);
 
         if (UtilsForTests.isTableInDatabase("RecordTest2", con)) {
             executeCommand("DROP TABLE RecordTest2", con);
         }
         sql = "CREATE TABLE RecordTest2 ( " +
-                "ID INT NOT NULL AUTO_INCREMENT, PRIMARY KEY(ID), " +
-                "DESCRIPTION VARCHAR(20), " +
-                "QTY INT, " +
-                "PRICE DECIMAL(10), " +
-                "CREATED_ON TIMESTAMP DEFAULT CURRENT_TIMESTAMP" +
-                ") ";
+              "ID INT NOT NULL AUTO_INCREMENT, PRIMARY KEY(ID), " +
+              "DESCRIPTION VARCHAR(20), " +
+              "QTY INT, " +
+              "PRICE DECIMAL(10), " +
+              "CREATED_ON TIMESTAMP DEFAULT CURRENT_TIMESTAMP" +
+              ") ";
         executeCommand(sql, con);
 
         if (isTableInDatabase("InvoiceLineItems", con)) {
@@ -248,16 +248,16 @@ public class TestMySQL extends BaseTest {
         }
 
         executeCommand("CREATE TABLE SavedGames ( " +
-                " ID VARCHAR(20) NOT NULL, PRIMARY KEY(ID), " +
-                " Name VARCHAR(100), " +
-                " Some_Date_And_Time DATETIME NULL, " +
-                " Platinum REAL NULL, " +
-                " Gold REAL NULL, " +
-                " Silver REAL NULL, " +
-                " Copper REAL NULL, " +
-                " Data TEXT NULL, " +
-                " WhatTimeIsIt TIME NULL, " +
-                " SomethingBig BLOB NULL) ", con);
+                       " ID VARCHAR(20) NOT NULL, PRIMARY KEY(ID), " +
+                       " Name VARCHAR(100), " +
+                       " Some_Date_And_Time DATETIME NULL, " +
+                       " Platinum REAL NULL, " +
+                       " Gold REAL NULL, " +
+                       " Silver REAL NULL, " +
+                       " Copper REAL NULL, " +
+                       " Data TEXT NULL, " +
+                       " WhatTimeIsIt TIME NULL, " +
+                       " SomethingBig BLOB NULL) ", con);
 
         if (isTableInDatabase("Postman", con)) {
             executeCommand("DROP TABLE Postman", con);
@@ -295,6 +295,34 @@ public class TestMySQL extends BaseTest {
 
     }
 
+
+    @Override
+    public void testIsNamedBooleanProperties() throws SQLException {
+        // super.testIsNamedBooleanProperties();
+
+        MySQLOrder order = new MySQLOrder();
+        order.setName("test 1");
+        order.setCancelled(true);
+        order.setCollect(true);
+        order.setCancelled(true);
+        order.setPaid(true);
+        order.setPrepaid((byte) 1);
+        session.insert(order);
+
+        assertTrue("order # > 0", order.getId() > 0);
+
+        MySQLOrder order2 = new MySQLOrder();
+        order2.setId(order.getId());
+        assertTrue("should be found ", session.fetch(order2));
+
+        assertTrue("paid", order2.isPaid());
+        assertTrue("cancelled", order2.isCancelled());
+        assertEquals("prepaid", 1, order2.getPrepaid());
+        assertTrue("collect", order2.isCollect());
+
+
+    }
+
     @Override
     public void testContactTable() throws SQLException {
         super.testContactTable();
@@ -323,7 +351,7 @@ public class TestMySQL extends BaseTest {
         log.info("count " + count);
 
         session.query(Customer.class, params("123"));
-        session.query(Customer.class, params("123","456","780"));
+        session.query(Customer.class, params("123", "456", "780"));
 
     }
 

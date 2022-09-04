@@ -95,10 +95,10 @@ code coverage SessionHelper
     * log.warnNoDuplicates("parent not found:").....
 
 code coverage Session
-    * throw new PersismException("Could not retrieve value from column "... from field with no setter
+    DONE throw new PersismException("Could not retrieve value from column "... from field with no setter
 
 code coverage Reader
-    * case for byte as boolean or byte as byte...?
+    DONE case for byte as boolean or byte as byte...? (not all dbs support this. do MySQL only)
 
 code coverage Convertor
     * String to Time
