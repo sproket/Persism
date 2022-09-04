@@ -85,9 +85,9 @@ Options:
 
 CODE COVERAGE
 code coverage MetaData
-    * Add Table Mailbox - for Mailboxes "es" test
-    * Multiple view same name different schema names
-    * Test variable update statements + maybe insert statements
+    DONE Add Table Mailbox - for Mailboxes "es" test
+    DONE Multiple view same name different schema names
+    DONE Test variable update statements + maybe insert statements
 
 code coverage SessionHelper
     * have a table with ZonedDateTimeType or similar for warning coverage

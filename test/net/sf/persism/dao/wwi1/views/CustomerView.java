@@ -3,7 +3,7 @@ package net.sf.persism.dao.wwi1.views;
 import net.sf.persism.annotations.View;
 
 
-@View("Customers")
+@View("Website.Customers")
 public record CustomerView(
         Integer customerId,
         String customerName,

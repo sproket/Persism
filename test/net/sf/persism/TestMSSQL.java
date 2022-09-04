@@ -12,10 +12,17 @@ import net.sf.persism.dao.*;
 import net.sf.persism.dao.wwi1.Application;
 import org.junit.experimental.categories.Category;
 
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.io.Reader;
+import java.io.Writer;
 import java.math.BigDecimal;
 import java.sql.Date;
 import java.sql.*;
+import java.time.Instant;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 
@@ -671,6 +678,20 @@ public class TestMSSQL extends BaseTest {
 
         executeCommand("CREATE TABLE TABLENOPRIMARY (  ID INT,  Name VARCHAR(30),  Field4 VARCHAR(30),  Field5 DATE,  Field6 INT,  Field7 INT,  Field8 INT )", con);
 
+        if (isTableInDatabase("MailBoxes", con)) {
+            executeCommand("DROP TABLE MailBoxes", con);
+        }
+        sql = """
+                CREATE TABLE MailBoxes (
+                    ID [int] IDENTITY(1,1) NOT NULL,
+                    USer_iD int,
+                    Subject varchar(254),
+                    Body text,
+                    receivedDate DATETIME default current_timestamp,
+                    readDate DATETIME2,
+                    )
+                """;
+        executeCommand(sql, con);
     }
 
     @Override
@@ -830,6 +851,20 @@ public class TestMSSQL extends BaseTest {
             log.info(room.getRoomNo() + " " + room.getDescription());
         }
         log.info("time to display rooms : " + (System.currentTimeMillis() - now));
+    }
+
+    public void testMailbox() {
+        Mailbox mailbox = new Mailbox();
+        mailbox.setSubject("subject?");
+        mailbox.setBody("body?");
+        // mailbox.setReadDate(LocalDateTime.now());
+        //mailbox.setReceivedDate(LocalDateTime.now());
+        mailbox.setUserId(1);
+        session.insert(mailbox);
+
+        mailbox = session.fetch(Mailbox.class, where(":userId = ?"), params(1));
+        assertNotNull(mailbox);
+        log.info(mailbox);
     }
 
     public void testJunk() {

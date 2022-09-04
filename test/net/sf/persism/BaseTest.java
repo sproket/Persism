@@ -208,8 +208,7 @@ public abstract class BaseTest extends TestCase {
             customer1.setDateRegistered(null);
 
             assertEquals("Customer 1 country should be CA ", "CA", customer1.getCountry());
-            assertEquals("Customer 1 date registered should be null", null, customer1.getDateRegistered());
-
+            assertNull("Customer 1 date registered should be null", customer1.getDateRegistered());
 
             session.fetch(customer1);
 
@@ -217,6 +216,7 @@ public abstract class BaseTest extends TestCase {
             // we cannot test long. Need to format a date and compare as string to the seconds or minutes because SQL does not store dates with exact accuracy
             log.info(new Date(dateRegistered) + " = ? " + new Date(customer1.getDateRegistered().getTime()));
             assertEquals("Customer 1 date registered should be more or less equal since SQL can be off by 7 millis.?", "" + new Date(dateRegistered), "" + new Date(customer1.getDateRegistered().getTime()));
+
         } catch (SQLException e) {
             log.error(e.getMessage(), e);
             fail(e.getMessage());
@@ -1550,6 +1550,12 @@ public abstract class BaseTest extends TestCase {
         }
         assertTrue(failed);
 
+        contact.setCompany("XYZ");
+        session.update(contact);
+        contact.setContactName("JOE");
+        session.update(contact);
+
+        log.info(contact);
     }
 
     public void testReuse() {
@@ -1916,7 +1922,41 @@ public abstract class BaseTest extends TestCase {
         //customer.setStatus('1');
         session.insert(customer);
 
-        session.fetch(customer); // DOESNT FAIl?
+        session.fetch(customer);
+
+
+        Customer customer2 = new Customer();
+        customer2.setCompanyName("TEST2");
+        customer2.setCustomerId("MOO2");
+        customer2.setAddress("123 sesame street 2");
+        customer2.setCity("city");
+        customer2.setContactName("fred flintstone");
+        customer2.setContactTitle("Lord");
+        customer2.setCountry("CA");
+        // customer2.setDateRegistered(new java.sql.Timestamp(System.currentTimeMillis()));
+        customer2.setFax("123-456-7890");
+        customer2.setPhone("456-678-1234");
+        customer2.setPostalCode("54321");
+        customer2.setRegion(Region.East);
+        customer2.setStatus('1');
+        session.insert(customer2);
+
+        Customer customer3 = new Customer();
+        customer3.setCompanyName("TEST2");
+        customer3.setCustomerId("MOO3");
+        customer3.setAddress("123 sesame street 3");
+        customer3.setCity("city");
+        customer3.setContactName("fred flintstone");
+        customer3.setContactTitle("Lord");
+        // customer3.setCountry("CA");
+        // customer3.setDateRegistered(new java.sql.Timestamp(System.currentTimeMillis()));
+        customer3.setFax("123-456-7890");
+        customer3.setPhone("456-678-1234");
+        customer3.setPostalCode("54321");
+        customer3.setRegion(Region.East);
+        customer3.setStatus('1');
+        session.insert(customer3);
+
 
         assertEquals("country s/b US", "US", customer.getCountry());
 

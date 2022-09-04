@@ -420,7 +420,7 @@ final class SessionHelper {
                     case ZonedDateTimeType:
                     case InstantType:
                         log.warn(Message.UnSupportedTypeInSetParameters.message(paramType));
-                        st.setObject(n, param);
+                        st.setObject(n, "" + param);
                         break;
 
                     case byteArrayType:
