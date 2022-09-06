@@ -252,7 +252,7 @@ final class Converter {
                     break;
                 }
 
-                java.util.Date dval;
+                Date dval;
                 DateFormat df;
                 if (("" + value).length() > "yyyy-MM-dd".length()) {
                     df = DATE_FORMAT1.get();
@@ -261,20 +261,13 @@ final class Converter {
                 }
 
                 // Read a string but we want a date
-                if (targetType == Date.class || targetType == java.sql.Date.class) {
+                if (targetType == Date.class) {
                     // This condition occurs in SQLite when you have a datetime with default annotated
                     // the format returned is 2012-06-02 19:59:49
                     // Used for SQLite returning dates as Strings under some conditions
                     // SQL or others may return STRING yyyy-MM-dd for older legacy 'date' type.
                     // https://docs.microsoft.com/en-us/sql/t-sql/data-types/date-transact-sql?view=sql-server-ver15
-                    dval = tryParseDate(value, targetType, columnName, df);
-
-                    if (targetType == java.sql.Date.class) {
-                        // does not occur. SQLite sees sql-date as Long, so we never do this one
-                        returnValue = new java.sql.Date(dval.getTime());
-                    } else {
-                        returnValue = dval;
-                    }
+                    returnValue = tryParseDate(value, targetType, columnName, df);
                     break;
                 }
 
@@ -284,14 +277,14 @@ final class Converter {
                 }
 
                 if (targetType == LocalDate.class) {
-                    // JTDS
+                    // SQLite
                     dval = tryParseDate(value, targetType, columnName, df);
                     returnValue = dval.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
                     break;
                 }
 
                 if (targetType == LocalDateTime.class) {
-                    // JTDS
+                    // SQLite
                     dval = tryParseDate(value, targetType, columnName, df);
                     returnValue = dval.toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime();
                     break;
@@ -318,26 +311,6 @@ final class Converter {
                     // String to Boolean - T or 1 - otherwise false (or null)
                     String bval = ("" + value).toUpperCase();
                     returnValue = bval.startsWith("T") || bval.startsWith("1");
-                    break;
-                }
-
-                if (targetType == Time.class) {
-                    // MSSQL works, JTDS returns Varchar in format below with varying decimal numbers
-                    // which won't format unless I use Exact, so I chop of the milliseconds.
-                    // This case only occurs with JTDS which is no longer supported
-                    DateFormat timeFormat = DATE_FORMAT3.get();
-                    String sval = "" + value;
-                    if (sval.indexOf('.') > -1) {
-                        sval = sval.substring(0, sval.indexOf('.'));
-                    }
-                    dval = tryParseDate(sval, targetType, columnName, timeFormat);
-                    returnValue = new Time(dval.getTime());
-                    break;
-                }
-
-                if (targetType == LocalTime.class) {
-                    // JTDS Fails again... and is no longer supported
-                    returnValue = LocalTime.parse("" + value);
                     break;
                 }
 
@@ -368,10 +341,6 @@ final class Converter {
                 break;
 
             case UtilDateType:
-                if (targetType == Date.class) {
-                    break;
-                }
-
                 if (targetType == java.sql.Date.class) {
                     returnValue = new java.sql.Date(((Date) value).getTime());
                     break;
@@ -379,31 +348,6 @@ final class Converter {
 
                 if (targetType == Timestamp.class) {
                     returnValue = new Timestamp(((Date) value).getTime());
-                    break;
-                }
-
-                if (targetType == LocalDate.class) {
-                    Date dt = new Date(((Date) value).getTime());
-                    returnValue = dt.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
-                    break;
-                }
-
-                if (targetType == LocalDateTime.class) {
-                    Date dt = new Date(((Date) value).getTime());
-                    returnValue = dt.toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime();
-                    break;
-                }
-
-                if (targetType == Time.class) {
-                    // Oracle doesn't seem to have Time so we use Timestamp
-                    returnValue = new Time(((Date) value).getTime());
-                    break;
-                }
-
-                if (targetType == LocalTime.class) {
-                    // Oracle.... Sigh
-                    Date dt = (Date) value;
-                    returnValue = dt.toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime().toLocalTime();
                     break;
                 }
                 break;
@@ -432,19 +376,6 @@ final class Converter {
                 if (targetType == LocalDateTime.class) {
                     Date dt = new Date(((Date) value).getTime());
                     returnValue = dt.toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime();
-                    break;
-                }
-
-                if (targetType == Time.class) {
-                    // Oracle doesn't seem to have Time so we use Timestamp
-                    returnValue = new Time(((Date) value).getTime());
-                    break;
-                }
-
-                if (targetType == LocalTime.class) {
-                    // Oracle.... Sigh
-                    Date dt = (Date) value;
-                    returnValue = dt.toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime().toLocalTime();
                     break;
                 }
                 break;

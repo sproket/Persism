@@ -41,6 +41,18 @@ public final class TestMetaData extends TestCase {
         session = new Session(con);
     }
 
+    public void testLogger() {
+        log.debug("debug %s","x");
+        log.debug("debug");
+        log.info("info");
+        log.info("info", new Throwable());
+        log.warn("warn");
+        log.warn("warn", new Throwable());
+        log.warnNoDuplicates("warn no dup");
+        log.error("error");
+        log.error("error", new Throwable());
+        log.isDebugEnabled();
+    }
 
     public void testGuessing() {
 

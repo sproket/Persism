@@ -90,8 +90,6 @@ code coverage MetaData
     DONE Test variable update statements + maybe insert statements
 
 code coverage SessionHelper
-    * have a table with ZonedDateTimeType or similar for warning coverage
-    * have a table with direct Clob or Blob fields (which is a bad idea) for warning coverage
     * log.warnNoDuplicates("parent not found:").....
 
 code coverage Session
@@ -101,11 +99,11 @@ code coverage Reader
     DONE case for byte as boolean or byte as byte...? (not all dbs support this. do MySQL only)
 
 code coverage Convertor
-    * String to Time
-    * String to LocalTime
-    * util.Date to Time - this is retarded but ok....
-    * sql.Date to Time
-    * sql.Date to LocalTime
+    NO String to Time
+    NO String to LocalTime
+    NO util.Date to Time
+    NO sql.Date to Time
+    NO sql.Date to LocalTime
     * ZonedDateTimeType or similar for warning coverage
     * direct Clob or Blob fields for warning coverage
 

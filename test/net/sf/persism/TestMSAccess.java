@@ -60,6 +60,19 @@ public class TestMSAccess extends TestCase {
         session = new Session(con);
     }
 
+    public void testLogger() {
+        log.debug("debug %s","x");
+        log.debug("debug");
+        log.info("info");
+        log.info("info", new Throwable());
+        log.warn("warn");
+        log.warn("warn", new Throwable());
+        log.warnNoDuplicates("warn no dup");
+        log.error("error");
+        log.error("error", new Throwable());
+        log.isDebugEnabled();
+    }
+
     private void createTables() throws SQLException {
         String sql;
 
@@ -68,7 +81,6 @@ public class TestMSAccess extends TestCase {
             executeCommand(sql, con);
         }
 
-        // todo " and ' and [ and ] and `
         sql = """
                 CREATE TABLE Customers (\s
                  `Customer ID` varchar(10) PRIMARY KEY NOT NULL,\s

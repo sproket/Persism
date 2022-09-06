@@ -8,7 +8,6 @@ import java.math.BigInteger;
 import java.sql.Date;
 import java.sql.Time;
 import java.sql.Timestamp;
-import java.time.Instant;
 import java.time.LocalTime;
 import java.util.UUID;
 
@@ -60,12 +59,6 @@ public final class Contact implements Persistable<Contact> {
 
     private Time whatTimeIsIt;
     private LocalTime whatMiteIsIt;
-
-    @NotColumn
-    private Instant testInstant;
-    @NotColumn
-    private Instant testInstant2;
-
     private java.util.Date someDate;
 
     private BigInteger bigInt;
@@ -258,22 +251,6 @@ public final class Contact implements Persistable<Contact> {
         this.notes = notes;
     }
 
-    public Instant getTestInstant() {
-        return testInstant;
-    }
-
-    public void setTestInstant(Instant testInstant) {
-        this.testInstant = testInstant;
-    }
-
-    public Instant getTestInstant2() {
-        return testInstant2;
-    }
-
-    public void setTestInstant2(Instant testInstant2) {
-        this.testInstant2 = testInstant2;
-    }
-
     public java.util.Date getSomeDate() {
         return someDate;
     }
@@ -397,27 +374,27 @@ public final class Contact implements Persistable<Contact> {
     @Override
     public String toString() {
         return "Contact{" +
-                "identity=" + identity +
-                ", partnerId=" + partnerId +
-                ", type='" + type + '\'' +
-                ", firstname='" + firstname + '\'' +
-                ", lastname='" + lastname + '\'' +
-                ", contactName='" + contactName + '\'' +
-                ", company='" + company + '\'' +
-                ", division='" + division + '\'' +
-                ", email='" + email + '\'' +
-                ", address1='" + address1 + '\'' +
-                ", address2='" + address2 + '\'' +
-                ", city='" + city + '\'' +
-                ", stateProvince='" + stateProvince + '\'' +
-                ", zipPostalCode='" + zipPostalCode + '\'' +
-                ", country='" + country + '\'' +
-                ", dateAdded=" + dateAdded +
-                ", lastModified=" + lastModified +
-                ", amountOwed=" + amountOwed +
-                ", notes='" + notes + '\'' +
-                ", whatTimeIsIt=" + whatTimeIsIt +
-                '}';
+               "identity=" + identity +
+               ", partnerId=" + partnerId +
+               ", type='" + type + '\'' +
+               ", firstname='" + firstname + '\'' +
+               ", lastname='" + lastname + '\'' +
+               ", contactName='" + contactName + '\'' +
+               ", company='" + company + '\'' +
+               ", division='" + division + '\'' +
+               ", email='" + email + '\'' +
+               ", address1='" + address1 + '\'' +
+               ", address2='" + address2 + '\'' +
+               ", city='" + city + '\'' +
+               ", stateProvince='" + stateProvince + '\'' +
+               ", zipPostalCode='" + zipPostalCode + '\'' +
+               ", country='" + country + '\'' +
+               ", dateAdded=" + dateAdded +
+               ", lastModified=" + lastModified +
+               ", amountOwed=" + amountOwed +
+               ", notes='" + notes + '\'' +
+               ", whatTimeIsIt=" + whatTimeIsIt +
+               '}';
     }
 
     @Override

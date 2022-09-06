@@ -183,6 +183,7 @@ public final class TestSQLite extends BaseTest {
                      " AmountOwed float NULL, " +
                      " BigInt DECIMAL(20) NULL, " +
                      " Some_DATE DATETIME NULL, " +
+                     " Some_TIME time NULL, " +
                      " TestInstant TIMESTAMP NULL, " +
                      " TestInstant2 DATETIME NULL, " +
                      " WhatMiteIsIt time NULL, " +

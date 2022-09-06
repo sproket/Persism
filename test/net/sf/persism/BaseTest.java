@@ -1120,8 +1120,6 @@ public abstract class BaseTest extends TestCase {
         contact.setLastModified(Timestamp.valueOf(ldt2));
         contact.setWhatTimeIsIt(Time.valueOf(ldt3.toLocalTime()));
         contact.setWhatMiteIsIt(contact.getWhatTimeIsIt().toLocalTime());
-        contact.setTestInstant(ldt4.toInstant(ZoneOffset.UTC));
-        contact.setTestInstant2(ldt4.toInstant(ZoneOffset.UTC));
         contact.setSomeDate(date);
         return contact;
     }
@@ -1315,10 +1313,7 @@ public abstract class BaseTest extends TestCase {
 
         Contact contact = getContactForTest();
 
-        log.info("Local Date: " + ldt4 + " INSTANT: " + contact.getTestInstant());
-        log.info("Local Date: " + LocalDateTime.now() + " INSTANT: " + Instant.now());
-
-        assertNotNull(contact.getIdentity());
+         assertNotNull(contact.getIdentity());
 
         assertEquals("expect 1", 1, session.insert(contact).rows());
 

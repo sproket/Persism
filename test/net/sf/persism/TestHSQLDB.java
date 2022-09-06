@@ -216,6 +216,7 @@ public final class TestHSQLDB extends BaseTest {
                    BigInt DECIMAL(20) NULL,\s
                    TestInstant DateTime NULL,\s
                    SomeDate DateTime NULL,\s
+                   SomeTime Time NULL,\s
                    TestInstant2 DateTime NULL,\s
                    WhatMiteIsIt TIME NULL,\s
                    WhatTimeIsIt TIME NULL)\s                

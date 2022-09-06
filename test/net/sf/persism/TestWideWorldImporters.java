@@ -4,6 +4,7 @@ import junit.framework.TestCase;
 import net.sf.persism.categories.ExternalDB;
 import net.sf.persism.dao.wwi1.*;
 import net.sf.persism.dao.wwi1.views.CustomerView;
+import net.sf.persism.dao.wwi1.views.CustomerViewFail;
 import net.sf.persism.logging.LogMode;
 import org.junit.experimental.categories.Category;
 
@@ -51,6 +52,19 @@ public final class TestWideWorldImporters extends TestCase {
         }
     }
 
+    public void testLogger() {
+        log.debug("debug %s","x");
+        log.debug("debug");
+        log.info("info");
+        log.info("info", new Throwable());
+        log.warn("warn");
+        log.warn("warn", new Throwable());
+        log.warnNoDuplicates("warn no dup");
+        log.error("error");
+        log.error("error", new Throwable());
+        log.isDebugEnabled();
+    }
+
     public void testAllClassesQuery() {
 
         boolean fail = false;
@@ -58,6 +72,15 @@ public final class TestWideWorldImporters extends TestCase {
             session.query(Application.City.class);
         } catch (PersismException e) {
             assertEquals("s/b same", Message.MoreThanOneTableOrViewInDifferentSchemas.message("TABLE", "Cities"), e.getMessage());
+            fail = true;
+        }
+        assertTrue(fail);
+
+        fail = false;
+        try {
+            session.query(CustomerViewFail.class);
+        } catch (PersismException e) {
+            assertEquals("s/b same", Message.MoreThanOneTableOrViewInDifferentSchemas.message("VIEW", "Customers"), e.getMessage());
             fail = true;
         }
         assertTrue(fail);
@@ -95,6 +118,8 @@ public final class TestWideWorldImporters extends TestCase {
         session.query(CustomerView.class);
         session.query(net.sf.persism.dao.wwi1.views.Supplier.class);
         session.query(net.sf.persism.dao.wwi1.views.VehicleTemperature.class);
+
+
     }
 
     public void testReadOnlyTemporal() {
