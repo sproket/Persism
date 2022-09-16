@@ -22,6 +22,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
+import static net.sf.persism.Parameters.params;
 import static net.sf.persism.SQL.sql;
 import static net.sf.persism.UtilsForTests.*;
 
@@ -359,8 +360,8 @@ public final class TestSQLite extends BaseTest {
         assertEquals("list size s/b 4", 4, list.size());
         log.info("ORDERS\n" + list);
 
-        session.query(Order.class, "select * from orders where id in (?,?,?)", 1, 2, 43);
-        session.fetch(Order.class, "select * from orders where id = ?", 2);
+        session.query(Order.class, sql("select * from orders where id in (?,?,?)"), params(1, 2, 43));
+        session.fetch(Order.class, sql("select * from orders where id = ?"), params(2));
 
         order = list.get(0);
         assertNotNull(order);
@@ -396,7 +397,9 @@ public final class TestSQLite extends BaseTest {
             session.insert(customer);
         } catch (PersismException e) {
             nullKeyFail = true;
-            assertEquals("Should have constraint exception here", "[SQLITE_CONSTRAINT_NOTNULL]  A NOT NULL constraint failed (NOT NULL constraint failed: Customers.Customer_ID)", e.getMessage());
+            //assertEquals("Should have constraint exception here", "[SQLITE_CONSTRAINT_NOTNULL]  A NOT NULL constraint failed (NOT NULL constraint failed: Customers.Customer_ID)", e.getMessage());
+            log.info(e.getMessage());
+            assertTrue("Should have constraint exception here", e.getMessage().contains("[SQLITE_CONSTRAINT_NOTNULL]"));
         }
         assertTrue("null key should have failed", nullKeyFail);
 
@@ -410,12 +413,12 @@ public final class TestSQLite extends BaseTest {
         log.info("Customer 1 ?" + customer);
 
         List<Customer> list;
-        list = session.query(Customer.class, "SELECT *, Company_Name, Contact_Name, :contactTitle FROM  CUSTOMERS");
+        list = session.query(Customer.class, sql("SELECT *, Company_Name, Contact_Name, :contactTitle FROM  CUSTOMERS"));
 
         log.info(list);
 
         // somehow SQLite is OK with this. <sigh>
-        String result = session.fetch(String.class, "SELECT :contactTitle FROM CUSTOMERS");
+        String result = session.fetch(String.class, sql("SELECT :contactTitle FROM CUSTOMERS"));
         log.warn("WTF! " + result);
 
         // insert a duplicate
@@ -428,7 +431,9 @@ public final class TestSQLite extends BaseTest {
             session.insert(customer2);
         } catch (PersismException e) {
             dupFail = true;
-            assertEquals("Should have constraint exception here", "[SQLITE_CONSTRAINT_PRIMARYKEY]  A PRIMARY KEY constraint failed (UNIQUE constraint failed: Customers.Customer_ID)", e.getMessage());
+            log.info(e.getMessage());
+            // assertEquals("Should have constraint exception here", "[SQLITE_CONSTRAINT_PRIMARYKEY]  A PRIMARY KEY constraint failed (UNIQUE constraint failed: Customers.Customer_ID)", e.getMessage());
+            assertTrue("Should have constraint exception here", e.getMessage().contains("[SQLITE_CONSTRAINT_PRIMARYKEY]"));
         }
 
         assertTrue("duplicate key should fail", dupFail);

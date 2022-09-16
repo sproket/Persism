@@ -150,3 +150,6 @@ SELECT uuid_in(md5(random()::text || random()::text)::cstring);
 SELECT uuid_in(overlay(overlay(md5(random()::text || ':' || random()::text) placing '4' from 13) placing to_hex(floor(random()*(11-8+1) + 8)::int)::text from 17)::cstring);
 SELECT * FROM pg_available_extensions;
 
+todo https://www.postgresqltutorial.com/postgresql-tutorial/postgresql-sequences/
+
+https://stackoverflow.com/questions/46613214/java-9-maven-junit-does-test-code-need-module-info-java-of-its-own-and-wher

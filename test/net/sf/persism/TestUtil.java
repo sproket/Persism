@@ -84,13 +84,6 @@ public class TestUtil extends TestCase {
         });
     }
 
-    public void testFieldReflection() {
-        // https://docs.oracle.com/javase/tutorial/reflect/member/fieldModifiers.html
-
-        FieldModifierSpy.spy(Invoice.class, "final", "private");
-
-    }
-
     public void testMod() {
         int count = 6;
         System.out.println(count / 1);

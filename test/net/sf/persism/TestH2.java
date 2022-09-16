@@ -443,7 +443,7 @@ to the database URL (example: jdbc:h2:~/test;IGNORECASE=TRUE).
         Statement st = con.createStatement();
         st.execute(sql);
 
-        List<ByteData> list = session.query(ByteData.class, "select * from ByteData");
+        List<ByteData> list = session.query(ByteData.class, sql("select * from ByteData"));
         assertEquals("1", 1, list.size());
     }
 

@@ -1,5 +1,16 @@
 ## Release Notes
 
+### 2.2.0
+* Implemented module-info rather than using automatic module name (TODO LINK)
+* Added support for multiple schema names (TODO LINK)
+* Added delete with query methods to Session (TODO LINK)
+* Added "es" to table name guesser for tables like "Tax" or "Mailbox"
+* Added readOnly to Column annotation to allow for columns to not be included in insert or update statements
+* Added Support for sequence type with MSSQL 
+* Performance: Additional MetaData caching to reduce GC stress
+* Removed deprecated String, Object... methods (fetch, query)
+* Fixed SQLite misreported LONG as INT which was fixed and confirmed by version 3.39.3.0
+
 ### 2.1.0
 * Implemented table joins!
 * Update log4j2 reference in POM to 2.17.1

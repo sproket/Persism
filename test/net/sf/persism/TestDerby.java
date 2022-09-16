@@ -13,6 +13,8 @@ import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import static net.sf.persism.Parameters.params;
+import static net.sf.persism.SQL.sql;
 import static net.sf.persism.UtilsForTests.*;
 
 /**
@@ -73,17 +75,17 @@ public final class TestDerby extends BaseTest {
         }
 
         sql = "CREATE TABLE Orders ( " +
-                "ID INTEGER NOT NULL GENERATED ALWAYS AS IDENTITY (START WITH 1, INCREMENT BY 1), " +
-                " NAME VARCHAR(30), " +
-                " PAID BOOLEAN, " +
-                " Prepaid BOOLEAN," +
-                " IsCollect BOOLEAN," +
-                " IsCancelled BOOLEAN," +
-                " Customer_ID VARCHAR(10), " +
-                " Created TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL, " +
-                " Date_Paid TIMESTAMP, " +
-                " DateSomething TIMESTAMP" +
-                ") ";
+              "ID INTEGER NOT NULL GENERATED ALWAYS AS IDENTITY (START WITH 1, INCREMENT BY 1), " +
+              " NAME VARCHAR(30), " +
+              " PAID BOOLEAN, " +
+              " Prepaid BOOLEAN," +
+              " IsCollect BOOLEAN," +
+              " IsCancelled BOOLEAN," +
+              " Customer_ID VARCHAR(10), " +
+              " Created TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL, " +
+              " Date_Paid TIMESTAMP, " +
+              " DateSomething TIMESTAMP" +
+              ") ";
 
         commands.add(sql);
 
@@ -95,48 +97,48 @@ public final class TestDerby extends BaseTest {
         }
 
         commands.add("CREATE TABLE Customers ( " +
-                " Customer_ID varchar(10) PRIMARY KEY NOT NULL, " +
-                " GROUP_ID INT, " +
-                " Company_Name VARCHAR(30), " +
-                " Contact_Name VARCHAR(30), " +
-                " Contact_Title VARCHAR(10), " +
-                " Address VARCHAR(40), " +
-                " City VARCHAR(30), " +
-                " Region VARCHAR(10), " +
-                " Postal_Code VARCHAR(10), " +
-                " Country VARCHAR(2) NOT NULL DEFAULT 'US', " +
-                " Phone VARCHAR(30), " +
-                " Fax VARCHAR(30), " +
-                " STATUS CHAR(1), " +
-                " Date_Registered TIMESTAMP DEFAULT CURRENT_TIMESTAMP, " +
-                " Date_Of_Last_Order DATE, " +
-                " TestLocalDate TIMESTAMP, " +
-                " TestLocalDateTime TIMESTAMP " +
-                ") ");
+                     " Customer_ID varchar(10) PRIMARY KEY NOT NULL, " +
+                     " GROUP_ID INT, " +
+                     " Company_Name VARCHAR(30), " +
+                     " Contact_Name VARCHAR(30), " +
+                     " Contact_Title VARCHAR(10), " +
+                     " Address VARCHAR(40), " +
+                     " City VARCHAR(30), " +
+                     " Region VARCHAR(10), " +
+                     " Postal_Code VARCHAR(10), " +
+                     " Country VARCHAR(2) NOT NULL DEFAULT 'US', " +
+                     " Phone VARCHAR(30), " +
+                     " Fax VARCHAR(30), " +
+                     " STATUS CHAR(1), " +
+                     " Date_Registered TIMESTAMP DEFAULT CURRENT_TIMESTAMP, " +
+                     " Date_Of_Last_Order DATE, " +
+                     " TestLocalDate TIMESTAMP, " +
+                     " TestLocalDateTime TIMESTAMP " +
+                     ") ");
 
         if (isTableInDatabase("Invoices", con)) {
             commands.add("DROP TABLE Invoices");
         }
 
         commands.add("CREATE TABLE Invoices ( " +
-                //" Invoice_ID INT IDENTITY PRIMARY KEY, " +
-                "Invoice_ID INTEGER NOT NULL GENERATED ALWAYS AS IDENTITY (START WITH 1, INCREMENT BY 1), " +
-                " Customer_ID varchar(10) NOT NULL, " +
-                " Paid BOOLEAN NOT NULL, " +
-                " Created TIMESTAMP DEFAULT CURRENT_TIMESTAMP, " + // make read-only in Invoice Object
-                " Status CHAR(1) DEFAULT '1', " +
-                " Price NUMERIC(7,3) NOT NULL, " +
-                " ACTUALPRICE NUMERIC(7,3) NOT NULL, " +
-                " Quantity INT NOT NULL, " +
+                     //" Invoice_ID INT IDENTITY PRIMARY KEY, " +
+                     "Invoice_ID INTEGER NOT NULL GENERATED ALWAYS AS IDENTITY (START WITH 1, INCREMENT BY 1), " +
+                     " Customer_ID varchar(10) NOT NULL, " +
+                     " Paid BOOLEAN NOT NULL, " +
+                     " Created TIMESTAMP DEFAULT CURRENT_TIMESTAMP, " + // make read-only in Invoice Object
+                     " Status CHAR(1) DEFAULT '1', " +
+                     " Price NUMERIC(7,3) NOT NULL, " +
+                     " ACTUALPRICE NUMERIC(7,3) NOT NULL, " +
+                     " Quantity INT NOT NULL, " +
 //                " Total NUMERIC(10,3) NOT NULL, " +
-                " Discount NUMERIC(10,3) NOT NULL " +
-                ") ");
+                     " Discount NUMERIC(10,3) NOT NULL " +
+                     ") ");
 
 
         sql = "CREATE VIEW CustomerInvoice AS\n" +
-                " SELECT c.Customer_ID, c.Company_Name, i.Invoice_ID, i.Status, i.Created AS DateCreated, i.PAID, i.Quantity\n" +
-                "       FROM Invoices i\n" +
-                "       JOIN Customers c ON i.Customer_ID = c.Customer_ID\n";
+              " SELECT c.Customer_ID, c.Company_Name, i.Invoice_ID, i.Status, i.Created AS DateCreated, i.PAID, i.Quantity\n" +
+              "       FROM Invoices i\n" +
+              "       JOIN Customers c ON i.Customer_ID = c.Customer_ID\n";
 //                "       WHERE i.Status = 1\n";
 
         commands.add(sql);
@@ -145,11 +147,11 @@ public final class TestDerby extends BaseTest {
         }
 
         commands.add("CREATE TABLE TABLEMULTIPRIMARY ( " +
-                " CUSTOMER_NAME VARCHAR(30) NOT NULL, " +
-                " Field4 VARCHAR(30), " +
-                " Field5 TIMESTAMP, " +
-                " ID INT NOT NULL " +
-                ") ");
+                     " CUSTOMER_NAME VARCHAR(30) NOT NULL, " +
+                     " Field4 VARCHAR(30), " +
+                     " Field5 TIMESTAMP, " +
+                     " ID INT NOT NULL " +
+                     ") ");
 
         commands.add("ALTER TABLE TABLEMULTIPRIMARY ADD PRIMARY KEY (ID, CUSTOMER_NAME)");
 
@@ -160,32 +162,32 @@ public final class TestDerby extends BaseTest {
         }
 
         sql = "CREATE TABLE Contacts(  " +
-                "   \"identity\" CHAR(16) FOR BIT DATA NOT NULL PRIMARY KEY,  " +  // test binary(16)
-                "   PartnerID varchar(36) NOT NULL,  " + // test varchar(36)
-                "   Type char(2) NOT NULL,  " +
-                "   FIRST_NAME varchar(50) NOT NULL,  " +
-                "   LAST_NAME varchar(50) NOT NULL,  " +
-                "   Contact_Name varchar(50) NOT NULL,  " +
-                "   Company varchar(50) NOT NULL,  " +
-                "   Division varchar(50),  " +
-                "   Email varchar(50),  " +
-                "   Address1 varchar(50),  " +
-                "   Address2 varchar(50),  " +
-                "   City varchar(50),  " +
-                "   Status SMALLINT, " +
-                "   StateProvince varchar(50),  " +
-                "   ZipPostalCode varchar(10),  " +
-                "   Country varchar(50),  " +
-                "   DateAdded Date,  " +
-                "   LastModified Timestamp,  " +
-                "   Notes Clob,  " +
-                "   AmountOwed REAL,  " +
-                "   \"BigInt\" DECIMAL(20)  ,  " +
-                "   SomeDate Timestamp, " +
-                "   TestINstant Timestamp, " +
-                "   TestINstant2 Timestamp, " +
-                "   WhatMiteIsIt TIME, " +
-                "   WhatTimeIsIt TIME) ";
+              "   \"identity\" CHAR(16) FOR BIT DATA NOT NULL PRIMARY KEY,  " +  // test binary(16)
+              "   PartnerID varchar(36) NOT NULL,  " + // test varchar(36)
+              "   Type char(2) NOT NULL,  " +
+              "   FIRST_NAME varchar(50) NOT NULL,  " +
+              "   LAST_NAME varchar(50) NOT NULL,  " +
+              "   Contact_Name varchar(50) NOT NULL,  " +
+              "   Company varchar(50) NOT NULL,  " +
+              "   Division varchar(50),  " +
+              "   Email varchar(50),  " +
+              "   Address1 varchar(50),  " +
+              "   Address2 varchar(50),  " +
+              "   City varchar(50),  " +
+              "   Status SMALLINT, " +
+              "   StateProvince varchar(50),  " +
+              "   ZipPostalCode varchar(10),  " +
+              "   Country varchar(50),  " +
+              "   DateAdded Date,  " +
+              "   LastModified Timestamp,  " +
+              "   Notes Clob,  " +
+              "   AmountOwed REAL,  " +
+              "   \"BigInt\" DECIMAL(20)  ,  " +
+              "   SomeDate Timestamp, " +
+              "   TestINstant Timestamp, " +
+              "   TestINstant2 Timestamp, " +
+              "   WhatMiteIsIt TIME, " +
+              "   WhatTimeIsIt TIME) ";
 
         executeCommand(sql, con);
 
@@ -195,11 +197,11 @@ public final class TestDerby extends BaseTest {
 
         // TIMESTAMP for DATETIME in DERBY
         sql = "CREATE TABLE DateTestLocalTypes ( " +
-                " ID INT, " +
-                " Description VARCHAR(100), " +
-                " DateOnly DATE, " +
-                " TimeOnly TIME," +
-                " DateAndTime TIMESTAMP) ";
+              " ID INT, " +
+              " Description VARCHAR(100), " +
+              " DateOnly DATE, " +
+              " TimeOnly TIME," +
+              " DateAndTime TIMESTAMP) ";
 
         executeCommand(sql, con);
 
@@ -208,12 +210,12 @@ public final class TestDerby extends BaseTest {
         }
 
         sql = "CREATE TABLE DateTestSQLTypes ( " +
-                " ID INT, " +
-                " Description VARCHAR(100), " +
-                " DateOnly DATE, " +
-                " TimeOnly TIME," +
-                " UtilDateAndTime TIMESTAMP," +
-                " DateAndTime TIMESTAMP) ";
+              " ID INT, " +
+              " Description VARCHAR(100), " +
+              " DateOnly DATE, " +
+              " TimeOnly TIME," +
+              " UtilDateAndTime TIMESTAMP," +
+              " DateAndTime TIMESTAMP) ";
 
         executeCommand(sql, con);
 
@@ -221,23 +223,23 @@ public final class TestDerby extends BaseTest {
             executeCommand("DROP TABLE RecordTest1", con);
         }
         sql = "CREATE TABLE RecordTest1 ( " +
-                "ID CHAR(16) FOR BIT DATA NOT NULL, " + // PRIMARY KEY
-                "NAME VARCHAR(20), " +
-                "QTY INT, " +
-                "PRICE REAL " +
-                ") ";
+              "ID CHAR(16) FOR BIT DATA NOT NULL, " + // PRIMARY KEY
+              "NAME VARCHAR(20), " +
+              "QTY INT, " +
+              "PRICE REAL " +
+              ") ";
         executeCommand(sql, con);
 
         if (UtilsForTests.isTableInDatabase("RecordTest2", con)) {
             executeCommand("DROP TABLE RecordTest2", con);
         }
         sql = "CREATE TABLE RecordTest2 ( " +
-                "ID INTEGER NOT NULL GENERATED ALWAYS AS IDENTITY (START WITH 1, INCREMENT BY 1), " +
-                "DESCRIPTION VARCHAR(20), " +
-                "QTY INT, " +
-                "PRICE REAL, " +
-                "CREATED_ON TIMESTAMP DEFAULT CURRENT_TIMESTAMP" +
-                ") ";
+              "ID INTEGER NOT NULL GENERATED ALWAYS AS IDENTITY (START WITH 1, INCREMENT BY 1), " +
+              "DESCRIPTION VARCHAR(20), " +
+              "QTY INT, " +
+              "PRICE REAL, " +
+              "CREATED_ON TIMESTAMP DEFAULT CURRENT_TIMESTAMP" +
+              ") ";
         executeCommand(sql, con);
 
         if (isTableInDatabase("InvoiceLineItems", con)) {
@@ -273,16 +275,16 @@ public final class TestDerby extends BaseTest {
         }
 
         executeCommand("CREATE TABLE SavedGames ( " +
-                " ID VARCHAR(20) NOT NULL PRIMARY KEY, " +
-                " Name VARCHAR(100), " +
-                " Some_Date_And_Time TIMESTAMP, " +
-                " Platinum REAL, " +
-                " Gold REAL, " +
-                " Silver REAL, " +
-                " Copper REAL, " +
-                " Data CLOB, " +
-                " WhatTimeIsIt TIME, " +
-                " SomethingBig BLOB) ", con);
+                       " ID VARCHAR(20) NOT NULL PRIMARY KEY, " +
+                       " Name VARCHAR(100), " +
+                       " Some_Date_And_Time TIMESTAMP, " +
+                       " Platinum REAL, " +
+                       " Gold REAL, " +
+                       " Silver REAL, " +
+                       " Copper REAL, " +
+                       " Data CLOB, " +
+                       " WhatTimeIsIt TIME, " +
+                       " SomethingBig BLOB) ", con);
 
         if (isTableInDatabase("Postman", con)) {
             executeCommand("DROP TABLE Postman", con);
@@ -390,7 +392,8 @@ public final class TestDerby extends BaseTest {
                 assertNotNull("type should not be null", columnInfo.columnType);
             }
 
-            List<Order> orders = session.query(Order.class, "SELECT * FROM Orders WHERE Customer_ID = ? ORDER BY DATE_PAID", "123").
+            List<Order> orders = session.query(Order.class,
+                            sql("SELECT * FROM Orders WHERE Customer_ID = ? ORDER BY DATE_PAID"), params("123")).
                     stream().sorted(Comparator.comparing(Order::getCreated)).collect(Collectors.toList());
             log.warn(orders);
 
@@ -407,6 +410,6 @@ public final class TestDerby extends BaseTest {
     public void testAllDates() {
         super.testAllDates();
 
-        session.query(Contact.class, "SELECT * FROM CONTACTS WHERE Last_Name = ?", "fred");
+        session.query(Contact.class, sql("SELECT * FROM CONTACTS WHERE Last_Name = ?"), params("fred"));
     }
 }

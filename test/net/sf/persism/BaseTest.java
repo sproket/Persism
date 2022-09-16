@@ -452,7 +452,9 @@ public abstract class BaseTest extends TestCase {
         assertNotNull(invoice.getLineItems().get(0).getProduct());
     }
 
-    public void testUnknonwnConnectionType() throws SQLException {
+    public void testUnknownConnectionType() throws Exception {
+        Class.forName("org.xbib.jdbc.csv.CsvDriver");
+
         var con = DriverManager.getConnection("jdbc:xbib:csv:" + System.getProperty("user.home"));
         Session session2 = new Session(con);
         assertNotNull(session2);
@@ -1136,15 +1138,15 @@ public abstract class BaseTest extends TestCase {
         invoice.setActualPrice(BigDecimal.valueOf(9.99d));
         invoice.setStatus((char) 1);
         session.insert(invoice);
-        Customer customer1 = session.fetch(Customer.class, "SELECT * FROM Customers WHERE Company_Name = ?", "ABC Inc");
+        Customer customer1 = session.fetch(Customer.class, sql("SELECT * FROM Customers WHERE Company_Name = ?"), params("ABC Inc"));
         assertNotNull(customer1);
-        CustomerInvoice customerInvoice = session.fetch(CustomerInvoice.class, "SELECT * FROM CustomerInvoice WHERE Company_Name = ?", "ABC Inc");
+        CustomerInvoice customerInvoice = session.fetch(CustomerInvoice.class, sql("SELECT * FROM CustomerInvoice WHERE Company_Name = ?"), params("ABC Inc"));
         assertNotNull(customerInvoice);
 
-        CustomerInvoiceRec customerInvoiceRec = session.fetch(CustomerInvoiceRec.class, "SELECT * FROM CustomerInvoice WHERE Company_Name = ?", "ABC Inc");
+        CustomerInvoiceRec customerInvoiceRec = session.fetch(CustomerInvoiceRec.class, sql("SELECT * FROM CustomerInvoice WHERE Company_Name = ?"), params("ABC Inc"));
         assertNotNull(customerInvoiceRec);
 
-        CustomerInvoiceTestView customerInvoiceTestView = session.fetch(CustomerInvoiceTestView.class, "SELECT * FROM CustomerInvoice WHERE Company_Name = ?", "ABC Inc");
+        CustomerInvoiceTestView customerInvoiceTestView = session.fetch(CustomerInvoiceTestView.class, sql("SELECT * FROM CustomerInvoice WHERE Company_Name = ?"), params("ABC Inc"));
         List<CustomerInvoiceTestView> list2 = session.query(CustomerInvoiceTestView.class);
 
         assertNotNull(customerInvoiceTestView);
@@ -1265,7 +1267,7 @@ public abstract class BaseTest extends TestCase {
         assertTrue(fail);
 
         // old call
-        List<CustomerInvoiceResult> results = session.query(CustomerInvoiceResult.class, "SELECT * FROM CustomerInvoice");
+        List<CustomerInvoiceResult> results = session.query(CustomerInvoiceResult.class, sql("SELECT * FROM CustomerInvoice"));
         log.info(results);
 
         // todo CustomerInvoiceResult with named parameters YES TODO

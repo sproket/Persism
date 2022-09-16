@@ -276,14 +276,6 @@ public final class Session implements AutoCloseable {
     }
 
     /**
-     * @hidden
-     * @deprecated
-     */
-    public <T> T fetch(Class<T> objectClass, String sql, Object... parameters) {
-        return fetch(objectClass, new SQL(sql), new Parameters(parameters));
-    }
-
-    /**
      * Query to return all results.
      *
      * @param objectClass Type of returned value
@@ -487,15 +479,6 @@ public final class Session implements AutoCloseable {
         }
 
     }
-
-    /**
-     * @hidden
-     * @deprecated
-     */
-    public <T> List<T> query(Class<T> objectClass, String sql, Object... parameters) {
-        return query(objectClass, new SQL(sql), new Parameters(parameters));
-    }
-
 
     /* ****************************** Write methods ****************************************/
 

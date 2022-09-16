@@ -192,7 +192,8 @@ final class Reader {
                     break;
 
                 case IntegerType:
-                    // stupid SQLite reports LONGS as Integers for date types which WRAPS past Integer.MAX - Clowns.
+                    // https://github.com/xerial/sqlite-jdbc/issues/604
+                    // SQLite jdbc reports INT but the value is LONG for date types which can WRAP past Integer.MAX - Fixed in 3.39.3.0! Thanks!
                     if (metaData.getConnectionType() == ConnectionType.SQLite) {
                         value = rs.getObject(column);
                         if (value != null) {
