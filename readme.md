@@ -1,19 +1,19 @@
-![](logo1.png) [Release notes 2.1.0](release-notes.md) -- [Getting Started Guide](https://sproket.github.io/Persism/manual2.html)
+![](logo1.png) [Release notes 2.2.0](release-notes.md) -- [Getting Started Guide](https://sproket.github.io/Persism/manual2.html)
 
 [Table joins are now supported!](https://sproket.github.io/Persism/join.html)
 
 # Welcome
 
-Persism is a wood simple, auto discovery, auto-configuration, and convention
+Persism is a light weight, auto discovery, autoconfiguration, and convention
 over configuration ORM (Object Relational Mapping) library for Java 17 or later.
 
-For Java 8 see the 1.x branch https://github.com/sproket/Persism/tree/persism1
+For Java 8 or later see the 1.x branch https://github.com/sproket/Persism/tree/persism1
 
 ```xml 
 <dependency>
     <groupId>io.github.sproket</groupId>
     <artifactId>persism</artifactId>
-    <version>2.1.0</version>
+    <version>2.2.0</version>
 </dependency>
 ```
 ```Java 
@@ -101,8 +101,9 @@ Your POJOs can have optional annotations for table and column names and can opti
 for where you need to track changes to properties for UPDATE statements.
 
 ## Auto-Discovery
-Persism figures things out for you. Create a table, write a JavaBean, run a query. Persism uses simple mapping rules to
-find your table and column names and only requires an annotation where it can’t find a match.
+Create a table, write a JavaBean, run a query. Persism uses simple mapping rules to
+find your table and column names and only requires an annotation where
+something is outside convention. 
 
 ## Convention over configuration
 Persism requires no special configuration. Drop the JAR into your project and go.
@@ -125,14 +126,14 @@ No problem. No need to annotate for that. Persism uses annotations as a fall bac
 something is outside the conventions.
 
 ## Tiny
-Persism is under 100k. Yeah, fit it on a floppy if you want. Persism has Zero dependencies however it will
-utilize logging based on whatever is available at runtime - SLF4J, LOG4J or JUL.
+Persism is about 100k and has zero dependencies however it will
+utilize logging based on whatever is available at runtime - SLF4J, LOG4J2, LOG4J or JUL.
 
 [Have a look here for the getting started guide, code coverage and Javadoc](https://sproket.github.io/Persism/)
 
 ## Compile
 
-To run tests only basic tests: in memory databases (H2, HSSQL, Derby) + sqlite (faster)
+To run tests for in memory databases H2, HSQLDB, Derby and SQLite
 
     mvn clean test
 
