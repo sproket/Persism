@@ -1,5 +1,6 @@
 [Current Version 2.2.0](release-notes.md)
 
+<!-- ??? -->
 <div style="float: right">
 <span style="font-weight: bold">By the numbers</span>
 <ul> 
