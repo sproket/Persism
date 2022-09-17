@@ -1,7 +1,7 @@
 ## ![](img/logo2.png) Release Notes
 
 ### 2.2.0
-* Added support for [multiple schema names](manual2.md#Multiple%20Schemas)
+* Added support for [multiple schema names](manual2.md#multiple-schemas)
 * Added [delete with query methods to Session](https://sproket.github.io/Persism/javadoc/persism2/sproket.github.io.persism/net/sf/persism/Session.html#delete(java.lang.Class,net.sf.persism.SQL))
 * Added "es" to table name guesser for tables like "Tax" or "Mailbox"
 * Added [readOnly to Column annotation to allow for columns to not include in insert or update statements](https://sproket.github.io/Persism/javadoc/persism2/sproket.github.io.persism/net/sf/persism/annotations/Column.html#readOnly())
