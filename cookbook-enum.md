@@ -1,4 +1,4 @@
-## Cookbook: Using Java Enums
+## ![](img/logo2.png)  Cookbook: Using Java Enums
 
 Recently while  
 

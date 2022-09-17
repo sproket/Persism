@@ -1,4 +1,4 @@
-# Handling table joins with Persism
+# ![](img/logo2.png)  Handling table joins with Persism
 
 Virtually all ORMs out there have mechanisms to support some kind of join or relationship 
 where you have - let's say a Customer object which has a List of Invoice objects. 

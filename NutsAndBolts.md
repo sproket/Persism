@@ -1,4 +1,4 @@
-### Nuts and Bolds
+# ![](img/logo2.png)  Nuts and Bolds
 
 ## Inner details and quirks
 

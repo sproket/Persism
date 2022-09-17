@@ -1,4 +1,4 @@
-#Persism 2.0 - New Type Safe API
+## ![](img/logo2.png)  Persism 2.0 - New Type Safe API
 
 ## Query and Fetch 
 

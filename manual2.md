@@ -9,7 +9,7 @@ If you are using Maven:
 <dependency>
     <groupId>io.github.sproket</groupId>
     <artifactId>persism</artifactId>
-    <version>2.0.0</version>
+    <version>2.2.0</version>
 </dependency>
 ```
 ### Upgrading from 1.x
@@ -170,6 +170,21 @@ See: [Joins](join.md)
 By default, Persism will consider a class/record with no annotation to be a Table. If you want a class to represent 
 the result of a general query you should use the ```@NotTable``` annotation. If you have a View use the ```@View``` 
 annotation. See [Annotations](#annotations)  
+
+For tables and views, Persism maps the class name to the name in the database ignoring case, spaces, underscores
+and other non-Java identifier characters.
+
+Persism also can map where class names are singular and table/view names are plural. Including special cases like:
+
+* class Mailbox = db.MailBoxes
+* class Category = db.Categories
+* class Holiday = db.Holidays
+
+### Multiple Schemas
+
+As of version 2.2.0, Persism recognizes schema names and includes them in the SQL it generates. If your database
+has multiple schema names you can now specify the schema name in the Table or View annotation. Use "Schema.Table"
+as the name in the annotation.
 
 
 ## Updating Data
@@ -378,11 +393,12 @@ public class Author {
 
 Persism uses the following annotations for Table which need to be specified on the Class:
 
-- ```@Table``` - used to specify the table name in the database.
-- ```@NotTable``` - used to specify that this class represents the result of a query - that there is no 
-single table associated with it.
-- ```@View``` - used to specify that the class represents a database View. If no name is specified then Persism will 
-use the same table name logic to find the view name.
+- ```@Table``` - used to specify the table name in the database which can include the schema name with "Schema.Table" (as of version 2.2.0).
+- ```@NotTable``` - used to specify that this class represents the result of a query - that there is no
+  single table associated with it.
+- ```@View``` - used to specify that the class represents a database View. If no name is specified then Persism will
+  use the same table name logic to find the view name. The view name can include the schema name with "Schema.Table"
+  (as of version 2.2.0).
 
 Persism uses the following annotations for Columns.
 
@@ -638,14 +654,6 @@ Here's an example logback configuration for logging with Persism:
     <logger name="net" level="ERROR"/>
     <logger name="net.sf.persism" level="WARN"/>
 
-    <!-- These can be used for JDBC level logging -->
-    <!-- ERROR, WARN, INFO, DEBUG, OFF -->
-    <logger name="jdbc.sqlonly" level="OFF"/>
-    <logger name="jdbc.audit" level="OFF"/>
-    <logger name="jdbc.sqltiming" level="OFF"/>
-    <logger name="jdbc.connection" level="OFF"/>
-    <logger name="jdbc.resultset" level="OFF"/>
-    
     <root level="INFO">
         <appender-ref ref="A1"/>
         <appender-ref ref="R"/>
@@ -657,7 +665,12 @@ Here's an example logback configuration for logging with Persism:
 
 [Cookbook: Implementing Persistable interface](cookbook-persistable.md)
 
-[Support for Java Records Java 16 - NEW!](records.md)
+[Using Persism with Java Records](records.md)
+
+[How to use the new @Join Annotation](join.md)
+
+[Using Persism with Modules](modules.md)
+
 
 ## Known Issues
 
@@ -665,7 +678,6 @@ Here's an example logback configuration for logging with Persism:
 - No support for XML/JSON types  
 - Generated primary keys only work with Autoincrement types. UUID/String types with generated 
   defaults do not return into the inserted object as primary keys (except PostgreSQL).
-- Singular/plural table name guessing does not work with words like Tax - Taxes, Fax - Faxes
 
 ## Special Thanks
 

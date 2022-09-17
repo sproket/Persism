@@ -4,7 +4,7 @@
 <!DOCTYPE html>
 <html id="htmlId">
 <head>
-  <title>Coverage Report > NoChangesDetectedForUpdateException</title>
+  <title>Coverage Report > MetaData</title>
   <style type="text/css">
     @import "../../css/coverage.css";
     @import "../../css/highlight-idea.css";
@@ -20,7 +20,7 @@ Current scope:     <a href="../../index.html">all classes</a>
     <a href="../index.html">net.sf.persism</a>
 </div>
 
-<h1>Coverage Summary for Class: NoChangesDetectedForUpdateException (net.sf.persism)</h1>
+<h1>Coverage Summary for Class: MetaData (net.sf.persism)</h1>
 
 <table class="coverageStats">
 <tr>
@@ -39,7 +39,7 @@ Current scope:     <a href="../../index.html">all classes</a>
 </th>
 </tr>
 <tr>
-  <td class="name">NoChangesDetectedForUpdateException</td>
+  <td class="name">MetaData</td>
 <td class="coverageStat">
   <span class="percent">
     100%
@@ -53,15 +53,15 @@ Current scope:     <a href="../../index.html">all classes</a>
     100%
   </span>
   <span class="absValue">
-    (1/1)
+    (37/37)
   </span>
 </td>
 <td class="coverageStat">
   <span class="percent">
-    100%
+    96.6%
   </span>
   <span class="absValue">
-    (1/1)
+    (588/609)
   </span>
 </td>
 </tr>
@@ -75,9 +75,1163 @@ Current scope:     <a href="../../index.html">all classes</a>
 <pre>
 <div class="sourceCode" id="sourceCode"><i class="no-highlight">1</i>&nbsp;package net.sf.persism;
 <i class="no-highlight">2</i>&nbsp;
-<b class="fc"><i class="no-highlight">3</i>&nbsp;class NoChangesDetectedForUpdateException extends Exception {</b>
-<i class="no-highlight">4</i>&nbsp;    private static final long serialVersionUID = 9109786180315226691L;
-<i class="no-highlight">5</i>&nbsp;}
+<i class="no-highlight">3</i>&nbsp;import net.sf.persism.annotations.*;
+<i class="no-highlight">4</i>&nbsp;
+<i class="no-highlight">5</i>&nbsp;import java.lang.annotation.Annotation;
+<i class="no-highlight">6</i>&nbsp;import java.lang.reflect.Field;
+<i class="no-highlight">7</i>&nbsp;import java.lang.reflect.Method;
+<i class="no-highlight">8</i>&nbsp;import java.lang.reflect.Modifier;
+<i class="no-highlight">9</i>&nbsp;import java.sql.*;
+<i class="no-highlight">10</i>&nbsp;import java.text.MessageFormat;
+<i class="no-highlight">11</i>&nbsp;import java.util.*;
+<i class="no-highlight">12</i>&nbsp;import java.util.concurrent.ConcurrentHashMap;
+<i class="no-highlight">13</i>&nbsp;
+<i class="no-highlight">14</i>&nbsp;import static net.sf.persism.Util.*;
+<i class="no-highlight">15</i>&nbsp;
+<i class="no-highlight">16</i>&nbsp;/**
+<i class="no-highlight">17</i>&nbsp; * DB and POJO related Metadata collected based connection url
+<i class="no-highlight">18</i>&nbsp; *
+<i class="no-highlight">19</i>&nbsp; * @author Dan Howard
+<i class="no-highlight">20</i>&nbsp; * @since 3/31/12 4:19 PM
+<i class="no-highlight">21</i>&nbsp; */
+<b class="fc"><i class="no-highlight">22</i>&nbsp;final class MetaData {</b>
+<i class="no-highlight">23</i>&nbsp;
+<b class="fc"><i class="no-highlight">24</i>&nbsp;    private static final Log log = Log.getLogger(MetaData.class);</b>
+<i class="no-highlight">25</i>&nbsp;
+<i class="no-highlight">26</i>&nbsp;    // properties for each class - static because this won&#39;t need to change between MetaData instances (collection is unmodifiable)
+<b class="fc"><i class="no-highlight">27</i>&nbsp;    private static final Map&lt;Class&lt;?&gt;, Collection&lt;PropertyInfo&gt;&gt; propertyMap = new ConcurrentHashMap&lt;&gt;(32);</b>
+<i class="no-highlight">28</i>&nbsp;
+<i class="no-highlight">29</i>&nbsp;    // column to property map for each class
+<b class="fc"><i class="no-highlight">30</i>&nbsp;    private final Map&lt;Class&lt;?&gt;, Map&lt;String, PropertyInfo&gt;&gt; propertyInfoMap = new ConcurrentHashMap&lt;&gt;(32);</b>
+<b class="fc"><i class="no-highlight">31</i>&nbsp;    private final Map&lt;Class&lt;?&gt;, Map&lt;String, ColumnInfo&gt;&gt; columnInfoMap = new ConcurrentHashMap&lt;&gt;(32);</b>
+<i class="no-highlight">32</i>&nbsp;
+<i class="no-highlight">33</i>&nbsp;    // SQL for updates/inserts/deletes/selects for each class
+<b class="fc"><i class="no-highlight">34</i>&nbsp;    private final Map&lt;Class&lt;?&gt;, String&gt; updateStatementsMap = new ConcurrentHashMap&lt;&gt;(32);</b>
+<b class="fc"><i class="no-highlight">35</i>&nbsp;    private final Map&lt;Class&lt;?&gt;, String&gt; deleteStatementsMap = new ConcurrentHashMap&lt;&gt;(32);</b>
+<b class="fc"><i class="no-highlight">36</i>&nbsp;    private final Map&lt;Class&lt;?&gt;, String&gt; selectStatementsMap = new ConcurrentHashMap&lt;&gt;(32);</b>
+<i class="no-highlight">37</i>&nbsp;
+<i class="no-highlight">38</i>&nbsp;    // key - class, value - map key: columns to include, value: associated INSERT statement - this handles defaults on columns which may not need to be specified
+<b class="fc"><i class="no-highlight">39</i>&nbsp;    private final Map&lt;Class&lt;?&gt;, Map&lt;String, String&gt;&gt; insertStatements = new ConcurrentHashMap&lt;&gt;(32);</b>
+<i class="no-highlight">40</i>&nbsp;
+<i class="no-highlight">41</i>&nbsp;    // key - class, value - map key: changed columns, value: associated UPDATE statement
+<b class="fc"><i class="no-highlight">42</i>&nbsp;    private final Map&lt;Class&lt;?&gt;, Map&lt;String, String&gt;&gt; variableUpdateStatements = new ConcurrentHashMap&lt;&gt;(32);</b>
+<i class="no-highlight">43</i>&nbsp;
+<i class="no-highlight">44</i>&nbsp;    // Where clauses for primary key queries for tables
+<b class="fc"><i class="no-highlight">45</i>&nbsp;    private final Map&lt;Class&lt;?&gt;, String&gt; primaryWhereClauseMap = new ConcurrentHashMap&lt;&gt;(32);</b>
+<i class="no-highlight">46</i>&nbsp;
+<i class="no-highlight">47</i>&nbsp;    // Where ID IN (?, ?, ?) kinds of queries when no SQL is used.
+<b class="fc"><i class="no-highlight">48</i>&nbsp;    private final Map&lt;Class&lt;?&gt;, Map&lt;Integer, String&gt;&gt; primaryInClauseMap = new ConcurrentHashMap&lt;&gt;(32);</b>
+<i class="no-highlight">49</i>&nbsp;
+<i class="no-highlight">50</i>&nbsp;    // SQL parsed from SQL.where() - key is WHERE, value is parsed where clause
+<b class="fc"><i class="no-highlight">51</i>&nbsp;    Map&lt;Class&lt;?&gt;, Map&lt;String, String&gt;&gt; whereClauses = new ConcurrentHashMap&lt;&gt;(32);</b>
+<i class="no-highlight">52</i>&nbsp;
+<i class="no-highlight">53</i>&nbsp;    // WHERE clauses defined by JOIN operations (maintained by SessionHelper)
+<b class="fc"><i class="no-highlight">54</i>&nbsp;    Map&lt;JoinInfo, Map&lt;String, String&gt;&gt; childWhereClauses = new ConcurrentHashMap&lt;&gt;(32);</b>
+<i class="no-highlight">55</i>&nbsp;
+<i class="no-highlight">56</i>&nbsp;    // table/view for each class
+<b class="fc"><i class="no-highlight">57</i>&nbsp;    private final Map&lt;Class&lt;?&gt;, TableInfo&gt; tableOrViewMap = new ConcurrentHashMap&lt;&gt;(32);</b>
+<i class="no-highlight">58</i>&nbsp;
+<i class="no-highlight">59</i>&nbsp;    // list of tables in the DB
+<b class="fc"><i class="no-highlight">60</i>&nbsp;    private final Set&lt;TableInfo&gt; tables = new HashSet&lt;&gt;();</b>
+<i class="no-highlight">61</i>&nbsp;
+<i class="no-highlight">62</i>&nbsp;    // list of views in the DB
+<b class="fc"><i class="no-highlight">63</i>&nbsp;    private final Set&lt;TableInfo&gt; views = new HashSet&lt;&gt;();</b>
+<i class="no-highlight">64</i>&nbsp;
+<b class="fc"><i class="no-highlight">65</i>&nbsp;    static final Map&lt;String, MetaData&gt; metaData = new ConcurrentHashMap&lt;&gt;(4);</b>
+<i class="no-highlight">66</i>&nbsp;
+<i class="no-highlight">67</i>&nbsp;    private final ConnectionType connectionType;
+<i class="no-highlight">68</i>&nbsp;
+<i class="no-highlight">69</i>&nbsp;    // the &quot;extra&quot; characters that can be used in unquoted identifier names (those beyond a-z, A-Z, 0-9 and _)
+<i class="no-highlight">70</i>&nbsp;    // Was using DatabaseMetaData getExtraNameCharacters() but some drivers don&#39;t provide these and still allow
+<i class="no-highlight">71</i>&nbsp;    // for non-alphanumeric characters in column names. We&#39;ll just use a static set.
+<i class="no-highlight">72</i>&nbsp;    private static final String EXTRA_NAME_CHARACTERS = &quot;`~!@#$%^&amp;*()-+=/|\\{}[]:;&#39;\&quot;.,&lt;&gt;*&quot;;
+<i class="no-highlight">73</i>&nbsp;    private static final String SELECT_FOR_COLUMNS = &quot;SELECT * FROM {0}{1}{2} WHERE 1=0&quot;;
+<i class="no-highlight">74</i>&nbsp;    private static final String SELECT_FOR_COLUMNS_WITH_SCHEMA = &quot;SELECT * FROM {0}{1}{2}.{3}{4}{5} WHERE 1=0&quot;;
+<i class="no-highlight">75</i>&nbsp;
+<b class="fc"><i class="no-highlight">76</i>&nbsp;    private MetaData(Connection con, String sessionKey) throws SQLException {</b>
+<i class="no-highlight">77</i>&nbsp;
+<b class="fc"><i class="no-highlight">78</i>&nbsp;        log.debug(&quot;MetaData CREATING instance [%s] &quot;, sessionKey);</b>
+<i class="no-highlight">79</i>&nbsp;
+<b class="fc"><i class="no-highlight">80</i>&nbsp;        connectionType = ConnectionType.get(sessionKey);</b>
+<b class="fc"><i class="no-highlight">81</i>&nbsp;        if (connectionType == ConnectionType.Other) {</b>
+<b class="fc"><i class="no-highlight">82</i>&nbsp;            log.warn(Message.UnknownConnectionType.message(con.getMetaData().getDatabaseProductName()));</b>
+<i class="no-highlight">83</i>&nbsp;        }
+<b class="fc"><i class="no-highlight">84</i>&nbsp;        populateTableList(con);</b>
+<i class="no-highlight">85</i>&nbsp;    }
+<i class="no-highlight">86</i>&nbsp;
+<i class="no-highlight">87</i>&nbsp;    static synchronized MetaData getInstance(Connection con, String sessionKey) throws SQLException {
+<i class="no-highlight">88</i>&nbsp;
+<b class="fc"><i class="no-highlight">89</i>&nbsp;        if (sessionKey == null) {</b>
+<b class="fc"><i class="no-highlight">90</i>&nbsp;            sessionKey = con.getMetaData().getURL();</b>
+<i class="no-highlight">91</i>&nbsp;        }
+<i class="no-highlight">92</i>&nbsp;
+<b class="fc"><i class="no-highlight">93</i>&nbsp;        if (metaData.get(sessionKey) == null) {</b>
+<b class="fc"><i class="no-highlight">94</i>&nbsp;            metaData.put(sessionKey, new MetaData(con, sessionKey));</b>
+<i class="no-highlight">95</i>&nbsp;        }
+<b class="fc"><i class="no-highlight">96</i>&nbsp;        log.debug(&quot;MetaData getting instance %s&quot;, sessionKey);</b>
+<b class="fc"><i class="no-highlight">97</i>&nbsp;        return metaData.get(sessionKey);</b>
+<i class="no-highlight">98</i>&nbsp;    }
+<i class="no-highlight">99</i>&nbsp;
+<i class="no-highlight">100</i>&nbsp;    // Should only be called IF the map does not contain the column meta information yet.
+<i class="no-highlight">101</i>&nbsp;    // Version for Tables
+<i class="no-highlight">102</i>&nbsp;    private synchronized &lt;T&gt; Map&lt;String, PropertyInfo&gt; determinePropertyInfo(Class&lt;T&gt; objectClass, TableInfo table, Connection connection) {
+<i class="no-highlight">103</i>&nbsp;        // double check map
+<b class="fc"><i class="no-highlight">104</i>&nbsp;        if (propertyInfoMap.containsKey(objectClass)) {</b>
+<b class="nc"><i class="no-highlight">105</i>&nbsp;            return propertyInfoMap.get(objectClass);</b>
+<i class="no-highlight">106</i>&nbsp;        }
+<i class="no-highlight">107</i>&nbsp;
+<i class="no-highlight">108</i>&nbsp;        // Not for @NotTable classes
+<b class="fc"><i class="no-highlight">109</i>&nbsp;        assert objectClass.getAnnotation(NotTable.class) == null;</b>
+<i class="no-highlight">110</i>&nbsp;
+<b class="fc"><i class="no-highlight">111</i>&nbsp;        String sd = connectionType.getKeywordStartDelimiter();</b>
+<b class="fc"><i class="no-highlight">112</i>&nbsp;        String ed = connectionType.getKeywordEndDelimiter();</b>
+<i class="no-highlight">113</i>&nbsp;
+<b class="fc"><i class="no-highlight">114</i>&nbsp;        ResultSet rs = null;</b>
+<b class="fc"><i class="no-highlight">115</i>&nbsp;        Statement st = null;</b>
+<i class="no-highlight">116</i>&nbsp;        try {
+<b class="fc"><i class="no-highlight">117</i>&nbsp;            st = connection.createStatement();</b>
+<i class="no-highlight">118</i>&nbsp;            // gives us real column names with case.
+<i class="no-highlight">119</i>&nbsp;            String sql;
+<b class="fc"><i class="no-highlight">120</i>&nbsp;            if (isEmpty(table.schema())) {</b>
+<b class="fc"><i class="no-highlight">121</i>&nbsp;                sql = MessageFormat.format(SELECT_FOR_COLUMNS, sd, table.name(), ed);</b>
+<i class="no-highlight">122</i>&nbsp;            } else {
+<b class="fc"><i class="no-highlight">123</i>&nbsp;                sql = MessageFormat.format(SELECT_FOR_COLUMNS_WITH_SCHEMA, sd, table.schema(), ed, sd, table.name(), ed);</b>
+<i class="no-highlight">124</i>&nbsp;            }
+<b class="fc"><i class="no-highlight">125</i>&nbsp;            if (log.isDebugEnabled()) {</b>
+<b class="fc"><i class="no-highlight">126</i>&nbsp;                log.debug(&quot;determineColumns: %s&quot;, sql);</b>
+<i class="no-highlight">127</i>&nbsp;            }
+<b class="fc"><i class="no-highlight">128</i>&nbsp;            rs = st.executeQuery(sql);</b>
+<b class="fc"><i class="no-highlight">129</i>&nbsp;            Map&lt;String, PropertyInfo&gt; columns = determinePropertyInfoFromResultSet(objectClass, rs);</b>
+<b class="fc"><i class="no-highlight">130</i>&nbsp;            propertyInfoMap.put(objectClass, columns);</b>
+<b class="fc"><i class="no-highlight">131</i>&nbsp;            return columns;</b>
+<b class="nc"><i class="no-highlight">132</i>&nbsp;        } catch (SQLException e) {</b>
+<b class="nc"><i class="no-highlight">133</i>&nbsp;            throw new PersismException(e.getMessage(), e);</b>
+<i class="no-highlight">134</i>&nbsp;        } finally {
+<b class="fc"><i class="no-highlight">135</i>&nbsp;            cleanup(st, rs);</b>
+<b class="nc"><i class="no-highlight">136</i>&nbsp;        }</b>
+<i class="no-highlight">137</i>&nbsp;    }
+<i class="no-highlight">138</i>&nbsp;
+<i class="no-highlight">139</i>&nbsp;    private &lt;T&gt; Map&lt;String, PropertyInfo&gt; determinePropertyInfoFromResultSet(Class&lt;T&gt; objectClass, ResultSet rs) throws SQLException {
+<b class="fc"><i class="no-highlight">140</i>&nbsp;        ResultSetMetaData rsmd = rs.getMetaData();</b>
+<b class="fc"><i class="no-highlight">141</i>&nbsp;        Collection&lt;PropertyInfo&gt; properties = getPropertyInfo(objectClass);</b>
+<i class="no-highlight">142</i>&nbsp;
+<b class="fc"><i class="no-highlight">143</i>&nbsp;        int columnCount = rsmd.getColumnCount();</b>
+<i class="no-highlight">144</i>&nbsp;
+<b class="fc"><i class="no-highlight">145</i>&nbsp;        Map&lt;String, PropertyInfo&gt; columns = new LinkedHashMap&lt;&gt;(columnCount);</b>
+<b class="fc"><i class="no-highlight">146</i>&nbsp;        for (int j = 1; j &lt;= columnCount; j++) {</b>
+<b class="fc"><i class="no-highlight">147</i>&nbsp;            String realColumnName = rsmd.getColumnLabel(j);</b>
+<b class="fc"><i class="no-highlight">148</i>&nbsp;            String columnName = realColumnName.toLowerCase().replace(&quot;_&quot;, &quot;&quot;).replace(&quot; &quot;, &quot;&quot;);</b>
+<i class="no-highlight">149</i>&nbsp;            // also replace these characters
+<b class="fc"><i class="no-highlight">150</i>&nbsp;            for (int x = 0; x &lt; EXTRA_NAME_CHARACTERS.length(); x++) {</b>
+<b class="fc"><i class="no-highlight">151</i>&nbsp;                columnName = columnName.replace(&quot;&quot; + EXTRA_NAME_CHARACTERS.charAt(x), &quot;&quot;);</b>
+<i class="no-highlight">152</i>&nbsp;            }
+<b class="fc"><i class="no-highlight">153</i>&nbsp;            PropertyInfo foundProperty = null;</b>
+<b class="fc"><i class="no-highlight">154</i>&nbsp;            for (PropertyInfo propertyInfo : properties) {</b>
+<b class="fc"><i class="no-highlight">155</i>&nbsp;                String checkName = propertyInfo.propertyName.toLowerCase().replace(&quot;_&quot;, &quot;&quot;);</b>
+<b class="fc"><i class="no-highlight">156</i>&nbsp;                if (checkName.equalsIgnoreCase(columnName)) {</b>
+<b class="fc"><i class="no-highlight">157</i>&nbsp;                    foundProperty = propertyInfo;</b>
+<b class="fc"><i class="no-highlight">158</i>&nbsp;                    break;</b>
+<i class="no-highlight">159</i>&nbsp;                } else {
+<i class="no-highlight">160</i>&nbsp;                    // check annotation against column name
+<b class="fc"><i class="no-highlight">161</i>&nbsp;                    Column column = (Column) propertyInfo.getAnnotation(Column.class);</b>
+<b class="fc"><i class="no-highlight">162</i>&nbsp;                    if (column != null) {</b>
+<b class="fc"><i class="no-highlight">163</i>&nbsp;                        if (column.name().equalsIgnoreCase(realColumnName)) {</b>
+<b class="fc"><i class="no-highlight">164</i>&nbsp;                            foundProperty = propertyInfo;</b>
+<b class="fc"><i class="no-highlight">165</i>&nbsp;                            break;</b>
+<i class="no-highlight">166</i>&nbsp;                        }
+<i class="no-highlight">167</i>&nbsp;                    }
+<i class="no-highlight">168</i>&nbsp;                }
+<b class="fc"><i class="no-highlight">169</i>&nbsp;            }</b>
+<i class="no-highlight">170</i>&nbsp;
+<b class="fc"><i class="no-highlight">171</i>&nbsp;            if (foundProperty != null) {</b>
+<b class="fc"><i class="no-highlight">172</i>&nbsp;                columns.put(realColumnName, foundProperty);</b>
+<i class="no-highlight">173</i>&nbsp;            } else {
+<b class="fc"><i class="no-highlight">174</i>&nbsp;                log.warn(Message.NoPropertyFoundForColumn.message(realColumnName, objectClass));</b>
+<i class="no-highlight">175</i>&nbsp;            }
+<i class="no-highlight">176</i>&nbsp;        }
+<b class="fc"><i class="no-highlight">177</i>&nbsp;        return columns;</b>
+<i class="no-highlight">178</i>&nbsp;    }
+<i class="no-highlight">179</i>&nbsp;
+<i class="no-highlight">180</i>&nbsp;    @SuppressWarnings({&quot;JDBCExecuteWithNonConstantString&quot;, &quot;SqlDialectInspection&quot;})
+<i class="no-highlight">181</i>&nbsp;    private synchronized &lt;T&gt; Map&lt;String, ColumnInfo&gt; determineColumnInfo(Class&lt;T&gt; objectClass, TableInfo table, Connection connection) {
+<b class="fc"><i class="no-highlight">182</i>&nbsp;        if (columnInfoMap.containsKey(objectClass)) {</b>
+<b class="nc"><i class="no-highlight">183</i>&nbsp;            return columnInfoMap.get(objectClass);</b>
+<i class="no-highlight">184</i>&nbsp;        }
+<i class="no-highlight">185</i>&nbsp;
+<b class="fc"><i class="no-highlight">186</i>&nbsp;        Statement st = null;</b>
+<b class="fc"><i class="no-highlight">187</i>&nbsp;        ResultSet rs = null;</b>
+<b class="fc"><i class="no-highlight">188</i>&nbsp;        Map&lt;String, PropertyInfo&gt; properties = getTableColumnsPropertyInfo(objectClass, connection);</b>
+<b class="fc"><i class="no-highlight">189</i>&nbsp;        String sd = connectionType.getKeywordStartDelimiter();</b>
+<b class="fc"><i class="no-highlight">190</i>&nbsp;        String ed = connectionType.getKeywordEndDelimiter();</b>
+<i class="no-highlight">191</i>&nbsp;
+<b class="fc"><i class="no-highlight">192</i>&nbsp;        String schemaName = table.schema();</b>
+<b class="fc"><i class="no-highlight">193</i>&nbsp;        String tableName = table.name();</b>
+<i class="no-highlight">194</i>&nbsp;
+<i class="no-highlight">195</i>&nbsp;        try {
+<b class="fc"><i class="no-highlight">196</i>&nbsp;            st = connection.createStatement();</b>
+<i class="no-highlight">197</i>&nbsp;            String sql;
+<b class="fc"><i class="no-highlight">198</i>&nbsp;            if (isEmpty(schemaName)) {</b>
+<b class="fc"><i class="no-highlight">199</i>&nbsp;                sql = MessageFormat.format(SELECT_FOR_COLUMNS, sd, tableName, ed);</b>
+<i class="no-highlight">200</i>&nbsp;            } else {
+<b class="fc"><i class="no-highlight">201</i>&nbsp;                sql = MessageFormat.format(SELECT_FOR_COLUMNS_WITH_SCHEMA, sd, schemaName, ed, sd, tableName, ed);</b>
+<i class="no-highlight">202</i>&nbsp;            }
+<b class="fc"><i class="no-highlight">203</i>&nbsp;            log.debug(&quot;determineColumnInfo %s&quot;, sql);</b>
+<b class="fc"><i class="no-highlight">204</i>&nbsp;            rs = st.executeQuery(sql);</b>
+<i class="no-highlight">205</i>&nbsp;
+<i class="no-highlight">206</i>&nbsp;            // Make sure primary keys sorted by column order in case we have more than 1
+<i class="no-highlight">207</i>&nbsp;            // then we&#39;ll know the order to apply the parameters.
+<b class="fc"><i class="no-highlight">208</i>&nbsp;            Map&lt;String, ColumnInfo&gt; map = new LinkedHashMap&lt;&gt;(32);</b>
+<i class="no-highlight">209</i>&nbsp;
+<b class="fc"><i class="no-highlight">210</i>&nbsp;            boolean primaryKeysFound = false;</b>
+<i class="no-highlight">211</i>&nbsp;
+<i class="no-highlight">212</i>&nbsp;            // Grab all columns and make first pass to detect primary auto-inc
+<b class="fc"><i class="no-highlight">213</i>&nbsp;            ResultSetMetaData rsMetaData = rs.getMetaData();</b>
+<b class="fc"><i class="no-highlight">214</i>&nbsp;            for (int i = 1; i &lt;= rsMetaData.getColumnCount(); i++) {</b>
+<i class="no-highlight">215</i>&nbsp;                // only include columns where we have a property
+<b class="fc"><i class="no-highlight">216</i>&nbsp;                if (properties.containsKey(rsMetaData.getColumnLabel(i))) {</b>
+<b class="fc"><i class="no-highlight">217</i>&nbsp;                    ColumnInfo columnInfo = new ColumnInfo();</b>
+<b class="fc"><i class="no-highlight">218</i>&nbsp;                    columnInfo.columnName = rsMetaData.getColumnLabel(i);</b>
+<b class="fc"><i class="no-highlight">219</i>&nbsp;                    columnInfo.autoIncrement = rsMetaData.isAutoIncrement(i);</b>
+<b class="fc"><i class="no-highlight">220</i>&nbsp;                    columnInfo.primary = columnInfo.autoIncrement;</b>
+<b class="fc"><i class="no-highlight">221</i>&nbsp;                    columnInfo.sqlColumnType = rsMetaData.getColumnType(i);</b>
+<b class="fc"><i class="no-highlight">222</i>&nbsp;                    columnInfo.sqlColumnTypeName = rsMetaData.getColumnTypeName(i);</b>
+<b class="fc"><i class="no-highlight">223</i>&nbsp;                    columnInfo.columnType = JavaType.convert(columnInfo.sqlColumnType);</b>
+<b class="fc"><i class="no-highlight">224</i>&nbsp;                    columnInfo.length = rsMetaData.getColumnDisplaySize(i);</b>
+<i class="no-highlight">225</i>&nbsp;
+<b class="fc"><i class="no-highlight">226</i>&nbsp;                    if (!primaryKeysFound) {</b>
+<b class="fc"><i class="no-highlight">227</i>&nbsp;                        primaryKeysFound = columnInfo.primary;</b>
+<i class="no-highlight">228</i>&nbsp;                    }
+<i class="no-highlight">229</i>&nbsp;
+<b class="fc"><i class="no-highlight">230</i>&nbsp;                    PropertyInfo propertyInfo = properties.get(rsMetaData.getColumnLabel(i));</b>
+<b class="fc"><i class="no-highlight">231</i>&nbsp;                    Annotation annotation = propertyInfo.getAnnotation(Column.class);</b>
+<i class="no-highlight">232</i>&nbsp;
+<b class="fc"><i class="no-highlight">233</i>&nbsp;                    if (annotation != null) {</b>
+<b class="fc"><i class="no-highlight">234</i>&nbsp;                        Column col = (Column) annotation;</b>
+<b class="fc"><i class="no-highlight">235</i>&nbsp;                        if (col.hasDefault()) {</b>
+<b class="fc"><i class="no-highlight">236</i>&nbsp;                            columnInfo.hasDefault = true;</b>
+<i class="no-highlight">237</i>&nbsp;                        }
+<i class="no-highlight">238</i>&nbsp;
+<b class="fc"><i class="no-highlight">239</i>&nbsp;                        if (col.primary()) {</b>
+<b class="fc"><i class="no-highlight">240</i>&nbsp;                            columnInfo.primary = true;</b>
+<b class="fc"><i class="no-highlight">241</i>&nbsp;                            if (!isDataClassATable(objectClass)) {</b>
+<b class="fc"><i class="no-highlight">242</i>&nbsp;                                log.warn(Message.PrimaryAnnotationOnViewOrQueryMakesNoSense.message(objectClass, propertyInfo.propertyName));</b>
+<i class="no-highlight">243</i>&nbsp;                            }
+<i class="no-highlight">244</i>&nbsp;                        }
+<i class="no-highlight">245</i>&nbsp;
+<b class="fc"><i class="no-highlight">246</i>&nbsp;                        if (col.autoIncrement()) {</b>
+<b class="fc"><i class="no-highlight">247</i>&nbsp;                            columnInfo.autoIncrement = true;</b>
+<b class="fc"><i class="no-highlight">248</i>&nbsp;                            if (!columnInfo.columnType.isEligibleForAutoinc()) {</b>
+<i class="no-highlight">249</i>&nbsp;                                // This will probably cause some error or other problem. Notify the user.
+<b class="fc"><i class="no-highlight">250</i>&nbsp;                                log.warn(Message.ColumnAnnotatedAsAutoIncButNAN.message(columnInfo.columnName, columnInfo.columnType));</b>
+<i class="no-highlight">251</i>&nbsp;                            }
+<i class="no-highlight">252</i>&nbsp;                        }
+<i class="no-highlight">253</i>&nbsp;
+<b class="fc"><i class="no-highlight">254</i>&nbsp;                        columnInfo.readOnly = col.readOnly();</b>
+<i class="no-highlight">255</i>&nbsp;
+<b class="fc"><i class="no-highlight">256</i>&nbsp;                        if (!primaryKeysFound) {</b>
+<b class="fc"><i class="no-highlight">257</i>&nbsp;                            primaryKeysFound = columnInfo.primary;</b>
+<i class="no-highlight">258</i>&nbsp;                        }
+<i class="no-highlight">259</i>&nbsp;                    }
+<i class="no-highlight">260</i>&nbsp;
+<b class="fc"><i class="no-highlight">261</i>&nbsp;                    map.put(columnInfo.columnName, columnInfo);</b>
+<i class="no-highlight">262</i>&nbsp;                }
+<i class="no-highlight">263</i>&nbsp;            }
+<b class="fc"><i class="no-highlight">264</i>&nbsp;            rs.close();</b>
+<i class="no-highlight">265</i>&nbsp;
+<b class="fc"><i class="no-highlight">266</i>&nbsp;            DatabaseMetaData dmd = connection.getMetaData();</b>
+<i class="no-highlight">267</i>&nbsp;
+<b class="fc"><i class="no-highlight">268</i>&nbsp;            if (objectClass.getAnnotation(View.class) == null) {</b>
+<i class="no-highlight">269</i>&nbsp;
+<b class="fc"><i class="no-highlight">270</i>&nbsp;                if (isEmpty(schemaName)) {</b>
+<b class="fc"><i class="no-highlight">271</i>&nbsp;                    rs = dmd.getPrimaryKeys(null, connectionType.getSchemaPattern(), tableName);</b>
+<i class="no-highlight">272</i>&nbsp;                } else {
+<b class="fc"><i class="no-highlight">273</i>&nbsp;                    rs = dmd.getPrimaryKeys(null, schemaName, tableName);</b>
+<i class="no-highlight">274</i>&nbsp;                }
+<b class="fc"><i class="no-highlight">275</i>&nbsp;                int primaryKeysCount = 0;</b>
+<b class="fc"><i class="no-highlight">276</i>&nbsp;                while (rs.next()) {</b>
+<b class="fc"><i class="no-highlight">277</i>&nbsp;                    ColumnInfo columnInfo = map.get(rs.getString(&quot;COLUMN_NAME&quot;));</b>
+<b class="fc"><i class="no-highlight">278</i>&nbsp;                    if (columnInfo != null) {</b>
+<b class="fc"><i class="no-highlight">279</i>&nbsp;                        columnInfo.primary = true;</b>
+<i class="no-highlight">280</i>&nbsp;
+<b class="fc"><i class="no-highlight">281</i>&nbsp;                        if (!primaryKeysFound) {</b>
+<b class="fc"><i class="no-highlight">282</i>&nbsp;                            primaryKeysFound = columnInfo.primary;</b>
+<i class="no-highlight">283</i>&nbsp;                        }
+<i class="no-highlight">284</i>&nbsp;                    }
+<b class="fc"><i class="no-highlight">285</i>&nbsp;                    primaryKeysCount++;</b>
+<b class="fc"><i class="no-highlight">286</i>&nbsp;                }</b>
+<i class="no-highlight">287</i>&nbsp;
+<b class="fc"><i class="no-highlight">288</i>&nbsp;                if (primaryKeysCount == 0 &amp;&amp; !primaryKeysFound) {</b>
+<b class="fc"><i class="no-highlight">289</i>&nbsp;                    log.warn(Message.DatabaseMetaDataCouldNotFindPrimaryKeys.message(table));</b>
+<i class="no-highlight">290</i>&nbsp;                }
+<i class="no-highlight">291</i>&nbsp;            }
+<i class="no-highlight">292</i>&nbsp;
+<i class="no-highlight">293</i>&nbsp;            /*
+<i class="no-highlight">294</i>&nbsp;             Get columns from database metadata since we don&#39;t get Type from resultSetMetaData
+<i class="no-highlight">295</i>&nbsp;             with SQLite. + We also need to know if there&#39;s a default on a column.
+<i class="no-highlight">296</i>&nbsp;             */
+<b class="fc"><i class="no-highlight">297</i>&nbsp;            if (isEmpty(schemaName)) {</b>
+<b class="fc"><i class="no-highlight">298</i>&nbsp;                rs = dmd.getColumns(null, connectionType.getSchemaPattern(), tableName, null);</b>
+<i class="no-highlight">299</i>&nbsp;            } else {
+<b class="fc"><i class="no-highlight">300</i>&nbsp;                rs = dmd.getColumns(null, schemaName, tableName, null);</b>
+<i class="no-highlight">301</i>&nbsp;            }
+<b class="fc"><i class="no-highlight">302</i>&nbsp;            int columnsCount = 0;</b>
+<b class="fc"><i class="no-highlight">303</i>&nbsp;            while (rs.next()) {</b>
+<b class="fc"><i class="no-highlight">304</i>&nbsp;                ColumnInfo columnInfo = map.get(rs.getString(&quot;COLUMN_NAME&quot;));</b>
+<b class="fc"><i class="no-highlight">305</i>&nbsp;                if (columnInfo != null) {</b>
+<b class="fc"><i class="no-highlight">306</i>&nbsp;                    if (!columnInfo.hasDefault) {</b>
+<b class="fc"><i class="no-highlight">307</i>&nbsp;                        columnInfo.hasDefault = containsColumn(rs, &quot;COLUMN_DEF&quot;) &amp;&amp; rs.getString(&quot;COLUMN_DEF&quot;) != null;</b>
+<i class="no-highlight">308</i>&nbsp;                    }
+<i class="no-highlight">309</i>&nbsp;
+<i class="no-highlight">310</i>&nbsp;                    // Do we not have autoinc info here? Yes.
+<i class="no-highlight">311</i>&nbsp;                    // IS_AUTOINCREMENT = NO or YES
+<b class="fc"><i class="no-highlight">312</i>&nbsp;                    if (!columnInfo.autoIncrement) {</b>
+<b class="fc"><i class="no-highlight">313</i>&nbsp;                        columnInfo.autoIncrement = containsColumn(rs, &quot;IS_AUTOINCREMENT&quot;) &amp;&amp; &quot;YES&quot;.equalsIgnoreCase(rs.getString(&quot;IS_AUTOINCREMENT&quot;));</b>
+<i class="no-highlight">314</i>&nbsp;                    }
+<i class="no-highlight">315</i>&nbsp;
+<i class="no-highlight">316</i>&nbsp;                    // Re-assert the type since older version of SQLite could not detect types with empty resultsets
+<i class="no-highlight">317</i>&nbsp;                    // It seems OK now in the newer JDBC driver.
+<i class="no-highlight">318</i>&nbsp;                    // See testTypes unit test in TestSQLite
+<b class="fc"><i class="no-highlight">319</i>&nbsp;                    if (containsColumn(rs, &quot;DATA_TYPE&quot;)) {</b>
+<b class="fc"><i class="no-highlight">320</i>&nbsp;                        columnInfo.sqlColumnType = rs.getInt(&quot;DATA_TYPE&quot;);</b>
+<b class="fc"><i class="no-highlight">321</i>&nbsp;                        if (containsColumn(rs, &quot;TYPE_NAME&quot;)) {</b>
+<b class="fc"><i class="no-highlight">322</i>&nbsp;                            columnInfo.sqlColumnTypeName = rs.getString(&quot;TYPE_NAME&quot;);</b>
+<i class="no-highlight">323</i>&nbsp;                        }
+<b class="fc"><i class="no-highlight">324</i>&nbsp;                        columnInfo.columnType = JavaType.convert(columnInfo.sqlColumnType);</b>
+<i class="no-highlight">325</i>&nbsp;                    }
+<i class="no-highlight">326</i>&nbsp;                }
+<b class="fc"><i class="no-highlight">327</i>&nbsp;                columnsCount++;</b>
+<b class="fc"><i class="no-highlight">328</i>&nbsp;            }</b>
+<b class="fc"><i class="no-highlight">329</i>&nbsp;            rs.close();</b>
+<i class="no-highlight">330</i>&nbsp;
+<b class="fc"><i class="no-highlight">331</i>&nbsp;            if (columnsCount == 0) {</b>
+<i class="no-highlight">332</i>&nbsp;                // Shouldn&#39;t this be a fail? It would mean the user connecting to the DB
+<i class="no-highlight">333</i>&nbsp;                // has no permission to get the column meta-data
+<i class="no-highlight">334</i>&nbsp;                // It&#39;s a warning because it is possible to specify the column information
+<i class="no-highlight">335</i>&nbsp;                // with annotations rather than having Persism discover it.
+<b class="nc"><i class="no-highlight">336</i>&nbsp;                log.warn(Message.DatabaseMetaDataCouldNotFindColumns.message(table));</b>
+<i class="no-highlight">337</i>&nbsp;            }
+<i class="no-highlight">338</i>&nbsp;
+<i class="no-highlight">339</i>&nbsp;            // FOR Oracle which doesn&#39;t set autoinc in metadata even if we have:
+<i class="no-highlight">340</i>&nbsp;            // &quot;ID&quot; NUMBER GENERATED BY DEFAULT ON NULL AS IDENTITY
+<i class="no-highlight">341</i>&nbsp;            // Apparently that&#39;s not enough for the Oracle JDBC driver to indicate this is autoinc.
+<i class="no-highlight">342</i>&nbsp;            // If we have a primary that&#39;s NUMERIC and HAS a default AND autoinc is not set then set it.
+<b class="fc"><i class="no-highlight">343</i>&nbsp;            if (connectionType == ConnectionType.Oracle) {</b>
+<b class="fc"><i class="no-highlight">344</i>&nbsp;                Optional&lt;ColumnInfo&gt; autoInc = map.values().stream().filter(e -&gt; e.autoIncrement).findFirst();</b>
+<b class="fc"><i class="no-highlight">345</i>&nbsp;                if (autoInc.isEmpty()) {</b>
+<i class="no-highlight">346</i>&nbsp;                    // Do a second check if we have a primary that&#39;s numeric with a default.
+<b class="fc"><i class="no-highlight">347</i>&nbsp;                    Optional&lt;ColumnInfo&gt; primaryOpt = map.values().stream().filter(e -&gt; e.primary).findFirst();</b>
+<b class="fc"><i class="no-highlight">348</i>&nbsp;                    if (primaryOpt.isPresent()) {</b>
+<b class="fc"><i class="no-highlight">349</i>&nbsp;                        ColumnInfo primary = primaryOpt.get();</b>
+<b class="fc"><i class="no-highlight">350</i>&nbsp;                        if (primary.columnType.isEligibleForAutoinc() &amp;&amp; primary.hasDefault) {</b>
+<b class="fc"><i class="no-highlight">351</i>&nbsp;                            primary.autoIncrement = true;</b>
+<b class="fc"><i class="no-highlight">352</i>&nbsp;                            primaryKeysFound = true;</b>
+<i class="no-highlight">353</i>&nbsp;                        }
+<i class="no-highlight">354</i>&nbsp;                    }
+<i class="no-highlight">355</i>&nbsp;                }
+<i class="no-highlight">356</i>&nbsp;            }
+<i class="no-highlight">357</i>&nbsp;
+<b class="fc"><i class="no-highlight">358</i>&nbsp;            if (!primaryKeysFound &amp;&amp; isDataClassATable(objectClass)) {</b>
+<i class="no-highlight">359</i>&nbsp;                // Should we fail-fast? Actually no, we should not fail here.
+<i class="no-highlight">360</i>&nbsp;                // It&#39;s very possible the user has a table that they will never
+<i class="no-highlight">361</i>&nbsp;                // update, delete or select (by primary).
+<i class="no-highlight">362</i>&nbsp;                // They may only want to do read operations with specified queries and in that
+<i class="no-highlight">363</i>&nbsp;                // context we don&#39;t need any primary keys. (same with insert)
+<b class="fc"><i class="no-highlight">364</i>&nbsp;                log.warn(Message.NoPrimaryKeyFoundForTable.message(table));</b>
+<i class="no-highlight">365</i>&nbsp;            }
+<i class="no-highlight">366</i>&nbsp;
+<b class="fc"><i class="no-highlight">367</i>&nbsp;            columnInfoMap.put(objectClass, map);</b>
+<b class="fc"><i class="no-highlight">368</i>&nbsp;            return map;</b>
+<i class="no-highlight">369</i>&nbsp;
+<b class="nc"><i class="no-highlight">370</i>&nbsp;        } catch (SQLException e) {</b>
+<b class="nc"><i class="no-highlight">371</i>&nbsp;            throw new PersismException(e.getMessage(), e);</b>
+<i class="no-highlight">372</i>&nbsp;        } finally {
+<b class="fc"><i class="no-highlight">373</i>&nbsp;            cleanup(st, rs);</b>
+<b class="nc"><i class="no-highlight">374</i>&nbsp;        }</b>
+<i class="no-highlight">375</i>&nbsp;    }
+<i class="no-highlight">376</i>&nbsp;
+<i class="no-highlight">377</i>&nbsp;    private static boolean isDataClassATable(Class&lt;?&gt; objectClass) {
+<b class="fc"><i class="no-highlight">378</i>&nbsp;        return objectClass.getAnnotation(Table.class) != null || (objectClass.getAnnotation(View.class) == null &amp;&amp; objectClass.getAnnotation(NotTable.class) == null);</b>
+<i class="no-highlight">379</i>&nbsp;    }
+<i class="no-highlight">380</i>&nbsp;
+<i class="no-highlight">381</i>&nbsp;    static &lt;T&gt; Collection&lt;PropertyInfo&gt; getPropertyInfo(Class&lt;T&gt; objectClass) {
+<b class="fc"><i class="no-highlight">382</i>&nbsp;        if (propertyMap.containsKey(objectClass)) {</b>
+<b class="fc"><i class="no-highlight">383</i>&nbsp;            return propertyMap.get(objectClass);</b>
+<i class="no-highlight">384</i>&nbsp;        }
+<b class="fc"><i class="no-highlight">385</i>&nbsp;        return determinePropertyInfo(objectClass);</b>
+<i class="no-highlight">386</i>&nbsp;    }
+<i class="no-highlight">387</i>&nbsp;
+<i class="no-highlight">388</i>&nbsp;    private static synchronized &lt;T&gt; Collection&lt;PropertyInfo&gt; determinePropertyInfo(Class&lt;T&gt; objectClass) {
+<b class="fc"><i class="no-highlight">389</i>&nbsp;        if (propertyMap.containsKey(objectClass)) {</b>
+<b class="nc"><i class="no-highlight">390</i>&nbsp;            return propertyMap.get(objectClass);</b>
+<i class="no-highlight">391</i>&nbsp;        }
+<i class="no-highlight">392</i>&nbsp;
+<b class="fc"><i class="no-highlight">393</i>&nbsp;        Map&lt;String, PropertyInfo&gt; propertyInfos = new HashMap&lt;&gt;(32);</b>
+<i class="no-highlight">394</i>&nbsp;
+<b class="fc"><i class="no-highlight">395</i>&nbsp;        List&lt;Field&gt; fields = new ArrayList&lt;&gt;(32);</b>
+<i class="no-highlight">396</i>&nbsp;
+<i class="no-highlight">397</i>&nbsp;        // getDeclaredFields does not get fields from super classes.....
+<b class="fc"><i class="no-highlight">398</i>&nbsp;        fields.addAll(Arrays.asList(objectClass.getDeclaredFields()));</b>
+<b class="fc"><i class="no-highlight">399</i>&nbsp;        Class&lt;?&gt; sup = objectClass.getSuperclass();</b>
+<b class="fc"><i class="no-highlight">400</i>&nbsp;        log.debug(&quot;fields for %s&quot;, sup);</b>
+<b class="fc"><i class="no-highlight">401</i>&nbsp;        while (!sup.equals(Object.class) &amp;&amp; !sup.equals(PersistableObject.class)) {</b>
+<b class="fc"><i class="no-highlight">402</i>&nbsp;            fields.addAll(Arrays.asList(sup.getDeclaredFields()));</b>
+<b class="fc"><i class="no-highlight">403</i>&nbsp;            sup = sup.getSuperclass();</b>
+<b class="fc"><i class="no-highlight">404</i>&nbsp;            log.debug(&quot;fields for %s&quot;, sup);</b>
+<i class="no-highlight">405</i>&nbsp;        }
+<i class="no-highlight">406</i>&nbsp;
+<b class="fc"><i class="no-highlight">407</i>&nbsp;        Method[] methods = objectClass.getMethods();</b>
+<i class="no-highlight">408</i>&nbsp;
+<b class="fc"><i class="no-highlight">409</i>&nbsp;        for (Field field : fields) {</b>
+<i class="no-highlight">410</i>&nbsp;            // Skip static fields
+<b class="fc"><i class="no-highlight">411</i>&nbsp;            if (Modifier.isStatic(field.getModifiers())) {</b>
+<b class="fc"><i class="no-highlight">412</i>&nbsp;                continue;</b>
+<i class="no-highlight">413</i>&nbsp;            }
+<i class="no-highlight">414</i>&nbsp;//            log.debug(&quot;Field Name: %s&quot;, field.getName());
+<b class="fc"><i class="no-highlight">415</i>&nbsp;            String propertyName = field.getName();</b>
+<i class="no-highlight">416</i>&nbsp;//            log.debug(&quot;Property Name: *%s* &quot;, propertyName);
+<i class="no-highlight">417</i>&nbsp;
+<b class="fc"><i class="no-highlight">418</i>&nbsp;            PropertyInfo propertyInfo = new PropertyInfo();</b>
+<b class="fc"><i class="no-highlight">419</i>&nbsp;            propertyInfo.propertyName = propertyName;</b>
+<b class="fc"><i class="no-highlight">420</i>&nbsp;            propertyInfo.field = field;</b>
+<b class="fc"><i class="no-highlight">421</i>&nbsp;            Annotation[] annotations = field.getAnnotations();</b>
+<b class="fc"><i class="no-highlight">422</i>&nbsp;            for (Annotation annotation : annotations) {</b>
+<b class="fc"><i class="no-highlight">423</i>&nbsp;                propertyInfo.annotations.put(annotation.annotationType(), annotation);</b>
+<i class="no-highlight">424</i>&nbsp;            }
+<i class="no-highlight">425</i>&nbsp;
+<b class="fc"><i class="no-highlight">426</i>&nbsp;            for (Method method : methods) {</b>
+<b class="fc"><i class="no-highlight">427</i>&nbsp;                String propertyNameToTest = field.getName().substring(0, 1).toUpperCase() + field.getName().substring(1);</b>
+<i class="no-highlight">428</i>&nbsp;                // log.debug(&quot;property name for testing %s&quot;, propertyNameToTest);
+<b class="fc"><i class="no-highlight">429</i>&nbsp;                if (propertyNameToTest.startsWith(&quot;Is&quot;) &amp;&amp; propertyNameToTest.length() &gt; 2 &amp;&amp; Character.isUpperCase(propertyNameToTest.charAt(2))) {</b>
+<b class="fc"><i class="no-highlight">430</i>&nbsp;                    propertyNameToTest = propertyName.substring(2);</b>
+<i class="no-highlight">431</i>&nbsp;                }
+<i class="no-highlight">432</i>&nbsp;
+<b class="fc"><i class="no-highlight">433</i>&nbsp;                String[] candidates = {&quot;set&quot; + propertyNameToTest, &quot;get&quot; + propertyNameToTest, &quot;is&quot; + propertyNameToTest, field.getName()};</b>
+<i class="no-highlight">434</i>&nbsp;
+<b class="fc"><i class="no-highlight">435</i>&nbsp;                if (Arrays.asList(candidates).contains(method.getName())) {</b>
+<i class="no-highlight">436</i>&nbsp;                    //log.debug(&quot;  METHOD: %s&quot;, method.getName());
+<i class="no-highlight">437</i>&nbsp;
+<b class="fc"><i class="no-highlight">438</i>&nbsp;                    annotations = method.getAnnotations();</b>
+<b class="fc"><i class="no-highlight">439</i>&nbsp;                    for (Annotation annotation : annotations) {</b>
+<b class="fc"><i class="no-highlight">440</i>&nbsp;                        propertyInfo.annotations.put(annotation.annotationType(), annotation);</b>
+<i class="no-highlight">441</i>&nbsp;                    }
+<i class="no-highlight">442</i>&nbsp;
+<i class="no-highlight">443</i>&nbsp;                    // OR added to fix to builder pattern style when your setters are just the field name
+<b class="fc"><i class="no-highlight">444</i>&nbsp;                    if (method.getName().equalsIgnoreCase(&quot;set&quot; + propertyNameToTest) || method.getParameterCount() &gt; 0) {</b>
+<b class="fc"><i class="no-highlight">445</i>&nbsp;                        propertyInfo.setter = method;</b>
+<i class="no-highlight">446</i>&nbsp;                    } else {
+<b class="fc"><i class="no-highlight">447</i>&nbsp;                        propertyInfo.getter = method;</b>
+<i class="no-highlight">448</i>&nbsp;                    }
+<i class="no-highlight">449</i>&nbsp;                }
+<i class="no-highlight">450</i>&nbsp;            }
+<i class="no-highlight">451</i>&nbsp;
+<b class="fc"><i class="no-highlight">452</i>&nbsp;            propertyInfo.isJoin = propertyInfo.getAnnotation(Join.class) != null;</b>
+<b class="fc"><i class="no-highlight">453</i>&nbsp;            propertyInfos.put(propertyName.toLowerCase(), propertyInfo);</b>
+<b class="fc"><i class="no-highlight">454</i>&nbsp;        }</b>
+<i class="no-highlight">455</i>&nbsp;
+<i class="no-highlight">456</i>&nbsp;        // Remove any properties found with the NotColumn annotation
+<i class="no-highlight">457</i>&nbsp;        // http://stackoverflow.com/questions/2026104/hashmap-keyset-foreach-and-remove
+<b class="fc"><i class="no-highlight">458</i>&nbsp;        Iterator&lt;Map.Entry&lt;String, PropertyInfo&gt;&gt; it = propertyInfos.entrySet().iterator();</b>
+<b class="fc"><i class="no-highlight">459</i>&nbsp;        while (it.hasNext()) {</b>
+<b class="fc"><i class="no-highlight">460</i>&nbsp;            Map.Entry&lt;String, PropertyInfo&gt; entry = it.next();</b>
+<b class="fc"><i class="no-highlight">461</i>&nbsp;            PropertyInfo info = entry.getValue();</b>
+<i class="no-highlight">462</i>&nbsp;            // added support for transient
+<b class="fc"><i class="no-highlight">463</i>&nbsp;            if (info.getAnnotation(NotColumn.class) != null || Modifier.isTransient(info.field.getModifiers())) {</b>
+<b class="fc"><i class="no-highlight">464</i>&nbsp;                it.remove();</b>
+<i class="no-highlight">465</i>&nbsp;            }
+<b class="fc"><i class="no-highlight">466</i>&nbsp;        }</b>
+<i class="no-highlight">467</i>&nbsp;
+<b class="fc"><i class="no-highlight">468</i>&nbsp;        Collection&lt;PropertyInfo&gt; properties = Collections.unmodifiableCollection(propertyInfos.values());</b>
+<b class="fc"><i class="no-highlight">469</i>&nbsp;        propertyMap.put(objectClass, properties);</b>
+<i class="no-highlight">470</i>&nbsp;
+<i class="no-highlight">471</i>&nbsp;        // If a view or query - warn if we find any setters
+<b class="fc"><i class="no-highlight">472</i>&nbsp;        if (objectClass.getAnnotation(NotTable.class) != null || objectClass.getAnnotation(View.class) != null) {</b>
+<b class="fc"><i class="no-highlight">473</i>&nbsp;            List&lt;String&gt; setters = new ArrayList&lt;&gt;();</b>
+<b class="fc"><i class="no-highlight">474</i>&nbsp;            for (PropertyInfo propertyInfo : properties) {</b>
+<b class="fc"><i class="no-highlight">475</i>&nbsp;                if (propertyInfo.setter != null) {</b>
+<b class="fc"><i class="no-highlight">476</i>&nbsp;                    setters.add(propertyInfo.propertyName);</b>
+<i class="no-highlight">477</i>&nbsp;                }
+<b class="fc"><i class="no-highlight">478</i>&nbsp;            }</b>
+<i class="no-highlight">479</i>&nbsp;
+<b class="fc"><i class="no-highlight">480</i>&nbsp;            if (setters.size() &gt; 0) {</b>
+<b class="fc"><i class="no-highlight">481</i>&nbsp;                log.warn(Message.SettersFoundInReadOnlyObject.message(objectClass, setters));</b>
+<i class="no-highlight">482</i>&nbsp;            }
+<i class="no-highlight">483</i>&nbsp;        }
+<i class="no-highlight">484</i>&nbsp;
+<b class="fc"><i class="no-highlight">485</i>&nbsp;        return properties;</b>
+<i class="no-highlight">486</i>&nbsp;    }
+<i class="no-highlight">487</i>&nbsp;
+<i class="no-highlight">488</i>&nbsp;    private static final String TABLE = &quot;TABLE&quot;;
+<i class="no-highlight">489</i>&nbsp;    private static final String VIEW = &quot;VIEW&quot;;
+<b class="fc"><i class="no-highlight">490</i>&nbsp;    private static final String[] tableTypes = {TABLE, VIEW};</b>
+<i class="no-highlight">491</i>&nbsp;
+<i class="no-highlight">492</i>&nbsp;    // Populates the tables list with table names from the DB.
+<i class="no-highlight">493</i>&nbsp;    // This list is used for discovery of the table name from a class.
+<i class="no-highlight">494</i>&nbsp;    // ONLY to be called from Init in a synchronized way.
+<i class="no-highlight">495</i>&nbsp;    // NULL POINTER WITH
+<i class="no-highlight">496</i>&nbsp;    // http://social.msdn.microsoft.com/Forums/en-US/sqldataaccess/thread/5c74094a-8506-4278-ac1c-f07d1bfdb266
+<i class="no-highlight">497</i>&nbsp;    // solution:
+<i class="no-highlight">498</i>&nbsp;    // http://stackoverflow.com/questions/8988945/java7-sqljdbc4-sql-error-08s01-on-getconnection
+<i class="no-highlight">499</i>&nbsp;    private void populateTableList(Connection con) throws PersismException {
+<b class="fc"><i class="no-highlight">500</i>&nbsp;        try (ResultSet rs = con.getMetaData().getTables(null, connectionType.getSchemaPattern(), null, tableTypes)) {</b>
+<i class="no-highlight">501</i>&nbsp;            String name;
+<b class="fc"><i class="no-highlight">502</i>&nbsp;            while (rs.next()) {</b>
+<b class="fc"><i class="no-highlight">503</i>&nbsp;                name = rs.getString(&quot;TABLE_NAME&quot;);</b>
+<b class="fc"><i class="no-highlight">504</i>&nbsp;                if (VIEW.equalsIgnoreCase(rs.getString(&quot;TABLE_TYPE&quot;))) {</b>
+<b class="fc"><i class="no-highlight">505</i>&nbsp;                    views.add(new TableInfo(name, rs.getString(&quot;TABLE_SCHEM&quot;), connectionType));</b>
+<i class="no-highlight">506</i>&nbsp;                } else {
+<b class="fc"><i class="no-highlight">507</i>&nbsp;                    tables.add(new TableInfo(name, rs.getString(&quot;TABLE_SCHEM&quot;), connectionType));</b>
+<i class="no-highlight">508</i>&nbsp;                }
+<i class="no-highlight">509</i>&nbsp;            }
+<b class="fc"><i class="no-highlight">510</i>&nbsp;        } catch (SQLException e) {</b>
+<b class="nc"><i class="no-highlight">511</i>&nbsp;            throw new PersismException(e.getMessage(), e);</b>
+<b class="fc"><i class="no-highlight">512</i>&nbsp;        }</b>
+<i class="no-highlight">513</i>&nbsp;    }
+<i class="no-highlight">514</i>&nbsp;
+<i class="no-highlight">515</i>&nbsp;    /**
+<i class="no-highlight">516</i>&nbsp;     * @param object
+<i class="no-highlight">517</i>&nbsp;     * @param connection
+<i class="no-highlight">518</i>&nbsp;     * @return sql update string
+<i class="no-highlight">519</i>&nbsp;     * @throws NoChangesDetectedForUpdateException if the data object implements Persistable and there are no changes detected
+<i class="no-highlight">520</i>&nbsp;     */
+<i class="no-highlight">521</i>&nbsp;    String getUpdateStatement(Object object, Connection connection) throws PersismException, NoChangesDetectedForUpdateException {
+<i class="no-highlight">522</i>&nbsp;
+<i class="no-highlight">523</i>&nbsp;        String sql;
+<b class="fc"><i class="no-highlight">524</i>&nbsp;        if (object instanceof Persistable&lt;?&gt; pojo) {</b>
+<b class="fc"><i class="no-highlight">525</i>&nbsp;            Map&lt;String, PropertyInfo&gt; changes = getChangedProperties(pojo, connection);</b>
+<b class="fc"><i class="no-highlight">526</i>&nbsp;            if (changes.size() == 0) {</b>
+<b class="fc"><i class="no-highlight">527</i>&nbsp;                throw new NoChangesDetectedForUpdateException();</b>
+<i class="no-highlight">528</i>&nbsp;            }
+<i class="no-highlight">529</i>&nbsp;
+<b class="fc"><i class="no-highlight">530</i>&nbsp;            Class&lt;?&gt; objectClass = object.getClass();</b>
+<b class="fc"><i class="no-highlight">531</i>&nbsp;            String key = changes.keySet().toString();</b>
+<b class="fc"><i class="no-highlight">532</i>&nbsp;            if (variableUpdateStatements.containsKey(objectClass) &amp;&amp; variableUpdateStatements.get(objectClass).containsKey(key)) {</b>
+<b class="fc"><i class="no-highlight">533</i>&nbsp;                sql = variableUpdateStatements.get(objectClass).get(key);</b>
+<i class="no-highlight">534</i>&nbsp;            } else {
+<b class="fc"><i class="no-highlight">535</i>&nbsp;                sql = determineUpdateStatement(pojo, connection);</b>
+<i class="no-highlight">536</i>&nbsp;            }
+<i class="no-highlight">537</i>&nbsp;
+<b class="fc"><i class="no-highlight">538</i>&nbsp;            if (log.isDebugEnabled()) {</b>
+<b class="fc"><i class="no-highlight">539</i>&nbsp;                log.debug(&quot;getUpdateStatement for %s for changed fields is %s&quot;, objectClass, sql);</b>
+<i class="no-highlight">540</i>&nbsp;            }
+<b class="fc"><i class="no-highlight">541</i>&nbsp;            return sql;</b>
+<i class="no-highlight">542</i>&nbsp;        }
+<i class="no-highlight">543</i>&nbsp;
+<b class="fc"><i class="no-highlight">544</i>&nbsp;        if (updateStatementsMap.containsKey(object.getClass())) {</b>
+<b class="fc"><i class="no-highlight">545</i>&nbsp;            sql = updateStatementsMap.get(object.getClass());</b>
+<i class="no-highlight">546</i>&nbsp;        } else {
+<b class="fc"><i class="no-highlight">547</i>&nbsp;            sql = determineUpdateStatement(object, connection);</b>
+<i class="no-highlight">548</i>&nbsp;        }
+<b class="fc"><i class="no-highlight">549</i>&nbsp;        if (log.isDebugEnabled()) {</b>
+<b class="fc"><i class="no-highlight">550</i>&nbsp;            log.debug(&quot;getUpdateStatement for: %s %s&quot;, object.getClass(), sql);</b>
+<i class="no-highlight">551</i>&nbsp;        }
+<b class="fc"><i class="no-highlight">552</i>&nbsp;        return sql;</b>
+<i class="no-highlight">553</i>&nbsp;    }
+<i class="no-highlight">554</i>&nbsp;
+<i class="no-highlight">555</i>&nbsp;    // Used by Objects not implementing Persistable since they will always use the same update statement
+<i class="no-highlight">556</i>&nbsp;    private synchronized String determineUpdateStatement(Object object, Connection connection) {
+<b class="fc"><i class="no-highlight">557</i>&nbsp;        if (updateStatementsMap.containsKey(object.getClass())) {</b>
+<b class="nc"><i class="no-highlight">558</i>&nbsp;            return updateStatementsMap.get(object.getClass());</b>
+<i class="no-highlight">559</i>&nbsp;        }
+<i class="no-highlight">560</i>&nbsp;
+<b class="fc"><i class="no-highlight">561</i>&nbsp;        Class&lt;?&gt; objectClass = object.getClass();</b>
+<b class="fc"><i class="no-highlight">562</i>&nbsp;        var columns = getColumns(objectClass, connection);</b>
+<i class="no-highlight">563</i>&nbsp;        Map&lt;String, PropertyInfo&gt; propertyMap;
+<b class="fc"><i class="no-highlight">564</i>&nbsp;        if (object instanceof Persistable&lt;?&gt; pojo) {</b>
+<b class="fc"><i class="no-highlight">565</i>&nbsp;            propertyMap = getChangedProperties(pojo, connection);</b>
+<i class="no-highlight">566</i>&nbsp;        } else {
+<b class="fc"><i class="no-highlight">567</i>&nbsp;            propertyMap = getTableColumnsPropertyInfo(objectClass, connection);</b>
+<i class="no-highlight">568</i>&nbsp;        }
+<i class="no-highlight">569</i>&nbsp;
+<b class="fc"><i class="no-highlight">570</i>&nbsp;        String updateStatement = buildUpdateString(object, propertyMap.keySet().stream().filter(col -&gt; !columns.get(col).readOnly).toList().iterator(), connection);</b>
+<i class="no-highlight">571</i>&nbsp;
+<b class="fc"><i class="no-highlight">572</i>&nbsp;        if (object instanceof Persistable&lt;?&gt;) {</b>
+<b class="fc"><i class="no-highlight">573</i>&nbsp;            String key = propertyMap.keySet().toString();</b>
+<b class="fc"><i class="no-highlight">574</i>&nbsp;            if (variableUpdateStatements.containsKey(objectClass) &amp;&amp; variableUpdateStatements.get(objectClass).containsKey(key)) {</b>
+<b class="nc"><i class="no-highlight">575</i>&nbsp;                return variableUpdateStatements.get(objectClass).get(key);</b>
+<i class="no-highlight">576</i>&nbsp;            }
+<i class="no-highlight">577</i>&nbsp;
+<b class="fc"><i class="no-highlight">578</i>&nbsp;            variableUpdateStatements.putIfAbsent(objectClass, new HashMap&lt;&gt;());</b>
+<b class="fc"><i class="no-highlight">579</i>&nbsp;            variableUpdateStatements.get(objectClass).put(key, updateStatement);</b>
+<b class="fc"><i class="no-highlight">580</i>&nbsp;        } else {</b>
+<b class="fc"><i class="no-highlight">581</i>&nbsp;            updateStatementsMap.put(objectClass, updateStatement);</b>
+<i class="no-highlight">582</i>&nbsp;        }
+<i class="no-highlight">583</i>&nbsp;
+<i class="no-highlight">584</i>&nbsp;
+<b class="fc"><i class="no-highlight">585</i>&nbsp;        if (log.isDebugEnabled()) {</b>
+<b class="fc"><i class="no-highlight">586</i>&nbsp;            log.debug(&quot;determineUpdateStatement for %s is %s&quot;, objectClass, updateStatement);</b>
+<i class="no-highlight">587</i>&nbsp;        }
+<i class="no-highlight">588</i>&nbsp;
+<b class="fc"><i class="no-highlight">589</i>&nbsp;        return updateStatement;</b>
+<i class="no-highlight">590</i>&nbsp;    }
+<i class="no-highlight">591</i>&nbsp;
+<i class="no-highlight">592</i>&nbsp;    String getInsertStatement(Object object, Connection connection) throws PersismException {
+<i class="no-highlight">593</i>&nbsp;        String sql;
+<b class="fc"><i class="no-highlight">594</i>&nbsp;        String key = getColumnsForInsert(object, connection).stream().map(columnInfo -&gt; columnInfo.columnName).toList().toString();</b>
+<b class="fc"><i class="no-highlight">595</i>&nbsp;        Class&lt;?&gt; objectClass = object.getClass();</b>
+<b class="fc"><i class="no-highlight">596</i>&nbsp;        if (insertStatements.containsKey(objectClass) &amp;&amp; insertStatements.get(objectClass).containsKey(key)) {</b>
+<b class="fc"><i class="no-highlight">597</i>&nbsp;            sql = insertStatements.get(objectClass).get(key);</b>
+<i class="no-highlight">598</i>&nbsp;        } else {
+<b class="fc"><i class="no-highlight">599</i>&nbsp;            sql = determineInsertStatement(object, connection);</b>
+<i class="no-highlight">600</i>&nbsp;        }
+<b class="fc"><i class="no-highlight">601</i>&nbsp;        if (log.isDebugEnabled()) {</b>
+<b class="fc"><i class="no-highlight">602</i>&nbsp;            log.debug(&quot;getInsertStatement for: %s %s&quot;, objectClass, sql);</b>
+<i class="no-highlight">603</i>&nbsp;        }
+<b class="fc"><i class="no-highlight">604</i>&nbsp;        return sql;</b>
+<i class="no-highlight">605</i>&nbsp;    }
+<i class="no-highlight">606</i>&nbsp;
+<i class="no-highlight">607</i>&nbsp;    private synchronized String determineInsertStatement(Object object, Connection connection) {
+<b class="fc"><i class="no-highlight">608</i>&nbsp;        List&lt;ColumnInfo&gt; columnsForInsert = getColumnsForInsert(object, connection);</b>
+<b class="fc"><i class="no-highlight">609</i>&nbsp;        String key = columnsForInsert.stream().map(columnInfo -&gt; columnInfo.columnName).toList().toString();</b>
+<b class="fc"><i class="no-highlight">610</i>&nbsp;        Class&lt;?&gt; objectClass = object.getClass();</b>
+<i class="no-highlight">611</i>&nbsp;
+<b class="fc"><i class="no-highlight">612</i>&nbsp;        if (insertStatements.containsKey(objectClass) &amp;&amp; insertStatements.get(objectClass).containsKey(key)) {</b>
+<b class="nc"><i class="no-highlight">613</i>&nbsp;            return insertStatements.get(objectClass).get(key);</b>
+<i class="no-highlight">614</i>&nbsp;        }
+<i class="no-highlight">615</i>&nbsp;
+<b class="fc"><i class="no-highlight">616</i>&nbsp;        String sd = connectionType.getKeywordStartDelimiter();</b>
+<b class="fc"><i class="no-highlight">617</i>&nbsp;        String ed = connectionType.getKeywordEndDelimiter();</b>
+<i class="no-highlight">618</i>&nbsp;
+<b class="fc"><i class="no-highlight">619</i>&nbsp;        TableInfo tableInfo = getTableInfo(objectClass);</b>
+<b class="fc"><i class="no-highlight">620</i>&nbsp;        String tableName = tableInfo.name();</b>
+<b class="fc"><i class="no-highlight">621</i>&nbsp;        String schemaName = tableInfo.schema();</b>
+<i class="no-highlight">622</i>&nbsp;
+<b class="fc"><i class="no-highlight">623</i>&nbsp;        StringBuilder sbi = new StringBuilder();</b>
+<b class="fc"><i class="no-highlight">624</i>&nbsp;        sbi.append(&quot;INSERT INTO &quot;);</b>
+<b class="fc"><i class="no-highlight">625</i>&nbsp;        if (isNotEmpty(schemaName)) {</b>
+<b class="fc"><i class="no-highlight">626</i>&nbsp;            sbi.append(sd).append(schemaName).append(ed).append(&quot;.&quot;);</b>
+<i class="no-highlight">627</i>&nbsp;        }
+<b class="fc"><i class="no-highlight">628</i>&nbsp;        sbi.append(sd).append(tableName).append(ed).append(&quot; (&quot;);</b>
+<i class="no-highlight">629</i>&nbsp;
+<b class="fc"><i class="no-highlight">630</i>&nbsp;        StringBuilder sbp = new StringBuilder();</b>
+<b class="fc"><i class="no-highlight">631</i>&nbsp;        sbp.append(&quot; VALUES (&quot;);</b>
+<i class="no-highlight">632</i>&nbsp;
+<b class="fc"><i class="no-highlight">633</i>&nbsp;        String sep = &quot;&quot;;</b>
+<i class="no-highlight">634</i>&nbsp;
+<b class="fc"><i class="no-highlight">635</i>&nbsp;        for (ColumnInfo column : columnsForInsert) {</b>
+<b class="fc"><i class="no-highlight">636</i>&nbsp;            sbi.append(sep).append(sd).append(column.columnName).append(ed);</b>
+<b class="fc"><i class="no-highlight">637</i>&nbsp;            sbp.append(sep).append(&quot;?&quot;);</b>
+<b class="fc"><i class="no-highlight">638</i>&nbsp;            sep = &quot;, &quot;;</b>
+<b class="fc"><i class="no-highlight">639</i>&nbsp;        }</b>
+<i class="no-highlight">640</i>&nbsp;
+<b class="fc"><i class="no-highlight">641</i>&nbsp;        if (connectionType == ConnectionType.MSSQL) {</b>
+<i class="no-highlight">642</i>&nbsp;            // check if we have a sequence or other non auto-inc primary and use OUTPUT inserted.[COL] to get the value back.
+<b class="fc"><i class="no-highlight">643</i>&nbsp;            Optional&lt;ColumnInfo&gt; primary = getPrimaryNonAutoIncColumn(object, connection);</b>
+<b class="fc"><i class="no-highlight">644</i>&nbsp;            if (primary.isPresent()) {</b>
+<b class="fc"><i class="no-highlight">645</i>&nbsp;                ColumnInfo col = primary.get();</b>
+<b class="fc"><i class="no-highlight">646</i>&nbsp;                sbi.append(&quot;) &quot;).append(&quot;OUTPUT inserted.&quot;).append(sd).append(col.columnName).append(ed).append(sbp).append(&quot;) &quot;);</b>
+<b class="fc"><i class="no-highlight">647</i>&nbsp;            } else {</b>
+<b class="fc"><i class="no-highlight">648</i>&nbsp;                sbi.append(&quot;) &quot;).append(sbp).append(&quot;) &quot;);</b>
+<i class="no-highlight">649</i>&nbsp;            }
+<b class="fc"><i class="no-highlight">650</i>&nbsp;        } else {</b>
+<b class="fc"><i class="no-highlight">651</i>&nbsp;            sbi.append(&quot;) &quot;).append(sbp).append(&quot;) &quot;);</b>
+<i class="no-highlight">652</i>&nbsp;        }
+<i class="no-highlight">653</i>&nbsp;
+<i class="no-highlight">654</i>&nbsp;        String insertStatement;
+<b class="fc"><i class="no-highlight">655</i>&nbsp;        insertStatement = sbi.toString();</b>
+<i class="no-highlight">656</i>&nbsp;
+<b class="fc"><i class="no-highlight">657</i>&nbsp;        if (log.isDebugEnabled()) {</b>
+<b class="fc"><i class="no-highlight">658</i>&nbsp;            log.debug(&quot;determineInsertStatement for %s is %s&quot;, object.getClass(), insertStatement);</b>
+<i class="no-highlight">659</i>&nbsp;        }
+<i class="no-highlight">660</i>&nbsp;
+<b class="fc"><i class="no-highlight">661</i>&nbsp;        insertStatements.putIfAbsent(objectClass, new HashMap&lt;&gt;());</b>
+<b class="fc"><i class="no-highlight">662</i>&nbsp;        insertStatements.get(objectClass).put(key, insertStatement);</b>
+<i class="no-highlight">663</i>&nbsp;
+<b class="fc"><i class="no-highlight">664</i>&nbsp;        return insertStatement;</b>
+<i class="no-highlight">665</i>&nbsp;    }
+<i class="no-highlight">666</i>&nbsp;
+<i class="no-highlight">667</i>&nbsp;    private List&lt;ColumnInfo&gt; getColumnsForInsert(Object object, Connection connection) {
+<b class="fc"><i class="no-highlight">668</i>&nbsp;        Map&lt;String, ColumnInfo&gt; columns = getColumns(object.getClass(), connection);</b>
+<b class="fc"><i class="no-highlight">669</i>&nbsp;        Map&lt;String, PropertyInfo&gt; properties = getTableColumnsPropertyInfo(object.getClass(), connection);</b>
+<b class="fc"><i class="no-highlight">670</i>&nbsp;        return columns.values().stream().</b>
+<b class="fc"><i class="no-highlight">671</i>&nbsp;                filter(col -&gt; !col.autoIncrement).</b>
+<b class="fc"><i class="no-highlight">672</i>&nbsp;                filter(col -&gt; !(col.hasDefault &amp;&amp; properties.get(col.columnName).getValue(object) == null)).</b>
+<b class="fc"><i class="no-highlight">673</i>&nbsp;                filter(col -&gt; !col.readOnly).</b>
+<b class="fc"><i class="no-highlight">674</i>&nbsp;                toList();</b>
+<i class="no-highlight">675</i>&nbsp;    }
+<i class="no-highlight">676</i>&nbsp;
+<i class="no-highlight">677</i>&nbsp;    private Optional&lt;ColumnInfo&gt; getPrimaryNonAutoIncColumn(Object object, Connection connection) {
+<b class="fc"><i class="no-highlight">678</i>&nbsp;        Map&lt;String, ColumnInfo&gt; columns = getColumns(object.getClass(), connection);</b>
+<b class="fc"><i class="no-highlight">679</i>&nbsp;        Map&lt;String, PropertyInfo&gt; properties = getTableColumnsPropertyInfo(object.getClass(), connection);</b>
+<b class="fc"><i class="no-highlight">680</i>&nbsp;        return columns.values().stream().</b>
+<b class="fc"><i class="no-highlight">681</i>&nbsp;                filter(col -&gt; col.primary &amp;&amp; col.hasDefault &amp;&amp; properties.get(col.columnName).getValue(object) == null).</b>
+<b class="fc"><i class="no-highlight">682</i>&nbsp;                findFirst();</b>
+<i class="no-highlight">683</i>&nbsp;    }
+<i class="no-highlight">684</i>&nbsp;
+<i class="no-highlight">685</i>&nbsp;    String getDeleteStatement(Class&lt;?&gt; objectClass, Connection connection) {
+<b class="fc"><i class="no-highlight">686</i>&nbsp;        if (deleteStatementsMap.containsKey(objectClass)) {</b>
+<b class="fc"><i class="no-highlight">687</i>&nbsp;            return deleteStatementsMap.get(objectClass);</b>
+<i class="no-highlight">688</i>&nbsp;        }
+<b class="fc"><i class="no-highlight">689</i>&nbsp;        return determineDeleteStatement(objectClass, connection);</b>
+<i class="no-highlight">690</i>&nbsp;    }
+<i class="no-highlight">691</i>&nbsp;
+<i class="no-highlight">692</i>&nbsp;    String getDefaultDeleteStatement(Class&lt;?&gt; objectClass, Connection connection) {
+<b class="fc"><i class="no-highlight">693</i>&nbsp;        return getDeleteStatement(objectClass, connection) + getWhereClause(objectClass, connection);</b>
+<i class="no-highlight">694</i>&nbsp;    }
+<i class="no-highlight">695</i>&nbsp;
+<i class="no-highlight">696</i>&nbsp;    private synchronized String determineDeleteStatement(Class&lt;?&gt; objectClass, Connection connection) {
+<b class="fc"><i class="no-highlight">697</i>&nbsp;        if (deleteStatementsMap.containsKey(objectClass)) {</b>
+<b class="nc"><i class="no-highlight">698</i>&nbsp;            return deleteStatementsMap.get(objectClass);</b>
+<i class="no-highlight">699</i>&nbsp;        }
+<i class="no-highlight">700</i>&nbsp;
+<b class="fc"><i class="no-highlight">701</i>&nbsp;        String sd = connectionType.getKeywordStartDelimiter();</b>
+<b class="fc"><i class="no-highlight">702</i>&nbsp;        String ed = connectionType.getKeywordEndDelimiter();</b>
+<i class="no-highlight">703</i>&nbsp;
+<b class="fc"><i class="no-highlight">704</i>&nbsp;        TableInfo tableInfo = getTableInfo(objectClass);</b>
+<b class="fc"><i class="no-highlight">705</i>&nbsp;        String tableName = tableInfo.name();</b>
+<b class="fc"><i class="no-highlight">706</i>&nbsp;        String schemaName = tableInfo.schema();</b>
+<i class="no-highlight">707</i>&nbsp;
+<b class="fc"><i class="no-highlight">708</i>&nbsp;        StringBuilder sb = new StringBuilder();</b>
+<b class="fc"><i class="no-highlight">709</i>&nbsp;        sb.append(&quot;DELETE FROM &quot;);</b>
+<b class="fc"><i class="no-highlight">710</i>&nbsp;        if (isNotEmpty(schemaName)) {</b>
+<b class="fc"><i class="no-highlight">711</i>&nbsp;            sb.append(sd).append(schemaName).append(ed).append(&quot;.&quot;);</b>
+<i class="no-highlight">712</i>&nbsp;        }
+<b class="fc"><i class="no-highlight">713</i>&nbsp;        sb.append(sd).append(tableName).append(ed);</b>
+<b class="fc"><i class="no-highlight">714</i>&nbsp;        String deleteStatement = sb.toString();</b>
+<i class="no-highlight">715</i>&nbsp;
+<b class="fc"><i class="no-highlight">716</i>&nbsp;        if (log.isDebugEnabled()) {</b>
+<b class="fc"><i class="no-highlight">717</i>&nbsp;            log.debug(&quot;determineDeleteStatement for %s is %s&quot;, objectClass, deleteStatement);</b>
+<i class="no-highlight">718</i>&nbsp;        }
+<i class="no-highlight">719</i>&nbsp;
+<b class="fc"><i class="no-highlight">720</i>&nbsp;        deleteStatementsMap.put(objectClass, deleteStatement);</b>
+<b class="fc"><i class="no-highlight">721</i>&nbsp;        return deleteStatement;</b>
+<i class="no-highlight">722</i>&nbsp;    }
+<i class="no-highlight">723</i>&nbsp;
+<i class="no-highlight">724</i>&nbsp;    String getPrimaryInClause(Class&lt;?&gt; objectClass, int paramCount, Connection connection) {
+<b class="fc"><i class="no-highlight">725</i>&nbsp;        if (primaryInClauseMap.containsKey(objectClass) &amp;&amp; primaryInClauseMap.get(objectClass).containsKey(paramCount)) {</b>
+<b class="fc"><i class="no-highlight">726</i>&nbsp;            return primaryInClauseMap.get(objectClass).get(paramCount);</b>
+<i class="no-highlight">727</i>&nbsp;        }
+<b class="fc"><i class="no-highlight">728</i>&nbsp;        return determinePrimaryInClause(objectClass, paramCount, connection);</b>
+<i class="no-highlight">729</i>&nbsp;    }
+<i class="no-highlight">730</i>&nbsp;
+<i class="no-highlight">731</i>&nbsp;    private synchronized String determinePrimaryInClause(Class&lt;?&gt; objectClass, int paramCount, Connection connection) {
+<b class="fc"><i class="no-highlight">732</i>&nbsp;        if (primaryInClauseMap.containsKey(objectClass) &amp;&amp; primaryInClauseMap.get(objectClass).containsKey(paramCount)) {</b>
+<b class="nc"><i class="no-highlight">733</i>&nbsp;            return primaryInClauseMap.get(objectClass).get(paramCount);</b>
+<i class="no-highlight">734</i>&nbsp;        }
+<i class="no-highlight">735</i>&nbsp;
+<b class="fc"><i class="no-highlight">736</i>&nbsp;        Map&lt;Integer, String&gt; map = primaryInClauseMap.get(objectClass);</b>
+<b class="fc"><i class="no-highlight">737</i>&nbsp;        if (map == null) {</b>
+<b class="fc"><i class="no-highlight">738</i>&nbsp;            map = new HashMap&lt;&gt;();</b>
+<i class="no-highlight">739</i>&nbsp;        }
+<i class="no-highlight">740</i>&nbsp;
+<b class="fc"><i class="no-highlight">741</i>&nbsp;        String sd = connectionType.getKeywordStartDelimiter();</b>
+<b class="fc"><i class="no-highlight">742</i>&nbsp;        String ed = connectionType.getKeywordEndDelimiter();</b>
+<b class="fc"><i class="no-highlight">743</i>&nbsp;        String andSep = &quot;&quot;;</b>
+<i class="no-highlight">744</i>&nbsp;
+<b class="fc"><i class="no-highlight">745</i>&nbsp;        String query = &quot; WHERE &quot;;</b>
+<i class="no-highlight">746</i>&nbsp;
+<b class="fc"><i class="no-highlight">747</i>&nbsp;        List&lt;String&gt; primaryKeys = getPrimaryKeys(objectClass, connection);</b>
+<i class="no-highlight">748</i>&nbsp;
+<b class="fc"><i class="no-highlight">749</i>&nbsp;        StringBuilder sb = new StringBuilder(query);</b>
+<b class="fc"><i class="no-highlight">750</i>&nbsp;        int groups = paramCount / primaryKeys.size();</b>
+<b class="fc"><i class="no-highlight">751</i>&nbsp;        for (String column : primaryKeys) {</b>
+<b class="fc"><i class="no-highlight">752</i>&nbsp;            String sep = &quot;&quot;;</b>
+<b class="fc"><i class="no-highlight">753</i>&nbsp;            sb.append(andSep).append(sd).append(column).append(ed).append(&quot; IN (&quot;);</b>
+<b class="fc"><i class="no-highlight">754</i>&nbsp;            for (int j = 0; j &lt; groups; j++) {</b>
+<b class="fc"><i class="no-highlight">755</i>&nbsp;                sb.append(sep).append(&quot;?&quot;);</b>
+<b class="fc"><i class="no-highlight">756</i>&nbsp;                sep = &quot;, &quot;;</b>
+<i class="no-highlight">757</i>&nbsp;            }
+<b class="fc"><i class="no-highlight">758</i>&nbsp;            sb.append(&quot;)&quot;);</b>
+<b class="fc"><i class="no-highlight">759</i>&nbsp;            andSep = &quot; AND &quot;;</b>
+<b class="fc"><i class="no-highlight">760</i>&nbsp;        }</b>
+<b class="fc"><i class="no-highlight">761</i>&nbsp;        query = sb.toString();</b>
+<i class="no-highlight">762</i>&nbsp;
+<b class="fc"><i class="no-highlight">763</i>&nbsp;        map.put(paramCount, query);</b>
+<b class="fc"><i class="no-highlight">764</i>&nbsp;        primaryInClauseMap.put(objectClass, map);</b>
+<i class="no-highlight">765</i>&nbsp;
+<b class="fc"><i class="no-highlight">766</i>&nbsp;        return query;</b>
+<i class="no-highlight">767</i>&nbsp;    }
+<i class="no-highlight">768</i>&nbsp;
+<i class="no-highlight">769</i>&nbsp;
+<i class="no-highlight">770</i>&nbsp;    String getWhereClause(Class&lt;?&gt; objectClass, Connection connection) {
+<b class="fc"><i class="no-highlight">771</i>&nbsp;        if (primaryWhereClauseMap.containsKey(objectClass)) {</b>
+<b class="fc"><i class="no-highlight">772</i>&nbsp;            return primaryWhereClauseMap.get(objectClass);</b>
+<i class="no-highlight">773</i>&nbsp;        }
+<b class="fc"><i class="no-highlight">774</i>&nbsp;        return determineWhereClause(objectClass, connection);</b>
+<i class="no-highlight">775</i>&nbsp;    }
+<i class="no-highlight">776</i>&nbsp;
+<i class="no-highlight">777</i>&nbsp;    private synchronized String determineWhereClause(Class&lt;?&gt; objectClass, Connection connection) {
+<b class="fc"><i class="no-highlight">778</i>&nbsp;        if (primaryWhereClauseMap.containsKey(objectClass)) {</b>
+<b class="nc"><i class="no-highlight">779</i>&nbsp;            return primaryWhereClauseMap.get(objectClass);</b>
+<i class="no-highlight">780</i>&nbsp;        }
+<i class="no-highlight">781</i>&nbsp;
+<b class="fc"><i class="no-highlight">782</i>&nbsp;        String sep = &quot;&quot;;</b>
+<i class="no-highlight">783</i>&nbsp;
+<b class="fc"><i class="no-highlight">784</i>&nbsp;        StringBuilder sb = new StringBuilder();</b>
+<b class="fc"><i class="no-highlight">785</i>&nbsp;        String sd = connectionType.getKeywordStartDelimiter();</b>
+<b class="fc"><i class="no-highlight">786</i>&nbsp;        String ed = connectionType.getKeywordEndDelimiter();</b>
+<i class="no-highlight">787</i>&nbsp;
+<b class="fc"><i class="no-highlight">788</i>&nbsp;        List&lt;String&gt; primaryKeys = getPrimaryKeys(objectClass, connection);</b>
+<b class="fc"><i class="no-highlight">789</i>&nbsp;        if (primaryKeys.size() == 0) {</b>
+<b class="fc"><i class="no-highlight">790</i>&nbsp;            throw new PersismException(Message.TableHasNoPrimaryKeysForWhere.message(getTableInfo(objectClass).name()));</b>
+<i class="no-highlight">791</i>&nbsp;        }
+<i class="no-highlight">792</i>&nbsp;
+<b class="fc"><i class="no-highlight">793</i>&nbsp;        sb.append(&quot; WHERE &quot;);</b>
+<i class="no-highlight">794</i>&nbsp;
+<b class="fc"><i class="no-highlight">795</i>&nbsp;        sep = &quot;&quot;;</b>
+<b class="fc"><i class="no-highlight">796</i>&nbsp;        for (String column : primaryKeys) {</b>
+<b class="fc"><i class="no-highlight">797</i>&nbsp;            sb.append(sep).append(sd).append(column).append(ed).append(&quot; = ?&quot;);</b>
+<b class="fc"><i class="no-highlight">798</i>&nbsp;            sep = &quot; AND &quot;;</b>
+<b class="fc"><i class="no-highlight">799</i>&nbsp;        }</b>
+<i class="no-highlight">800</i>&nbsp;
+<b class="fc"><i class="no-highlight">801</i>&nbsp;        String where = sb.toString();</b>
+<b class="fc"><i class="no-highlight">802</i>&nbsp;        if (log.isDebugEnabled()) {</b>
+<b class="fc"><i class="no-highlight">803</i>&nbsp;            log.debug(&quot;determineWhereClause: %s %s&quot;, objectClass.getName(), where);</b>
+<i class="no-highlight">804</i>&nbsp;        }
+<b class="fc"><i class="no-highlight">805</i>&nbsp;        primaryWhereClauseMap.put(objectClass, where);</b>
+<b class="fc"><i class="no-highlight">806</i>&nbsp;        return where;</b>
+<i class="no-highlight">807</i>&nbsp;    }
+<i class="no-highlight">808</i>&nbsp;
+<i class="no-highlight">809</i>&nbsp;    /*
+<i class="no-highlight">810</i>&nbsp;     * Default SELECT including WHERE Primary Keys - should only be called for tables
+<i class="no-highlight">811</i>&nbsp;     */
+<i class="no-highlight">812</i>&nbsp;    String getDefaultSelectStatement(Class&lt;?&gt; objectClass, Connection connection) {
+<b class="fc"><i class="no-highlight">813</i>&nbsp;        assert objectClass.getAnnotation(View.class) == null;</b>
+<b class="fc"><i class="no-highlight">814</i>&nbsp;        assert objectClass.getAnnotation(NotTable.class) == null;</b>
+<i class="no-highlight">815</i>&nbsp;
+<b class="fc"><i class="no-highlight">816</i>&nbsp;        return getSelectStatement(objectClass, connection) + getWhereClause(objectClass, connection);</b>
+<i class="no-highlight">817</i>&nbsp;    }
+<i class="no-highlight">818</i>&nbsp;
+<i class="no-highlight">819</i>&nbsp;    /**
+<i class="no-highlight">820</i>&nbsp;     * SQL SELECT COLUMNS ONLY - make public? or put a delegate somewhere else?
+<i class="no-highlight">821</i>&nbsp;     *
+<i class="no-highlight">822</i>&nbsp;     * @param objectClass
+<i class="no-highlight">823</i>&nbsp;     * @param connection
+<i class="no-highlight">824</i>&nbsp;     * @return
+<i class="no-highlight">825</i>&nbsp;     */
+<i class="no-highlight">826</i>&nbsp;    String getSelectStatement(Class&lt;?&gt; objectClass, Connection connection) {
+<b class="fc"><i class="no-highlight">827</i>&nbsp;        if (selectStatementsMap.containsKey(objectClass)) {</b>
+<b class="fc"><i class="no-highlight">828</i>&nbsp;            return selectStatementsMap.get(objectClass);</b>
+<i class="no-highlight">829</i>&nbsp;        }
+<b class="fc"><i class="no-highlight">830</i>&nbsp;        return determineSelectStatement(objectClass, connection);</b>
+<i class="no-highlight">831</i>&nbsp;    }
+<i class="no-highlight">832</i>&nbsp;
+<i class="no-highlight">833</i>&nbsp;    private synchronized String determineSelectStatement(Class&lt;?&gt; objectClass, Connection connection) {
+<i class="no-highlight">834</i>&nbsp;
+<b class="fc"><i class="no-highlight">835</i>&nbsp;        if (selectStatementsMap.containsKey(objectClass)) {</b>
+<b class="nc"><i class="no-highlight">836</i>&nbsp;            return selectStatementsMap.get(objectClass);</b>
+<i class="no-highlight">837</i>&nbsp;        }
+<i class="no-highlight">838</i>&nbsp;
+<b class="fc"><i class="no-highlight">839</i>&nbsp;        String sd = connectionType.getKeywordStartDelimiter();</b>
+<b class="fc"><i class="no-highlight">840</i>&nbsp;        String ed = connectionType.getKeywordEndDelimiter();</b>
+<i class="no-highlight">841</i>&nbsp;
+<b class="fc"><i class="no-highlight">842</i>&nbsp;        TableInfo tableInfo = getTableInfo(objectClass);</b>
+<b class="fc"><i class="no-highlight">843</i>&nbsp;        String tableName = tableInfo.name();</b>
+<b class="fc"><i class="no-highlight">844</i>&nbsp;        String schemaName = tableInfo.schema();</b>
+<i class="no-highlight">845</i>&nbsp;
+<b class="fc"><i class="no-highlight">846</i>&nbsp;        StringBuilder sb = new StringBuilder();</b>
+<b class="fc"><i class="no-highlight">847</i>&nbsp;        sb.append(&quot;SELECT &quot;);</b>
+<i class="no-highlight">848</i>&nbsp;
+<b class="fc"><i class="no-highlight">849</i>&nbsp;        String sep = &quot;&quot;;</b>
+<i class="no-highlight">850</i>&nbsp;
+<b class="fc"><i class="no-highlight">851</i>&nbsp;        Map&lt;String, ColumnInfo&gt; columns = getColumns(objectClass, connection);</b>
+<b class="fc"><i class="no-highlight">852</i>&nbsp;        for (String column : columns.keySet()) {</b>
+<b class="fc"><i class="no-highlight">853</i>&nbsp;            ColumnInfo columnInfo = columns.get(column);</b>
+<b class="fc"><i class="no-highlight">854</i>&nbsp;            sb.append(sep).append(sd).append(columnInfo.columnName).append(ed);</b>
+<b class="fc"><i class="no-highlight">855</i>&nbsp;            sep = &quot;, &quot;;</b>
+<b class="fc"><i class="no-highlight">856</i>&nbsp;        }</b>
+<b class="fc"><i class="no-highlight">857</i>&nbsp;        sb.append(&quot; FROM &quot;);</b>
+<b class="fc"><i class="no-highlight">858</i>&nbsp;        if (isNotEmpty(schemaName)) {</b>
+<b class="fc"><i class="no-highlight">859</i>&nbsp;            sb.append(sd).append(schemaName).append(ed).append(&#39;.&#39;);</b>
+<i class="no-highlight">860</i>&nbsp;        }
+<b class="fc"><i class="no-highlight">861</i>&nbsp;        sb.append(sd).append(tableName).append(ed);</b>
+<i class="no-highlight">862</i>&nbsp;
+<i class="no-highlight">863</i>&nbsp;
+<b class="fc"><i class="no-highlight">864</i>&nbsp;        String selectStatement = sb.toString();</b>
+<i class="no-highlight">865</i>&nbsp;
+<b class="fc"><i class="no-highlight">866</i>&nbsp;        if (log.isDebugEnabled()) {</b>
+<b class="fc"><i class="no-highlight">867</i>&nbsp;            log.debug(&quot;determineSelectStatement for %s is %s&quot;, objectClass, selectStatement);</b>
+<i class="no-highlight">868</i>&nbsp;        }
+<i class="no-highlight">869</i>&nbsp;
+<b class="fc"><i class="no-highlight">870</i>&nbsp;        selectStatementsMap.put(objectClass, selectStatement);</b>
+<i class="no-highlight">871</i>&nbsp;
+<b class="fc"><i class="no-highlight">872</i>&nbsp;        return selectStatement;</b>
+<i class="no-highlight">873</i>&nbsp;    }
+<i class="no-highlight">874</i>&nbsp;
+<i class="no-highlight">875</i>&nbsp;    private String buildUpdateString(Object object, Iterator&lt;String&gt; it, Connection connection) throws PersismException {
+<b class="fc"><i class="no-highlight">876</i>&nbsp;        String sd = connectionType.getKeywordStartDelimiter();</b>
+<b class="fc"><i class="no-highlight">877</i>&nbsp;        String ed = connectionType.getKeywordEndDelimiter();</b>
+<i class="no-highlight">878</i>&nbsp;
+<b class="fc"><i class="no-highlight">879</i>&nbsp;        TableInfo tableInfo = getTableInfo(object.getClass());</b>
+<b class="fc"><i class="no-highlight">880</i>&nbsp;        String tableName = tableInfo.name();</b>
+<b class="fc"><i class="no-highlight">881</i>&nbsp;        String schemaName = tableInfo.schema();</b>
+<i class="no-highlight">882</i>&nbsp;
+<b class="fc"><i class="no-highlight">883</i>&nbsp;        List&lt;String&gt; primaryKeys = getPrimaryKeys(object.getClass(), connection);</b>
+<i class="no-highlight">884</i>&nbsp;
+<b class="fc"><i class="no-highlight">885</i>&nbsp;        StringBuilder sb = new StringBuilder();</b>
+<b class="fc"><i class="no-highlight">886</i>&nbsp;        sb.append(&quot;UPDATE &quot;);</b>
+<b class="fc"><i class="no-highlight">887</i>&nbsp;        if (isNotEmpty(schemaName)) {</b>
+<b class="fc"><i class="no-highlight">888</i>&nbsp;            sb.append(sd).append(schemaName).append(ed).append(&quot;.&quot;);</b>
+<i class="no-highlight">889</i>&nbsp;        }
+<b class="fc"><i class="no-highlight">890</i>&nbsp;        sb.append(sd).append(tableName).append(ed).append(&quot; SET &quot;);</b>
+<b class="fc"><i class="no-highlight">891</i>&nbsp;        String sep = &quot;&quot;;</b>
+<i class="no-highlight">892</i>&nbsp;
+<b class="fc"><i class="no-highlight">893</i>&nbsp;        Map&lt;String, ColumnInfo&gt; columns = getColumns(object.getClass(), connection);</b>
+<b class="fc"><i class="no-highlight">894</i>&nbsp;        while (it.hasNext()) {</b>
+<b class="fc"><i class="no-highlight">895</i>&nbsp;            String column = it.next();</b>
+<b class="fc"><i class="no-highlight">896</i>&nbsp;            ColumnInfo columnInfo = columns.get(column);</b>
+<b class="fc"><i class="no-highlight">897</i>&nbsp;            if (columnInfo.autoIncrement || columnInfo.primary) {</b>
+<b class="fc"><i class="no-highlight">898</i>&nbsp;                log.debug(&quot;buildUpdateString: skipping &quot; + column);</b>
+<i class="no-highlight">899</i>&nbsp;            } else {
+<b class="fc"><i class="no-highlight">900</i>&nbsp;                sb.append(sep).append(sd).append(column).append(ed).append(&quot; = ?&quot;);</b>
+<b class="fc"><i class="no-highlight">901</i>&nbsp;                sep = &quot;, &quot;;</b>
+<i class="no-highlight">902</i>&nbsp;            }
+<b class="fc"><i class="no-highlight">903</i>&nbsp;        }</b>
+<b class="fc"><i class="no-highlight">904</i>&nbsp;        sb.append(&quot; WHERE &quot;);</b>
+<b class="fc"><i class="no-highlight">905</i>&nbsp;        sep = &quot;&quot;;</b>
+<b class="fc"><i class="no-highlight">906</i>&nbsp;        for (String column : primaryKeys) {</b>
+<b class="fc"><i class="no-highlight">907</i>&nbsp;            sb.append(sep).append(sd).append(column).append(ed).append(&quot; = ?&quot;);</b>
+<b class="fc"><i class="no-highlight">908</i>&nbsp;            sep = &quot; AND &quot;;</b>
+<b class="fc"><i class="no-highlight">909</i>&nbsp;        }</b>
+<b class="fc"><i class="no-highlight">910</i>&nbsp;        return sb.toString();</b>
+<i class="no-highlight">911</i>&nbsp;    }
+<i class="no-highlight">912</i>&nbsp;
+<i class="no-highlight">913</i>&nbsp;    Map&lt;String, PropertyInfo&gt; getChangedProperties(Persistable&lt;?&gt; persistable, Connection connection) throws PersismException {
+<i class="no-highlight">914</i>&nbsp;
+<b class="fc"><i class="no-highlight">915</i>&nbsp;        Persistable&lt;?&gt; original = (Persistable&lt;?&gt;) persistable.readOriginalValue();</b>
+<i class="no-highlight">916</i>&nbsp;
+<b class="fc"><i class="no-highlight">917</i>&nbsp;        Map&lt;String, PropertyInfo&gt; columns = getTableColumnsPropertyInfo(persistable.getClass(), connection);</b>
+<i class="no-highlight">918</i>&nbsp;
+<b class="fc"><i class="no-highlight">919</i>&nbsp;        if (original == null) {</b>
+<i class="no-highlight">920</i>&nbsp;            // Could happen in the case of cloning or other operation - so it&#39;s never read, so it never sets original.
+<b class="fc"><i class="no-highlight">921</i>&nbsp;            return columns;</b>
+<i class="no-highlight">922</i>&nbsp;        } else {
+<b class="fc"><i class="no-highlight">923</i>&nbsp;            Map&lt;String, PropertyInfo&gt; changedColumns = new LinkedHashMap&lt;&gt;(columns.keySet().size());</b>
+<i class="no-highlight">924</i>&nbsp;
+<b class="fc"><i class="no-highlight">925</i>&nbsp;            for (String column : columns.keySet()) {</b>
+<b class="fc"><i class="no-highlight">926</i>&nbsp;                PropertyInfo propertyInfo = columns.get(column);</b>
+<i class="no-highlight">927</i>&nbsp;
+<b class="fc"><i class="no-highlight">928</i>&nbsp;                Object newValue = propertyInfo.getValue(persistable);</b>
+<b class="fc"><i class="no-highlight">929</i>&nbsp;                Object orgValue = propertyInfo.getValue(original);</b>
+<b class="fc"><i class="no-highlight">930</i>&nbsp;                if (!Objects.equals(newValue, orgValue)) {</b>
+<b class="fc"><i class="no-highlight">931</i>&nbsp;                    changedColumns.put(column, propertyInfo);</b>
+<i class="no-highlight">932</i>&nbsp;                }
+<b class="fc"><i class="no-highlight">933</i>&nbsp;            }</b>
+<b class="fc"><i class="no-highlight">934</i>&nbsp;            return changedColumns;</b>
+<i class="no-highlight">935</i>&nbsp;        }
+<i class="no-highlight">936</i>&nbsp;
+<i class="no-highlight">937</i>&nbsp;    }
+<i class="no-highlight">938</i>&nbsp;
+<i class="no-highlight">939</i>&nbsp;    &lt;T&gt; Map&lt;String, ColumnInfo&gt; getColumns(Class&lt;T&gt; objectClass, Connection connection) throws PersismException {
+<i class="no-highlight">940</i>&nbsp;        // Realistically at this point this objectClass will always be in the map since it&#39;s defined early
+<i class="no-highlight">941</i>&nbsp;        // when we get the table name, but I&#39;ll double-check it for determineColumnInfo anyway.
+<b class="fc"><i class="no-highlight">942</i>&nbsp;        if (columnInfoMap.containsKey(objectClass)) {</b>
+<b class="fc"><i class="no-highlight">943</i>&nbsp;            return columnInfoMap.get(objectClass);</b>
+<i class="no-highlight">944</i>&nbsp;        }
+<b class="fc"><i class="no-highlight">945</i>&nbsp;        return determineColumnInfo(objectClass, getTableInfo(objectClass), connection);</b>
+<i class="no-highlight">946</i>&nbsp;    }
+<i class="no-highlight">947</i>&nbsp;
+<i class="no-highlight">948</i>&nbsp;    &lt;T&gt; Map&lt;String, PropertyInfo&gt; getQueryColumnsPropertyInfo(Class&lt;T&gt; objectClass, ResultSet rs) throws PersismException {
+<i class="no-highlight">949</i>&nbsp;        try {
+<b class="fc"><i class="no-highlight">950</i>&nbsp;            return determinePropertyInfoFromResultSet(objectClass, rs);</b>
+<b class="nc"><i class="no-highlight">951</i>&nbsp;        } catch (SQLException e) {</b>
+<b class="nc"><i class="no-highlight">952</i>&nbsp;            throw new PersismException(e.getMessage(), e);</b>
+<i class="no-highlight">953</i>&nbsp;        }
+<i class="no-highlight">954</i>&nbsp;    }
+<i class="no-highlight">955</i>&nbsp;
+<i class="no-highlight">956</i>&nbsp;    &lt;T&gt; Map&lt;String, PropertyInfo&gt; getTableColumnsPropertyInfo(Class&lt;T&gt; objectClass, Connection connection) throws PersismException {
+<b class="fc"><i class="no-highlight">957</i>&nbsp;        if (propertyInfoMap.containsKey(objectClass)) {</b>
+<b class="fc"><i class="no-highlight">958</i>&nbsp;            return propertyInfoMap.get(objectClass);</b>
+<i class="no-highlight">959</i>&nbsp;        }
+<b class="fc"><i class="no-highlight">960</i>&nbsp;        return determinePropertyInfo(objectClass, getTableInfo(objectClass), connection);</b>
+<i class="no-highlight">961</i>&nbsp;    }
+<i class="no-highlight">962</i>&nbsp;
+<i class="no-highlight">963</i>&nbsp;    &lt;T&gt; TableInfo getTableInfo(Class&lt;T&gt; objectClass) {
+<b class="fc"><i class="no-highlight">964</i>&nbsp;        if (tableOrViewMap.containsKey(objectClass)) {</b>
+<b class="fc"><i class="no-highlight">965</i>&nbsp;            return tableOrViewMap.get(objectClass);</b>
+<i class="no-highlight">966</i>&nbsp;        }
+<i class="no-highlight">967</i>&nbsp;
+<b class="fc"><i class="no-highlight">968</i>&nbsp;        return determineTableInfo(objectClass);</b>
+<i class="no-highlight">969</i>&nbsp;    }
+<i class="no-highlight">970</i>&nbsp;
+<i class="no-highlight">971</i>&nbsp;    private synchronized &lt;T&gt; TableInfo determineTableInfo(Class&lt;T&gt; objectClass) {
+<b class="fc"><i class="no-highlight">972</i>&nbsp;        if (tableOrViewMap.containsKey(objectClass)) {</b>
+<b class="nc"><i class="no-highlight">973</i>&nbsp;            return tableOrViewMap.get(objectClass);</b>
+<i class="no-highlight">974</i>&nbsp;        }
+<i class="no-highlight">975</i>&nbsp;
+<i class="no-highlight">976</i>&nbsp;        String tableName;
+<b class="fc"><i class="no-highlight">977</i>&nbsp;        String schemaName = null;</b>
+<b class="fc"><i class="no-highlight">978</i>&nbsp;        TableInfo foundInfo = null;</b>
+<i class="no-highlight">979</i>&nbsp;
+<b class="fc"><i class="no-highlight">980</i>&nbsp;        Table tableAnnotation = objectClass.getAnnotation(Table.class);</b>
+<b class="fc"><i class="no-highlight">981</i>&nbsp;        View viewAnnotation = objectClass.getAnnotation(View.class);</b>
+<i class="no-highlight">982</i>&nbsp;
+<b class="fc"><i class="no-highlight">983</i>&nbsp;        if (tableAnnotation != null) {</b>
+<b class="fc"><i class="no-highlight">984</i>&nbsp;            tableName = tableAnnotation.value();</b>
+<b class="fc"><i class="no-highlight">985</i>&nbsp;            if (tableName.contains(&quot;.&quot;)) {</b>
+<b class="fc"><i class="no-highlight">986</i>&nbsp;                schemaName = tableName.substring(0, tableName.indexOf(&quot;.&quot;));</b>
+<b class="fc"><i class="no-highlight">987</i>&nbsp;                tableName = tableName.substring(tableName.indexOf(&quot;.&quot;) + 1);</b>
+<i class="no-highlight">988</i>&nbsp;            }
+<i class="no-highlight">989</i>&nbsp;
+<b class="fc"><i class="no-highlight">990</i>&nbsp;            boolean found = false;</b>
+<b class="fc"><i class="no-highlight">991</i>&nbsp;            for (TableInfo table : tables) {</b>
+<b class="fc"><i class="no-highlight">992</i>&nbsp;                if (table.name().equalsIgnoreCase(tableName)) {</b>
+<b class="fc"><i class="no-highlight">993</i>&nbsp;                    if (schemaName != null) {</b>
+<b class="fc"><i class="no-highlight">994</i>&nbsp;                        if (table.schema().equalsIgnoreCase(schemaName)) {</b>
+<b class="fc"><i class="no-highlight">995</i>&nbsp;                            foundInfo = table;</b>
+<b class="fc"><i class="no-highlight">996</i>&nbsp;                            found = true;</b>
+<b class="fc"><i class="no-highlight">997</i>&nbsp;                            break;</b>
+<i class="no-highlight">998</i>&nbsp;                        }
+<i class="no-highlight">999</i>&nbsp;                    } else {
+<b class="fc"><i class="no-highlight">1000</i>&nbsp;                        foundInfo = table;</b>
+<b class="fc"><i class="no-highlight">1001</i>&nbsp;                        found = true;</b>
+<b class="fc"><i class="no-highlight">1002</i>&nbsp;                        break;</b>
+<i class="no-highlight">1003</i>&nbsp;                    }
+<i class="no-highlight">1004</i>&nbsp;                }
+<b class="fc"><i class="no-highlight">1005</i>&nbsp;            }</b>
+<b class="fc"><i class="no-highlight">1006</i>&nbsp;            if (schemaName == null) {</b>
+<b class="fc"><i class="no-highlight">1007</i>&nbsp;                final String table = tableName;</b>
+<b class="fc"><i class="no-highlight">1008</i>&nbsp;                if (tables.stream().filter(tableInfo -&gt; tableInfo.name().equalsIgnoreCase(table)).count() &gt; 1) {</b>
+<b class="fc"><i class="no-highlight">1009</i>&nbsp;                    throw new PersismException(Message.MoreThanOneTableOrViewInDifferentSchemas.message(&quot;TABLE&quot;, table));</b>
+<i class="no-highlight">1010</i>&nbsp;                }
+<i class="no-highlight">1011</i>&nbsp;            }
+<b class="fc"><i class="no-highlight">1012</i>&nbsp;            if (!found) {</b>
+<b class="fc"><i class="no-highlight">1013</i>&nbsp;                throw new PersismException(Message.CouldNotFindTableNameInTheDatabase.message(tableName, objectClass.getName()));</b>
+<i class="no-highlight">1014</i>&nbsp;            }
+<b class="fc"><i class="no-highlight">1015</i>&nbsp;        } else if (viewAnnotation != null &amp;&amp; isNotEmpty(viewAnnotation.value())) {</b>
+<b class="fc"><i class="no-highlight">1016</i>&nbsp;            tableName = viewAnnotation.value();</b>
+<b class="fc"><i class="no-highlight">1017</i>&nbsp;            if (tableName.contains(&quot;.&quot;)) {</b>
+<b class="fc"><i class="no-highlight">1018</i>&nbsp;                schemaName = tableName.substring(0, tableName.indexOf(&quot;.&quot;));</b>
+<b class="fc"><i class="no-highlight">1019</i>&nbsp;                tableName = tableName.substring(tableName.indexOf(&quot;.&quot;) + 1);</b>
+<i class="no-highlight">1020</i>&nbsp;            }
+<i class="no-highlight">1021</i>&nbsp;
+<b class="fc"><i class="no-highlight">1022</i>&nbsp;            boolean found = false;</b>
+<b class="fc"><i class="no-highlight">1023</i>&nbsp;            for (TableInfo view : views) {</b>
+<b class="fc"><i class="no-highlight">1024</i>&nbsp;                if (view.name().equalsIgnoreCase(tableName)) {</b>
+<b class="fc"><i class="no-highlight">1025</i>&nbsp;                    if (schemaName != null) {</b>
+<b class="fc"><i class="no-highlight">1026</i>&nbsp;                        if (view.schema().equalsIgnoreCase(schemaName)) {</b>
+<b class="fc"><i class="no-highlight">1027</i>&nbsp;                            foundInfo = view;</b>
+<b class="fc"><i class="no-highlight">1028</i>&nbsp;                            found = true;</b>
+<b class="fc"><i class="no-highlight">1029</i>&nbsp;                            break;</b>
+<i class="no-highlight">1030</i>&nbsp;                        }
+<i class="no-highlight">1031</i>&nbsp;                    } else {
+<b class="fc"><i class="no-highlight">1032</i>&nbsp;                        foundInfo = view;</b>
+<b class="fc"><i class="no-highlight">1033</i>&nbsp;                        found = true;</b>
+<b class="fc"><i class="no-highlight">1034</i>&nbsp;                        break;</b>
+<i class="no-highlight">1035</i>&nbsp;                    }
+<i class="no-highlight">1036</i>&nbsp;                }
+<b class="fc"><i class="no-highlight">1037</i>&nbsp;            }</b>
+<b class="fc"><i class="no-highlight">1038</i>&nbsp;            if (schemaName == null) {</b>
+<b class="fc"><i class="no-highlight">1039</i>&nbsp;                final String table = tableName;</b>
+<b class="fc"><i class="no-highlight">1040</i>&nbsp;                if (views.stream().filter(tableInfo -&gt; tableInfo.name().equalsIgnoreCase(table)).count() &gt; 1) {</b>
+<b class="fc"><i class="no-highlight">1041</i>&nbsp;                    throw new PersismException(Message.MoreThanOneTableOrViewInDifferentSchemas.message(&quot;VIEW&quot;, table));</b>
+<i class="no-highlight">1042</i>&nbsp;                }
+<i class="no-highlight">1043</i>&nbsp;            }
+<b class="fc"><i class="no-highlight">1044</i>&nbsp;            if (!found) {</b>
+<b class="fc"><i class="no-highlight">1045</i>&nbsp;                throw new PersismException(Message.CouldNotFindViewNameInTheDatabase.message(tableName, objectClass.getName()));</b>
+<i class="no-highlight">1046</i>&nbsp;            }
+<b class="fc"><i class="no-highlight">1047</i>&nbsp;        } else {</b>
+<b class="fc"><i class="no-highlight">1048</i>&nbsp;            foundInfo = guessTableOrView(objectClass);</b>
+<i class="no-highlight">1049</i>&nbsp;        }
+<b class="fc"><i class="no-highlight">1050</i>&nbsp;        tableOrViewMap.put(objectClass, foundInfo);</b>
+<b class="fc"><i class="no-highlight">1051</i>&nbsp;        return foundInfo;</b>
+<i class="no-highlight">1052</i>&nbsp;    }
+<i class="no-highlight">1053</i>&nbsp;
+<i class="no-highlight">1054</i>&nbsp;    // Returns the table/view name found in the DB in the same case as in the DB.
+<i class="no-highlight">1055</i>&nbsp;    // throws PersismException if we cannot guess any table/view name for this class.
+<i class="no-highlight">1056</i>&nbsp;    private &lt;T&gt; TableInfo guessTableOrView(Class&lt;T&gt; objectClass) throws PersismException {
+<b class="fc"><i class="no-highlight">1057</i>&nbsp;        Set&lt;String&gt; guesses = new LinkedHashSet&lt;&gt;(6); // guess order is important</b>
+<b class="fc"><i class="no-highlight">1058</i>&nbsp;        List&lt;TableInfo&gt; guessedTables = new ArrayList&lt;&gt;(6);</b>
+<i class="no-highlight">1059</i>&nbsp;
+<b class="fc"><i class="no-highlight">1060</i>&nbsp;        String className = objectClass.getSimpleName();</b>
+<i class="no-highlight">1061</i>&nbsp;
+<i class="no-highlight">1062</i>&nbsp;        Set&lt;TableInfo&gt; list;
+<b class="fc"><i class="no-highlight">1063</i>&nbsp;        boolean isView = false;</b>
+<b class="fc"><i class="no-highlight">1064</i>&nbsp;        if (objectClass.getAnnotation(View.class) != null) {</b>
+<b class="fc"><i class="no-highlight">1065</i>&nbsp;            list = views;</b>
+<b class="fc"><i class="no-highlight">1066</i>&nbsp;            isView = true;</b>
+<i class="no-highlight">1067</i>&nbsp;        } else {
+<b class="fc"><i class="no-highlight">1068</i>&nbsp;            list = tables;</b>
+<i class="no-highlight">1069</i>&nbsp;        }
+<i class="no-highlight">1070</i>&nbsp;
+<b class="fc"><i class="no-highlight">1071</i>&nbsp;        addTableGuesses(className, guesses);</b>
+<b class="fc"><i class="no-highlight">1072</i>&nbsp;        for (TableInfo table : list) {</b>
+<b class="fc"><i class="no-highlight">1073</i>&nbsp;            for (String guess : guesses) {</b>
+<b class="fc"><i class="no-highlight">1074</i>&nbsp;                if (guess.equalsIgnoreCase(table.name())) {</b>
+<b class="fc"><i class="no-highlight">1075</i>&nbsp;                    guessedTables.add(table);</b>
+<i class="no-highlight">1076</i>&nbsp;                }
+<b class="fc"><i class="no-highlight">1077</i>&nbsp;            }</b>
+<b class="fc"><i class="no-highlight">1078</i>&nbsp;        }</b>
+<b class="fc"><i class="no-highlight">1079</i>&nbsp;        if (guessedTables.size() == 0) {</b>
+<b class="fc"><i class="no-highlight">1080</i>&nbsp;            throw new PersismException(Message.CouldNotDetermineTableOrViewForType.message(isView ? &quot;view&quot; : &quot;table&quot;, objectClass.getName(), guesses));</b>
+<i class="no-highlight">1081</i>&nbsp;        }
+<i class="no-highlight">1082</i>&nbsp;
+<b class="fc"><i class="no-highlight">1083</i>&nbsp;        if (guessedTables.size() &gt; 1) {</b>
+<b class="fc"><i class="no-highlight">1084</i>&nbsp;            Set&lt;String&gt; multipleGuesses = new TreeSet&lt;&gt;(String.CASE_INSENSITIVE_ORDER);</b>
+<b class="fc"><i class="no-highlight">1085</i>&nbsp;            multipleGuesses.addAll(guessedTables.stream().map(TableInfo::name).toList());</b>
+<b class="fc"><i class="no-highlight">1086</i>&nbsp;            throw new PersismException(Message.CouldNotDetermineTableOrViewForTypeMultipleMatches.message(isView ? &quot;view&quot; : &quot;table&quot;, objectClass.getName(), guesses, multipleGuesses));</b>
+<i class="no-highlight">1087</i>&nbsp;        }
+<b class="fc"><i class="no-highlight">1088</i>&nbsp;        return guessedTables.get(0);</b>
+<i class="no-highlight">1089</i>&nbsp;    }
+<i class="no-highlight">1090</i>&nbsp;
+<i class="no-highlight">1091</i>&nbsp;    private void addTableGuesses(String className, Collection&lt;String&gt; guesses) {
+<i class="no-highlight">1092</i>&nbsp;        // PascalCasing class name should make
+<i class="no-highlight">1093</i>&nbsp;        // PascalCasing
+<i class="no-highlight">1094</i>&nbsp;        // PascalCasings
+<i class="no-highlight">1095</i>&nbsp;        // Pascal Casing
+<i class="no-highlight">1096</i>&nbsp;        // Pascal Casings
+<i class="no-highlight">1097</i>&nbsp;        // Pascal_Casing
+<i class="no-highlight">1098</i>&nbsp;        // Pascal_Casings
+<i class="no-highlight">1099</i>&nbsp;        // Order is important.
+<i class="no-highlight">1100</i>&nbsp;
+<i class="no-highlight">1101</i>&nbsp;        String guess;
+<i class="no-highlight">1102</i>&nbsp;        String pluralClassName;
+<b class="fc"><i class="no-highlight">1103</i>&nbsp;        String pluralClassName2 = null;</b>
+<i class="no-highlight">1104</i>&nbsp;
+<b class="fc"><i class="no-highlight">1105</i>&nbsp;        if (className.endsWith(&quot;y&quot;)) {</b>
+<i class="no-highlight">1106</i>&nbsp;            // supply - supplies, category - categories
+<b class="fc"><i class="no-highlight">1107</i>&nbsp;            pluralClassName = className.substring(0, className.length() - 1) + &quot;ies&quot;;</b>
+<b class="fc"><i class="no-highlight">1108</i>&nbsp;            pluralClassName2 = className + &quot;s&quot;; // holiday</b>
+<b class="fc"><i class="no-highlight">1109</i>&nbsp;        } else if (className.endsWith(&quot;x&quot;)) {</b>
+<i class="no-highlight">1110</i>&nbsp;            // tax - taxes, mailbox - mailboxes
+<b class="fc"><i class="no-highlight">1111</i>&nbsp;            pluralClassName = className + &quot;es&quot;;</b>
+<i class="no-highlight">1112</i>&nbsp;        } else {
+<b class="fc"><i class="no-highlight">1113</i>&nbsp;            pluralClassName = className + &quot;s&quot;;</b>
+<i class="no-highlight">1114</i>&nbsp;        }
+<i class="no-highlight">1115</i>&nbsp;
+<b class="fc"><i class="no-highlight">1116</i>&nbsp;        guesses.add(className);</b>
+<b class="fc"><i class="no-highlight">1117</i>&nbsp;        guesses.add(pluralClassName);</b>
+<b class="fc"><i class="no-highlight">1118</i>&nbsp;        if (pluralClassName2 != null) {</b>
+<b class="fc"><i class="no-highlight">1119</i>&nbsp;            guesses.add(pluralClassName2);</b>
+<i class="no-highlight">1120</i>&nbsp;        }
+<i class="no-highlight">1121</i>&nbsp;
+<b class="fc"><i class="no-highlight">1122</i>&nbsp;        guess = camelToTitleCase(className);</b>
+<b class="fc"><i class="no-highlight">1123</i>&nbsp;        guesses.add(guess); // name with spaces</b>
+<b class="fc"><i class="no-highlight">1124</i>&nbsp;        guesses.add(guess.replaceAll(&quot; &quot;, &quot;_&quot;)); // name with spaces changed to _</b>
+<i class="no-highlight">1125</i>&nbsp;
+<b class="fc"><i class="no-highlight">1126</i>&nbsp;        guess = camelToTitleCase(pluralClassName);</b>
+<b class="fc"><i class="no-highlight">1127</i>&nbsp;        guesses.add(guess); // plural name with spaces</b>
+<b class="fc"><i class="no-highlight">1128</i>&nbsp;        guesses.add(guess.replaceAll(&quot; &quot;, &quot;_&quot;)); // plural name with spaces changed to _</b>
+<i class="no-highlight">1129</i>&nbsp;
+<b class="fc"><i class="no-highlight">1130</i>&nbsp;        if (pluralClassName2 != null) {</b>
+<b class="fc"><i class="no-highlight">1131</i>&nbsp;            guess = camelToTitleCase(pluralClassName2);</b>
+<b class="fc"><i class="no-highlight">1132</i>&nbsp;            guesses.add(guess); // plural name with spaces</b>
+<b class="fc"><i class="no-highlight">1133</i>&nbsp;            guesses.add(guess.replaceAll(&quot; &quot;, &quot;_&quot;)); // plural name with spaces changed to _</b>
+<i class="no-highlight">1134</i>&nbsp;        }
+<i class="no-highlight">1135</i>&nbsp;    }
+<i class="no-highlight">1136</i>&nbsp;
+<i class="no-highlight">1137</i>&nbsp;    List&lt;String&gt; getPrimaryKeys(Class&lt;?&gt; objectClass, Connection connection) throws PersismException {
+<i class="no-highlight">1138</i>&nbsp;        // todo cache? called by Session and SessionHelper.
+<i class="no-highlight">1139</i>&nbsp;        // ensures meta-data will be available because this method could be called before getting the table info object
+<b class="fc"><i class="no-highlight">1140</i>&nbsp;        TableInfo tableInfo = getTableInfo(objectClass);</b>
+<i class="no-highlight">1141</i>&nbsp;
+<b class="fc"><i class="no-highlight">1142</i>&nbsp;        List&lt;String&gt; primaryKeys = new ArrayList&lt;&gt;(4);</b>
+<b class="fc"><i class="no-highlight">1143</i>&nbsp;        Map&lt;String, ColumnInfo&gt; map = getColumns(objectClass, connection);</b>
+<b class="fc"><i class="no-highlight">1144</i>&nbsp;        for (ColumnInfo col : map.values()) {</b>
+<b class="fc"><i class="no-highlight">1145</i>&nbsp;            if (col.primary) {</b>
+<b class="fc"><i class="no-highlight">1146</i>&nbsp;                primaryKeys.add(col.columnName);</b>
+<i class="no-highlight">1147</i>&nbsp;            }
+<b class="fc"><i class="no-highlight">1148</i>&nbsp;        }</b>
+<b class="fc"><i class="no-highlight">1149</i>&nbsp;        if (log.isDebugEnabled()) {</b>
+<b class="fc"><i class="no-highlight">1150</i>&nbsp;            log.debug(&quot;getPrimaryKeys for %s %s&quot;, tableInfo.name(), primaryKeys);</b>
+<i class="no-highlight">1151</i>&nbsp;        }
+<b class="fc"><i class="no-highlight">1152</i>&nbsp;        return primaryKeys;</b>
+<i class="no-highlight">1153</i>&nbsp;    }
+<i class="no-highlight">1154</i>&nbsp;
+<i class="no-highlight">1155</i>&nbsp;    ConnectionType getConnectionType() {
+<b class="fc"><i class="no-highlight">1156</i>&nbsp;        return connectionType;</b>
+<i class="no-highlight">1157</i>&nbsp;    }
+<i class="no-highlight">1158</i>&nbsp;
+<i class="no-highlight">1159</i>&nbsp;}
 </div>
 </pre>
 </div>
@@ -104,7 +1258,7 @@ Current scope:     <a href="../../index.html">all classes</a>
 
 <div class="footer">
     
-    <div style="float:right;">generated on 2022-03-27 14:08</div>
+    <div style="float:right;">generated on 2022-09-16 07:41</div>
 </div>
 </body>
 </html>

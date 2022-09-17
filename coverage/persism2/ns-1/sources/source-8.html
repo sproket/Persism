@@ -4,7 +4,7 @@
 <!DOCTYPE html>
 <html id="htmlId">
 <head>
-  <title>Coverage Report > Messages</title>
+  <title>Coverage Report > Log</title>
   <style type="text/css">
     @import "../../css/coverage.css";
     @import "../../css/highlight-idea.css";
@@ -20,15 +20,12 @@ Current scope:     <a href="../../index.html">all classes</a>
     <a href="../index.html">net.sf.persism</a>
 </div>
 
-<h1>Coverage Summary for Class: Messages (net.sf.persism)</h1>
+<h1>Coverage Summary for Class: Log (net.sf.persism)</h1>
 
 <table class="coverageStats">
+
 <tr>
   <th class="name">Class</th>
-<th class="coverageStat 
-">
-  Class, %
-</th>
 <th class="coverageStat 
 ">
   Method, %
@@ -39,7 +36,26 @@ Current scope:     <a href="../../index.html">all classes</a>
 </th>
 </tr>
 <tr>
-  <td class="name">Messages</td>
+  <td class="name">Log</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (19/19)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    77.6%
+  </span>
+  <span class="absValue">
+    (45/58)
+  </span>
+</td>
+</tr>
+  <tr>
+    <td class="name">Log$1</td>
 <td class="coverageStat">
   <span class="percent">
     100%
@@ -53,19 +69,29 @@ Current scope:     <a href="../../index.html">all classes</a>
     100%
   </span>
   <span class="absValue">
-    (4/4)
+    (1/1)
   </span>
 </td>
+  </tr>
+<tr>
+  <td class="name"><strong>Total</strong></td>
 <td class="coverageStat">
   <span class="percent">
     100%
   </span>
   <span class="absValue">
-    (54/54)
+    (20/20)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    78%
+  </span>
+  <span class="absValue">
+    (46/59)
   </span>
 </td>
 </tr>
-
 </table>
 
 <br/>
@@ -75,74 +101,163 @@ Current scope:     <a href="../../index.html">all classes</a>
 <pre>
 <div class="sourceCode" id="sourceCode"><i class="no-highlight">1</i>&nbsp;package net.sf.persism;
 <i class="no-highlight">2</i>&nbsp;
-<b class="fc"><i class="no-highlight">3</i>&nbsp;enum Messages {</b>
-<i class="no-highlight">4</i>&nbsp;    // Errors
-<b class="fc"><i class="no-highlight">5</i>&nbsp;    ObjectNotProperlyInitialized(&quot;Object %s was not properly initialized. Some properties not initialized in the queried columns (%s)&quot;),</b>
-<b class="fc"><i class="no-highlight">6</i>&nbsp;    ObjectNotProperlyInitializedByQuery(&quot;Object %s was not properly initialized. Some properties not initialized by the queried columns: %s  Missing: %s&quot;),</b>
-<b class="fc"><i class="no-highlight">7</i>&nbsp;    IllegalArgumentReadingColumn(&quot;Illegal Argument occurred setting property: %s. Object %s. Column: %s Type of property: %s - Type read: %s VALUE: %s&quot;),</b>
-<b class="fc"><i class="no-highlight">8</i>&nbsp;    NumberFormatException(&quot;NumberFormatException: Column: %s Type of property: %s - Type read: %s VALUE: %s&quot;),</b>
-<b class="fc"><i class="no-highlight">9</i>&nbsp;    DateFormatException(&quot;%s. Column: %s Target Conversion: %s - Type read: %s VALUE: %s&quot;),</b>
-<b class="fc"><i class="no-highlight">10</i>&nbsp;    ReadRecordColumnNotFound(&quot;readRecord: Could not find column in the SQL query for class: %s. Missing column: %s&quot;),</b>
-<b class="fc"><i class="no-highlight">11</i>&nbsp;    ReadRecordCouldNotInstantiate(&quot;readRecord: Could instantiate the constructor for: %s (%s)&quot;),</b>
-<b class="fc"><i class="no-highlight">12</i>&nbsp;    TableHasNoPrimaryKeys(&quot;Cannot perform %s - %s has no primary keys&quot;),</b>
-<b class="fc"><i class="no-highlight">13</i>&nbsp;    TableHasNoPrimaryKeysForWhere(&quot;Could not determine WHERE clause for %s. No primary keys detected&quot;),</b>
-<b class="fc"><i class="no-highlight">14</i>&nbsp;    ClassHasNoGetterForProperty(&quot;Class %s has no getter for property %s&quot;),</b>
-<b class="fc"><i class="no-highlight">15</i>&nbsp;    NonAutoIncGeneratedNotSupported(&quot;Non-auto inc generated primary keys are not supported. Please assign your primary key value before performing an insert&quot;),</b>
-<b class="fc"><i class="no-highlight">16</i>&nbsp;    CouldNotFindTableNameInTheDatabase(&quot;Could not find a Table in the database named %s. Check the @Table annotation on %s&quot;),</b>
-<b class="fc"><i class="no-highlight">17</i>&nbsp;    CouldNotFindViewNameInTheDatabase(&quot;Could not find a View in the database named %s. Check the @View annotation on %s&quot;),</b>
-<b class="fc"><i class="no-highlight">18</i>&nbsp;    CouldNotDetermineTableOrViewForType(&quot;Could not determine a %s for type: %s Guesses were: %s&quot;),</b>
-<b class="fc"><i class="no-highlight">19</i>&nbsp;    CouldNotDetermineTableOrViewForTypeMultipleMatches(&quot;Could not determine a %s for type: %s Guesses were: %s and we found multiple matching: %s&quot;),</b>
-<b class="fc"><i class="no-highlight">20</i>&nbsp;    CouldNotFindConstructorForRecord(&quot;findConstructor: Could not find a constructor for class: %s properties: %s&quot;),</b>
-<b class="fc"><i class="no-highlight">21</i>&nbsp;    OperationNotSupportedForView(&quot;s: %s operation not supported for Views&quot;),</b>
-<b class="fc"><i class="no-highlight">22</i>&nbsp;    OperationNotSupportedForNotTableQuery(&quot;%s: %s operation not supported for @NotTable classes&quot;),</b>
-<b class="fc"><i class="no-highlight">23</i>&nbsp;    OperationNotSupportedForJavaType(&quot;%s: %s operation not supported for Java types&quot;),</b>
-<b class="fc"><i class="no-highlight">24</i>&nbsp;    OperationNotSupportedForRecord(&quot;%s: %s operation not supported for record types&quot;),</b>
-<b class="fc"><i class="no-highlight">25</i>&nbsp;    WhereNotSupportedForNotTableQueries(&quot;WHERE clause not supported for Queries (using @NotTable). If this is a View annotate the class as @View&quot;),</b>
-<b class="fc"><i class="no-highlight">26</i>&nbsp;    QueryParameterNamesMissingOrNotFound(&quot;Parameters missing or not found %s mistyped: %s&quot;),</b>
-<b class="fc"><i class="no-highlight">27</i>&nbsp;    QueryPropertyNamesMissingOrNotFound(&quot;Properties missing or not found %s SQL: %s&quot;),</b>
-<b class="fc"><i class="no-highlight">28</i>&nbsp;    CannotNotJoinToNullProperty(&quot;Cannot join to null for property: %s. Instantiate the property as a modifiable collection in your constructor.&quot;),</b>
-<b class="fc"><i class="no-highlight">29</i>&nbsp;    PropertyNotFoundForJoin(&quot;Join property %s not found in %s&quot;),</b>
-<b class="fc"><i class="no-highlight">30</i>&nbsp;    PropertyCountMismatchForJoin(&quot;You need the same number of Properties on both sides of a join %s %s vs %s&quot;),</b>
-<i class="no-highlight">31</i>&nbsp;
+<i class="no-highlight">3</i>&nbsp;
+<i class="no-highlight">4</i>&nbsp;import net.sf.persism.logging.*;
+<i class="no-highlight">5</i>&nbsp;
+<i class="no-highlight">6</i>&nbsp;import java.util.*;
+<i class="no-highlight">7</i>&nbsp;import java.util.concurrent.ConcurrentHashMap;
+<i class="no-highlight">8</i>&nbsp;
+<i class="no-highlight">9</i>&nbsp;/**
+<i class="no-highlight">10</i>&nbsp; * Logging wrapper to avoid runtime dependencies.
+<i class="no-highlight">11</i>&nbsp; * It will use slf4j if available or log4j if available otherwise it falls back to JUL (java.util.logging).
+<i class="no-highlight">12</i>&nbsp; * &lt;p/&gt;
+<i class="no-highlight">13</i>&nbsp; * JUL will use the default java logging.properties
+<i class="no-highlight">14</i>&nbsp; * log4j will use log4j.properties
+<i class="no-highlight">15</i>&nbsp; * slf4j will use logback.xml
+<i class="no-highlight">16</i>&nbsp; * &lt;p/&gt;
+<i class="no-highlight">17</i>&nbsp; * log4j DEBUG maps to JUL FINE
+<i class="no-highlight">18</i>&nbsp; * log4j ERROR maps to JUL SEVERE
+<i class="no-highlight">19</i>&nbsp; * &lt;p/&gt;
+<i class="no-highlight">20</i>&nbsp; * The class includes an overloaded error method to log stack traces as well as the message.
+<i class="no-highlight">21</i>&nbsp; *
+<i class="no-highlight">22</i>&nbsp; * @author Dan Howard
+<i class="no-highlight">23</i>&nbsp; * @since 4/21/12 6:47 AM
+<i class="no-highlight">24</i>&nbsp; */
+<i class="no-highlight">25</i>&nbsp;final class Log {
+<i class="no-highlight">26</i>&nbsp;
+<i class="no-highlight">27</i>&nbsp;    private AbstractLogger logger;
+<i class="no-highlight">28</i>&nbsp;
+<b class="fc"><i class="no-highlight">29</i>&nbsp;    private static final Map&lt;String, Log&gt; loggers = new ConcurrentHashMap&lt;String, Log&gt;(12);</b>
+<i class="no-highlight">30</i>&nbsp;
+<b class="fc"><i class="no-highlight">31</i>&nbsp;    private static final List&lt;String&gt; warnings = new ArrayList&lt;&gt;(32);</b>
 <i class="no-highlight">32</i>&nbsp;
-<i class="no-highlight">33</i>&nbsp;    // WARNINGS
-<b class="fc"><i class="no-highlight">34</i>&nbsp;    UnknownConnectionType(&quot;Unknown connection type. Please contact Persism to add support for %s&quot;),</b>
-<b class="fc"><i class="no-highlight">35</i>&nbsp;    NoPropertyFoundForColumn(&quot;No property found for column: %s class: %s&quot;),</b>
-<b class="fc"><i class="no-highlight">36</i>&nbsp;    ColumnAnnotatedAsAutoIncButNAN(&quot;Column %s is annotated as auto-increment but it is not a number type (%s)&quot;),</b>
-<b class="fc"><i class="no-highlight">37</i>&nbsp;    DatabaseMetaDataCouldNotFindPrimaryKeys(&quot;DatabaseMetaData could not find primary keys for table %s&quot;),</b>
-<b class="fc"><i class="no-highlight">38</i>&nbsp;    DatabaseMetaDataCouldNotFindColumns(&quot;DatabaseMetaData could not find columns for table %s!&quot;),</b>
-<b class="fc"><i class="no-highlight">39</i>&nbsp;    NoPrimaryKeyFoundForTable(&quot;No primary key found for table %s. Do not use with update/delete/fetch or add a primary key&quot;),</b>
-<b class="fc"><i class="no-highlight">40</i>&nbsp;    NoConversionForUnknownType(&quot;Conversion: Unknown type: %s - no conversion performed&quot;),</b>
-<b class="fc"><i class="no-highlight">41</i>&nbsp;    TinyIntMSSQL(&quot;COLUMN: %s: MSSQL Sees tinyint as 0 - 254 - Others -127 - +127 - no conversion performed - recommend changing it to SMALLINT/Short&quot;),</b>
-<b class="fc"><i class="no-highlight">42</i>&nbsp;    PossibleOverflow(&quot;Possible overflow column %s - Target type is %s and Value type is %s&quot;),</b>
-<b class="fc"><i class="no-highlight">43</i>&nbsp;    PropertyShouldBeAnObjectType(&quot;Property %s for column %s for class %s should be an Object type to properly detect NULL for defaults (change it from the primitive type to its Boxed version)&quot;),</b>
-<b class="fc"><i class="no-highlight">44</i>&nbsp;    SettersFoundInReadOnlyObject(&quot;Setters found in read only object %s %s&quot;),</b>
-<b class="fc"><i class="no-highlight">45</i>&nbsp;    UnknownSQLType(&quot;Convert: Unknown SQL TYPE: %s&quot;),</b>
-<b class="fc"><i class="no-highlight">46</i>&nbsp;    ConverterValueTypeNotYetSupported(&quot;%s not yet supported&quot;),</b>
-<b class="fc"><i class="no-highlight">47</i>&nbsp;    ConverterDoNotUseClobOrBlobAsAPropertyType(&quot;Usually you should not use blob or clob as a property type on a POJO. Blob maps to byteArray, Clob maps to String&quot;),</b>
-<b class="fc"><i class="no-highlight">48</i>&nbsp;    ColumnTypeNotKnownForSQLType(&quot;Column type not known for SQL type %s. Reading column: %s as Object&quot;),</b>
-<b class="fc"><i class="no-highlight">49</i>&nbsp;    InappropriateMethodUsedForSQLTypeInstance(&quot;%s It seems you&#39;re using the %s method with %s. You might prefer to use the %s method instead for better &#39;Find Usages&#39;&quot;),</b>
-<b class="fc"><i class="no-highlight">50</i>&nbsp;    UnknownTypeForPrimaryGeneratedKey(&quot;Unknown type for primary/generated key: %s. using getObject&quot;),</b>
-<b class="fc"><i class="no-highlight">51</i>&nbsp;    UnknownTypeInSetParameters(&quot;setParameters: Unknown type: %s&quot;),</b>
-<b class="fc"><i class="no-highlight">52</i>&nbsp;    UnSupportedTypeInSetParameters(&quot;setParameters: %s type not supported yet. We&#39;re probably about to fail.....&quot;),</b>
-<b class="fc"><i class="no-highlight">53</i>&nbsp;    ParametersDoNotUseClobOrBlob(&quot;Usually you should not use blob or clob as an SQL parameter type. Blob maps to byteArray, Clob maps to String&quot;),</b>
-<b class="fc"><i class="no-highlight">54</i>&nbsp;    NamedParametersUsedWithStoredProc(&quot;Using named parameters with a stored proc doesn&#39;t buy you anything...&quot;),</b>
-<b class="fc"><i class="no-highlight">55</i>&nbsp;    PrimaryAnnotationOnViewOrQueryMakesNoSense(&quot;Primary annotation on %s:%s is only useful on POJOs for tables. Not for queries or views.&quot;),</b>
-<i class="no-highlight">56</i>&nbsp;    ;
-<i class="no-highlight">57</i>&nbsp;
-<i class="no-highlight">58</i>&nbsp;    private final String message;
-<i class="no-highlight">59</i>&nbsp;
-<b class="fc"><i class="no-highlight">60</i>&nbsp;    Messages(String message) {</b>
-<b class="fc"><i class="no-highlight">61</i>&nbsp;        this.message = message;</b>
-<i class="no-highlight">62</i>&nbsp;    }
-<i class="no-highlight">63</i>&nbsp;
-<i class="no-highlight">64</i>&nbsp;    public String message(Object... params) {
-<b class="fc"><i class="no-highlight">65</i>&nbsp;        if (params.length == 0) {</b>
-<b class="fc"><i class="no-highlight">66</i>&nbsp;            return message;</b>
-<i class="no-highlight">67</i>&nbsp;        }
-<b class="fc"><i class="no-highlight">68</i>&nbsp;        return String.format(message, params);</b>
-<i class="no-highlight">69</i>&nbsp;    }
-<i class="no-highlight">70</i>&nbsp;}
+<b class="fc"><i class="no-highlight">33</i>&nbsp;    public Log(String logName, LogMode logMode) {</b>
+<b class="fc"><i class="no-highlight">34</i>&nbsp;        switch (logMode) {</b>
+<i class="no-highlight">35</i>&nbsp;            case SLF4J -&gt; {
+<b class="nc"><i class="no-highlight">36</i>&nbsp;                logger = new Slf4jLogger(logName);</b>
+<b class="nc"><i class="no-highlight">37</i>&nbsp;            }</b>
+<i class="no-highlight">38</i>&nbsp;            case LOG4J2 -&gt; {
+<b class="fc"><i class="no-highlight">39</i>&nbsp;                logger = new Log4j2Logger(logName);</b>
+<b class="fc"><i class="no-highlight">40</i>&nbsp;            }</b>
+<i class="no-highlight">41</i>&nbsp;            case LOG4J -&gt; {
+<b class="fc"><i class="no-highlight">42</i>&nbsp;                logger = new Log4jLogger(logName);</b>
+<b class="fc"><i class="no-highlight">43</i>&nbsp;            }</b>
+<i class="no-highlight">44</i>&nbsp;            case JUL -&gt; {
+<b class="fc"><i class="no-highlight">45</i>&nbsp;                logger = new JulLogger(logName);</b>
+<i class="no-highlight">46</i>&nbsp;            }
+<i class="no-highlight">47</i>&nbsp;        }
+<i class="no-highlight">48</i>&nbsp;    }
+<i class="no-highlight">49</i>&nbsp;
+<b class="fc"><i class="no-highlight">50</i>&nbsp;    Log(String logName) {</b>
+<i class="no-highlight">51</i>&nbsp;        try {
+<b class="fc"><i class="no-highlight">52</i>&nbsp;            Class.forName(&quot;org.slf4j.Logger&quot;);</b>
+<b class="fc"><i class="no-highlight">53</i>&nbsp;            logger = new Slf4jLogger(logName);</b>
+<b class="nc"><i class="no-highlight">54</i>&nbsp;        } catch (ClassNotFoundException e) {</b>
+<i class="no-highlight">55</i>&nbsp;            try {
+<b class="nc"><i class="no-highlight">56</i>&nbsp;                Class.forName(&quot;org.apache.log4j.Logger&quot;);</b>
+<b class="nc"><i class="no-highlight">57</i>&nbsp;                logger = new Log4jLogger(logName);</b>
+<b class="nc"><i class="no-highlight">58</i>&nbsp;            } catch (ClassNotFoundException e1) {</b>
+<i class="no-highlight">59</i>&nbsp;                try {
+<b class="nc"><i class="no-highlight">60</i>&nbsp;                    Class.forName(&quot;org.apache.logging.log4j.Logger&quot;);</b>
+<b class="nc"><i class="no-highlight">61</i>&nbsp;                    logger = new Log4j2Logger(logName);</b>
+<b class="nc"><i class="no-highlight">62</i>&nbsp;                } catch (ClassNotFoundException classNotFoundException) {</b>
+<b class="nc"><i class="no-highlight">63</i>&nbsp;                    logger = new JulLogger(logName);</b>
+<b class="nc"><i class="no-highlight">64</i>&nbsp;                }</b>
+<b class="nc"><i class="no-highlight">65</i>&nbsp;            }</b>
+<b class="fc"><i class="no-highlight">66</i>&nbsp;        }</b>
+<i class="no-highlight">67</i>&nbsp;    }
+<i class="no-highlight">68</i>&nbsp;
+<i class="no-highlight">69</i>&nbsp;    void warnNoDuplicates(String message) {
+<b class="fc"><i class="no-highlight">70</i>&nbsp;        String additional = &quot;&quot;;</b>
+<i class="no-highlight">71</i>&nbsp;
+<b class="fc"><i class="no-highlight">72</i>&nbsp;        Throwable throwable = new Throwable(&quot;&quot;);</b>
+<i class="no-highlight">73</i>&nbsp;        // This finds the stack element for the user&#39;s package name - should be the source of the call to include in the message
+<b class="fc"><i class="no-highlight">74</i>&nbsp;        Optional&lt;StackTraceElement&gt; opt = Arrays.stream(throwable.getStackTrace()).</b>
+<b class="fc"><i class="no-highlight">75</i>&nbsp;                filter(e -&gt; !e.getClassName().startsWith(&quot;net.sf.persism&quot;)).findFirst();</b>
+<i class="no-highlight">76</i>&nbsp;
+<b class="fc"><i class="no-highlight">77</i>&nbsp;        if (opt.isPresent()) {</b>
+<b class="fc"><i class="no-highlight">78</i>&nbsp;            additional = opt.get().toString().trim();</b>
+<i class="no-highlight">79</i>&nbsp;        }
+<i class="no-highlight">80</i>&nbsp;
+<b class="fc"><i class="no-highlight">81</i>&nbsp;        String msg = message + &quot; &quot; + additional;</b>
+<b class="fc"><i class="no-highlight">82</i>&nbsp;        if (!warnings.contains(msg)) {</b>
+<b class="fc"><i class="no-highlight">83</i>&nbsp;            warnings.add(msg);</b>
+<b class="fc"><i class="no-highlight">84</i>&nbsp;            warn(msg);</b>
+<i class="no-highlight">85</i>&nbsp;        }
+<i class="no-highlight">86</i>&nbsp;    }
+<i class="no-highlight">87</i>&nbsp;
+<i class="no-highlight">88</i>&nbsp;    public static Log getLogger(Class&lt;?&gt; logName) {
+<b class="fc"><i class="no-highlight">89</i>&nbsp;        return getLogger(logName.getName());</b>
+<i class="no-highlight">90</i>&nbsp;    }
+<i class="no-highlight">91</i>&nbsp;
+<i class="no-highlight">92</i>&nbsp;    // for unit tests
+<i class="no-highlight">93</i>&nbsp;    static Log getLogger(Class&lt;?&gt; logName, LogMode logMode) {
+<b class="fc"><i class="no-highlight">94</i>&nbsp;        if (loggers.containsKey(logName.getName())) {</b>
+<b class="nc"><i class="no-highlight">95</i>&nbsp;            return loggers.get(logName.getName());</b>
+<i class="no-highlight">96</i>&nbsp;        }
+<b class="fc"><i class="no-highlight">97</i>&nbsp;        Log log = new Log(logName.getName(), logMode);</b>
+<b class="fc"><i class="no-highlight">98</i>&nbsp;        loggers.put(logName.getName(), log);</b>
+<b class="fc"><i class="no-highlight">99</i>&nbsp;        return log;</b>
+<i class="no-highlight">100</i>&nbsp;    }
+<i class="no-highlight">101</i>&nbsp;
+<i class="no-highlight">102</i>&nbsp;    public static Log getLogger(String logName) {
+<b class="fc"><i class="no-highlight">103</i>&nbsp;        if (loggers.containsKey(logName)) {</b>
+<b class="fc"><i class="no-highlight">104</i>&nbsp;            return loggers.get(logName);</b>
+<i class="no-highlight">105</i>&nbsp;        }
+<b class="fc"><i class="no-highlight">106</i>&nbsp;        Log log = new Log(logName);</b>
+<b class="fc"><i class="no-highlight">107</i>&nbsp;        loggers.put(logName, log);</b>
+<b class="fc"><i class="no-highlight">108</i>&nbsp;        return log;</b>
+<i class="no-highlight">109</i>&nbsp;    }
+<i class="no-highlight">110</i>&nbsp;
+<i class="no-highlight">111</i>&nbsp;    List&lt;String&gt; warnings() {
+<b class="fc"><i class="no-highlight">112</i>&nbsp;        return warnings;</b>
+<i class="no-highlight">113</i>&nbsp;    }
+<i class="no-highlight">114</i>&nbsp;
+<i class="no-highlight">115</i>&nbsp;
+<i class="no-highlight">116</i>&nbsp;    public boolean isDebugEnabled() {
+<b class="fc"><i class="no-highlight">117</i>&nbsp;        return logger.isDebugEnabled();</b>
+<i class="no-highlight">118</i>&nbsp;    }
+<i class="no-highlight">119</i>&nbsp;
+<i class="no-highlight">120</i>&nbsp;    public void debug(Object message) {
+<b class="fc"><i class="no-highlight">121</i>&nbsp;        logger.debug(message);</b>
+<i class="no-highlight">122</i>&nbsp;    }
+<i class="no-highlight">123</i>&nbsp;
+<i class="no-highlight">124</i>&nbsp;    public void debug(Object message, Object... params) {
+<b class="fc"><i class="no-highlight">125</i>&nbsp;        logger.debug(message, params);</b>
+<i class="no-highlight">126</i>&nbsp;    }
+<i class="no-highlight">127</i>&nbsp;
+<i class="no-highlight">128</i>&nbsp;    public void info(Object message) {
+<b class="fc"><i class="no-highlight">129</i>&nbsp;        logger.info(message);</b>
+<i class="no-highlight">130</i>&nbsp;    }
+<i class="no-highlight">131</i>&nbsp;
+<i class="no-highlight">132</i>&nbsp;    public void info(Object message, Throwable t) {
+<b class="fc"><i class="no-highlight">133</i>&nbsp;        logger.info(message, t);</b>
+<i class="no-highlight">134</i>&nbsp;    }
+<i class="no-highlight">135</i>&nbsp;
+<i class="no-highlight">136</i>&nbsp;    public void warn(Object message) {
+<b class="fc"><i class="no-highlight">137</i>&nbsp;        logger.warn(message);</b>
+<i class="no-highlight">138</i>&nbsp;    }
+<i class="no-highlight">139</i>&nbsp;
+<i class="no-highlight">140</i>&nbsp;    public void warn(Object message, Throwable t) {
+<b class="fc"><i class="no-highlight">141</i>&nbsp;        logger.warn(message, t);</b>
+<i class="no-highlight">142</i>&nbsp;    }
+<i class="no-highlight">143</i>&nbsp;
+<i class="no-highlight">144</i>&nbsp;    public void error(Object message) {
+<b class="fc"><i class="no-highlight">145</i>&nbsp;        logger.error(message);</b>
+<i class="no-highlight">146</i>&nbsp;    }
+<i class="no-highlight">147</i>&nbsp;
+<i class="no-highlight">148</i>&nbsp;    public void error(Object message, Throwable t) {
+<b class="fc"><i class="no-highlight">149</i>&nbsp;        logger.error(message, t);</b>
+<i class="no-highlight">150</i>&nbsp;    }
+<i class="no-highlight">151</i>&nbsp;
+<i class="no-highlight">152</i>&nbsp;    public LogMode getLogMode() {
+<b class="fc"><i class="no-highlight">153</i>&nbsp;        return logger.getLogMode();</b>
+<i class="no-highlight">154</i>&nbsp;    }
+<i class="no-highlight">155</i>&nbsp;
+<i class="no-highlight">156</i>&nbsp;    public String getLogName() {
+<b class="fc"><i class="no-highlight">157</i>&nbsp;        return logger.getLogName();</b>
+<i class="no-highlight">158</i>&nbsp;    }
+<i class="no-highlight">159</i>&nbsp;}
 </div>
 </pre>
 </div>
@@ -169,7 +284,7 @@ Current scope:     <a href="../../index.html">all classes</a>
 
 <div class="footer">
     
-    <div style="float:right;">generated on 2022-03-27 14:08</div>
+    <div style="float:right;">generated on 2022-09-16 07:41</div>
 </div>
 </body>
 </html>

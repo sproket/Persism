@@ -562,15 +562,7 @@ Here's an example logback configuration for logging with Persism:
     <logger name="org" level="ERROR"/>
     <logger name="net" level="ERROR"/>
     <logger name="net.sf.persism" level="WARN"/>
-
-    <!-- These can be used for JDBC level logging -->
-    <!-- ERROR, WARN, INFO, DEBUG, OFF -->
-    <logger name="jdbc.sqlonly" level="OFF"/>
-    <logger name="jdbc.audit" level="OFF"/>
-    <logger name="jdbc.sqltiming" level="OFF"/>
-    <logger name="jdbc.connection" level="OFF"/>
-    <logger name="jdbc.resultset" level="OFF"/>
-    
+   
     <root level="INFO">
         <appender-ref ref="A1"/>
         <appender-ref ref="R"/>
@@ -582,7 +574,7 @@ Here's an example logback configuration for logging with Persism:
 
 [Cookbook: Implementing Persistable interface](cookbook-persistable.md)
 
-[Support for Java Records Java 16 - NEW!](records.md)
+[Using Persism with Java Records](records.md)
 
 ## Known Issues
 

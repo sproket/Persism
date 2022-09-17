@@ -1,4 +1,4 @@
-# Starting a new Project with Persism
+## ![](img/logo2.png)  Starting a new Project with Persism
 
 how to start a new project in inrellij and use the JPA tools to generate classes then clean them up
 

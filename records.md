@@ -1,4 +1,4 @@
-## Using Records with Persism
+## ![](img/logo2.png)  Using Records with Persism
 
 Records are an exiting new feature of Java 16 (previewed in 14 and 15) that allow us to write simple immutable 
 data classes with little ceremony. 

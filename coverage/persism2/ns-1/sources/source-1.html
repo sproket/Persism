@@ -88,7 +88,7 @@ Current scope:     <a href="../../index.html">all classes</a>
 <i class="no-highlight">13</i>&nbsp;
 <i class="no-highlight">14</i>&nbsp;    // SQLite - Date - comes back as StringType
 <i class="no-highlight">15</i>&nbsp;    // H2 - BIT - comes back NULL
-<i class="no-highlight">16</i>&nbsp;    Types columnType;
+<i class="no-highlight">16</i>&nbsp;    JavaType columnType;
 <i class="no-highlight">17</i>&nbsp;
 <i class="no-highlight">18</i>&nbsp;    // kept for possible future use
 <i class="no-highlight">19</i>&nbsp;    int sqlColumnType;
@@ -102,22 +102,26 @@ Current scope:     <a href="../../index.html">all classes</a>
 <i class="no-highlight">27</i>&nbsp;
 <i class="no-highlight">28</i>&nbsp;    boolean hasDefault;
 <i class="no-highlight">29</i>&nbsp;
-<i class="no-highlight">30</i>&nbsp;    int length; // for string to varchar length checking
-<i class="no-highlight">31</i>&nbsp;
-<i class="no-highlight">32</i>&nbsp;    @Override
-<i class="no-highlight">33</i>&nbsp;    public String toString() {
-<b class="fc"><i class="no-highlight">34</i>&nbsp;        return &quot;ColumnInfo{&quot; +</b>
-<i class="no-highlight">35</i>&nbsp;                &quot;columnName=&#39;&quot; + columnName + &#39;\&#39;&#39; +
-<i class="no-highlight">36</i>&nbsp;                &quot;, columnType=&quot; + columnType +
-<i class="no-highlight">37</i>&nbsp;                &quot;, sqlColumnType=&quot; + sqlColumnType +
-<i class="no-highlight">38</i>&nbsp;                &quot;, sqlColumnTypeName=&quot; + sqlColumnTypeName +
-<i class="no-highlight">39</i>&nbsp;                &quot;, autoIncrement=&quot; + autoIncrement +
-<i class="no-highlight">40</i>&nbsp;                &quot;, primary=&quot; + primary +
-<i class="no-highlight">41</i>&nbsp;                &quot;, hasDefault=&quot; + hasDefault +
-<i class="no-highlight">42</i>&nbsp;                &quot;, length=&quot; + length +
-<i class="no-highlight">43</i>&nbsp;                &#39;}&#39;;
-<i class="no-highlight">44</i>&nbsp;    }
-<i class="no-highlight">45</i>&nbsp;}
+<i class="no-highlight">30</i>&nbsp;    // Only set by annotation
+<i class="no-highlight">31</i>&nbsp;    boolean readOnly;
+<i class="no-highlight">32</i>&nbsp;
+<i class="no-highlight">33</i>&nbsp;    int length; // for string to varchar length checking
+<i class="no-highlight">34</i>&nbsp;
+<i class="no-highlight">35</i>&nbsp;    @Override
+<i class="no-highlight">36</i>&nbsp;    public String toString() {
+<b class="fc"><i class="no-highlight">37</i>&nbsp;        return &quot;ColumnInfo{&quot; +</b>
+<i class="no-highlight">38</i>&nbsp;                &quot;columnName=&#39;&quot; + columnName + &#39;\&#39;&#39; +
+<i class="no-highlight">39</i>&nbsp;                &quot;, columnType=&quot; + columnType +
+<i class="no-highlight">40</i>&nbsp;                &quot;, sqlColumnType=&quot; + sqlColumnType +
+<i class="no-highlight">41</i>&nbsp;                &quot;, sqlColumnTypeName=&quot; + sqlColumnTypeName +
+<i class="no-highlight">42</i>&nbsp;                &quot;, autoIncrement=&quot; + autoIncrement +
+<i class="no-highlight">43</i>&nbsp;                &quot;, primary=&quot; + primary +
+<i class="no-highlight">44</i>&nbsp;                &quot;, hasDefault=&quot; + hasDefault +
+<i class="no-highlight">45</i>&nbsp;               &quot;, readOnly=&quot; + readOnly +
+<i class="no-highlight">46</i>&nbsp;                &quot;, length=&quot; + length +
+<i class="no-highlight">47</i>&nbsp;                &#39;}&#39;;
+<i class="no-highlight">48</i>&nbsp;    }
+<i class="no-highlight">49</i>&nbsp;}
 </div>
 </pre>
 </div>
@@ -144,7 +148,7 @@ Current scope:     <a href="../../index.html">all classes</a>
 
 <div class="footer">
     
-    <div style="float:right;">generated on 2022-03-27 14:08</div>
+    <div style="float:right;">generated on 2022-09-16 07:41</div>
 </div>
 </body>
 </html>

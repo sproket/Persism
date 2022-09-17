@@ -1,4 +1,4 @@
-## Cookbook: Implementing Persistable interface
+## ![](img/logo2.png)  Cookbook: Implementing Persistable interface
 
 The purpose of the Persistable (or PersistableObject abstract class) is to allow Persism to be able to detect what 
 changes occur in your POJOs to only include changed columns in the SQL update statements. This can be important for 

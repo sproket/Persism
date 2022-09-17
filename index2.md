@@ -1,16 +1,16 @@
-[Current Version 2.1.0](release-notes.md)
+[Current Version 2.2.0](release-notes.md)
 
 <div style="float: right">
 <span style="font-weight: bold">By the numbers</span>
 <ul> 
 <li style="list-style-type:none;">
-100k in size
+100k jar
 </li>
 <li style="list-style-type:none;">
-300 unit tests
+439 unit tests
 </li>
 <li style="list-style-type:none;">
-90% code coverage
+96% code coverage
 </li>
 <li style="list-style-type:none;">
 11 supported dbs
@@ -23,7 +23,7 @@
 
 # ![](img/logo2.png) Welcome
 <hr>
-Persism is a simple, low ceremony, auto-discovery, auto-configuration, and convention over configuration ORM (Object Relational Mapping) library for Java.
+Persism is a light weight, auto-discovery, auto-configuration, and convention over configuration ORM (Object Relational Mapping) library for Java.
 <br>
 <br>
 
@@ -35,14 +35,14 @@ Persism is a simple, low ceremony, auto-discovery, auto-configuration, and conve
 
 ## Simple
 
-The API for Persism is small. Mostly you just need a Connection and a persism Session object, and you're good to go. 
-There are some optional annotations for mapping and a Persistable implementation for where you need to track changes to 
-properties for UPDATE statements, but that's about it.
+The API for Persism is small. Mostly you just need a Connection and a Persism Session object, and you're good to go.
+Your POJOs can have optional annotations for table and column names and can optionally implement a Persistable interface
+for where you need to track changes to properties for UPDATE statements.
 
 ## Auto-Discovery
-Persism figures things out for you. Create a table, write a JavaBean, run a query. 
-Persism uses simple mapping rules to find your table and column names and only requires 
-an annotation where it can’t match.
+Create a table, write a JavaBean, run a query. Persism uses simple mapping rules to
+find your table and column names and only requires an annotation where
+something is outside convention.
 
 ## Convention over configuration
 Persism requires no special configuration. Drop the JAR into your project and go.
@@ -62,7 +62,7 @@ Persism uses annotations as a fall back –
 annotate only when something is outside the conventions.
 
 ## Tiny
-Persism is about 100k and has *Zero* dependencies however it will utilize logging based on whatever is available 
+Persism is about 100k and has *zero* dependencies however it will utilize logging based on whatever is available 
 at runtime - SLF4J, LOG4J2, LOG4J or JUL.
 
 [SBOM Report - No vulnerable components found! :)](https://sbom.lift.sonatype.com/report/T1-a0368c8f29fdaa555824-66b418a0fe091-1648406946-e5c74ce579764856a8195d8633609be0)
@@ -84,6 +84,8 @@ at runtime - SLF4J, LOG4J2, LOG4J or JUL.
 [SELECT N+1 Problem?](n+1.md)
 
 [How to use the new @Join Annotation](join.md)
+
+[Using Persism with Modules](modules.md)
 
 Supported Databases
 

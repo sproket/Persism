@@ -4,7 +4,7 @@
 <!DOCTYPE html>
 <html id="htmlId">
 <head>
-  <title>Coverage Report > NotTable</title>
+  <title>Coverage Report > Join</title>
   <style type="text/css">
     @import "../../css/coverage.css";
     @import "../../css/highlight-idea.css";
@@ -20,14 +20,14 @@ Current scope:     <a href="../../index.html">all classes</a>
     <a href="../index.html">net.sf.persism.annotations</a>
 </div>
 
-<h1>Coverage Summary for Class: NotTable (net.sf.persism.annotations)</h1>
+<h1>Coverage Summary for Class: Join (net.sf.persism.annotations)</h1>
 
 <table class="coverageStats">
 <tr>
   <th class="name">Class</th>
 </tr>
 <tr>
-  <td class="name">NotTable</td>
+  <td class="name">Join</td>
 </tr>
 
 </table>
@@ -39,26 +39,45 @@ Current scope:     <a href="../../index.html">all classes</a>
 <pre>
 <div class="sourceCode" id="sourceCode"><i class="no-highlight">1</i>&nbsp;package net.sf.persism.annotations;
 <i class="no-highlight">2</i>&nbsp;
-<i class="no-highlight">3</i>&nbsp;/*
-<i class="no-highlight">4</i>&nbsp; * Created by IntelliJ IDEA.
-<i class="no-highlight">5</i>&nbsp; * User: DHoward
-<i class="no-highlight">6</i>&nbsp; * Date: 9/14/11
-<i class="no-highlight">7</i>&nbsp; * Time: 7:38 AM
-<i class="no-highlight">8</i>&nbsp; */
-<i class="no-highlight">9</i>&nbsp;
-<i class="no-highlight">10</i>&nbsp;import java.lang.annotation.ElementType;
-<i class="no-highlight">11</i>&nbsp;import java.lang.annotation.Retention;
-<i class="no-highlight">12</i>&nbsp;import java.lang.annotation.RetentionPolicy;
-<i class="no-highlight">13</i>&nbsp;import java.lang.annotation.Target;
-<i class="no-highlight">14</i>&nbsp;
-<i class="no-highlight">15</i>&nbsp;/**
-<i class="no-highlight">16</i>&nbsp; * Indicates that the class represents the result of query instead of a table.
-<i class="no-highlight">17</i>&nbsp; */
-<i class="no-highlight">18</i>&nbsp;@Retention(value = RetentionPolicy.RUNTIME)
-<i class="no-highlight">19</i>&nbsp;@Target(ElementType.TYPE)
-<i class="no-highlight">20</i>&nbsp;public @interface NotTable {
-<i class="no-highlight">21</i>&nbsp;
-<i class="no-highlight">22</i>&nbsp;}
+<i class="no-highlight">3</i>&nbsp;import java.lang.annotation.ElementType;
+<i class="no-highlight">4</i>&nbsp;import java.lang.annotation.Retention;
+<i class="no-highlight">5</i>&nbsp;import java.lang.annotation.RetentionPolicy;
+<i class="no-highlight">6</i>&nbsp;import java.lang.annotation.Target;
+<i class="no-highlight">7</i>&nbsp;
+<i class="no-highlight">8</i>&nbsp;/**
+<i class="no-highlight">9</i>&nbsp; * Indicates that the property value is set by joining from another table (pojo class). You may use this on a
+<i class="no-highlight">10</i>&nbsp; * single object (one to one, many to one), or on a collection (one to many, many to many). If joining to a
+<i class="no-highlight">11</i>&nbsp; * collection, make sure that you instantiate it as a modifiable collection. Persism will not do that fo you.
+<i class="no-highlight">12</i>&nbsp; * @see &lt;a href=&quot;https://sproket.github.io/Persism/join.html&quot;&gt;How to use the new @Join Annotation&lt;/a&gt;
+<i class="no-highlight">13</i>&nbsp; */
+<i class="no-highlight">14</i>&nbsp;@Retention(RetentionPolicy.RUNTIME)
+<i class="no-highlight">15</i>&nbsp;@Target({ElementType.METHOD, ElementType.FIELD})
+<i class="no-highlight">16</i>&nbsp;public @interface Join {
+<i class="no-highlight">17</i>&nbsp;
+<i class="no-highlight">18</i>&nbsp;    /**
+<i class="no-highlight">19</i>&nbsp;     * Class of the POJO that this class joins to.
+<i class="no-highlight">20</i>&nbsp;     * @return target POJO Class
+<i class="no-highlight">21</i>&nbsp;     */
+<i class="no-highlight">22</i>&nbsp;    Class&lt;?&gt; to();
+<i class="no-highlight">23</i>&nbsp;
+<i class="no-highlight">24</i>&nbsp;    /**
+<i class="no-highlight">25</i>&nbsp;     * Comma seperated property names whose values are used to join to the target table.
+<i class="no-highlight">26</i>&nbsp;     * @return property names
+<i class="no-highlight">27</i>&nbsp;     */
+<i class="no-highlight">28</i>&nbsp;    String onProperties();
+<i class="no-highlight">29</i>&nbsp;
+<i class="no-highlight">30</i>&nbsp;    /**
+<i class="no-highlight">31</i>&nbsp;     * Comma seperated property names whose values are used to join to the parent table.
+<i class="no-highlight">32</i>&nbsp;     * @return property names
+<i class="no-highlight">33</i>&nbsp;     */
+<i class="no-highlight">34</i>&nbsp;    String toProperties();
+<i class="no-highlight">35</i>&nbsp;
+<i class="no-highlight">36</i>&nbsp;    /**
+<i class="no-highlight">37</i>&nbsp;     * Indicates that you use String primary/foreign key values in your DB which are case-sensitive. Default false.
+<i class="no-highlight">38</i>&nbsp;     * @return case-sensitive
+<i class="no-highlight">39</i>&nbsp;     */
+<i class="no-highlight">40</i>&nbsp;    boolean caseSensitive() default false;
+<i class="no-highlight">41</i>&nbsp;}
 </div>
 </pre>
 </div>
@@ -85,7 +104,7 @@ Current scope:     <a href="../../index.html">all classes</a>
 
 <div class="footer">
     
-    <div style="float:right;">generated on 2022-03-27 14:08</div>
+    <div style="float:right;">generated on 2022-09-16 07:41</div>
 </div>
 </body>
 </html>

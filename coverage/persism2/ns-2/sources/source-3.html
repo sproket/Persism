@@ -42,26 +42,26 @@ Current scope:     <a href="../../index.html">all classes</a>
   <td class="name">Log4j2Logger</td>
 <td class="coverageStat">
   <span class="percent">
-    0%
+    100%
   </span>
   <span class="absValue">
-    (0/1)
+    (1/1)
   </span>
 </td>
 <td class="coverageStat">
   <span class="percent">
-    0%
+    100%
   </span>
   <span class="absValue">
-    (0/10)
+    (10/10)
   </span>
 </td>
 <td class="coverageStat">
   <span class="percent">
-    0%
+    83.3%
   </span>
   <span class="absValue">
-    (0/12)
+    (10/12)
   </span>
 </td>
 </tr>
@@ -83,56 +83,56 @@ Current scope:     <a href="../../index.html">all classes</a>
 <i class="no-highlight">8</i>&nbsp;public final class Log4j2Logger extends AbstractLogger {
 <i class="no-highlight">9</i>&nbsp;
 <i class="no-highlight">10</i>&nbsp;    public Log4j2Logger(String logName) {
-<b class="nc"><i class="no-highlight">11</i>&nbsp;        super(LogMode.LOG4J2, logName);</b>
+<b class="fc"><i class="no-highlight">11</i>&nbsp;        super(LogMode.LOG4J2, logName);</b>
 <i class="no-highlight">12</i>&nbsp;    }
 <i class="no-highlight">13</i>&nbsp;
 <i class="no-highlight">14</i>&nbsp;    @Override
 <i class="no-highlight">15</i>&nbsp;    public boolean isDebugEnabled() {
-<b class="nc"><i class="no-highlight">16</i>&nbsp;        return LogManager.getLogger(logName).isDebugEnabled();</b>
+<b class="fc"><i class="no-highlight">16</i>&nbsp;        return LogManager.getLogger(logName).isDebugEnabled();</b>
 <i class="no-highlight">17</i>&nbsp;    }
 <i class="no-highlight">18</i>&nbsp;
 <i class="no-highlight">19</i>&nbsp;    @Override
 <i class="no-highlight">20</i>&nbsp;    public void debug(Object message, Object... params) {
-<b class="nc"><i class="no-highlight">21</i>&nbsp;        if (isDebugEnabled()) {</b>
+<b class="fc"><i class="no-highlight">21</i>&nbsp;        if (isDebugEnabled()) {</b>
 <b class="nc"><i class="no-highlight">22</i>&nbsp;            LogManager.getLogger(logName).debug(String.format(&quot;&quot; + message, params));</b>
 <i class="no-highlight">23</i>&nbsp;        }
 <i class="no-highlight">24</i>&nbsp;    }
 <i class="no-highlight">25</i>&nbsp;
 <i class="no-highlight">26</i>&nbsp;    @Override
 <i class="no-highlight">27</i>&nbsp;    public void debug(Object message) {
-<b class="nc"><i class="no-highlight">28</i>&nbsp;        if (isDebugEnabled()) {</b>
+<b class="fc"><i class="no-highlight">28</i>&nbsp;        if (isDebugEnabled()) {</b>
 <b class="nc"><i class="no-highlight">29</i>&nbsp;            LogManager.getLogger(logName).debug(&quot;&quot; + message);</b>
 <i class="no-highlight">30</i>&nbsp;        }
 <i class="no-highlight">31</i>&nbsp;    }
 <i class="no-highlight">32</i>&nbsp;
 <i class="no-highlight">33</i>&nbsp;    @Override
 <i class="no-highlight">34</i>&nbsp;    public void info(Object message) {
-<b class="nc"><i class="no-highlight">35</i>&nbsp;        LogManager.getLogger(logName).info(message);</b>
+<b class="fc"><i class="no-highlight">35</i>&nbsp;        LogManager.getLogger(logName).info(message);</b>
 <i class="no-highlight">36</i>&nbsp;    }
 <i class="no-highlight">37</i>&nbsp;
 <i class="no-highlight">38</i>&nbsp;    @Override
 <i class="no-highlight">39</i>&nbsp;    public void info(Object message, Throwable t) {
-<b class="nc"><i class="no-highlight">40</i>&nbsp;        LogManager.getLogger(logName).info(message, t);</b>
+<b class="fc"><i class="no-highlight">40</i>&nbsp;        LogManager.getLogger(logName).info(message, t);</b>
 <i class="no-highlight">41</i>&nbsp;    }
 <i class="no-highlight">42</i>&nbsp;
 <i class="no-highlight">43</i>&nbsp;    @Override
 <i class="no-highlight">44</i>&nbsp;    public void warn(Object message) {
-<b class="nc"><i class="no-highlight">45</i>&nbsp;        LogManager.getLogger(logName).warn(message);</b>
+<b class="fc"><i class="no-highlight">45</i>&nbsp;        LogManager.getLogger(logName).warn(message);</b>
 <i class="no-highlight">46</i>&nbsp;    }
 <i class="no-highlight">47</i>&nbsp;
 <i class="no-highlight">48</i>&nbsp;    @Override
 <i class="no-highlight">49</i>&nbsp;    public void warn(Object message, Throwable t) {
-<b class="nc"><i class="no-highlight">50</i>&nbsp;        LogManager.getLogger(logName).warn(message, t);</b>
+<b class="fc"><i class="no-highlight">50</i>&nbsp;        LogManager.getLogger(logName).warn(message, t);</b>
 <i class="no-highlight">51</i>&nbsp;    }
 <i class="no-highlight">52</i>&nbsp;
 <i class="no-highlight">53</i>&nbsp;    @Override
 <i class="no-highlight">54</i>&nbsp;    public void error(Object message) {
-<b class="nc"><i class="no-highlight">55</i>&nbsp;        LogManager.getLogger(logName).error(message);</b>
+<b class="fc"><i class="no-highlight">55</i>&nbsp;        LogManager.getLogger(logName).error(message);</b>
 <i class="no-highlight">56</i>&nbsp;    }
 <i class="no-highlight">57</i>&nbsp;
 <i class="no-highlight">58</i>&nbsp;    @Override
 <i class="no-highlight">59</i>&nbsp;    public void error(Object message, Throwable t) {
-<b class="nc"><i class="no-highlight">60</i>&nbsp;        LogManager.getLogger(logName).error(message, t);</b>
+<b class="fc"><i class="no-highlight">60</i>&nbsp;        LogManager.getLogger(logName).error(message, t);</b>
 <i class="no-highlight">61</i>&nbsp;    }
 <i class="no-highlight">62</i>&nbsp;}
 </div>
@@ -161,7 +161,7 @@ Current scope:     <a href="../../index.html">all classes</a>
 
 <div class="footer">
     
-    <div style="float:right;">generated on 2022-03-27 14:08</div>
+    <div style="float:right;">generated on 2022-09-16 07:41</div>
 </div>
 </body>
 </html>

@@ -1,4 +1,13 @@
-## Release Notes
+## ![](img/logo2.png) Release Notes
+
+### 2.2.0
+* Added support for multiple schema names
+* Added delete with query methods to Session
+* Added "es" to table name guesser for tables like "Tax" or "Mailbox"
+* Added readOnly to Column annotation to allow for columns to not include in insert or update statements
+* Added Support for sequence types with MSSQL
+* Performance: Additional MetaData caching to reduce GC stress
+* Fixed SQLite misreported LONG as INT which was fixed and confirmed by version 3.39.3.0
 
 ### 2.1.0
 * Implemented [table joins!](join.md)

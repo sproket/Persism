@@ -4,7 +4,7 @@
 <!DOCTYPE html>
 <html id="htmlId">
 <head>
-  <title>Coverage Report > SQL</title>
+  <title>Coverage Report > Result</title>
   <style type="text/css">
     @import "../../css/coverage.css";
     @import "../../css/highlight-idea.css";
@@ -20,7 +20,7 @@ Current scope:     <a href="../../index.html">all classes</a>
     <a href="../index.html">net.sf.persism</a>
 </div>
 
-<h1>Coverage Summary for Class: SQL (net.sf.persism)</h1>
+<h1>Coverage Summary for Class: Result (net.sf.persism)</h1>
 
 <table class="coverageStats">
 <tr>
@@ -39,7 +39,7 @@ Current scope:     <a href="../../index.html">all classes</a>
 </th>
 </tr>
 <tr>
-  <td class="name">SQL</td>
+  <td class="name">Result</td>
 <td class="coverageStat">
   <span class="percent">
     100%
@@ -53,7 +53,7 @@ Current scope:     <a href="../../index.html">all classes</a>
     100%
   </span>
   <span class="absValue">
-    (5/5)
+    (4/4)
   </span>
 </td>
 <td class="coverageStat">
@@ -61,7 +61,7 @@ Current scope:     <a href="../../index.html">all classes</a>
     100%
   </span>
   <span class="absValue">
-    (26/26)
+    (10/10)
   </span>
 </td>
 </tr>
@@ -75,112 +75,48 @@ Current scope:     <a href="../../index.html">all classes</a>
 <pre>
 <div class="sourceCode" id="sourceCode"><i class="no-highlight">1</i>&nbsp;package net.sf.persism;
 <i class="no-highlight">2</i>&nbsp;
-<i class="no-highlight">3</i>&nbsp;import java.util.Scanner;
-<i class="no-highlight">4</i>&nbsp;import java.util.regex.Pattern;
-<i class="no-highlight">5</i>&nbsp;
-<i class="no-highlight">6</i>&nbsp;/**
-<i class="no-highlight">7</i>&nbsp; * Simple wrapper for SQL String. Mainly to allow for overloads to fetch/query methods.
-<i class="no-highlight">8</i>&nbsp; *
-<i class="no-highlight">9</i>&nbsp; * @see &lt;a href=&quot;https://sproket.github.io/Persism/manual2.html&quot;&gt;Using the new Query/Fetch methods&lt;/a&gt;
-<i class="no-highlight">10</i>&nbsp; */
-<i class="no-highlight">11</i>&nbsp;public final class SQL {
-<i class="no-highlight">12</i>&nbsp;
-<i class="no-highlight">13</i>&nbsp;    final String sql;
-<i class="no-highlight">14</i>&nbsp;
-<i class="no-highlight">15</i>&nbsp;    boolean whereOnly; // flags this as WHERE only - we add the SELECT part.
-<i class="no-highlight">16</i>&nbsp;    boolean storedProc; // indicates this is a stored proc rather than an SQL statement
-<i class="no-highlight">17</i>&nbsp;
-<b class="fc"><i class="no-highlight">18</i>&nbsp;    String processedSQL = null;</b>
+<i class="no-highlight">3</i>&nbsp;/**
+<i class="no-highlight">4</i>&nbsp; * Result of an insert, update or delete. Contains the rows affected returned by JDBC and the original copy of the data object.
+<i class="no-highlight">5</i>&nbsp; */
+<i class="no-highlight">6</i>&nbsp;public final class Result&lt;T&gt; {
+<i class="no-highlight">7</i>&nbsp;    private final int rows;
+<i class="no-highlight">8</i>&nbsp;    private final T dataObject;
+<i class="no-highlight">9</i>&nbsp;
+<i class="no-highlight">10</i>&nbsp;    /**
+<i class="no-highlight">11</i>&nbsp;     *
+<i class="no-highlight">12</i>&nbsp;     * @param rows rows affected
+<i class="no-highlight">13</i>&nbsp;     * @param dataObject possibly changed object after an insert. Use for Records which are immutable.
+<i class="no-highlight">14</i>&nbsp;     */
+<b class="fc"><i class="no-highlight">15</i>&nbsp;    public Result(int rows, T dataObject) {</b>
+<b class="fc"><i class="no-highlight">16</i>&nbsp;        this.rows = rows;</b>
+<b class="fc"><i class="no-highlight">17</i>&nbsp;        this.dataObject = dataObject;</b>
+<i class="no-highlight">18</i>&nbsp;    }
 <i class="no-highlight">19</i>&nbsp;
-<b class="fc"><i class="no-highlight">20</i>&nbsp;    SQL(String sql) {</b>
-<b class="fc"><i class="no-highlight">21</i>&nbsp;        sql = sql.trim();</b>
-<i class="no-highlight">22</i>&nbsp;
-<b class="fc"><i class="no-highlight">23</i>&nbsp;        if (sql.startsWith(&quot;--&quot;) || sql.startsWith(&quot;/*&quot;)) {</b>
-<i class="no-highlight">24</i>&nbsp;            // trim comments
-<i class="no-highlight">25</i>&nbsp;
-<i class="no-highlight">26</i>&nbsp;            // line comments
-<b class="fc"><i class="no-highlight">27</i>&nbsp;            StringBuilder sb = new StringBuilder();</b>
-<b class="fc"><i class="no-highlight">28</i>&nbsp;            try (Scanner scanner = new Scanner(sql)) {</b>
-<b class="fc"><i class="no-highlight">29</i>&nbsp;                while (scanner.hasNextLine()) {</b>
-<b class="fc"><i class="no-highlight">30</i>&nbsp;                    String line = scanner.nextLine().trim();</b>
-<b class="fc"><i class="no-highlight">31</i>&nbsp;                    if (!line.startsWith(&quot;--&quot;)) {</b>
-<b class="fc"><i class="no-highlight">32</i>&nbsp;                        sb.append(line).append(&quot;\n&quot;);</b>
-<i class="no-highlight">33</i>&nbsp;                    }
-<b class="fc"><i class="no-highlight">34</i>&nbsp;                }</b>
-<b class="fc"><i class="no-highlight">35</i>&nbsp;            }</b>
-<b class="fc"><i class="no-highlight">36</i>&nbsp;            sql = sb.toString();</b>
-<i class="no-highlight">37</i>&nbsp;
-<i class="no-highlight">38</i>&nbsp;            // /* */ comments
-<b class="fc"><i class="no-highlight">39</i>&nbsp;            Pattern commentPattern = Pattern.compile(&quot;/\\*.*?\\*/&quot;, Pattern.DOTALL);</b>
-<b class="fc"><i class="no-highlight">40</i>&nbsp;            sql = commentPattern.matcher(sql).replaceAll(&quot;&quot;).trim();</b>
-<i class="no-highlight">41</i>&nbsp;        }
-<i class="no-highlight">42</i>&nbsp;
-<b class="fc"><i class="no-highlight">43</i>&nbsp;        this.sql = sql;</b>
-<i class="no-highlight">44</i>&nbsp;    }
-<i class="no-highlight">45</i>&nbsp;
-<i class="no-highlight">46</i>&nbsp;    /**
-<i class="no-highlight">47</i>&nbsp;     * Method to instantiate a regular SQL string.
-<i class="no-highlight">48</i>&nbsp;     * &lt;pre&gt;{@code
-<i class="no-highlight">49</i>&nbsp;     *      Contact&gt; contact;
-<i class="no-highlight">50</i>&nbsp;     *      contact = session.fetch(Contact.class,
-<i class="no-highlight">51</i>&nbsp;     *                sql(&quot;SELECT * FROM CONTACTS WHERE LAST_NAME = ? AND FIRST_NAME = ?&quot;),
-<i class="no-highlight">52</i>&nbsp;     *                params(&quot;Fred&quot;, &quot;Flintstone&quot;);
-<i class="no-highlight">53</i>&nbsp;     * }&lt;/pre&gt;
-<i class="no-highlight">54</i>&nbsp;     *
-<i class="no-highlight">55</i>&nbsp;     * @param sql String
-<i class="no-highlight">56</i>&nbsp;     * @return new SQL object
-<i class="no-highlight">57</i>&nbsp;     */
-<i class="no-highlight">58</i>&nbsp;    public static SQL sql(String sql) {
-<b class="fc"><i class="no-highlight">59</i>&nbsp;        return new SQL(sql);</b>
-<i class="no-highlight">60</i>&nbsp;    }
-<i class="no-highlight">61</i>&nbsp;
-<i class="no-highlight">62</i>&nbsp;    /**
-<i class="no-highlight">63</i>&nbsp;     * Method used to specify an SQL WHERE clause for an SQL Statement.
-<i class="no-highlight">64</i>&nbsp;     * The SELECT ... parts would be provided by Persism.
-<i class="no-highlight">65</i>&nbsp;     * Only here do we allow property names in the query
-<i class="no-highlight">66</i>&nbsp;     * &lt;pre&gt;{@code
-<i class="no-highlight">67</i>&nbsp;     *      List&lt;Contact&gt; contacts;
-<i class="no-highlight">68</i>&nbsp;     *      contacts = session.query(Contact.class,
-<i class="no-highlight">69</i>&nbsp;     *                 where(&quot;(:firstname = @name OR :company = @name) and :lastname = @last and :city = @city and :amountOwed &gt; @owe ORDER BY :dateAdded&quot;),
-<i class="no-highlight">70</i>&nbsp;     *                 named(Map.of(&quot;name&quot;, &quot;Fred&quot;, &quot;last&quot;, &quot;Flintstone&quot;, &quot;owe&quot;, 10, &quot;city&quot;, &quot;Somewhere&quot;)));
-<i class="no-highlight">71</i>&nbsp;     * }&lt;/pre&gt;
-<i class="no-highlight">72</i>&nbsp;     *
-<i class="no-highlight">73</i>&nbsp;     * @param where String
-<i class="no-highlight">74</i>&nbsp;     * @return new SQL object
-<i class="no-highlight">75</i>&nbsp;     */
-<i class="no-highlight">76</i>&nbsp;    public static SQL where(String where) {
-<b class="fc"><i class="no-highlight">77</i>&nbsp;        SQL sql = new SQL(&quot; WHERE &quot; + where);</b>
-<b class="fc"><i class="no-highlight">78</i>&nbsp;        sql.whereOnly = true;</b>
-<b class="fc"><i class="no-highlight">79</i>&nbsp;        return sql;</b>
-<i class="no-highlight">80</i>&nbsp;    }
-<i class="no-highlight">81</i>&nbsp;
-<i class="no-highlight">82</i>&nbsp;    /**
-<i class="no-highlight">83</i>&nbsp;     * Static initializer for a new SQL stored procedure string.
-<i class="no-highlight">84</i>&nbsp;     * &lt;pre&gt;{@code
-<i class="no-highlight">85</i>&nbsp;     *      List&lt;CustomerOrder&gt; list;
-<i class="no-highlight">86</i>&nbsp;     *      list = session.query(CustomerOrder.class, proc(&quot;[spCustomerOrders](?)&quot;), params(&quot;123&quot;));
-<i class="no-highlight">87</i>&nbsp;     * }&lt;/pre&gt;
-<i class="no-highlight">88</i>&nbsp;     *
-<i class="no-highlight">89</i>&nbsp;     * @param storedProc String
-<i class="no-highlight">90</i>&nbsp;     * @return new SQL object
-<i class="no-highlight">91</i>&nbsp;     */
-<i class="no-highlight">92</i>&nbsp;    public static SQL proc(String storedProc) {
-<b class="fc"><i class="no-highlight">93</i>&nbsp;        SQL sql = new SQL(storedProc);</b>
-<b class="fc"><i class="no-highlight">94</i>&nbsp;        sql.storedProc = true;</b>
-<b class="fc"><i class="no-highlight">95</i>&nbsp;        return sql;</b>
-<i class="no-highlight">96</i>&nbsp;    }
-<i class="no-highlight">97</i>&nbsp;
-<i class="no-highlight">98</i>&nbsp;    /**
-<i class="no-highlight">99</i>&nbsp;     * @hidden
-<i class="no-highlight">100</i>&nbsp;     */
-<i class="no-highlight">101</i>&nbsp;    @Override
-<i class="no-highlight">102</i>&nbsp;    public String toString() {
-<b class="fc"><i class="no-highlight">103</i>&nbsp;        if (processedSQL != null) {</b>
-<b class="fc"><i class="no-highlight">104</i>&nbsp;            return processedSQL;</b>
-<i class="no-highlight">105</i>&nbsp;        }
-<b class="fc"><i class="no-highlight">106</i>&nbsp;        return sql;</b>
-<i class="no-highlight">107</i>&nbsp;    }
-<i class="no-highlight">108</i>&nbsp;}
+<i class="no-highlight">20</i>&nbsp;    /**
+<i class="no-highlight">21</i>&nbsp;     * Return value from jdbc statement getUpdateCount after an insert.
+<i class="no-highlight">22</i>&nbsp;     * @return row count changed
+<i class="no-highlight">23</i>&nbsp;     */
+<i class="no-highlight">24</i>&nbsp;    public int rows() {
+<b class="fc"><i class="no-highlight">25</i>&nbsp;        return rows;</b>
+<i class="no-highlight">26</i>&nbsp;    }
+<i class="no-highlight">27</i>&nbsp;
+<i class="no-highlight">28</i>&nbsp;    /**
+<i class="no-highlight">29</i>&nbsp;     * Instance of the possibly modified object after insert.
+<i class="no-highlight">30</i>&nbsp;     * @return dataObject of type T
+<i class="no-highlight">31</i>&nbsp;     */
+<i class="no-highlight">32</i>&nbsp;    public T dataObject() {
+<b class="fc"><i class="no-highlight">33</i>&nbsp;        return dataObject;</b>
+<i class="no-highlight">34</i>&nbsp;    }
+<i class="no-highlight">35</i>&nbsp;
+<i class="no-highlight">36</i>&nbsp;    @Override
+<i class="no-highlight">37</i>&nbsp;    public String toString() {
+<b class="fc"><i class="no-highlight">38</i>&nbsp;        final StringBuilder sb = new StringBuilder(&quot;Result{&quot;);</b>
+<b class="fc"><i class="no-highlight">39</i>&nbsp;        sb.append(&quot;rows=&quot;).append(rows);</b>
+<b class="fc"><i class="no-highlight">40</i>&nbsp;        sb.append(&quot;, dataObject=&quot;).append(dataObject);</b>
+<b class="fc"><i class="no-highlight">41</i>&nbsp;        sb.append(&#39;}&#39;);</b>
+<b class="fc"><i class="no-highlight">42</i>&nbsp;        return sb.toString();</b>
+<i class="no-highlight">43</i>&nbsp;    }
+<i class="no-highlight">44</i>&nbsp;}
 </div>
 </pre>
 </div>
@@ -207,7 +143,7 @@ Current scope:     <a href="../../index.html">all classes</a>
 
 <div class="footer">
     
-    <div style="float:right;">generated on 2022-03-27 14:08</div>
+    <div style="float:right;">generated on 2022-09-16 07:41</div>
 </div>
 </body>
 </html>

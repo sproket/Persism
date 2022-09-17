@@ -4,7 +4,7 @@
 <!DOCTYPE html>
 <html id="htmlId">
 <head>
-  <title>Coverage Report > JoinInfo</title>
+  <title>Coverage Report > JavaType</title>
   <style type="text/css">
     @import "../../css/coverage.css";
     @import "../../css/highlight-idea.css";
@@ -20,7 +20,7 @@ Current scope:     <a href="../../index.html">all classes</a>
     <a href="../index.html">net.sf.persism</a>
 </div>
 
-<h1>Coverage Summary for Class: JoinInfo (net.sf.persism)</h1>
+<h1>Coverage Summary for Class: JavaType (net.sf.persism)</h1>
 
 <table class="coverageStats">
 <tr>
@@ -39,7 +39,7 @@ Current scope:     <a href="../../index.html">all classes</a>
 </th>
 </tr>
 <tr>
-  <td class="name">JoinInfo</td>
+  <td class="name">JavaType</td>
 <td class="coverageStat">
   <span class="percent">
     100%
@@ -53,15 +53,15 @@ Current scope:     <a href="../../index.html">all classes</a>
     100%
   </span>
   <span class="absValue">
-    (14/14)
+    (9/9)
   </span>
 </td>
 <td class="coverageStat">
   <span class="percent">
-    96.9%
+    100%
   </span>
   <span class="absValue">
-    (63/65)
+    (86/86)
   </span>
 </td>
 </tr>
@@ -75,157 +75,190 @@ Current scope:     <a href="../../index.html">all classes</a>
 <pre>
 <div class="sourceCode" id="sourceCode"><i class="no-highlight">1</i>&nbsp;package net.sf.persism;
 <i class="no-highlight">2</i>&nbsp;
-<i class="no-highlight">3</i>&nbsp;import net.sf.persism.annotations.Join;
-<i class="no-highlight">4</i>&nbsp;
-<i class="no-highlight">5</i>&nbsp;import java.util.ArrayList;
-<i class="no-highlight">6</i>&nbsp;import java.util.Arrays;
-<i class="no-highlight">7</i>&nbsp;import java.util.Collection;
-<i class="no-highlight">8</i>&nbsp;import java.util.List;
-<i class="no-highlight">9</i>&nbsp;
-<i class="no-highlight">10</i>&nbsp;final class JoinInfo {
-<i class="no-highlight">11</i>&nbsp;
-<i class="no-highlight">12</i>&nbsp;    private String[] parentPropertyNames;
-<i class="no-highlight">13</i>&nbsp;    private String[] childPropertyNames;
-<i class="no-highlight">14</i>&nbsp;    private List&lt;PropertyInfo&gt; parentProperties;
-<i class="no-highlight">15</i>&nbsp;    private List&lt;PropertyInfo&gt; childProperties;
-<i class="no-highlight">16</i>&nbsp;    private Class&lt;?&gt; parentClass;
-<i class="no-highlight">17</i>&nbsp;    private Class&lt;?&gt; childClass;
-<i class="no-highlight">18</i>&nbsp;    private final PropertyInfo joinProperty;
-<i class="no-highlight">19</i>&nbsp;    private final boolean caseSensitive;
-<i class="no-highlight">20</i>&nbsp;    private final boolean parentIsAQuery;
-<b class="fc"><i class="no-highlight">21</i>&nbsp;    private boolean reversed = false;</b>
-<i class="no-highlight">22</i>&nbsp;
-<b class="fc"><i class="no-highlight">23</i>&nbsp;    JoinInfo(JoinInfo other) {</b>
-<b class="fc"><i class="no-highlight">24</i>&nbsp;        parentPropertyNames = other.parentPropertyNames;</b>
-<b class="fc"><i class="no-highlight">25</i>&nbsp;        childPropertyNames = other.childPropertyNames;</b>
-<b class="fc"><i class="no-highlight">26</i>&nbsp;        parentProperties = other.parentProperties;</b>
-<b class="fc"><i class="no-highlight">27</i>&nbsp;        childProperties = other.childProperties;</b>
-<b class="fc"><i class="no-highlight">28</i>&nbsp;        parentClass = other.parentClass;</b>
-<b class="fc"><i class="no-highlight">29</i>&nbsp;        childClass = other.childClass;</b>
-<b class="fc"><i class="no-highlight">30</i>&nbsp;        joinProperty = other.joinProperty;</b>
-<b class="fc"><i class="no-highlight">31</i>&nbsp;        caseSensitive = other.caseSensitive;</b>
-<b class="fc"><i class="no-highlight">32</i>&nbsp;        parentIsAQuery = other.parentIsAQuery;</b>
-<b class="fc"><i class="no-highlight">33</i>&nbsp;        reversed = other.reversed;</b>
-<i class="no-highlight">34</i>&nbsp;    }
-<i class="no-highlight">35</i>&nbsp;
-<i class="no-highlight">36</i>&nbsp;    // note parent may be a POJO or a list of POJOs
-<b class="fc"><i class="no-highlight">37</i>&nbsp;    public JoinInfo(Join joinAnnotation, PropertyInfo joinProperty, Object parent, Class&lt;?&gt; parentClass) {</b>
-<b class="fc"><i class="no-highlight">38</i>&nbsp;        this.joinProperty = joinProperty;</b>
-<b class="fc"><i class="no-highlight">39</i>&nbsp;        parentPropertyNames = joinAnnotation.onProperties().split(&quot;,&quot;);</b>
-<b class="fc"><i class="no-highlight">40</i>&nbsp;        childPropertyNames = joinAnnotation.toProperties().split(&quot;,&quot;);</b>
-<b class="fc"><i class="no-highlight">41</i>&nbsp;        if (parentPropertyNames.length != childPropertyNames.length) {</b>
-<b class="fc"><i class="no-highlight">42</i>&nbsp;            throw new PersismException(Messages.PropertyCountMismatchForJoin.message(parentClass, joinAnnotation.onProperties(), joinAnnotation.toProperties()));</b>
-<i class="no-highlight">43</i>&nbsp;        }
-<b class="fc"><i class="no-highlight">44</i>&nbsp;        Util.trimArray(parentPropertyNames);</b>
-<b class="fc"><i class="no-highlight">45</i>&nbsp;        Util.trimArray(childPropertyNames);</b>
-<i class="no-highlight">46</i>&nbsp;
-<b class="fc"><i class="no-highlight">47</i>&nbsp;        caseSensitive = joinAnnotation.caseSensitive();</b>
-<i class="no-highlight">48</i>&nbsp;
-<b class="fc"><i class="no-highlight">49</i>&nbsp;        childClass = joinAnnotation.to();</b>
-<b class="fc"><i class="no-highlight">50</i>&nbsp;        this.parentClass = parentClass;</b>
-<i class="no-highlight">51</i>&nbsp;
-<b class="fc"><i class="no-highlight">52</i>&nbsp;        parentIsAQuery = Collection.class.isAssignableFrom(parent.getClass());</b>
-<i class="no-highlight">53</i>&nbsp;
-<b class="fc"><i class="no-highlight">54</i>&nbsp;        parentProperties = new ArrayList&lt;&gt;(parentPropertyNames.length);</b>
-<b class="fc"><i class="no-highlight">55</i>&nbsp;        childProperties = new ArrayList&lt;&gt;(childPropertyNames.length);</b>
-<i class="no-highlight">56</i>&nbsp;
-<b class="fc"><i class="no-highlight">57</i>&nbsp;        for (int j = 0; j &lt; parentPropertyNames.length; j++) {</b>
-<b class="fc"><i class="no-highlight">58</i>&nbsp;            String prop = parentPropertyNames[j];</b>
-<b class="fc"><i class="no-highlight">59</i>&nbsp;            var opt = MetaData.getPropertyInfo(parentClass).stream().filter(p -&gt; p.propertyName.equalsIgnoreCase(prop)).findFirst();</b>
-<b class="fc"><i class="no-highlight">60</i>&nbsp;            if (opt.isPresent()) {</b>
-<b class="fc"><i class="no-highlight">61</i>&nbsp;                parentProperties.add(opt.get());</b>
-<b class="fc"><i class="no-highlight">62</i>&nbsp;                parentPropertyNames[j] = opt.get().propertyName; // ensure names match exact</b>
-<i class="no-highlight">63</i>&nbsp;            } else {
-<b class="nc"><i class="no-highlight">64</i>&nbsp;                throw new PersismException(Messages.PropertyNotFoundForJoin.message(prop, parentClass));</b>
-<i class="no-highlight">65</i>&nbsp;            }
-<i class="no-highlight">66</i>&nbsp;
-<i class="no-highlight">67</i>&nbsp;        }
-<i class="no-highlight">68</i>&nbsp;
-<b class="fc"><i class="no-highlight">69</i>&nbsp;        for (int j = 0; j &lt; childPropertyNames.length; j++) {</b>
-<b class="fc"><i class="no-highlight">70</i>&nbsp;            String prop = childPropertyNames[j];</b>
-<b class="fc"><i class="no-highlight">71</i>&nbsp;            var opt = MetaData.getPropertyInfo(childClass).stream().filter(p -&gt; p.propertyName.equalsIgnoreCase(prop)).findFirst();</b>
-<b class="fc"><i class="no-highlight">72</i>&nbsp;            if (opt.isPresent()) {</b>
-<b class="fc"><i class="no-highlight">73</i>&nbsp;                childProperties.add(opt.get());</b>
-<b class="fc"><i class="no-highlight">74</i>&nbsp;                childPropertyNames[j] = opt.get().propertyName; // ensure names match exact</b>
-<i class="no-highlight">75</i>&nbsp;            } else {
-<b class="nc"><i class="no-highlight">76</i>&nbsp;                throw new PersismException(Messages.PropertyNotFoundForJoin.message(prop, childClass));</b>
-<i class="no-highlight">77</i>&nbsp;            }
-<i class="no-highlight">78</i>&nbsp;        }
-<i class="no-highlight">79</i>&nbsp;    }
-<i class="no-highlight">80</i>&nbsp;
-<i class="no-highlight">81</i>&nbsp;    public JoinInfo swapParentAndChild() {
-<b class="fc"><i class="no-highlight">82</i>&nbsp;        JoinInfo info = new JoinInfo(this);</b>
-<i class="no-highlight">83</i>&nbsp;
-<b class="fc"><i class="no-highlight">84</i>&nbsp;        String[] tmpPropertyNames = info.parentPropertyNames;</b>
-<b class="fc"><i class="no-highlight">85</i>&nbsp;        info.parentPropertyNames = info.childPropertyNames;</b>
-<b class="fc"><i class="no-highlight">86</i>&nbsp;        info.childPropertyNames = tmpPropertyNames;</b>
-<i class="no-highlight">87</i>&nbsp;
-<b class="fc"><i class="no-highlight">88</i>&nbsp;        List&lt;PropertyInfo&gt; tmpProperties = info.parentProperties;</b>
-<b class="fc"><i class="no-highlight">89</i>&nbsp;        info.parentProperties = info.childProperties;</b>
-<b class="fc"><i class="no-highlight">90</i>&nbsp;        info.childProperties = tmpProperties;</b>
-<i class="no-highlight">91</i>&nbsp;
-<b class="fc"><i class="no-highlight">92</i>&nbsp;        Class&lt;?&gt; tmpClass = info.parentClass;</b>
-<b class="fc"><i class="no-highlight">93</i>&nbsp;        info.parentClass = info.childClass;</b>
-<b class="fc"><i class="no-highlight">94</i>&nbsp;        info.childClass = tmpClass;</b>
+<i class="no-highlight">3</i>&nbsp;import java.lang.reflect.Array;
+<i class="no-highlight">4</i>&nbsp;import java.math.BigDecimal;
+<i class="no-highlight">5</i>&nbsp;import java.math.BigInteger;
+<i class="no-highlight">6</i>&nbsp;import java.sql.Blob;
+<i class="no-highlight">7</i>&nbsp;import java.sql.Clob;
+<i class="no-highlight">8</i>&nbsp;import java.sql.Time;
+<i class="no-highlight">9</i>&nbsp;import java.sql.Timestamp;
+<i class="no-highlight">10</i>&nbsp;import java.time.LocalTime;
+<i class="no-highlight">11</i>&nbsp;import java.util.UUID;
+<i class="no-highlight">12</i>&nbsp;
+<i class="no-highlight">13</i>&nbsp;/**
+<i class="no-highlight">14</i>&nbsp; * Type mapper used for fast switch statements
+<i class="no-highlight">15</i>&nbsp; *
+<i class="no-highlight">16</i>&nbsp; * @author Dan Howard
+<i class="no-highlight">17</i>&nbsp; * @since 10/8/11 5:36 PM
+<i class="no-highlight">18</i>&nbsp; */
+<b class="fc"><i class="no-highlight">19</i>&nbsp;enum JavaType {</b>
+<i class="no-highlight">20</i>&nbsp;
+<b class="fc"><i class="no-highlight">21</i>&nbsp;    booleanType(boolean.class),</b>
+<b class="fc"><i class="no-highlight">22</i>&nbsp;    BooleanType(Boolean.class),</b>
+<b class="fc"><i class="no-highlight">23</i>&nbsp;    byteType(byte.class),</b>
+<b class="fc"><i class="no-highlight">24</i>&nbsp;    ByteType(Byte.class),</b>
+<b class="fc"><i class="no-highlight">25</i>&nbsp;    shortType(short.class),</b>
+<b class="fc"><i class="no-highlight">26</i>&nbsp;    ShortType(Short.class),</b>
+<b class="fc"><i class="no-highlight">27</i>&nbsp;    integerType(int.class),</b>
+<b class="fc"><i class="no-highlight">28</i>&nbsp;    IntegerType(Integer.class),</b>
+<b class="fc"><i class="no-highlight">29</i>&nbsp;    longType(long.class),</b>
+<b class="fc"><i class="no-highlight">30</i>&nbsp;    LongType(Long.class),</b>
+<b class="fc"><i class="no-highlight">31</i>&nbsp;    floatType(float.class),</b>
+<b class="fc"><i class="no-highlight">32</i>&nbsp;    FloatType(Float.class),</b>
+<b class="fc"><i class="no-highlight">33</i>&nbsp;    doubleType(double.class),</b>
+<b class="fc"><i class="no-highlight">34</i>&nbsp;    DoubleType(Double.class),</b>
+<b class="fc"><i class="no-highlight">35</i>&nbsp;    BigDecimalType(BigDecimal.class),</b>
+<b class="fc"><i class="no-highlight">36</i>&nbsp;    BigIntegerType(BigInteger.class),</b>
+<b class="fc"><i class="no-highlight">37</i>&nbsp;    StringType(String.class),</b>
+<b class="fc"><i class="no-highlight">38</i>&nbsp;    characterType(char.class),</b>
+<b class="fc"><i class="no-highlight">39</i>&nbsp;    CharacterType(Character.class),</b>
+<b class="fc"><i class="no-highlight">40</i>&nbsp;    UtilDateType(java.util.Date.class),</b>
+<b class="fc"><i class="no-highlight">41</i>&nbsp;    SQLDateType(java.sql.Date.class),</b>
+<b class="fc"><i class="no-highlight">42</i>&nbsp;    TimeType(Time.class),</b>
+<b class="fc"><i class="no-highlight">43</i>&nbsp;    LocalTimeType(LocalTime.class),</b>
+<b class="fc"><i class="no-highlight">44</i>&nbsp;    TimestampType(Timestamp.class),</b>
+<b class="fc"><i class="no-highlight">45</i>&nbsp;    LocalDateType(java.time.LocalDate.class),</b>
+<b class="fc"><i class="no-highlight">46</i>&nbsp;    LocalDateTimeType(java.time.LocalDateTime.class),</b>
+<b class="fc"><i class="no-highlight">47</i>&nbsp;    InstantType(java.time.Instant.class),</b>
+<b class="fc"><i class="no-highlight">48</i>&nbsp;    OffsetDateTimeType(java.time.OffsetDateTime.class),</b>
+<b class="fc"><i class="no-highlight">49</i>&nbsp;    ZonedDateTimeType(java.time.ZonedDateTime.class),</b>
+<b class="fc"><i class="no-highlight">50</i>&nbsp;    byteArrayType(byte[].class),</b>
+<b class="fc"><i class="no-highlight">51</i>&nbsp;    ByteArrayType(Byte[].class),</b>
+<b class="fc"><i class="no-highlight">52</i>&nbsp;    ClobType(Clob.class),</b>
+<b class="fc"><i class="no-highlight">53</i>&nbsp;    BlobType(Blob.class),</b>
+<b class="fc"><i class="no-highlight">54</i>&nbsp;    EnumType(Enum.class),</b>
+<b class="fc"><i class="no-highlight">55</i>&nbsp;    UUIDType(UUID.class),</b>
+<b class="fc"><i class="no-highlight">56</i>&nbsp;    ObjectType(Object.class);</b>
+<i class="no-highlight">57</i>&nbsp;
+<b class="fc"><i class="no-highlight">58</i>&nbsp;    private static final Log log = Log.getLogger(JavaType.class);</b>
+<i class="no-highlight">59</i>&nbsp;
+<i class="no-highlight">60</i>&nbsp;    private Class&lt;?&gt; type;
+<i class="no-highlight">61</i>&nbsp;
+<b class="fc"><i class="no-highlight">62</i>&nbsp;    &lt;T&gt; JavaType(Class&lt;T&gt; type) {</b>
+<b class="fc"><i class="no-highlight">63</i>&nbsp;        init(type);</b>
+<i class="no-highlight">64</i>&nbsp;    }
+<i class="no-highlight">65</i>&nbsp;
+<i class="no-highlight">66</i>&nbsp;    private &lt;T&gt; void init(Class&lt;T&gt; type) {
+<b class="fc"><i class="no-highlight">67</i>&nbsp;        this.type = type;</b>
+<i class="no-highlight">68</i>&nbsp;    }
+<i class="no-highlight">69</i>&nbsp;
+<i class="no-highlight">70</i>&nbsp;    public static &lt;T&gt; JavaType getType(Class&lt;T&gt; type) {
+<b class="fc"><i class="no-highlight">71</i>&nbsp;        if (type.isEnum()) {</b>
+<b class="fc"><i class="no-highlight">72</i>&nbsp;            return EnumType;</b>
+<i class="no-highlight">73</i>&nbsp;        }
+<i class="no-highlight">74</i>&nbsp;
+<b class="fc"><i class="no-highlight">75</i>&nbsp;        for (JavaType t : values()) {</b>
+<b class="fc"><i class="no-highlight">76</i>&nbsp;            if (t.type.equals(type)) {</b>
+<b class="fc"><i class="no-highlight">77</i>&nbsp;                return t;</b>
+<i class="no-highlight">78</i>&nbsp;            }
+<i class="no-highlight">79</i>&nbsp;        }
+<b class="fc"><i class="no-highlight">80</i>&nbsp;        return null;</b>
+<i class="no-highlight">81</i>&nbsp;    }
+<i class="no-highlight">82</i>&nbsp;
+<i class="no-highlight">83</i>&nbsp;    public static JavaType convert(int sqlType) {
+<b class="fc"><i class="no-highlight">84</i>&nbsp;        JavaType result = null;</b>
+<i class="no-highlight">85</i>&nbsp;
+<b class="fc"><i class="no-highlight">86</i>&nbsp;        switch (sqlType) {</b>
+<i class="no-highlight">87</i>&nbsp;            case java.sql.Types.CHAR:
+<i class="no-highlight">88</i>&nbsp;            case java.sql.Types.NCHAR:
+<i class="no-highlight">89</i>&nbsp;            case java.sql.Types.VARCHAR:
+<i class="no-highlight">90</i>&nbsp;            case java.sql.Types.NVARCHAR:
+<i class="no-highlight">91</i>&nbsp;            case java.sql.Types.LONGVARCHAR:
+<i class="no-highlight">92</i>&nbsp;            case java.sql.Types.LONGNVARCHAR:
+<b class="fc"><i class="no-highlight">93</i>&nbsp;                result = StringType;</b>
+<b class="fc"><i class="no-highlight">94</i>&nbsp;                break;</b>
 <i class="no-highlight">95</i>&nbsp;
-<b class="fc"><i class="no-highlight">96</i>&nbsp;        info.reversed = true;</b>
-<b class="fc"><i class="no-highlight">97</i>&nbsp;        return info;</b>
-<i class="no-highlight">98</i>&nbsp;    }
-<i class="no-highlight">99</i>&nbsp;
-<i class="no-highlight">100</i>&nbsp;    public String[] parentPropertyNames() {
-<b class="fc"><i class="no-highlight">101</i>&nbsp;        return parentPropertyNames;</b>
-<i class="no-highlight">102</i>&nbsp;    }
-<i class="no-highlight">103</i>&nbsp;
-<i class="no-highlight">104</i>&nbsp;    public String[] childPropertyNames() {
-<b class="fc"><i class="no-highlight">105</i>&nbsp;        return childPropertyNames;</b>
-<i class="no-highlight">106</i>&nbsp;    }
-<i class="no-highlight">107</i>&nbsp;
-<i class="no-highlight">108</i>&nbsp;    public List&lt;PropertyInfo&gt; parentProperties() {
-<b class="fc"><i class="no-highlight">109</i>&nbsp;        return parentProperties;</b>
-<i class="no-highlight">110</i>&nbsp;    }
-<i class="no-highlight">111</i>&nbsp;
-<i class="no-highlight">112</i>&nbsp;    public List&lt;PropertyInfo&gt; childProperties() {
-<b class="fc"><i class="no-highlight">113</i>&nbsp;        return childProperties;</b>
-<i class="no-highlight">114</i>&nbsp;    }
-<i class="no-highlight">115</i>&nbsp;
-<i class="no-highlight">116</i>&nbsp;    public Class&lt;?&gt; parentClass() {
-<b class="fc"><i class="no-highlight">117</i>&nbsp;        return parentClass;</b>
-<i class="no-highlight">118</i>&nbsp;    }
-<i class="no-highlight">119</i>&nbsp;
-<i class="no-highlight">120</i>&nbsp;    public Class&lt;?&gt; childClass() {
-<b class="fc"><i class="no-highlight">121</i>&nbsp;        return childClass;</b>
-<i class="no-highlight">122</i>&nbsp;    }
-<i class="no-highlight">123</i>&nbsp;
-<i class="no-highlight">124</i>&nbsp;    public boolean caseSensitive() {
-<b class="fc"><i class="no-highlight">125</i>&nbsp;        return caseSensitive;</b>
-<i class="no-highlight">126</i>&nbsp;    }
-<i class="no-highlight">127</i>&nbsp;
-<i class="no-highlight">128</i>&nbsp;    public boolean parentIsAQuery() {
-<b class="fc"><i class="no-highlight">129</i>&nbsp;        return parentIsAQuery;</b>
-<i class="no-highlight">130</i>&nbsp;    }
-<i class="no-highlight">131</i>&nbsp;
-<i class="no-highlight">132</i>&nbsp;    public PropertyInfo joinProperty() {
-<b class="fc"><i class="no-highlight">133</i>&nbsp;        return joinProperty;</b>
-<i class="no-highlight">134</i>&nbsp;    }
+<i class="no-highlight">96</i>&nbsp;            case java.sql.Types.NUMERIC:
+<i class="no-highlight">97</i>&nbsp;            case java.sql.Types.DECIMAL:
+<b class="fc"><i class="no-highlight">98</i>&nbsp;                result = BigDecimalType;</b>
+<b class="fc"><i class="no-highlight">99</i>&nbsp;                break;</b>
+<i class="no-highlight">100</i>&nbsp;
+<i class="no-highlight">101</i>&nbsp;            case java.sql.Types.BIT:
+<i class="no-highlight">102</i>&nbsp;            case java.sql.Types.BOOLEAN:
+<b class="fc"><i class="no-highlight">103</i>&nbsp;                result = BooleanType;</b>
+<b class="fc"><i class="no-highlight">104</i>&nbsp;                break;</b>
+<i class="no-highlight">105</i>&nbsp;
+<i class="no-highlight">106</i>&nbsp;            case java.sql.Types.TINYINT:
+<b class="fc"><i class="no-highlight">107</i>&nbsp;                result = ByteType;</b>
+<b class="fc"><i class="no-highlight">108</i>&nbsp;                break;</b>
+<i class="no-highlight">109</i>&nbsp;
+<i class="no-highlight">110</i>&nbsp;            case java.sql.Types.SMALLINT:
+<b class="fc"><i class="no-highlight">111</i>&nbsp;                result = ShortType;</b>
+<b class="fc"><i class="no-highlight">112</i>&nbsp;                break;</b>
+<i class="no-highlight">113</i>&nbsp;
+<i class="no-highlight">114</i>&nbsp;            case java.sql.Types.INTEGER:
+<b class="fc"><i class="no-highlight">115</i>&nbsp;                result = IntegerType;</b>
+<b class="fc"><i class="no-highlight">116</i>&nbsp;                break;</b>
+<i class="no-highlight">117</i>&nbsp;
+<i class="no-highlight">118</i>&nbsp;            case java.sql.Types.BIGINT:
+<b class="fc"><i class="no-highlight">119</i>&nbsp;                result = LongType;</b>
+<b class="fc"><i class="no-highlight">120</i>&nbsp;                break;</b>
+<i class="no-highlight">121</i>&nbsp;
+<i class="no-highlight">122</i>&nbsp;            case java.sql.Types.FLOAT:
+<b class="fc"><i class="no-highlight">123</i>&nbsp;                result = FloatType;</b>
+<b class="fc"><i class="no-highlight">124</i>&nbsp;                break;</b>
+<i class="no-highlight">125</i>&nbsp;
+<i class="no-highlight">126</i>&nbsp;            case java.sql.Types.DOUBLE:
+<i class="no-highlight">127</i>&nbsp;            case java.sql.Types.REAL:
+<b class="fc"><i class="no-highlight">128</i>&nbsp;                result = DoubleType;</b>
+<b class="fc"><i class="no-highlight">129</i>&nbsp;                break;</b>
+<i class="no-highlight">130</i>&nbsp;
+<i class="no-highlight">131</i>&nbsp;            case java.sql.Types.BINARY:
+<i class="no-highlight">132</i>&nbsp;            case java.sql.Types.VARBINARY:
+<b class="fc"><i class="no-highlight">133</i>&nbsp;                result = ByteArrayType;</b>
+<b class="fc"><i class="no-highlight">134</i>&nbsp;                break;</b>
 <i class="no-highlight">135</i>&nbsp;
-<i class="no-highlight">136</i>&nbsp;    public boolean reversed() {
-<b class="fc"><i class="no-highlight">137</i>&nbsp;        return reversed;</b>
-<i class="no-highlight">138</i>&nbsp;    }
-<i class="no-highlight">139</i>&nbsp;
-<i class="no-highlight">140</i>&nbsp;    @Override
-<i class="no-highlight">141</i>&nbsp;    public String toString() {
-<b class="fc"><i class="no-highlight">142</i>&nbsp;        return &quot;JoinInfo{&quot; +</b>
-<b class="fc"><i class="no-highlight">143</i>&nbsp;                &quot;parentPropertyNames=&quot; + Arrays.toString(parentPropertyNames) +</b>
-<b class="fc"><i class="no-highlight">144</i>&nbsp;                &quot;, childPropertyNames=&quot; + Arrays.toString(childPropertyNames) +</b>
-<i class="no-highlight">145</i>&nbsp;                &quot;, parentProperties=&quot; + parentProperties +
-<i class="no-highlight">146</i>&nbsp;                &quot;, childProperties=&quot; + childProperties +
-<i class="no-highlight">147</i>&nbsp;                &quot;, parentClass=&quot; + parentClass +
-<i class="no-highlight">148</i>&nbsp;                &quot;, childClass=&quot; + childClass +
-<i class="no-highlight">149</i>&nbsp;                &quot;, caseSensitive=&quot; + caseSensitive +
-<i class="no-highlight">150</i>&nbsp;                &quot;, parentIsAQuery=&quot; + parentIsAQuery +
-<i class="no-highlight">151</i>&nbsp;                &#39;}&#39;;
-<i class="no-highlight">152</i>&nbsp;    }
-<i class="no-highlight">153</i>&nbsp;}
+<i class="no-highlight">136</i>&nbsp;            case java.sql.Types.LONGVARBINARY:
+<i class="no-highlight">137</i>&nbsp;            case java.sql.Types.BLOB:
+<b class="fc"><i class="no-highlight">138</i>&nbsp;                result = BlobType;</b>
+<b class="fc"><i class="no-highlight">139</i>&nbsp;                break;</b>
+<i class="no-highlight">140</i>&nbsp;
+<i class="no-highlight">141</i>&nbsp;            case java.sql.Types.DATE:
+<b class="fc"><i class="no-highlight">142</i>&nbsp;                result = SQLDateType;</b>
+<b class="fc"><i class="no-highlight">143</i>&nbsp;                break;</b>
+<i class="no-highlight">144</i>&nbsp;
+<i class="no-highlight">145</i>&nbsp;            case java.sql.Types.TIME:
+<b class="fc"><i class="no-highlight">146</i>&nbsp;                result = TimeType;</b>
+<b class="fc"><i class="no-highlight">147</i>&nbsp;                break;</b>
+<i class="no-highlight">148</i>&nbsp;
+<i class="no-highlight">149</i>&nbsp;            case java.sql.Types.TIMESTAMP:
+<b class="fc"><i class="no-highlight">150</i>&nbsp;                result = TimestampType;</b>
+<b class="fc"><i class="no-highlight">151</i>&nbsp;                break;</b>
+<i class="no-highlight">152</i>&nbsp;
+<i class="no-highlight">153</i>&nbsp;            case java.sql.Types.CLOB:
+<i class="no-highlight">154</i>&nbsp;            case java.sql.Types.NCLOB:
+<b class="fc"><i class="no-highlight">155</i>&nbsp;                result = ClobType;</b>
+<b class="fc"><i class="no-highlight">156</i>&nbsp;                break;</b>
+<i class="no-highlight">157</i>&nbsp;
+<i class="no-highlight">158</i>&nbsp;            case java.sql.Types.OTHER:
+<b class="fc"><i class="no-highlight">159</i>&nbsp;                result = ObjectType;</b>
+<i class="no-highlight">160</i>&nbsp;        }
+<i class="no-highlight">161</i>&nbsp;
+<b class="fc"><i class="no-highlight">162</i>&nbsp;        if (result == null) {</b>
+<b class="fc"><i class="no-highlight">163</i>&nbsp;            log.warnNoDuplicates(Message.UnknownSQLType.message(sqlType));</b>
+<i class="no-highlight">164</i>&nbsp;        }
+<i class="no-highlight">165</i>&nbsp;
+<b class="fc"><i class="no-highlight">166</i>&nbsp;        return result;</b>
+<i class="no-highlight">167</i>&nbsp;    }
+<i class="no-highlight">168</i>&nbsp;
+<i class="no-highlight">169</i>&nbsp;    public Class&lt;?&gt; getJavaType() {
+<b class="fc"><i class="no-highlight">170</i>&nbsp;        return type;</b>
+<i class="no-highlight">171</i>&nbsp;    }
+<i class="no-highlight">172</i>&nbsp;
+<i class="no-highlight">173</i>&nbsp;    public boolean isEligibleForAutoinc() {
+<i class="no-highlight">174</i>&nbsp;        // Oracle returns BigDecimalType for INT
+<i class="no-highlight">175</i>&nbsp;        // PUBS has SmallInt -&gt; short
+<b class="fc"><i class="no-highlight">176</i>&nbsp;        return this == IntegerType || this == integerType || this == LongType || this == longType</b>
+<i class="no-highlight">177</i>&nbsp;               || this == ShortType || this == shortType || this == BigDecimalType || this == BigIntegerType;
+<i class="no-highlight">178</i>&nbsp;    }
+<i class="no-highlight">179</i>&nbsp;
+<i class="no-highlight">180</i>&nbsp;    // https://stackoverflow.com/questions/2891970/getting-default-value-for-primitive-types
+<i class="no-highlight">181</i>&nbsp;    public static &lt;T&gt; T getDefaultValue(Class&lt;T&gt; clazz) {
+<b class="fc"><i class="no-highlight">182</i>&nbsp;        return (T) Array.get(Array.newInstance(clazz, 1), 0);</b>
+<i class="no-highlight">183</i>&nbsp;    }
+<i class="no-highlight">184</i>&nbsp;}
+<i class="no-highlight">185</i>&nbsp;
+<i class="no-highlight">186</i>&nbsp;
 </div>
 </pre>
 </div>
@@ -252,7 +285,7 @@ Current scope:     <a href="../../index.html">all classes</a>
 
 <div class="footer">
     
-    <div style="float:right;">generated on 2022-03-27 14:08</div>
+    <div style="float:right;">generated on 2022-09-16 07:41</div>
 </div>
 </body>
 </html>

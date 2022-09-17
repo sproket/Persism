@@ -4,7 +4,7 @@
 <!DOCTYPE html>
 <html id="htmlId">
 <head>
-  <title>Coverage Report > Reader</title>
+  <title>Coverage Report > PropertyInfo</title>
   <style type="text/css">
     @import "../../css/coverage.css";
     @import "../../css/highlight-idea.css";
@@ -20,12 +20,15 @@ Current scope:     <a href="../../index.html">all classes</a>
     <a href="../index.html">net.sf.persism</a>
 </div>
 
-<h1>Coverage Summary for Class: Reader (net.sf.persism)</h1>
+<h1>Coverage Summary for Class: PropertyInfo (net.sf.persism)</h1>
 
 <table class="coverageStats">
-
 <tr>
   <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
 <th class="coverageStat 
 ">
   Method, %
@@ -36,7 +39,15 @@ Current scope:     <a href="../../index.html">all classes</a>
 </th>
 </tr>
 <tr>
-  <td class="name">Reader</td>
+  <td class="name">PropertyInfo</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (1/1)
+  </span>
+</td>
 <td class="coverageStat">
   <span class="percent">
     100%
@@ -47,51 +58,14 @@ Current scope:     <a href="../../index.html">all classes</a>
 </td>
 <td class="coverageStat">
   <span class="percent">
-    97.4%
+    87.5%
   </span>
   <span class="absValue">
-    (114/117)
+    (14/16)
   </span>
 </td>
 </tr>
-  <tr>
-    <td class="name">Reader$1</td>
-<td class="coverageStat">
-  <span class="percent">
-    100%
-  </span>
-  <span class="absValue">
-    (1/1)
-  </span>
-</td>
-<td class="coverageStat">
-  <span class="percent">
-    100%
-  </span>
-  <span class="absValue">
-    (1/1)
-  </span>
-</td>
-  </tr>
-<tr>
-  <td class="name"><strong>Total</strong></td>
-<td class="coverageStat">
-  <span class="percent">
-    100%
-  </span>
-  <span class="absValue">
-    (7/7)
-  </span>
-</td>
-<td class="coverageStat">
-  <span class="percent">
-    97.5%
-  </span>
-  <span class="absValue">
-    (115/118)
-  </span>
-</td>
-</tr>
+
 </table>
 
 <br/>
@@ -101,266 +75,71 @@ Current scope:     <a href="../../index.html">all classes</a>
 <pre>
 <div class="sourceCode" id="sourceCode"><i class="no-highlight">1</i>&nbsp;package net.sf.persism;
 <i class="no-highlight">2</i>&nbsp;
-<i class="no-highlight">3</i>&nbsp;import java.io.ByteArrayOutputStream;
-<i class="no-highlight">4</i>&nbsp;import java.io.IOException;
-<i class="no-highlight">5</i>&nbsp;import java.io.InputStream;
-<i class="no-highlight">6</i>&nbsp;import java.io.StringWriter;
-<i class="no-highlight">7</i>&nbsp;import java.lang.reflect.InvocationTargetException;
-<i class="no-highlight">8</i>&nbsp;import java.math.BigDecimal;
-<i class="no-highlight">9</i>&nbsp;import java.math.BigInteger;
-<i class="no-highlight">10</i>&nbsp;import java.sql.*;
-<i class="no-highlight">11</i>&nbsp;import java.util.ArrayList;
-<i class="no-highlight">12</i>&nbsp;import java.util.List;
-<i class="no-highlight">13</i>&nbsp;import java.util.Map;
-<i class="no-highlight">14</i>&nbsp;
-<b class="fc"><i class="no-highlight">15</i>&nbsp;final class Reader {</b>
-<i class="no-highlight">16</i>&nbsp;
-<b class="fc"><i class="no-highlight">17</i>&nbsp;    private static final Log log = Log.getLogger(Reader.class);</b>
-<b class="fc"><i class="no-highlight">18</i>&nbsp;    private static final Log blog = Log.getLogger(&quot;net.sf.persism.Benchmarks&quot;);</b>
-<i class="no-highlight">19</i>&nbsp;
-<i class="no-highlight">20</i>&nbsp;    private final Connection connection;
-<i class="no-highlight">21</i>&nbsp;    private final MetaData metaData;
-<i class="no-highlight">22</i>&nbsp;    private final Converter converter;
-<i class="no-highlight">23</i>&nbsp;    private final Session session;
-<i class="no-highlight">24</i>&nbsp;
-<b class="fc"><i class="no-highlight">25</i>&nbsp;    Reader(Session session) {</b>
-<b class="fc"><i class="no-highlight">26</i>&nbsp;        this.session = session;</b>
-<b class="fc"><i class="no-highlight">27</i>&nbsp;        this.connection = session.getConnection();</b>
-<b class="fc"><i class="no-highlight">28</i>&nbsp;        this.metaData = session.getMetaData();</b>
-<b class="fc"><i class="no-highlight">29</i>&nbsp;        this.converter = session.getConverter();</b>
-<i class="no-highlight">30</i>&nbsp;    }
-<i class="no-highlight">31</i>&nbsp;
-<i class="no-highlight">32</i>&nbsp;    &lt;T&gt; T readObject(T object, Map&lt;String, PropertyInfo&gt; properties, ResultSet rs) throws SQLException, IOException {
-<b class="fc"><i class="no-highlight">33</i>&nbsp;        Class&lt;?&gt; objectClass = object.getClass();</b>
+<i class="no-highlight">3</i>&nbsp;import java.lang.annotation.Annotation;
+<i class="no-highlight">4</i>&nbsp;import java.lang.reflect.Field;
+<i class="no-highlight">5</i>&nbsp;import java.lang.reflect.InvocationTargetException;
+<i class="no-highlight">6</i>&nbsp;import java.lang.reflect.Method;
+<i class="no-highlight">7</i>&nbsp;import java.util.HashMap;
+<i class="no-highlight">8</i>&nbsp;import java.util.Map;
+<i class="no-highlight">9</i>&nbsp;
+<i class="no-highlight">10</i>&nbsp;/**
+<i class="no-highlight">11</i>&nbsp; * Created by IntelliJ IDEA.
+<i class="no-highlight">12</i>&nbsp; * User: DHoward
+<i class="no-highlight">13</i>&nbsp; * Date: 9/8/11
+<i class="no-highlight">14</i>&nbsp; * Time: 8:09 AM
+<i class="no-highlight">15</i>&nbsp; */
+<b class="fc"><i class="no-highlight">16</i>&nbsp;final class PropertyInfo {</b>
+<i class="no-highlight">17</i>&nbsp;
+<i class="no-highlight">18</i>&nbsp;    String propertyName;
+<i class="no-highlight">19</i>&nbsp;    Method getter;
+<i class="no-highlight">20</i>&nbsp;    Method setter;
+<i class="no-highlight">21</i>&nbsp;    Field field;
+<i class="no-highlight">22</i>&nbsp;    boolean isJoin;
+<i class="no-highlight">23</i>&nbsp;
+<b class="fc"><i class="no-highlight">24</i>&nbsp;    Map&lt;Class&lt;? extends Annotation&gt;, Annotation&gt; annotations = new HashMap&lt;&gt;(4);</b>
+<i class="no-highlight">25</i>&nbsp;
+<i class="no-highlight">26</i>&nbsp;    Annotation getAnnotation(Class&lt;? extends Annotation&gt; annotationClass) {
+<b class="fc"><i class="no-highlight">27</i>&nbsp;        return annotations.get(annotationClass);</b>
+<i class="no-highlight">28</i>&nbsp;    }
+<i class="no-highlight">29</i>&nbsp;
+<i class="no-highlight">30</i>&nbsp;    // for collections
+<i class="no-highlight">31</i>&nbsp;    boolean isJoin() {
+<b class="fc"><i class="no-highlight">32</i>&nbsp;        return isJoin;</b>
+<i class="no-highlight">33</i>&nbsp;    }
 <i class="no-highlight">34</i>&nbsp;
-<i class="no-highlight">35</i>&nbsp;        // We should never call this method with a primitive type.
-<b class="fc"><i class="no-highlight">36</i>&nbsp;        assert Types.getType(objectClass) == null;</b>
-<i class="no-highlight">37</i>&nbsp;
-<b class="fc"><i class="no-highlight">38</i>&nbsp;        ResultSetMetaData rsmd = rs.getMetaData();</b>
-<b class="fc"><i class="no-highlight">39</i>&nbsp;        int columnCount = rsmd.getColumnCount();</b>
-<i class="no-highlight">40</i>&nbsp;
-<b class="fc"><i class="no-highlight">41</i>&nbsp;        for (int j = 1; j &lt;= columnCount; j++) {</b>
-<i class="no-highlight">42</i>&nbsp;
-<b class="fc"><i class="no-highlight">43</i>&nbsp;            String columnName = rsmd.getColumnLabel(j);</b>
-<i class="no-highlight">44</i>&nbsp;
-<b class="fc"><i class="no-highlight">45</i>&nbsp;            PropertyInfo columnProperty = getPropertyInfo(columnName, properties);</b>
-<i class="no-highlight">46</i>&nbsp;
-<b class="fc"><i class="no-highlight">47</i>&nbsp;            if (columnProperty != null) {</b>
-<b class="fc"><i class="no-highlight">48</i>&nbsp;                Class&lt;?&gt; returnType = columnProperty.getter.getReturnType();</b>
-<i class="no-highlight">49</i>&nbsp;
-<b class="fc"><i class="no-highlight">50</i>&nbsp;                Object value = readColumn(rs, j, rsmd.getColumnType(j), columnName, returnType);</b>
-<i class="no-highlight">51</i>&nbsp;
-<b class="fc"><i class="no-highlight">52</i>&nbsp;                if (value != null) {</b>
-<i class="no-highlight">53</i>&nbsp;                    try {
-<b class="fc"><i class="no-highlight">54</i>&nbsp;                        columnProperty.setValue(object, value);</b>
-<b class="fc"><i class="no-highlight">55</i>&nbsp;                    } catch (IllegalArgumentException e) {</b>
-<i class="no-highlight">56</i>&nbsp;                        // A IllegalArgumentException (which is a RuntimeException) occurs if we&#39;re setting an unmatched ENUM
-<b class="fc"><i class="no-highlight">57</i>&nbsp;                        throw new PersismException(Messages.IllegalArgumentReadingColumn.message(columnProperty.propertyName, objectClass, columnName, returnType, value.getClass(), value), e);</b>
-<b class="fc"><i class="no-highlight">58</i>&nbsp;                    }</b>
-<i class="no-highlight">59</i>&nbsp;                }
-<i class="no-highlight">60</i>&nbsp;            }
-<i class="no-highlight">61</i>&nbsp;        }
-<i class="no-highlight">62</i>&nbsp;
-<b class="fc"><i class="no-highlight">63</i>&nbsp;        if (object instanceof Persistable&lt;?&gt; pojo) {</b>
-<i class="no-highlight">64</i>&nbsp;            // Save this object initial state to later detect changed properties
-<b class="fc"><i class="no-highlight">65</i>&nbsp;            pojo.saveReadState();</b>
-<i class="no-highlight">66</i>&nbsp;        }
-<b class="fc"><i class="no-highlight">67</i>&nbsp;        return (T) object;</b>
-<i class="no-highlight">68</i>&nbsp;    }
-<i class="no-highlight">69</i>&nbsp;
-<i class="no-highlight">70</i>&nbsp;    &lt;T&gt; T readRecord(RecordInfo&lt;T&gt; recordInfo, ResultSet rs) throws SQLException, IOException, InvocationTargetException, InstantiationException, IllegalAccessException {
-<i class="no-highlight">71</i>&nbsp;
-<i class="no-highlight">72</i>&nbsp;        long now;
-<b class="fc"><i class="no-highlight">73</i>&nbsp;        now = System.nanoTime();</b>
-<i class="no-highlight">74</i>&nbsp;
-<b class="fc"><i class="no-highlight">75</i>&nbsp;        ResultSetMetaData rsmd = rs.getMetaData();</b>
-<b class="fc"><i class="no-highlight">76</i>&nbsp;        List&lt;Object&gt; constructorParams = new ArrayList&lt;&gt;(recordInfo.propertyInfoByConstructorOrder.keySet().size());</b>
-<i class="no-highlight">77</i>&nbsp;
-<b class="fc"><i class="no-highlight">78</i>&nbsp;        for (String col : recordInfo.propertyInfoByConstructorOrder.keySet()) {</b>
-<b class="fc"><i class="no-highlight">79</i>&nbsp;            Class&lt;?&gt; returnType = recordInfo.propertyInfoByConstructorOrder.get(col).field.getType();</b>
-<i class="no-highlight">80</i>&nbsp;
-<b class="fc"><i class="no-highlight">81</i>&nbsp;            int ncol = recordInfo.ordinals.get(col);</b>
-<b class="fc"><i class="no-highlight">82</i>&nbsp;            Object value = readColumn(rs, ncol, rsmd.getColumnType(ncol), rsmd.getColumnLabel(ncol), returnType);</b>
-<b class="fc"><i class="no-highlight">83</i>&nbsp;            if (value == null &amp;&amp; returnType.isPrimitive()) {</b>
-<i class="no-highlight">84</i>&nbsp;                // Set null primitives to their default, otherwise the constructor will not be found
-<b class="fc"><i class="no-highlight">85</i>&nbsp;                value = Types.getDefaultValue(returnType);</b>
-<i class="no-highlight">86</i>&nbsp;            }
-<i class="no-highlight">87</i>&nbsp;
-<b class="fc"><i class="no-highlight">88</i>&nbsp;            constructorParams.add(value);</b>
-<b class="fc"><i class="no-highlight">89</i>&nbsp;        }</b>
-<i class="no-highlight">90</i>&nbsp;
-<i class="no-highlight">91</i>&nbsp;
-<i class="no-highlight">92</i>&nbsp;        try {
-<i class="no-highlight">93</i>&nbsp;            //noinspection
-<b class="fc"><i class="no-highlight">94</i>&nbsp;            return recordInfo.constructor.newInstance(constructorParams.toArray());</b>
-<i class="no-highlight">95</i>&nbsp;        } finally {
-<b class="fc"><i class="no-highlight">96</i>&nbsp;            blog.debug(&quot;time to get readRecord: %s&quot;, (System.nanoTime() - now));</b>
-<b class="nc"><i class="no-highlight">97</i>&nbsp;        }</b>
-<i class="no-highlight">98</i>&nbsp;    }
-<i class="no-highlight">99</i>&nbsp;
-<i class="no-highlight">100</i>&nbsp;
-<i class="no-highlight">101</i>&nbsp;    Object readColumn(ResultSet rs, int column, int sqlColumnType, String columnName, Class&lt;?&gt; returnType) throws SQLException, IOException {
-<b class="fc"><i class="no-highlight">102</i>&nbsp;        long now = System.nanoTime();</b>
-<i class="no-highlight">103</i>&nbsp;
-<b class="fc"><i class="no-highlight">104</i>&nbsp;        if (returnType.isEnum()) {</b>
-<i class="no-highlight">105</i>&nbsp;            // Some DBs may read an enum type as other 1111 - we can tell it here to read it as a string.
-<b class="fc"><i class="no-highlight">106</i>&nbsp;            sqlColumnType = java.sql.Types.CHAR;</b>
-<i class="no-highlight">107</i>&nbsp;        }
-<i class="no-highlight">108</i>&nbsp;
-<b class="fc"><i class="no-highlight">109</i>&nbsp;        Types columnType = Types.convert(sqlColumnType); // note this could be null if we can&#39;t match a type</b>
-<i class="no-highlight">110</i>&nbsp;
-<b class="fc"><i class="no-highlight">111</i>&nbsp;        Object value = null;</b>
-<i class="no-highlight">112</i>&nbsp;
-<b class="fc"><i class="no-highlight">113</i>&nbsp;        if (columnType != null) {</b>
-<i class="no-highlight">114</i>&nbsp;
-<b class="fc"><i class="no-highlight">115</i>&nbsp;            switch (columnType) {</b>
-<i class="no-highlight">116</i>&nbsp;
-<i class="no-highlight">117</i>&nbsp;                case BooleanType:
-<i class="no-highlight">118</i>&nbsp;                case booleanType:
-<b class="fc"><i class="no-highlight">119</i>&nbsp;                    if (returnType == Boolean.class || returnType == boolean.class) {</b>
-<b class="fc"><i class="no-highlight">120</i>&nbsp;                        value = rs.getBoolean(column);</b>
-<i class="no-highlight">121</i>&nbsp;                    } else {
-<b class="nc"><i class="no-highlight">122</i>&nbsp;                        value = rs.getByte(column);</b>
-<i class="no-highlight">123</i>&nbsp;                    }
-<b class="nc"><i class="no-highlight">124</i>&nbsp;                    break;</b>
-<i class="no-highlight">125</i>&nbsp;
-<i class="no-highlight">126</i>&nbsp;                case TimestampType:
-<b class="fc"><i class="no-highlight">127</i>&nbsp;                    if (returnType == String.class) { // JTDS</b>
-<b class="fc"><i class="no-highlight">128</i>&nbsp;                        value = rs.getString(column);</b>
-<i class="no-highlight">129</i>&nbsp;                    } else {
-<i class="no-highlight">130</i>&nbsp;                        // work around to Oracle reading a oracle.sql.TIMESTAMP class with getObject
-<b class="fc"><i class="no-highlight">131</i>&nbsp;                        value = rs.getTimestamp(column);</b>
-<i class="no-highlight">132</i>&nbsp;                    }
-<b class="fc"><i class="no-highlight">133</i>&nbsp;                    break;</b>
-<i class="no-highlight">134</i>&nbsp;
-<i class="no-highlight">135</i>&nbsp;                case ByteArrayType:
-<i class="no-highlight">136</i>&nbsp;                case byteArrayType:
-<b class="fc"><i class="no-highlight">137</i>&nbsp;                    value = rs.getBytes(column);</b>
-<b class="fc"><i class="no-highlight">138</i>&nbsp;                    break;</b>
-<i class="no-highlight">139</i>&nbsp;
-<i class="no-highlight">140</i>&nbsp;                case ClobType:
-<b class="fc"><i class="no-highlight">141</i>&nbsp;                    Clob clob = rs.getClob(column);</b>
-<b class="fc"><i class="no-highlight">142</i>&nbsp;                    if (clob != null) {</b>
-<b class="fc"><i class="no-highlight">143</i>&nbsp;                        try (InputStream in = clob.getAsciiStream()) {</b>
-<b class="fc"><i class="no-highlight">144</i>&nbsp;                            StringWriter writer = new StringWriter();</b>
-<i class="no-highlight">145</i>&nbsp;
-<b class="fc"><i class="no-highlight">146</i>&nbsp;                            int c = -1;</b>
-<b class="fc"><i class="no-highlight">147</i>&nbsp;                            while ((c = in.read()) != -1) {</b>
-<b class="fc"><i class="no-highlight">148</i>&nbsp;                                writer.write(c);</b>
-<i class="no-highlight">149</i>&nbsp;                            }
-<b class="fc"><i class="no-highlight">150</i>&nbsp;                            writer.flush();</b>
-<b class="fc"><i class="no-highlight">151</i>&nbsp;                            value = writer.toString();</b>
-<b class="fc"><i class="no-highlight">152</i>&nbsp;                        }</b>
-<i class="no-highlight">153</i>&nbsp;                    }
-<i class="no-highlight">154</i>&nbsp;                    break;
-<i class="no-highlight">155</i>&nbsp;
-<i class="no-highlight">156</i>&nbsp;                case BlobType:
-<b class="fc"><i class="no-highlight">157</i>&nbsp;                    byte[] buffer = new byte[1024];</b>
-<b class="fc"><i class="no-highlight">158</i>&nbsp;                    Blob blob = rs.getBlob(column);</b>
-<b class="fc"><i class="no-highlight">159</i>&nbsp;                    if (blob != null) {</b>
-<b class="fc"><i class="no-highlight">160</i>&nbsp;                        try (InputStream in = blob.getBinaryStream()) {</b>
-<b class="fc"><i class="no-highlight">161</i>&nbsp;                            ByteArrayOutputStream bos = new ByteArrayOutputStream((int) blob.length());</b>
-<b class="fc"><i class="no-highlight">162</i>&nbsp;                            for (int len; (len = in.read(buffer)) != -1; ) {</b>
-<b class="fc"><i class="no-highlight">163</i>&nbsp;                                bos.write(buffer, 0, len);</b>
-<i class="no-highlight">164</i>&nbsp;                            }
-<b class="fc"><i class="no-highlight">165</i>&nbsp;                            value = bos.toByteArray();</b>
-<b class="fc"><i class="no-highlight">166</i>&nbsp;                        }</b>
-<i class="no-highlight">167</i>&nbsp;                    }
-<i class="no-highlight">168</i>&nbsp;                    break;
-<i class="no-highlight">169</i>&nbsp;
-<i class="no-highlight">170</i>&nbsp;                case IntegerType:
-<i class="no-highlight">171</i>&nbsp;                    // stupid SQLite reports LONGS as Integers for date types which WRAPS past Integer.MAX - Clowns.
-<b class="fc"><i class="no-highlight">172</i>&nbsp;                    if (metaData.getConnectionType() == ConnectionTypes.SQLite) {</b>
-<b class="fc"><i class="no-highlight">173</i>&nbsp;                        value = rs.getObject(column);</b>
-<b class="fc"><i class="no-highlight">174</i>&nbsp;                        if (value != null) {</b>
-<b class="fc"><i class="no-highlight">175</i>&nbsp;                            if (value instanceof Long) {</b>
-<b class="fc"><i class="no-highlight">176</i>&nbsp;                                value = rs.getLong(column);</b>
-<i class="no-highlight">177</i>&nbsp;                            } else {
-<b class="fc"><i class="no-highlight">178</i>&nbsp;                                value = rs.getInt(column);</b>
-<i class="no-highlight">179</i>&nbsp;                            }
-<i class="no-highlight">180</i>&nbsp;                        }
-<i class="no-highlight">181</i>&nbsp;                    } else {
-<b class="fc"><i class="no-highlight">182</i>&nbsp;                        value = rs.getObject(column) == null ? null : rs.getInt(column);</b>
-<i class="no-highlight">183</i>&nbsp;                    }
-<b class="fc"><i class="no-highlight">184</i>&nbsp;                    break;</b>
-<i class="no-highlight">185</i>&nbsp;
-<i class="no-highlight">186</i>&nbsp;                case LongType:
-<b class="fc"><i class="no-highlight">187</i>&nbsp;                    value = rs.getObject(column) == null ? null : rs.getLong(column);</b>
-<b class="fc"><i class="no-highlight">188</i>&nbsp;                    break;</b>
-<i class="no-highlight">189</i>&nbsp;
-<i class="no-highlight">190</i>&nbsp;                case FloatType:
-<b class="fc"><i class="no-highlight">191</i>&nbsp;                    value = rs.getObject(column) == null ? null : rs.getFloat(column);</b>
-<b class="fc"><i class="no-highlight">192</i>&nbsp;                    break;</b>
-<i class="no-highlight">193</i>&nbsp;
-<i class="no-highlight">194</i>&nbsp;                case DoubleType:
-<b class="fc"><i class="no-highlight">195</i>&nbsp;                    value = rs.getObject(column) == null ? null : rs.getDouble(column);</b>
-<b class="fc"><i class="no-highlight">196</i>&nbsp;                    break;</b>
-<i class="no-highlight">197</i>&nbsp;
-<i class="no-highlight">198</i>&nbsp;                case BigIntegerType:
-<i class="no-highlight">199</i>&nbsp;                case BigDecimalType:
-<b class="fc"><i class="no-highlight">200</i>&nbsp;                    if (returnType == BigInteger.class) {</b>
-<b class="fc"><i class="no-highlight">201</i>&nbsp;                        BigDecimal bd = rs.getBigDecimal(column);</b>
-<b class="fc"><i class="no-highlight">202</i>&nbsp;                        if (bd != null) {</b>
-<b class="fc"><i class="no-highlight">203</i>&nbsp;                            value = bd.toBigInteger();</b>
-<i class="no-highlight">204</i>&nbsp;                        }
-<b class="fc"><i class="no-highlight">205</i>&nbsp;                    } else {</b>
-<b class="fc"><i class="no-highlight">206</i>&nbsp;                        value = rs.getBigDecimal(column);</b>
-<i class="no-highlight">207</i>&nbsp;                    }
-<b class="fc"><i class="no-highlight">208</i>&nbsp;                    break;</b>
-<i class="no-highlight">209</i>&nbsp;
-<i class="no-highlight">210</i>&nbsp;                case TimeType:
-<b class="fc"><i class="no-highlight">211</i>&nbsp;                    value = rs.getTime(column);</b>
-<b class="fc"><i class="no-highlight">212</i>&nbsp;                    break;</b>
-<i class="no-highlight">213</i>&nbsp;
-<i class="no-highlight">214</i>&nbsp;// We can&#39;t assume rs.getDate will work. SQLITE actually has a long value in here.
-<i class="no-highlight">215</i>&nbsp;// We can live with rs.getObject and the convert method will handle it.
-<i class="no-highlight">216</i>&nbsp;//                case SQLDateType:
-<i class="no-highlight">217</i>&nbsp;//                case UtilDateType:
-<i class="no-highlight">218</i>&nbsp;//                    value = rs.getDate(column);
-<i class="no-highlight">219</i>&nbsp;//                    break;
-<i class="no-highlight">220</i>&nbsp;
-<i class="no-highlight">221</i>&nbsp;                case StringType:
-<b class="fc"><i class="no-highlight">222</i>&nbsp;                    if (returnType == Character.class || returnType == char.class) {</b>
-<b class="fc"><i class="no-highlight">223</i>&nbsp;                        String s = rs.getString(column);</b>
-<b class="fc"><i class="no-highlight">224</i>&nbsp;                        if (s != null &amp;&amp; s.length() &gt; 0) {</b>
-<b class="fc"><i class="no-highlight">225</i>&nbsp;                            value = s.charAt(0);</b>
-<i class="no-highlight">226</i>&nbsp;                        }
-<i class="no-highlight">227</i>&nbsp;                        break;
-<i class="no-highlight">228</i>&nbsp;                    }
-<i class="no-highlight">229</i>&nbsp;
-<b class="fc"><i class="no-highlight">230</i>&nbsp;                    value = rs.getString(column);</b>
-<b class="fc"><i class="no-highlight">231</i>&nbsp;                    break;</b>
-<i class="no-highlight">232</i>&nbsp;
-<i class="no-highlight">233</i>&nbsp;                default:
-<b class="fc"><i class="no-highlight">234</i>&nbsp;                    value = rs.getObject(column);</b>
-<i class="no-highlight">235</i>&nbsp;            }
-<i class="no-highlight">236</i>&nbsp;
-<i class="no-highlight">237</i>&nbsp;        } else {
-<b class="fc"><i class="no-highlight">238</i>&nbsp;            log.warnNoDuplicates(Messages.ColumnTypeNotKnownForSQLType.message(sqlColumnType, columnName));</b>
-<b class="fc"><i class="no-highlight">239</i>&nbsp;            value = rs.getObject(column);</b>
-<i class="no-highlight">240</i>&nbsp;        }
-<i class="no-highlight">241</i>&nbsp;
-<i class="no-highlight">242</i>&nbsp;        // If value is null or column type is unknown - no need to try to convert anything.
-<b class="fc"><i class="no-highlight">243</i>&nbsp;        if (value != null &amp;&amp; columnType != null) {</b>
-<b class="fc"><i class="no-highlight">244</i>&nbsp;            value = converter.convert(value, returnType, columnName);</b>
-<i class="no-highlight">245</i>&nbsp;        }
-<i class="no-highlight">246</i>&nbsp;
-<b class="fc"><i class="no-highlight">247</i>&nbsp;        blog.debug(&quot;time to readColumn: %s&quot;, (System.nanoTime() - now));</b>
-<b class="fc"><i class="no-highlight">248</i>&nbsp;        return value;</b>
-<i class="no-highlight">249</i>&nbsp;    }
-<i class="no-highlight">250</i>&nbsp;
-<i class="no-highlight">251</i>&nbsp;
-<i class="no-highlight">252</i>&nbsp;    // Poor man&#39;s case-insensitive linked hash map ;)
-<i class="no-highlight">253</i>&nbsp;    PropertyInfo getPropertyInfo(String col, Map&lt;String, PropertyInfo&gt; properties) {
-<b class="fc"><i class="no-highlight">254</i>&nbsp;        for (String key : properties.keySet()) {</b>
-<b class="fc"><i class="no-highlight">255</i>&nbsp;            if (key.equalsIgnoreCase(col)) {</b>
-<b class="fc"><i class="no-highlight">256</i>&nbsp;                return properties.get(key);</b>
-<i class="no-highlight">257</i>&nbsp;            }
-<b class="fc"><i class="no-highlight">258</i>&nbsp;        }</b>
-<b class="fc"><i class="no-highlight">259</i>&nbsp;        return null;</b>
-<i class="no-highlight">260</i>&nbsp;    }
-<i class="no-highlight">261</i>&nbsp;
-<i class="no-highlight">262</i>&nbsp;}
+<i class="no-highlight">35</i>&nbsp;    // Convenience getter with runtime exception for functional
+<i class="no-highlight">36</i>&nbsp;    Object getValue(Object object) {
+<i class="no-highlight">37</i>&nbsp;        try {
+<b class="fc"><i class="no-highlight">38</i>&nbsp;            return getter.invoke(object);</b>
+<b class="nc"><i class="no-highlight">39</i>&nbsp;        } catch (IllegalAccessException | InvocationTargetException e) {</b>
+<b class="nc"><i class="no-highlight">40</i>&nbsp;            throw new PersismException(e.getMessage(), e);</b>
+<i class="no-highlight">41</i>&nbsp;        }
+<i class="no-highlight">42</i>&nbsp;    }
+<i class="no-highlight">43</i>&nbsp;
+<i class="no-highlight">44</i>&nbsp;    void setValue(Object object, Object value) {
+<i class="no-highlight">45</i>&nbsp;        try {
+<b class="fc"><i class="no-highlight">46</i>&nbsp;            if (setter != null) {</b>
+<b class="fc"><i class="no-highlight">47</i>&nbsp;                setter.invoke(object, value);</b>
+<i class="no-highlight">48</i>&nbsp;            } else {
+<b class="fc"><i class="no-highlight">49</i>&nbsp;                field.setAccessible(true);</b>
+<b class="fc"><i class="no-highlight">50</i>&nbsp;                field.set(object, value);</b>
+<b class="fc"><i class="no-highlight">51</i>&nbsp;                field.setAccessible(false);</b>
+<i class="no-highlight">52</i>&nbsp;            }
+<b class="fc"><i class="no-highlight">53</i>&nbsp;        } catch (IllegalAccessException | InvocationTargetException e) {</b>
+<b class="fc"><i class="no-highlight">54</i>&nbsp;            throw new PersismException(e.getMessage(), e);</b>
+<b class="fc"><i class="no-highlight">55</i>&nbsp;        }</b>
+<i class="no-highlight">56</i>&nbsp;    }
+<i class="no-highlight">57</i>&nbsp;
+<i class="no-highlight">58</i>&nbsp;    @Override
+<i class="no-highlight">59</i>&nbsp;    public String toString() {
+<b class="fc"><i class="no-highlight">60</i>&nbsp;        return &quot;PropertyInfo{&quot; +</b>
+<i class="no-highlight">61</i>&nbsp;                &quot;propertyName=&#39;&quot; + propertyName + &#39;\&#39;&#39; +
+<i class="no-highlight">62</i>&nbsp;                &quot;, getter=&quot; + getter +
+<i class="no-highlight">63</i>&nbsp;                &quot;, setter=&quot; + setter +
+<i class="no-highlight">64</i>&nbsp;                &quot;, annotations=&quot; + annotations +
+<i class="no-highlight">65</i>&nbsp;                &#39;}&#39;;
+<i class="no-highlight">66</i>&nbsp;    }
+<i class="no-highlight">67</i>&nbsp;}
 </div>
 </pre>
 </div>
@@ -387,7 +166,7 @@ Current scope:     <a href="../../index.html">all classes</a>
 
 <div class="footer">
     
-    <div style="float:right;">generated on 2022-03-27 14:08</div>
+    <div style="float:right;">generated on 2022-09-16 07:41</div>
 </div>
 </body>
 </html>
