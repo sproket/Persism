@@ -1,36 +1,21 @@
 [Current Version 2.2.0](release-notes.md)
 
-<!-- ??? -->
-<div style="float: right">
-<span style="font-weight: bold">By the numbers</span>
-<ul> 
-<li style="list-style-type:none;">
-100k jar
-</li>
-<li style="list-style-type:none;">
-439 unit tests
-</li>
-<li style="list-style-type:none;">
-96% code coverage
-</li>
-<li style="list-style-type:none;">
-11 supported dbs
-</li>
-<li style="list-style-type:none;">
-0 dependencies
-</li>
-</ul> 
-</div>
-
 # ![](img/logo2.png) Welcome
 <hr>
 Persism is a light weight, auto-discovery, auto-configuration, and convention over configuration ORM (Object Relational Mapping) library for Java.
 <br>
 <br>
 
-
 <span style="font-style: italic"> "Coding by convention, kind of like Apache Wicket... I guess it has its place, yes. jOOQ also does auto-mapping of column names. But not of table names. Nice thinking" </span>
 <a href="https://www.reddit.com/r/java/comments/1hxgrc/jooqs_reason_for_being_compared_to_jpa_linq_jdbc/cb1hgnw/">&nbsp; lukaseder - Author of JOOQ</a>
+
+### By The Numbers
+
+* 100k JAR
+* 400+ Unit Tests
+* 96% Code Coverage
+* 11 Supported DBs
+* 0 Dependencies 
 
 [**Get Started!**](/manual2.md)
 
@@ -54,7 +39,6 @@ In many cases you probably don't even need them.
 Persism can usually detect the table and column mappings for you including primary/generated
 keys and columns with defaults.
 
-## Smart
 Persism will do the correct thing by default. Persism understands that your class is called 
 "Customer" and your table is called "CUSTOMERS". It understands that your table column is 
 "CUSTOMER_ID" and your property is "customerId". Persism works fine even 
