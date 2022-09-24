@@ -671,6 +671,10 @@ Here's an example logback configuration for logging with Persism:
 
 [Using Persism with Modules](modules.md)
 
+[Javadoc](/javadoc/persism2/index.html)
+
+[Code Coverage](/coverage/persism2/index.html) 
+
 
 ## Known Issues
 

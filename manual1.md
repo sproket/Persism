@@ -576,6 +576,10 @@ Here's an example logback configuration for logging with Persism:
 
 [Using Persism with Java Records](records.md)
 
+[Javadoc](/javadoc/persism1/index.html)
+
+[Code Coverage](/coverage/persism1/index.html)
+
 ## Known Issues
 
 - No support for newer Timezone related date types yet
