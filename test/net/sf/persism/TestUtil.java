@@ -8,13 +8,13 @@ package net.sf.persism;
 
 import junit.framework.TestCase;
 import net.sf.persism.dao.Customer;
-import net.sf.persism.dao.Invoice;
 import net.sf.persism.dao.Postman;
 import org.junit.Test;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.ParameterizedType;
 import java.util.*;
+import java.util.function.BiFunction;
 
 public class TestUtil extends TestCase {
 
@@ -176,6 +176,19 @@ public class TestUtil extends TestCase {
         ParameterizedType custListType = (ParameterizedType) custListField.getGenericType();
         Class<?> custListClass = (Class<?>) custListType.getActualTypeArguments()[0];
         System.out.println(custListClass); // ?
+    }
+
+    public void testLambda() {
+
+        // https://stackoverflow.com/questions/21920039/how-do-you-assign-a-lambda-to-a-variable-in-java-8
+        Map<String, Integer> map = new HashMap<>();
+        map.put("A", 1);
+        map.put("B", 2);
+        map.put("C", 3);
+        map.compute("A", (k, v) -> v == null ? 42 : v + 41);
+
+        BiFunction<String, Integer, Integer> x = (k, v) -> v == null ? 42 : v + 41;
+        map.compute("A", x);
     }
 
     class E extends Exception {

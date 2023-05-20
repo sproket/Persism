@@ -66,6 +66,8 @@ public final class TestSQLite extends BaseTest {
 
     @Override
     protected void createTables() throws SQLException {
+        super.createTables();
+
 
         Statement st = null;
         List<String> commands = new ArrayList<String>(3);

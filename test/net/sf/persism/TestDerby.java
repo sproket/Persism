@@ -67,6 +67,8 @@ public final class TestDerby extends BaseTest {
 
     @Override
     protected void createTables() throws SQLException {
+        super.createTables();
+
         List<String> commands = new ArrayList<String>(12);
         String sql;
         if (isTableInDatabase("Orders", con)) {

@@ -6,7 +6,7 @@
 
     <groupId>io.github.sproket</groupId>
     <artifactId>persism</artifactId>
-    <version>2.2.0</version>
+    <version>2.2.1a</version>
     <packaging>jar</packaging>
 
     <name>persism</name>
@@ -345,7 +345,7 @@
         <dependency>
             <groupId>com.h2database</groupId>
             <artifactId>h2</artifactId>
-            <version>1.4.200</version>
+            <version>2.0.202</version>
             <scope>test</scope>
         </dependency>
 
@@ -487,6 +487,13 @@
             <scope>test</scope>
         </dependency>
 
+
+        <dependency>
+            <groupId>org.apache.httpcomponents.client5</groupId>
+            <artifactId>httpclient5</artifactId>
+            <version>5.2.1</version>
+            <scope>test</scope>
+        </dependency>
 
         <!-- https://mvnrepository.com/artifact/org.codehaus.mojo/cobertura-maven-plugin -->
         <!-- DOES NOT WORK with JAVA 8 + -->

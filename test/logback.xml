@@ -48,11 +48,11 @@
 
     <logger name="org" level="ERROR"/>
 
-    <logger name="net.sf.persism" level="DEBUG"/>
-    <logger name="net.sf.persism.SQL" level="DEBUG">
+    <logger name="net.sf.persism" level="INFO"/>
+    <logger name="net.sf.persism.SQL" level="WARN">
         <appender-ref ref="SQL"/>
     </logger>
-    <logger name="net.sf.persism.Benchmarks" level="DEBUG"/>
+    <logger name="net.sf.persism.Benchmarks" level="WARN"/>
     <logger name="net" level="ERROR"/>
 
     <!-- ERROR, WARN, INFO, DEBUG, OFF -->

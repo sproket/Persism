@@ -53,6 +53,7 @@ public final class TestHSQLDB extends BaseTest {
 
     @Override
     protected void createTables() throws SQLException {
+        super.createTables();
         String sql;
 
         if (isTableInDatabase("TestSpaces", con)) {

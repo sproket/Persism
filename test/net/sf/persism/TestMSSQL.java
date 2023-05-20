@@ -86,6 +86,7 @@ public class TestMSSQL extends BaseTest {
 
     @Override
     protected void createTables() throws SQLException {
+        super.createTables();
         log.info("createTables");
         List<String> commands = new ArrayList<String>(3);
 

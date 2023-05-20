@@ -4,10 +4,14 @@ import net.sf.persism.categories.LocalDB;
 import net.sf.persism.dao.*;
 import org.junit.experimental.categories.Category;
 
+import java.io.File;
 import java.sql.*;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.*;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
 
 import static net.sf.persism.Parameters.params;
 import static net.sf.persism.SQL.sql;
@@ -40,21 +44,34 @@ to the database URL (example: jdbc:h2:~/test;IGNORECASE=TRUE).
 
     private static final Log log = Log.getLogger(TestH2.class);
 
+    private String home;
+
+    private boolean deleteDBFiles = true;
+
+    public TestH2() {
+//        home = UtilsForTests.createHomeFolder("pinfh2");
+//        log.info(home);
+//        UtilsForTests.deleteDir(new File(home));
+    }
+
     @Override
     protected void setUp() throws Exception {
         connectionType = ConnectionType.H2;
         super.setUp();
 
+        home = UtilsForTests.createHomeFolder("pinfh2");
+
         Properties props = new Properties();
         props.load(getClass().getResourceAsStream("/h2.properties"));
         Class.forName(props.getProperty("database.driver"));
-
-        String home = UtilsForTests.createHomeFolder("pinfh2");
         String url = UtilsForTests.replace(props.getProperty("database.url"), "{$home}", home);
-        log.info(url);
+
+        if (deleteDBFiles) {
+            UtilsForTests.deleteDir(new File(home));
+            deleteDBFiles = false;
+        }
 
         con = DriverManager.getConnection(url, "sa", "");
-
         createTables();
 
         session = new Session(con, "jdbc:h2/H2!");
@@ -63,15 +80,17 @@ to the database URL (example: jdbc:h2:~/test;IGNORECASE=TRUE).
     @Override
     protected void tearDown() throws Exception {
         super.tearDown();
+        //UtilsForTests.deleteDir(new File(home));
     }
 
     @Override
     protected void createTables() throws SQLException {
-        List<String> commands = new ArrayList<>(12);
+        super.createTables();
+
         String sql;
         if (isTableInDatabase("Orders", con)) {
             sql = "DROP TABLE Orders";
-            commands.add(sql);
+            executeCommand(sql, con);
         }
 
         sql = "CREATE TABLE Orders ( " +
@@ -87,53 +106,54 @@ to the database URL (example: jdbc:h2:~/test;IGNORECASE=TRUE).
               " Date_Something TIMESTAMP NULL " +
               ") ";
 
-        commands.add(sql);
+        executeCommand(sql, con);
 
         // view first
         if (isViewInDatabase("CustomerInvoice", con)) {
-            commands.add("DROP VIEW CustomerInvoice");
+            executeCommand("DROP VIEW CustomerInvoice", con);
         }
 
         if (isTableInDatabase("Customers", con)) {
-            commands.add("DROP TABLE Customers");
+            executeCommand("DROP TABLE Customers", con);
         }
 
-        commands.add("CREATE TABLE Customers ( " +
-                     " Customer_ID varchar(10) PRIMARY KEY NOT NULL, " +
-                     " GROUP_ID INT NULL, " +
-                     " Company_Name VARCHAR(30) NULL, " +
-                     " Contact_Name VARCHAR(30) NULL, " +
-                     " Contact_Title VARCHAR(10) NULL, " +
-                     " Address VARCHAR(40) NULL, " +
-                     " City VARCHAR(30) NULL, " +
-                     " Region ENUM('North', 'South', 'East', 'West'), " +
-                     " Postal_Code VARCHAR(10) NULL, " +
-                     " Country VARCHAR(2) DEFAULT 'US', " +
-                     " Phone VARCHAR(30) NULL, " +
-                     " Fax VARCHAR(30) NULL, " +
-                     " Status CHAR(1) NULL, " +
-                     " Date_Registered datetime default current_timestamp, " +
-                     " Date_Of_Last_Order DATE NULL, " +
-                     " TestLocalDate date NULL, " +
-                     " TestLocalDateTime datetime NULL" +
-                     ") ");
+        sql = "CREATE TABLE Customers ( " +
+              " Customer_ID varchar(10) PRIMARY KEY NOT NULL, " +
+              " GROUP_ID INT NULL, " +
+              " Company_Name VARCHAR(30) NULL, " +
+              " Contact_Name VARCHAR(30) NULL, " +
+              " Contact_Title VARCHAR(10) NULL, " +
+              " Address VARCHAR(40) NULL, " +
+              " City VARCHAR(30) NULL, " +
+              " Region ENUM('North', 'South', 'East', 'West'), " +
+              " Postal_Code VARCHAR(10) NULL, " +
+              " Country VARCHAR(2) DEFAULT 'US', " +
+              " Phone VARCHAR(30) NULL, " +
+              " Fax VARCHAR(30) NULL, " +
+              " Status CHAR(1) NULL, " +
+              " Date_Registered datetime default current_timestamp, " +
+              " Date_Of_Last_Order DATE NULL, " +
+              " TestLocalDate date NULL, " +
+              " TestLocalDateTime datetime NULL" +
+              ") ";
+        executeCommand(sql, con);
 
         if (isTableInDatabase("Invoices", con)) {
-            commands.add("DROP TABLE Invoices");
+            executeCommand("DROP TABLE Invoices", con);
         }
 
-        commands.add("CREATE TABLE Invoices ( " +
-                     " Invoice_ID IDENTITY PRIMARY KEY, " +
-                     " Customer_ID varchar(10) NOT NULL, " +
-                     " Paid BIT NOT NULL, " +
-                     " Price NUMERIC(7,3) NOT NULL, " +
-                     " ActualPrice NUMERIC(7,3) NOT NULL, " +
-                     " Status CHAR(1) DEFAULT '1', " +
-                     " Created DateTime default current_timestamp, " + // make read-only in Invoice Object
-                     " Quantity NUMERIC(10) NOT NULL, " +
-                     " Discount NUMERIC(10,3) NOT NULL " +
-                     ") ");
-
+        sql = "CREATE TABLE Invoices ( " +
+              " Invoice_ID IDENTITY PRIMARY KEY, " +
+              " Customer_ID varchar(10) NOT NULL, " +
+              " Paid BIT NOT NULL, " +
+              " Price NUMERIC(7,3) NOT NULL, " +
+              " ActualPrice NUMERIC(7,3) NOT NULL, " +
+              " Status CHAR(1) DEFAULT '1', " +
+              " Created DateTime default current_timestamp, " + // make read-only in Invoice Object
+              " Quantity NUMERIC(10) NOT NULL, " +
+              " Discount NUMERIC(10,3) NOT NULL " +
+              ") ";
+        executeCommand(sql, con);
 
         sql = """
                 CREATE VIEW CustomerInvoice AS
@@ -142,47 +162,53 @@ to the database URL (example: jdbc:h2:~/test;IGNORECASE=TRUE).
                     JOIN Customers c ON i.Customer_ID = c.Customer_ID
                 """;
 //                     WHERE i.Status = 1 changed to char fails with Data conversion error converting
-        commands.add(sql);
-
+        executeCommand(sql, con);
 
         if (isTableInDatabase("TABLEMULTIPRIMARY", con)) {
-            commands.add("DROP TABLE TABLEMULTIPRIMARY");
+            executeCommand("DROP TABLE TABLEMULTIPRIMARY", con);
         }
 
-        commands.add("CREATE TABLE TABLEMULTIPRIMARY ( " +
-                     " OrderID INT NOT NULL, " +
-                     " ProductID VARCHAR(10) NOT NULL, " +
-                     " UnitPrice DECIMAL NOT NULL, " +
-                     " Quantity SMALLINT NOT NULL, " +
-                     " Discount REAL NOT NULL " +
-                     ") ");
+        sql = "CREATE TABLE TABLEMULTIPRIMARY ( " +
+              " OrderID INT NOT NULL, " +
+              " ProductID VARCHAR(10) NOT NULL, " +
+              " UnitPrice DECIMAL NOT NULL, " +
+              " Quantity SMALLINT NOT NULL, " +
+              " Discount REAL NOT NULL " +
+              ") ";
+        executeCommand(sql, con);
 
-        commands.add("ALTER TABLE TABLEMULTIPRIMARY ADD PRIMARY KEY (ProductID, OrderID)");
+        executeCommand("ALTER TABLE TABLEMULTIPRIMARY ADD PRIMARY KEY (ProductID, OrderID)", con);
 
 
         if (isTableInDatabase("SavedGames", con)) {
-            commands.add("DROP TABLE SavedGames");
+            executeCommand("DROP TABLE SavedGames", con);
         }
 
-        commands.add("CREATE TABLE SavedGames ( " +
-                     " ID VARCHAR(20) IDENTITY PRIMARY KEY, " +
-                     " Name VARCHAR(100), " +
-                     " Some_Date_And_Time TIMESTAMP NULL, " +
-                     " Platinum REAL NULL, " +
-                     " Gold REAL NULL, " +
-                     " Silver REAL NULL, " +
-                     " Copper REAL NULL, " +
-                     " Data TEXT NULL, " +
-                     " WhatTimeIsIt Time NULL, " +
-                     " SomethingBig BLOB NULL) ");
+        // TO_CHAR(CURRENT_TIMESTAMP(9)) NOT NULL DEFAULT '' VARCHAR(32) PRIMARY KEY
+        sql = "CREATE TABLE SavedGames ( " +
+//              " ID IDENTITY PRIMARY KEY  , " +
+              //" ID VARCHAR(20) IDENTITY PRIMARY KEY, " + // this worked in 1.x not in 2.x?
+              " ID VARCHAR(20) PRIMARY KEY, " +
+//              "  id UUID DEFAULT RANDOM_UUID() PRIMARY KEY, " +
+              " Name VARCHAR(100), " +
+              " Some_Date_And_Time TIMESTAMP NULL, " +
+              " Platinum REAL NULL, " +
+              " Gold REAL NULL, " +
+              " Silver REAL NULL, " +
+              " Copper REAL NULL, " +
+              " Data TEXT NULL, " +
+              " WhatTimeIsIt Time NULL, " +
+              " SomethingBig BLOB NULL) ";
 
-        executeCommands(commands, con);
+        log.error(sql);
+        executeCommand(sql, con);
+        log.error(sql + " FLKHSFK JHSFDKJF HLFJKH FSDJKH!");
 
         if (isTableInDatabase("Contacts", con)) {
             executeCommand("DROP TABLE Contacts", con);
         }
 
-        sql = "CREATE TABLE Contacts( " +
+        sql = "CREATE TABLE Contacts ( " +
               "   identity binary(16) NOT NULL PRIMARY KEY, " +  // test binary(16)
               "   PartnerID varchar(36) NOT NULL, " + // test varchar(36)
               "   Type char(2) NOT NULL, " +
@@ -297,12 +323,12 @@ to the database URL (example: jdbc:h2:~/test;IGNORECASE=TRUE).
               ") ";
         executeCommand(sql, con);
 
-        if (isTableInDatabase("USERS", con)) {
-            executeCommand("DROP TABLE USERS", con);
+        if (isTableInDatabase("PUBLIC", "USERS", con)) {
+            executeCommand("DROP TABLE PUBLIC.USERS", con);
         }
 
-        sql = "CREATE TABLE USERS ( " +
-              "   USER_NO int IDENTITY PRIMARY KEY, " +
+        sql = "CREATE TABLE PUBLIC.USERS ( " +
+              "   USER_NO IDENTITY PRIMARY KEY, " +
               "   USERCODE varchar(23) NULL, " +
               "   UserPass varchar(32) NULL, " +
               "   Name varchar(50) NULL, " +
@@ -336,7 +362,7 @@ to the database URL (example: jdbc:h2:~/test;IGNORECASE=TRUE).
         }
         sql = """
                 CREATE TABLE InvoiceLineItems (
-                    ID int IDENTITY PRIMARY KEY,
+                    ID IDENTITY PRIMARY KEY,
                     INVOICE_ID int,
                     Product_ID int,
                     Quantity int
@@ -367,7 +393,7 @@ to the database URL (example: jdbc:h2:~/test;IGNORECASE=TRUE).
                     AUTO VARCHAR(50),
                     Host VARCHAR(50),
                     Port NUMERIC(8),
-                    User VARCHAR(50),
+                    "User" VARCHAR(50),
                     Password VARCHAR(50),
                     missingGetter NUMERIC(10,3)
                     )
@@ -386,7 +412,7 @@ to the database URL (example: jdbc:h2:~/test;IGNORECASE=TRUE).
 
         sql = """
                 CREATE TABLE People (
-                    ID int IDENTITY PRIMARY KEY,
+                    ID IDENTITY PRIMARY KEY,
                     Name VARCHAR(50),
                     FatherID int,
                     MotherID int

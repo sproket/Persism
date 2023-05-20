@@ -153,3 +153,34 @@ SELECT * FROM pg_available_extensions;
 todo https://www.postgresqltutorial.com/postgresql-tutorial/postgresql-sequences/
 
 https://stackoverflow.com/questions/46613214/java-9-maven-junit-does-test-code-need-module-info-java-of-its-own-and-wher
+
+
+TODO BUG TO TEST
+
+Item
+    itemId property
+    col set to id with annotation
+
+PlayerItem extends Item
+    id col and property
+    itemId property foreign key
+
+insert PlayerItem
+    BUG has ID in db but id property is 0
+
+
+todo add a set of performance tests comparing Persism to the Entity framework
+
+
+
+TODO PropertyInfo should have some extra info (maybe class it belongs to)
+We should always call from PropertyInfo with extra information otherwise you just get ' argument type mismatch' which is not helpful to the end user.
+for setter
+ todo IllegalArgumentException is a different type from the field type
+ todo IllegalAccessException or module related or setting on a final field in a record
+ todo InvocationTargetException the setter call where there's an exception in the setter method
+todo for getter should we have a field get if there's no Getter?
+
+h2 back test with 1.x (worked)
+
+Convertor what about varchar under UUID case??

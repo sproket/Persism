@@ -16,7 +16,9 @@ import java.sql.*;
 import java.text.DateFormat;
 import java.text.NumberFormat;
 import java.text.SimpleDateFormat;
-import java.time.*;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
 import java.util.*;
@@ -52,7 +54,10 @@ public abstract class BaseTest extends TestCase {
     String COLUMN_FIRST_NAME = "FirstName";
     String COLUMN_LAST_NAME = "LastName";
 
-    protected abstract void createTables() throws SQLException;
+    protected void createTables() throws SQLException {
+        createMultiMatch("MultiMatch", connectionType);
+        createMultiMatch("Multi Match", connectionType);
+    }
 
     @Override
     protected void setUp() throws Exception {
@@ -61,16 +66,9 @@ public abstract class BaseTest extends TestCase {
         super.setUp();
     }
 
+
     @Override
     protected void tearDown() throws Exception {
-        String sd = connectionType.getKeywordStartDelimiter();
-        String ed = connectionType.getKeywordEndDelimiter();
-        String tableName = "Invoice Line Items";
-
-        if (isTableInDatabase(tableName, con)) {
-            executeCommand("DROP TABLE " + sd + tableName + ed, con);
-        }
-
         if (con != null) {
             //MetaData.removeInstance(con);
             con.close();
@@ -821,47 +819,42 @@ public abstract class BaseTest extends TestCase {
         assertTrue(fail);
 
 
-        // Create a 2nd match on table search which should fail
+        // Create 2 tables to match on table search which should fail
         if (session.metaData.getConnectionType().supportsSpacesInTableNames()) {
             fail = false;
-            String tableName = "Invoice Line Items";
             try {
-                if (isTableInDatabase(tableName, con)) {
-                    executeCommand("DROP TABLE " + sd + tableName + ed, con);
-                }
-                sql = "CREATE TABLE " + sd + tableName + ed + "(\n" +
-                      "    ID int ,\n" +
-                      "    INVOICE_ID int,\n" +
-                      "    Product_ID int,\n" +
-                      "    Quantity int\n" +
-                      "    )\n";
-                executeCommand(sql, con);
 
-                session.close();
-                Session.clearMetaData();
-                setUp();
-                session.query(InvoiceLineItem.class);
+                session.query(MultiMatch.class);
 
             } catch (PersismException e) {
                 fail = true;
-                assertEquals("S/B equal", CouldNotDetermineTableOrViewForTypeMultipleMatches.
-                                message("table", InvoiceLineItem.class.getName(),
-                                        "[InvoiceLineItem, InvoiceLineItems, Invoice Line Item, Invoice_Line_Item, Invoice Line Items, Invoice_Line_Items]",
-                                        "[Invoice Line Items, INVOICELINEITEMS]").toLowerCase(),
-                        e.getMessage().toLowerCase());
-            } finally {
-                if (isTableInDatabase(tableName, con)) {
-                    executeCommand("DROP TABLE " + sd + tableName + ed, con);
-                }
-                session.close();
-                Session.clearMetaData();
-                setUp();
+
+                String message = CouldNotDetermineTableOrViewForTypeMultipleMatches.
+                        message("table", MultiMatch.class.getName(),
+                                "[multimatch, multimatchs, multi match, multi_match, multi matchs, multi_matchs]",
+                                "[Multi match, MultiMatch]").toLowerCase();
+
+                assertEquals("S/B equal", message, e.getMessage().toLowerCase());
             }
             assertTrue(fail);
-
-
         }
     }
+
+    private void createMultiMatch(String tableName, ConnectionType connectionType) throws SQLException {
+        String sd = connectionType.getKeywordStartDelimiter();
+        String ed = connectionType.getKeywordEndDelimiter();
+
+        String sql;
+        if (isTableInDatabase(connectionType.getSchemaPattern(), tableName, con)) {
+            executeCommand("DROP TABLE " + sd + tableName + ed, con);
+        }
+        sql = "CREATE TABLE " + sd + tableName + ed + "(\n" +
+              "    ID int ,\n" +
+              "    Name VARCHAR(10) \n" +
+              "    )\n";
+        executeCommand(sql, con);
+    }
+
 
     public void testTableNoPrimary() {
         TableNoPrimary junk = new TableNoPrimary();
@@ -1315,7 +1308,7 @@ public abstract class BaseTest extends TestCase {
 
         Contact contact = getContactForTest();
 
-         assertNotNull(contact.getIdentity());
+        assertNotNull(contact.getIdentity());
 
         assertEquals("expect 1", 1, session.insert(contact).rows());
 
@@ -1653,10 +1646,7 @@ public abstract class BaseTest extends TestCase {
         saveGame.setWhatTimeIsIt(new Time(System.currentTimeMillis()));
         saveGame.setSomethingBig(null);
 
-        if (connectionType != ConnectionType.H2) {
-            // the only one supporting string auto-inc
-            saveGame.setId("1");
-        }
+        saveGame.setId("1");
 
         File file = new File(getClass().getResource("/logo1.png").toURI());
         saveGame.setSomethingBig(Files.readAllBytes(file.toPath()));

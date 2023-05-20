@@ -8,13 +8,13 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.UncheckedIOException;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 import java.sql.*;
 import java.util.Calendar;
 import java.util.List;
 import java.util.Scanner;
 
 /**
- *
  * @author Dan Howard
  * @since 9/25/11 3:54 PM
  */
@@ -72,6 +72,20 @@ public class UtilsForTests {
         return result;
     }
 
+    public static boolean isTableInDatabase(String schema, String tableName, Connection con) throws SQLException {
+        boolean result = false;
+        DatabaseMetaData dma = con.getMetaData();
+        try (ResultSet rs = dma.getTables(null, schema, null, tableType)) {
+            while (rs.next()) {
+                if (tableName.equalsIgnoreCase(rs.getString("TABLE_NAME"))) {
+                    result = true;
+                    break;
+                }
+            }
+        }
+        return result;
+    }
+
     public static boolean isViewInDatabase(String viewName, Connection con) throws SQLException {
         boolean result = false;
         DatabaseMetaData dma = con.getMetaData();
@@ -116,6 +130,19 @@ public class UtilsForTests {
             }
         }
         return result;
+    }
+
+
+    public static void deleteDir(File file) {
+        File[] contents = file.listFiles();
+        if (contents != null) {
+            for (File f : contents) {
+                if (!Files.isSymbolicLink(f.toPath())) {
+                    deleteDir(f);
+                }
+            }
+        }
+        file.delete();
     }
 
     public static String createHomeFolder(String subFolder) {

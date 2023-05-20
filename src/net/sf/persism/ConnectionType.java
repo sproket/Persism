@@ -10,7 +10,7 @@ enum ConnectionType {
 
     Derby(null, "\"", "\""),
 
-    H2(null, "\"", "\""),
+    H2("PUBLIC", "\"", "\""),
 
     MySQL(null, "`", "`"),
 

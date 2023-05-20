@@ -10,7 +10,6 @@ import java.util.*;
 import static net.sf.persism.Parameters.none;
 import static net.sf.persism.Parameters.params;
 import static net.sf.persism.SQL.sql;
-import static net.sf.persism.SQL.where;
 import static net.sf.persism.Util.isRecord;
 
 /**
@@ -686,6 +685,7 @@ public final class Session implements AutoCloseable {
                 for (String column : generatedKeys) {
                     if (rs.next()) {
 
+                        // todo just use the set method - we don't need this if/else
                         propertyInfo = properties.get(column);
                         Method setter = propertyInfo.setter;
                         Object value;
@@ -695,7 +695,7 @@ public final class Session implements AutoCloseable {
                                 throw new PersismException("Could not retrieve value from column " + column + " for table " + metaData.getTableInfo(objectClass));
                             }
                             value = converter.convert(value, setter.getParameterTypes()[0], column);
-                            setter.invoke(object, value);
+                            propertyInfo.setValue(object, value);
                         } else {
                             // Set read-only property by field ONLY FOR NON-RECORDS.
                             value = helper.getTypedValueReturnedFromGeneratedKeys(propertyInfo.field.getType(), rs);
@@ -942,13 +942,6 @@ public final class Session implements AutoCloseable {
 
     Connection getConnection() {
         return connection;
-    }
-
-    // this is a maybe....
-    static synchronized void clearMetaData() {
-        log.warn("Clearing meta data");
-        MetaData.metaData.clear();
-        log.warn("meta data cleared");
     }
 
 }
