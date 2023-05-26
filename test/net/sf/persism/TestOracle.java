@@ -71,6 +71,8 @@ grant create trigger, create sequence to pinf;
 
     @Override
     protected void createTables() throws SQLException {
+        super.createTables();
+
         String sql;
 
         if (isTableInDatabase("ORDERS", con)) {

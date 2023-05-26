@@ -598,8 +598,9 @@ public abstract class BaseTest extends TestCase {
 
         session.query(Product.class); // should work
 
+        var info = session.metaData.getTableInfo(Product.class);
         // set this to something junk
-        sql = "UPDATE PRODUCTS SET BADNUMBER=? WHERE ID=?";
+        sql = "UPDATE " + info.name() + " SET BADNUMBER=? WHERE ID=?";
         session.helper.execute(sql, "NAN JUNK", product.getId());
 
         fail = false;
@@ -615,7 +616,7 @@ public abstract class BaseTest extends TestCase {
         }
         assertTrue(fail);
 
-        sql = "UPDATE PRODUCTS SET BADDATE=?, BADNUMBER=? WHERE ID=?";
+        sql = "UPDATE " + info.name() + " SET BADDATE=?, BADNUMBER=? WHERE ID=?";
         session.helper.execute(sql, "NAD JUNK", "0", product.getId());
 
         fail = false;
@@ -632,7 +633,7 @@ public abstract class BaseTest extends TestCase {
         }
         assertTrue(fail);
 
-        sql = "UPDATE PRODUCTS SET BADTIMESTAMP=?, BADDATE=?, BADNUMBER=? WHERE ID=?";
+        sql = "UPDATE " + info.name()+ " SET BADTIMESTAMP=?, BADDATE=?, BADNUMBER=? WHERE ID=?";
         session.helper.execute(sql, "NAD JUNK", null, "0", product.getId());
 
         fail = false;
@@ -1277,23 +1278,20 @@ public abstract class BaseTest extends TestCase {
 
         session.query(CustomerInvoice.class, none());
 
-        String sql =
-                """
-                        SELECT * FROM CUSTOMERINVOICE
-                        """;
+        var customerInvoiceView = session.metaData.getTableInfo(CustomerInvoice.class).name();
+
+        String sql = "SELECT * FROM " + customerInvoiceView;
+
         session.query(CustomerInvoice.class, sql(sql), none());
-        sql = """
-                SELECT Customer_ID, Company_Name, Invoice_ID, Status, DateCreated, PAID, Quantity FROM CUSTOMERINVOICE
-                """;
+        sql = "SELECT Customer_ID, Company_Name, Invoice_ID, Status, DateCreated, PAID, Quantity FROM " + customerInvoiceView;
+
         session.query(CustomerInvoice.class, sql(sql), none());
 
         // we ARE NOT supporting property names for general SQL. Not really worth it. - YES IT IS! NO IT ISNT!
         fail = false;
         try {
-            sql = """
-                    SELECT :customerId, :companyName, :invoiceId, :status, :dateCreated, :paid, :quantity
-                    FROM "CUSTOMERINVOICE"
-                    """;
+            sql = "SELECT :customerId, :companyName, :invoiceId, :status, :dateCreated, :paid, :quantity FROM " + customerInvoiceView;
+
             session.query(CustomerInvoice.class, sql(sql), none());
 
         } catch (PersismException e) {

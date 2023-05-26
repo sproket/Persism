@@ -16,6 +16,10 @@ public class TestInformix extends BaseTest {
     /*
         https://stackoverflow.com/questions/67550979/trying-to-connect-to-ibms-informix-docker-edition-with-jdbc
         docker run -it --name ifx -h ifx --privileged -p 9088:9088 -p 9089:9089 -p 27017:27017 -p 27018:27018 -p 27883:27883 -e LICENSE=accept ibmcom/informix-developer-database:latest
+
+
+        https://www.ibm.com/docs/en/informix-servers/14.10?topic=docker-creating-informix-container
+        docker run -it --name ifx -h ifx --privileged -e LICENSE=accept -p 9088:9088 -p 9089:9089 -p 27017:27017 -p 27018:27018 -p 27883:27883 icr.io/informix/informix-developer-database:latest
      */
 
     private static final Log log = Log.getLogger(TestInformix.class);

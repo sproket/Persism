@@ -76,6 +76,8 @@ public class TestFirebird extends BaseTest {
 
     @Override
     protected void createTables() throws SQLException {
+        super.createTables();
+
         String sql;
 
         if (isProcedureInDatabase("spCustomerOrders", con)) {

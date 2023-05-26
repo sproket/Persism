@@ -32,6 +32,13 @@ final class PropertyInfo {
         return isJoin;
     }
 
+
+//    todo IllegalArgumentException is a different type from the field type
+//    todo IllegalAccessException or module related or setting on a final field in a record
+//    todo InvocationTargetException the setter call where there's an exception in the setter method
+//    todo for getter should we have a field get if there's no Getter?
+
+
     // Convenience getter with runtime exception for functional
     Object getValue(Object object) {
         try {

@@ -1,7 +1,9 @@
 package net.sf.persism;
 
 import net.sf.persism.categories.ExternalDB;
-import net.sf.persism.dao.*;
+import net.sf.persism.dao.Customer;
+import net.sf.persism.dao.MySQLOrder;
+import net.sf.persism.dao.Region;
 import org.junit.experimental.categories.Category;
 
 import java.sql.DriverManager;
@@ -16,6 +18,10 @@ import static net.sf.persism.UtilsForTests.isTableInDatabase;
 import static net.sf.persism.UtilsForTests.isViewInDatabase;
 
 /**
+ * todo There are diffs with mariadb and mysql - we should add another connection type, tests, etc...
+ * https://mariadb.com/resources/blog/how-to-connect-java-applications-to-mariadb-using-jdbc/
+ * https://mariadb.com/kb/en/about-mariadb-connector-j/
+ *
  * @author Dan Howard
  * @since 6/4/12 9:52 PM
  */
@@ -32,12 +38,12 @@ public class TestMySQL extends BaseTest {
         Properties props = new Properties();
         props.load(getClass().getResourceAsStream("/mysql.properties"));
 
-//         String driver = props.getProperty("database.driver");
+        String driver = props.getProperty("database.driver");
         String url = props.getProperty("database.url");
         String username = props.getProperty("database.username");
         String password = props.getProperty("database.password");
 
-//        Class.forName(driver);
+        Class.forName(driver);
 
         con = DriverManager.getConnection(url, username, password);
 
@@ -53,6 +59,7 @@ public class TestMySQL extends BaseTest {
 
     @Override
     protected void createTables() throws SQLException {
+        super.createTables();
 
         List<String> commands = new ArrayList<String>(12);
 
@@ -96,7 +103,7 @@ public class TestMySQL extends BaseTest {
                      " IsCollect BIT NULL," +
                      " IsCancelled TINYINT NULL," +
                      " Customer_ID VARCHAR(10) NULL, " +
-                     " Created TIMESTAMP, " +
+                     " Created TIMESTAMP DEFAULT CURRENT_TIMESTAMP, " +
                      " Date_Paid DATE NULL, " +
                      " Date_Something DATE NULL" +
                      ") ");

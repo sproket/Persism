@@ -383,7 +383,14 @@
         <dependency>
             <groupId>mysql</groupId>
             <artifactId>mysql-connector-java</artifactId>
-            <version>8.0.23</version>
+            <version>8.0.25</version>
+            <scope>test</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.mariadb.jdbc</groupId>
+            <artifactId>mariadb-java-client</artifactId>
+            <version>3.1.2</version>
             <scope>test</scope>
         </dependency>
 
@@ -418,7 +425,8 @@
         <dependency>
             <groupId>org.postgresql</groupId>
             <artifactId>postgresql</artifactId>
-            <version>9.2-1004-jdbc41</version>
+<!--            9.2-1004-jdbc41-->
+            <version>42.2.24</version>
             <scope>test</scope>
         </dependency>
         <dependency>
