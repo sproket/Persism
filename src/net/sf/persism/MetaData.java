@@ -66,6 +66,8 @@ final class MetaData {
 
     private final ConnectionType connectionType;
 
+    final String sessionKey;
+
     // the "extra" characters that can be used in unquoted identifier names (those beyond a-z, A-Z, 0-9 and _)
     // Was using DatabaseMetaData getExtraNameCharacters() but some drivers don't provide these and still allow
     // for non-alphanumeric characters in column names. We'll just use a static set.
@@ -78,6 +80,7 @@ final class MetaData {
         log.debug("MetaData CREATING instance [%s] ", sessionKey);
 
         connectionType = ConnectionType.get(sessionKey);
+        this.sessionKey = sessionKey;
         if (connectionType == ConnectionType.Other) {
             log.warn(Message.UnknownConnectionType.message(con.getMetaData().getDatabaseProductName()));
         }
@@ -496,7 +499,9 @@ final class MetaData {
     // http://social.msdn.microsoft.com/Forums/en-US/sqldataaccess/thread/5c74094a-8506-4278-ac1c-f07d1bfdb266
     // solution:
     // http://stackoverflow.com/questions/8988945/java7-sqljdbc4-sql-error-08s01-on-getconnection
-    private void populateTableList(Connection con) throws PersismException {
+    void populateTableList(Connection con) throws PersismException {
+        views.clear();
+        tables.clear();
         try (ResultSet rs = con.getMetaData().getTables(null, connectionType.getSchemaPattern(), null, tableTypes)) {
             String name;
             while (rs.next()) {
