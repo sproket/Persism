@@ -39,7 +39,7 @@ public final class TestHSQLDB extends BaseTest {
         log.info(url);
 
         con = DriverManager.getConnection(url, props);
-
+        log.info("DRIVER: " + con.getMetaData().getDatabaseProductName() + " | " + con.getMetaData().getDatabaseProductVersion());
         createTables();
 
         session = new Session(con);
@@ -399,7 +399,10 @@ public final class TestHSQLDB extends BaseTest {
         } catch (PersismException e) {
             fail = true;
             log.info(e.getMessage());
+
+            // message changed from 2.5.1 to 2.7.1
             assertEquals("s/b data truncation", "data exception: string data, right truncation;  table: CONTACTS column: ZIPPOSTALCODE", e.getMessage());
+            //assertEquals("s/b data truncation", "data exception: string data, right truncation ; size limit: 10 table: CONTACTS column: ZIPPOSTALCODE", e.getMessage());
         }
         assertTrue(fail);
 

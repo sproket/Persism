@@ -132,15 +132,14 @@ https://help.sonatype.com/repomanager3/nexus-repository-administration/tagging
 https://s01.oss.sonatype.org/index.html#central-stat to get stats.
 
 
-Try Persism with dropwizard web framework.
+Try Persism with dropwizard web framework.  https://www.dropwizard.io/en/stable/getting-started.html
 
-todo What do to with read-only (getter only) in POJO (not records) with insert and update
+
+todo What do to with read-only (getter only) in POJO (not records) with insert and update (it works but we should document better)
 
 todo test out what happens if I make PersistableObject.originalvalue transient
 
 todo add a join to table with spaces in the name and use OLD toString in TableInfo to see the error
-
-SessionHelper 509 - remove - not used.
 
 todo how to test caseSensitive where clause values JoinInfo
 
@@ -170,3 +169,14 @@ DONE h2 back test with 1.x (worked)
 Convertor what about varchar under UUID case??
 
 todo CREATE USERS table for all DBs.
+
+Changed synchronized to ReentrantLock
+
+https://blog.fastthread.io/2023/02/28/pitfalls-to-avoid-when-switching-to-virtual-threads/
+https://stackoverflow.com/questions/76390758/reentrantlock-to-replace-multiple-synchronized-methods
+
+
+other places to post persism
+https://lemmy.world/c/java
+
+TODO TEST VALUE TYPES https://www.youtube.com/watch?v=a3VRwz4zbdw

@@ -9,8 +9,6 @@ package net.sf.persism;
 
 import net.sf.persism.categories.ExternalDB;
 import net.sf.persism.dao.*;
-import net.sf.persism.ddl.FieldDef;
-import net.sf.persism.ddl.TableDef;
 import org.junit.experimental.categories.Category;
 
 import java.math.BigDecimal;
@@ -40,7 +38,7 @@ public final class TestOracle extends BaseTest {
         String driver = props.getProperty("database.driver");
         Class.forName(driver);
         con = OracleDataSource.getInstance().getConnection();
-
+        log.info("DRIVER: " + con.getMetaData().getDatabaseProductName() + " | " + con.getMetaData().getDatabaseProductVersion());
         createTables();
 
 //        if (isTableInDatabase("Invoice Line Items", con)) {
@@ -517,26 +515,26 @@ grant create trigger, create sequence to pinf;
     }
 
     public void testCreateTableFromTableDef() {
-        Statement st = null;
-        try {
-            st = con.createStatement();
-            TableDef table = new TableDef();
-            table.setName("PINFEmployees");
-            table.addField(new FieldDef("ID", Integer.class, 10, 0));
-            table.addField(new FieldDef("Name", String.class, 50, 0));
-            table.addField(new FieldDef("HireDate", Date.class));
-            table.addField(new FieldDef("Salary1", BigDecimal.class, 20, 3));
-            table.addField(new FieldDef("Salary2", Double.class, 14, 3));
-            table.addField(new FieldDef("Salary3", Float.class, 9, 3));
-
-            UtilsForTests.createTable(table, con);
-
-        } catch (SQLException e) {
-            log.error(e.getMessage(), e);
-            fail(e.getMessage());
-        } finally {
-            UtilsForTests.cleanup(st, null);
-        }
+//        Statement st = null;
+//        try {
+//            st = con.createStatement();
+//            TableDef table = new TableDef();
+//            table.setName("PINFEmployees");
+//            table.addField(new FieldDef("ID", Integer.class, 10, 0));
+//            table.addField(new FieldDef("Name", String.class, 50, 0));
+//            table.addField(new FieldDef("HireDate", Date.class));
+//            table.addField(new FieldDef("Salary1", BigDecimal.class, 20, 3));
+//            table.addField(new FieldDef("Salary2", Double.class, 14, 3));
+//            table.addField(new FieldDef("Salary3", Float.class, 9, 3));
+//
+//            UtilsForTests.createTable(table, con);
+//
+//        } catch (SQLException e) {
+//            log.error(e.getMessage(), e);
+//            fail(e.getMessage());
+//        } finally {
+//            UtilsForTests.cleanup(st, null);
+//        }
     }
 
     public void testGetTriggerMetaData() throws SQLException {

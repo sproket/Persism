@@ -485,6 +485,7 @@ public final class Session implements AutoCloseable {
      * Updates the data object in the database.
      *
      * @param object data object to update.
+     * @param <T>    - type of data object
      * @return Result object containing rows changed (usually 1 to indicate rows changed via JDBC) and the data object itself which may have been changed.
      * @throws PersismException Indicating the upcoming robot uprising.
      */
@@ -657,7 +658,6 @@ public final class Session implements AutoCloseable {
             }
 
             assert params.size() == columnInfos.size();
-
             for (int j = 0; j < params.size(); j++) {
                 ColumnInfo columnInfo = columnInfos.get(j);
                 if (params.get(j) != null) {
@@ -671,7 +671,12 @@ public final class Session implements AutoCloseable {
 
             helper.setParameters(st, params.toArray());
             boolean insertReturnedResults = st.execute();
-            int rowCount = st.getUpdateCount();
+            int rowCount;
+            if (insertReturnedResults) {
+                rowCount = 1;
+            } else {
+                rowCount = st.getUpdateCount();
+            }
 
             List<Object> primaryKeyValues = new ArrayList<>();
             if (generatedKeys.size() > 0) {
@@ -685,7 +690,8 @@ public final class Session implements AutoCloseable {
                 for (String column : generatedKeys) {
                     if (rs.next()) {
 
-                        // todo just use the set method - we don't need this if/else
+                        // todo CLEAN UP THIS IF
+                        // todo just use the set method - we don't need this if/else NO need to set read-only properties
                         propertyInfo = properties.get(column);
                         Method setter = propertyInfo.setter;
                         Object value;
@@ -715,6 +721,7 @@ public final class Session implements AutoCloseable {
                     }
                 }
             }
+            Util.cleanup(st, rs);
 
             // If it's a record we can't assign the autoinc so we need a refresh
             if (generatedKeys.size() > 0 && isRecord(objectClass)) {
@@ -755,6 +762,7 @@ public final class Session implements AutoCloseable {
      * Deletes the data object from the database.
      *
      * @param object data object to delete
+     * @param <T>    - type of data object
      * @return Result with usually 1 to indicate rows changed via JDBC.
      * @throws PersismException If you mistakenly pass a Class rather than a data object, or other SQL Exception.
      */

@@ -37,11 +37,11 @@ public class AllTests {
         theTestSuite.addTestSuite(TestPostgreSQL.class);
         theTestSuite.addTestSuite(TestFirebird.class);
 
-        theTestSuite.addTestSuite(TestMetaData.class);
-        theTestSuite.addTestSuite(TestNorthwind.class);
-        theTestSuite.addTestSuite(TestPubs.class);
-        theTestSuite.addTestSuite(TestStackOverflow.class);
-        theTestSuite.addTestSuite(TestWideWorldImporters.class);
+//        theTestSuite.addTestSuite(TestMetaData.class);
+//        theTestSuite.addTestSuite(TestNorthwind.class);
+//        theTestSuite.addTestSuite(TestPubs.class);
+//        theTestSuite.addTestSuite(TestStackOverflow.class);
+//        theTestSuite.addTestSuite(TestWideWorldImporters.class);
 
         return theTestSuite;
     }

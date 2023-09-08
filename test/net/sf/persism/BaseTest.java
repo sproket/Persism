@@ -633,7 +633,7 @@ public abstract class BaseTest extends TestCase {
         }
         assertTrue(fail);
 
-        sql = "UPDATE " + info.name()+ " SET BADTIMESTAMP=?, BADDATE=?, BADNUMBER=? WHERE ID=?";
+        sql = "UPDATE " + info.name() + " SET BADTIMESTAMP=?, BADDATE=?, BADNUMBER=? WHERE ID=?";
         session.helper.execute(sql, "NAD JUNK", null, "0", product.getId());
 
         fail = false;
@@ -865,7 +865,7 @@ public abstract class BaseTest extends TestCase {
         // This should work OK
         session.insert(junk);
 
-        log.info(session.query(TableNoPrimary.class, sql("SELECT * FROM TableNoPrimary")));
+        log.info(session.query(TableNoPrimary.class, sql("SELECT * FROM " + session.metaData.getTableInfo(TableNoPrimary.class).name())));
 
         boolean shouldFail = false;
 
@@ -1998,28 +1998,11 @@ public abstract class BaseTest extends TestCase {
 
         session.insert(rt1);
 
-        Object paramValue = id;
-        switch (session.getMetaData().getConnectionType()) {
-
-            case MSSQL:
-            case JTDS:
-            case UCanAccess: // todo verify
-            case Informix: // don't really know yet.
-            case SQLite:
-            case Firebird:
-            case PostgreSQL:
-                paramValue = id;
-                break;
-
-            case MySQL:
-            case Oracle:
-            case Other:
-            case Derby:
-            case HSQLDB:
-            case H2:
-                paramValue = Converter.asBytes(id);
-                break;
-        }
+        Object paramValue = switch (session.getMetaData().getConnectionType()) { // todo verify
+            // don't really know yet.
+            case MSSQL, JTDS, UCanAccess, Informix, SQLite, Firebird, PostgreSQL -> id;
+            case MySQL, Oracle, Other, Derby, HSQLDB, H2 -> Converter.asBytes(id);
+        };
 
         // Any fetch or query should fail - see RecordTest1 has a bad constructor
         boolean fail = false;
@@ -2198,7 +2181,6 @@ public abstract class BaseTest extends TestCase {
     }
 
     // todo metadata call getDefaultSelectStatement on view?
-
     // @OrderWith()
     public void testGetDbMetaData() throws SQLException {
         if (true) {

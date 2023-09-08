@@ -645,6 +645,8 @@ final class MetaData {
 
         if (connectionType == ConnectionType.MSSQL) {
             // check if we have a sequence or other non auto-inc primary and use OUTPUT inserted.[COL] to get the value back.
+            // TODO WE COULD PROBABLY BE OK JUST ALWAYS using OUTPUT.inserted.* - but try it. CRASHES stuff. :(
+//            sbi.append("OUTPUT inserted.* ");
             Optional<ColumnInfo> primary = getPrimaryNonAutoIncColumn(object, connection);
             if (primary.isPresent()) {
                 ColumnInfo col = primary.get();
@@ -657,6 +659,9 @@ final class MetaData {
         }
 
         String insertStatement;
+        if (connectionType == ConnectionType.SQLite) {
+            sbi.append("RETURNING *");
+        }
         insertStatement = sbi.toString();
 
         if (log.isDebugEnabled()) {

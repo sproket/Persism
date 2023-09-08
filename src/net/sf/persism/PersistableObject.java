@@ -12,7 +12,7 @@ import net.sf.persism.annotations.NotColumn;
 public abstract class PersistableObject<T> implements Persistable<T> {
 
     @NotColumn
-    private T persismOriginalValue = null;
+    private transient T persismOriginalValue = null; // https://github.com/sproket/Persism/issues/38
 
     @Override
     public final void saveReadState() throws PersismException {

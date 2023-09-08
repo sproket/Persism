@@ -44,7 +44,7 @@ public final class TestDerby extends BaseTest {
         log.info(url);
 
         con = DriverManager.getConnection(url);
-
+        log.info("DRIVER: " + con.getMetaData().getDatabaseProductName() + " | " + con.getMetaData().getDatabaseProductVersion());
         createTables();
 
         session = new Session(con, "jdbc:derby/TESTING");

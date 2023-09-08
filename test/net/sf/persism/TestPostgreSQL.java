@@ -50,7 +50,7 @@ public class TestPostgreSQL extends BaseTest {
             Class.forName(driver);
 
             con = DriverManager.getConnection(url, props);
-            log.error("PRODUCT? " + con.getMetaData().getDriverName() + " - " + con.getMetaData().getDriverVersion() + " " + con.getMetaData().getDatabaseProductName() + " " + con.getMetaData().getDatabaseProductVersion());
+            log.info("DRIVER: " + con.getMetaData().getDatabaseProductName() + " | " + con.getMetaData().getDatabaseProductVersion());
             createTables();
 
             session = new Session(con);

@@ -11,8 +11,10 @@ import net.sf.persism.categories.LocalDB;
 import net.sf.persism.dao.Customer;
 import net.sf.persism.dao.DAOFactory;
 import net.sf.persism.dao.Order;
+import oracle.jdbc.proxy.annotation.Pre;
 import org.junit.experimental.categories.Category;
 
+import javax.sql.RowSet;
 import java.sql.*;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -52,10 +54,49 @@ public final class TestSQLite extends BaseTest {
         log.info(url);
 
         con = DriverManager.getConnection(url);
-
+        log.info("DRIVER: " + con.getMetaData().getDatabaseProductName() + " | " + con.getMetaData().getDatabaseProductVersion());
         createTables();
 
         session = new Session(con);
+    }
+
+
+    public void testJDBCInsert() throws SQLException {
+
+//        try (Statement st = con.createStatement()) {
+//            st.execute("TRUNCATE TABLE [Orders]");
+//        }
+
+        String sql = "INSERT INTO [Orders] ([NAME], [Customer_ID], [PAID], [Prepaid], [IsCollect], [IsCancelled], [CREATED], [DATE_PAID], [DATE_SOMETHING])  " +
+                     "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?) RETURNING *;";
+
+        try (PreparedStatement st = con.prepareStatement(sql)) {
+
+            st.setString(1, "fred");
+            st.setString(2, "cust_id");
+            st.setBoolean(3, true);
+            st.setBoolean(4, true);
+            st.setBoolean(5, false);
+            st.setBoolean(6, false);
+            st.setTimestamp(7, Timestamp.valueOf(LocalDateTime.now()));
+            st.setTimestamp(8, Timestamp.valueOf(LocalDateTime.now()));
+            st.setTimestamp(9, Timestamp.valueOf(LocalDateTime.now()));
+
+            boolean insertReturnedResults = st.execute();
+            System.out.println(insertReturnedResults);
+
+            List<String> generatedKeys = new ArrayList<>(1);
+            generatedKeys.add("id");
+
+            int rowCount = st.getUpdateCount();
+            System.out.println(rowCount);
+
+            ResultSet rs = st.getResultSet();
+            System.out.println(rs.next());
+            System.out.println(rs.getObject("id"));
+        }
+
+// INSERT INTO [Orders] ([NAME], [Customer_ID], [PAID], [Prepaid], [IsCollect], [IsCancelled], [CREATED], [DATE_PAID], [DATE_SOMETHING])  VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
     }
 
 
@@ -400,7 +441,7 @@ public final class TestSQLite extends BaseTest {
         } catch (PersismException e) {
             nullKeyFail = true;
             //assertEquals("Should have constraint exception here", "[SQLITE_CONSTRAINT_NOTNULL]  A NOT NULL constraint failed (NOT NULL constraint failed: Customers.Customer_ID)", e.getMessage());
-            log.info(e.getMessage());
+            log.error(e.getMessage());
             assertTrue("Should have constraint exception here", e.getMessage().contains("[SQLITE_CONSTRAINT_NOTNULL]"));
         }
         assertTrue("null key should have failed", nullKeyFail);
@@ -502,6 +543,9 @@ public final class TestSQLite extends BaseTest {
 
         PreparedStatement st = null;
         java.sql.ResultSet rs = null;
+        boolean fail = false;
+        String message = "";
+
         try {
             String[] keyArray = {"Date_Registered"};
             st = con.prepareStatement(insertStatement, keyArray);
@@ -510,19 +554,22 @@ public final class TestSQLite extends BaseTest {
             st.setString(1, "JUNK NAME");
 
             int ret = st.executeUpdate();
-            log.info("rows insetred " + ret);
+            log.info("rows inserted " + ret);
             rs = st.getGeneratedKeys();
             while (rs.next()) {
-                log.info("cow: " + rs.getObject(1));
+                log.info("should not even get here: " + rs.getObject(1));
             }
 
         } catch (Exception e) {
+            fail = true;
+            message = e.getMessage();
             log.error(e.getMessage(), e);
-            fail(e.getMessage());
         } finally {
             Util.cleanup(st, rs);
         }
 
+        assertTrue(fail);
+        assertEquals("s/b not implemented by SQLite JDBC driver", "not implemented by SQLite JDBC driver", message);
     }
 
     public void testMetaData() {

@@ -48,12 +48,10 @@ public class TestMSSQL extends BaseTest {
         // Subclass TestMSSQLContainer does its own connection
         if (getClass().equals(TestMSSQL.class)) {
             con = MSSQLDataSource.getInstance().getConnection();
-            log.info("PRODUCT? " + con.getMetaData().getDriverName() + " - " + con.getMetaData().getDriverVersion());
+            log.info("DRIVER: " + con.getMetaData().getDatabaseProductName() + " | " + con.getMetaData().getDatabaseProductVersion());
             createTables();
             session = new Session(con);
         }
-
-        var city = new Application.City();
     }
 
     @Override

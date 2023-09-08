@@ -1,5 +1,14 @@
 ## Release Notes
 
+### 2.2.1
+* Baseline mysql 8.0.28 (todo maria)
+* org.mariadb.jdbc 3.1.2
+* Baseline H2 2.1.214
+* Baseline hsqldb 2.5.1 (tested with 2.7.1 as well)
+* Baseline posgresql 42.2.27
+* Baseline sqlite 3.42.0.0
+* 
+
 ### 2.2.0
 * Implemented module-info rather than using automatic module name (TODO LINK)
 * Added support for multiple schema names (TODO LINK)

@@ -46,7 +46,7 @@ public class TestMySQL extends BaseTest {
         Class.forName(driver);
 
         con = DriverManager.getConnection(url, username, password);
-
+        log.info("DRIVER: " + con.getMetaData().getDatabaseProductName() + " | " + con.getMetaData().getDatabaseProductVersion());
         createTables();
 
         session = new Session(con);

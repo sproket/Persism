@@ -60,7 +60,7 @@ public class TestFirebird extends BaseTest {
             con = DriverManager.getConnection(url, username, password);
 //            con = DriverManager.getConnection(url, props);
 
-            log.info(con.getMetaData().getDatabaseProductName());
+            log.info("DRIVER: " + con.getMetaData().getDatabaseProductName() + " | " + con.getMetaData().getDatabaseProductVersion());
 
             createTables();
 

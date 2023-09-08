@@ -35,7 +35,7 @@ public class TestPubsContainer extends TestPubs {
     Session session;
 
     @Override
-    protected void setUp() throws Exception {
+    public void setUp() throws Exception {
         boolean mustCreateTables = false;
         if(!DB_CONTAINER.isRunning()) {
             //there are lots of warnings while this container starts, but it works.
@@ -67,7 +67,7 @@ public class TestPubsContainer extends TestPubs {
         BaseTest.executeCommand("USE PUBS", con);
     }
 
-    protected void tearDown() throws Exception {
+    public void tearDown() throws Exception {
         con.close();
         super.tearDown();
     }

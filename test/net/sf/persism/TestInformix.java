@@ -42,7 +42,7 @@ public class TestInformix extends BaseTest {
         log.warn(url);
 
         con = DriverManager.getConnection(url, username, password);
-
+        log.info("DRIVER: " + con.getMetaData().getDatabaseProductName() + " | " + con.getMetaData().getDatabaseProductVersion());
         session = new Session(con);
 
         createTables();

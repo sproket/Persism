@@ -501,15 +501,6 @@ final class SessionHelper {
 
             String whereClause = getChildWhereClause(joinInfo, parentWhere);
             List<Object> params = new ArrayList<>(parentParams.parameters);
-//            if (params.size() > 0) {
-//                // normalize params to ? since we may have repeated the SELECT IN query
-//                long qmCount = whereClause.chars().filter(ch -> ch == '?').count();
-//                int index = 0;
-//                while (qmCount > params.size()) {
-//                    params.add(params.get(index));
-//                    index++;
-//                }
-//            }
 
             // join to a collection
             if (Collection.class.isAssignableFrom(joinProperty.field.getType())) {

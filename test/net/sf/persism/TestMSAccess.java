@@ -27,7 +27,9 @@ import static net.sf.persism.UtilsForTests.isTableInDatabase;
 
 public class TestMSAccess extends TestCase {
 
-    private static final Log log = Log.getLogger(TestMSAccess.class, LogMode.LOG4J2);
+    // todo this is for code coverage around LOG4J2
+    //private static final Log log = Log.getLogger(TestMSAccess.class, LogMode.LOG4J2);
+    private static final Log log = Log.getLogger(TestMSAccess.class);
     public static final Attachment[] ATTACHMENTS = new Attachment[0];
 
     Connection con;
@@ -48,20 +50,23 @@ public class TestMSAccess extends TestCase {
         Path from = Paths.get(uri);
         Path to = Paths.get(home + "/Contacts.accdb");
 //        if (!to.toFile().exists()) {
-            Files.copy(from, to, StandardCopyOption.REPLACE_EXISTING);
+        Files.copy(from, to, StandardCopyOption.REPLACE_EXISTING);
 //        }
 
         String url = String.format(props.getProperty("database.url"), home + "/Contacts.accdb");
         log.info(url);
 
+        // TODO probably this 6.0 version is never going to happen. Maybe Dump Access Support...
+        // https://sourceforge.net/p/ucanaccess/discussion/general/thread/6ebf4eed22/
+        // https://sourceforge.net/p/ucanaccess/discussion/general/thread/52ae8bb570/?limit=25#72b7/2875/cb65
         con = DriverManager.getConnection(url);
+        log.info("DRIVER: " + con.getMetaData().getDatabaseProductName() + " | " + con.getMetaData().getDatabaseProductVersion());
         createTables();
-
         session = new Session(con);
     }
 
     public void testLogger() {
-        log.debug("debug %s","x");
+        log.debug("debug %s", "x");
         log.debug("debug");
         log.info("info");
         log.info("info", new Throwable());
@@ -220,7 +225,7 @@ public class TestMSAccess extends TestCase {
 
         assertEquals(contact.getJobTitle(), "Software Bug Creator!");
 
-        assertEquals("attachmens s/b/3", ((Attachment[])contact.getAttachments()).length, 3);
+        assertEquals("attachmens s/b/3", ((Attachment[]) contact.getAttachments()).length, 3);
 
         contact.setId(1);
         assertTrue(session.fetch(contact));

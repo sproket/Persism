@@ -72,6 +72,7 @@ to the database URL (example: jdbc:h2:~/test;IGNORECASE=TRUE).
         }
 
         con = DriverManager.getConnection(url, "sa", "");
+        log.info("DRIVER: " + con.getMetaData().getDatabaseProductName() + " | " + con.getMetaData().getDatabaseProductVersion());
         createTables();
 
         session = new Session(con, "jdbc:h2/H2!");
