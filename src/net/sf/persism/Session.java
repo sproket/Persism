@@ -689,34 +689,24 @@ public final class Session implements AutoCloseable {
                 PropertyInfo propertyInfo;
                 for (String column : generatedKeys) {
                     if (rs.next()) {
-
-                        // todo CLEAN UP THIS IF
-                        // todo just use the set method - we don't need this if/else NO need to set read-only properties
                         propertyInfo = properties.get(column);
                         Method setter = propertyInfo.setter;
                         Object value;
+                        Class<?> valueType;
                         if (setter != null) {
-                            value = helper.getTypedValueReturnedFromGeneratedKeys(setter.getParameterTypes()[0], rs);
-                            if (value == null) {
-                                throw new PersismException("Could not retrieve value from column " + column + " for table " + metaData.getTableInfo(objectClass));
-                            }
-                            value = converter.convert(value, setter.getParameterTypes()[0], column);
-                            propertyInfo.setValue(object, value);
+                            valueType = setter.getParameterTypes()[0];
                         } else {
-                            // Set read-only property by field ONLY FOR NON-RECORDS.
-                            value = helper.getTypedValueReturnedFromGeneratedKeys(propertyInfo.field.getType(), rs);
-                            if (value == null) {
-                                throw new PersismException("Could not retrieve value from column " + column + " for table " + metaData.getTableInfo(objectClass));
-                            }
-                            value = converter.convert(value, propertyInfo.field.getType(), column);
-                            if (!isRecord(objectClass)) {
-                                propertyInfo.field.setAccessible(true);
-                                propertyInfo.field.set(object, value);
-                                propertyInfo.field.setAccessible(false);
-                                log.debug("insert %s generated %s", column, value);
-                            }
+                            valueType = propertyInfo.field.getType();
                         }
-
+                        value = helper.getTypedValueReturnedFromGeneratedKeys(valueType, rs);
+                        if (value == null) {
+                            throw new PersismException("Could not retrieve value from column " + column + " for table " + metaData.getTableInfo(objectClass));
+                        }
+                        value = converter.convert(value, valueType, column);
+                        // Set property ONLY FOR NON-RECORDS.
+                        if (!isRecord(objectClass)) {
+                            propertyInfo.setValue(object, value);
+                        }
                         primaryKeyValues.add(value);
                     }
                 }
