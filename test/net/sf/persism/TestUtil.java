@@ -7,8 +7,11 @@
 package net.sf.persism;
 
 import junit.framework.TestCase;
+import net.jodah.typetools.TypeResolver;
 import net.sf.persism.dao.Customer;
+import net.sf.persism.dao.Invoice;
 import net.sf.persism.dao.Postman;
+import org.checkerframework.checker.units.qual.C;
 import org.junit.Test;
 
 import java.lang.reflect.Field;
@@ -28,6 +31,23 @@ public class TestUtil extends TestCase {
         super.tearDown();
     }
 
+
+    public void testTypeResolves() {
+        List<?> stringList = new ArrayList<String>() {
+
+        };
+        Class<?> stringType = TypeResolver.resolveRawArgument(List.class, stringList.getClass());
+        System.out.println(stringType);
+        assertEquals(stringType, String.class);
+        Customer customer = new Customer();
+
+        System.out.println(customer.getInvoices().getClass().arrayType().isAssignableFrom(Invoice.class));
+
+        List<?> assList =  new ArrayList<>() {
+
+        };
+
+    }
     public void testReplaceAll() {
         String text = "this is a test";
         text = text.replaceAll(" ", "_");

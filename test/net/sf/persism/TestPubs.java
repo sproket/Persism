@@ -1,5 +1,6 @@
 package net.sf.persism;
 
+import junit.framework.TestCase;
 import net.sf.persism.categories.ExternalDB;
 import net.sf.persism.dao.pubs.Author;
 import net.sf.persism.dao.pubs.JobType;
@@ -16,7 +17,7 @@ import static net.sf.persism.SQL.sql;
 
 // Does not share common tests - this is just to do some specific tests on SQL with PUBS DB
 @Category(ExternalDB.class)
-public class TestPubs {
+public class TestPubs extends TestCase {
 
     private static final Log log = Log.getLogger(TestPubs.class);
 

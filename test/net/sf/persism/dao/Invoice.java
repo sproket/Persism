@@ -14,7 +14,7 @@ import java.util.List;
  * Date: 12-05-15
  * Time: 4:43 PM
  */
-public final class Invoice {
+public class Invoice {
 
     private Integer invoiceId;
     private String customerId;

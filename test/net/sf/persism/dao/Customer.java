@@ -16,7 +16,7 @@ import java.util.Set;
  * @author Dan Howard
  * @since 5/23/12 10:40 AM
  */
-public final class Customer {
+public class Customer {
     private String customerId;
     private int groupId;
     private String companyName;

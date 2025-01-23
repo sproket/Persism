@@ -61,11 +61,15 @@ Blob support only up to int max size (2,147,483,647)
 Oracle not on maven...
 https://stackoverflow.com/questions/9898499/oracle-jdbc-ojdbc6-jar-as-a-maven-dependency
 
+notest
+ mvn install -Dmaven.test.skip
+
 
 mvn install:install-file -Dfile=persism-1.0.3b.jar -DgroupId=io.github.sproket -DartifactId=persism -Dversion=1.0.3b -Dpackaging=jar
+
 mvn install:install-file -Dfile=persism-2.2.1a.jar -DgroupId=io.github.sproket -DartifactId=persism -Dversion=2.2.1a -Dpackaging=jar
 
-
+mvn install:install-file -Dfile=./target/persism-2.2.1d.jar -DgroupId=io.github.sproket -DartifactId=persism -Dversion=2.2.1d -Dpackaging=jar
 
 
 
@@ -79,10 +83,7 @@ Options:
 
 
 
- notest
- mvn install -Dmaven.test.skip
-
- C:\Users\Dan\WebstormProjects\Persism\coverage\persism2
+  C:\Users\Dan\WebstormProjects\Persism\coverage\persism2
 
 CODE COVERAGE
 code coverage MetaData

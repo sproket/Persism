@@ -180,3 +180,32 @@ other places to post persism
 https://lemmy.world/c/java
 
 TODO TEST VALUE TYPES https://www.youtube.com/watch?v=a3VRwz4zbdw
+
+TODO BUG with fetch when you reuse an object we DON'T CALL SETTERS FOR NULL so prior values will be on the reused data object
+
+todo Add AdventureWorks DB to tests
+
+
+
+Caused when you have many-to-one where the join to single is null. Where you might have optional join (we reverse the query and try using null for the join)
+https://groups.google.com/g/h2-database/c/WSMaw-IrTRY/m/LADcYCiBAgAJ?utm_medium=email&utm_source=footer
+
+ think I caused this by running a query repeatedly too often/quickly.
+
+H2 2.2.224
+
+Caused by: org.h2.mvstore.MVStoreException: java.lang.AssertionError: 38662144 != 26615808 [2.2.224/3]
+	at com.h2database@2.2.224/org.h2.mvstore.DataUtils.newMVStoreException(DataUtils.java:996)
+	at com.h2database@2.2.224/org.h2.mvstore.FileStore.storeBuffer(FileStore.java:1529)
+	at com.h2database@2.2.224/org.h2.mvstore.FileStore.lambda$serializeAndStore$3(FileStore.java:1432)
+	at java.base/java.util.concurrent.Executors$RunnableAdapter.call(Executors.java:572)
+	at java.base/java.util.concurrent.FutureTask.run(FutureTask.java:317)
+	at java.base/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1144)
+	at java.base/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:642)
+	... 1 common frames omitted
+Caused by: java.lang.AssertionError: 38662144 != 26615808
+	at com.h2database@2.2.224/org.h2.mvstore.RandomAccessStore.shrinkStoreIfPossible(RandomAccessStore.java:679)
+	at com.h2database@2.2.224/org.h2.mvstore.RandomAccessStore.writeChunk(RandomAccessStore.java:377)
+	at com.h2database@2.2.224/org.h2.mvstore.RandomAccessStore.writeChunk(RandomAccessStore.java:28)
+	at com.h2database@2.2.224/org.h2.mvstore.FileStore.storeBuffer(FileStore.java:1524)
+	... 6 common frames omitted

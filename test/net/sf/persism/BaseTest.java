@@ -1,6 +1,7 @@
 package net.sf.persism;
 
 import junit.framework.TestCase;
+import net.jodah.typetools.TypeResolver;
 import net.sf.persism.dao.*;
 import net.sf.persism.dao.records.*;
 
@@ -2178,6 +2179,30 @@ public abstract class BaseTest extends TestCase {
 
         messageTester(CannotNotJoinToNullProperty.message("invoices"), () -> session.query(CustomerFail3.class, none()));
         messageTester(CannotNotJoinToNullProperty.message("invoices"), () -> session.fetch(CustomerFail3.class, params("123")));
+    }
+
+    public void testClassMismatchOnJoin() {
+        queryDataSetup();
+
+        CustomerJoinFail customer = new CustomerJoinFail();
+        customer.setCustomerId("123");
+
+        session.fetch(customer);
+
+        log.info("found "  + customer);
+
+        log.info("invoides? " + customer.getInvoices());
+
+        log.info("whastever? " + customer.getWhatever());
+
+        var type1 = TypeResolver.reify(customer.getInvoices().getClass());
+
+        Class<?> typeArg = TypeResolver.resolveRawArgument(type1, customer.getInvoices().getClass());
+        log.warn(typeArg);
+
+        Class<?> type2 = TypeResolver.resolveRawArgument(Set.class, customer.getInvoices().getClass());
+        log.warn(type2);
+
     }
 
     // todo metadata call getDefaultSelectStatement on view?

@@ -92,15 +92,7 @@ final class Util {
     }
 
     public static <T> boolean isRecord(Class<T> objectClass) {
-        // Java 8 test for isRecord since class.isRecord doesn't exist in Java 8
-        Class<?> sup = objectClass.getSuperclass();
-        while (!sup.equals(Object.class)) {
-            if ("java.lang.Record".equals(sup.getName())) {
-                return true;
-            }
-            sup = sup.getSuperclass();
-        }
-        return false;
+        return objectClass.isRecord();
     }
 
     public static void trimArray(String[] arr) {

@@ -592,7 +592,7 @@ public final class Session implements AutoCloseable {
         ConnectionType connectionType = metaData.getConnectionType();
 
         try {
-            // These keys should always be in sorted order.
+            // These keys should always be in sorted order. What order? s/b column order defined by the Table in the DB
             Map<String, PropertyInfo> properties = metaData.getTableColumnsPropertyInfo(objectClass, connection);
             Map<String, ColumnInfo> columns = metaData.getColumns(objectClass, connection);
 
@@ -612,64 +612,20 @@ public final class Session implements AutoCloseable {
                 st = connection.prepareStatement(insertStatement);
             }
 
-            boolean refreshAfterInsert = false;
+            boolean refreshAfterInsert;
 
             List<Object> params = new ArrayList<>(columns.size());
             List<ColumnInfo> columnInfos = new ArrayList<>(columns.size());
 
-            for (ColumnInfo columnInfo : columns.values()) {
-
-                PropertyInfo propertyInfo = properties.get(columnInfo.columnName);
-                if (propertyInfo.getter == null) {
-                    throw new PersismException(Message.ClassHasNoGetterForProperty.message(objectClass, propertyInfo.propertyName));
-                }
-                if (!columnInfo.autoIncrement) {
-
-                    if (columnInfo.hasDefault) {
-                        // Do not include if this column has a default and no value has been
-                        // set on it's associated property.
-                        if (propertyInfo.getter.getReturnType().isPrimitive()) {
-                            log.warnNoDuplicates(Message.PropertyShouldBeAnObjectType.message(propertyInfo.propertyName, columnInfo.columnName, objectClass));
-                        }
-
-                        if (propertyInfo.getValue(object) == null) {
-
-                            if (columnInfo.primary) {
-                                // This is supported with PostgreSQL/MSSQL but otherwise throw this an exception
-                                if (!connectionType.supportsNonAutoIncGenerated()) {
-                                    throw new PersismException(Message.NonAutoIncGeneratedNotSupported.message());
-                                }
-                            }
-
-                            refreshAfterInsert = true;
-                            continue;
-                        }
-                    }
-
-                    // if any column is read only it usually means there's a default to read back - we don't include in the INSERT or the params.
-                    if (columnInfo.readOnly) {
-                        refreshAfterInsert = true;
-                    } else {
-                        Object value = propertyInfo.getValue(object);
-                        params.add(value);
-                        columnInfos.add(columnInfo);
-                    }
-                }
-            }
-
-            assert params.size() == columnInfos.size();
-            for (int j = 0; j < params.size(); j++) {
-                ColumnInfo columnInfo = columnInfos.get(j);
-                if (params.get(j) != null) {
-                    params.set(j, converter.convert(params.get(j), columnInfo.columnType.getJavaType(), columnInfo.columnName));
-                }
-            }
+            // is this different from metadata.getColumnsForInsert? YES
+            refreshAfterInsert = initColumnsForInsert(object, objectClass, params, columnInfos);
 
             if (sqllog.isDebugEnabled()) {
                 sqllog.debug("%s params: %s", insertStatement, params);
             }
 
             helper.setParameters(st, params.toArray());
+
             boolean insertReturnedResults = st.execute();
             int rowCount;
             if (insertReturnedResults) {
@@ -678,6 +634,7 @@ public final class Session implements AutoCloseable {
                 rowCount = st.getUpdateCount();
             }
 
+            // Retrieve the primary identity value
             List<Object> primaryKeyValues = new ArrayList<>();
             if (generatedKeys.size() > 0) {
                 if (insertReturnedResults) {
@@ -713,8 +670,10 @@ public final class Session implements AutoCloseable {
             }
             Util.cleanup(st, rs);
 
-            // If it's a record we can't assign the autoinc so we need a refresh
-            if (generatedKeys.size() > 0 && isRecord(objectClass)) {
+            boolean isRecord = isRecord(objectClass);
+
+            // If it's a record we can't assign the autoinc - we need a refresh
+            if (generatedKeys.size() > 0 && isRecord) {
                 refreshAfterInsert = true;
             }
 
@@ -722,7 +681,7 @@ public final class Session implements AutoCloseable {
             if (refreshAfterInsert) {
                 // these 2 fetches need a fetchAfterInsert flag
                 // Read the full object back to update any properties which had defaults
-                if (isRecord(objectClass)) {
+                if (isRecord) {
                     SQL sql = new SQL(metaData.getDefaultSelectStatement(objectClass, connection));
                     returnObject = fetch(objectClass, sql, params(primaryKeyValues.toArray()));
                 } else {
@@ -734,7 +693,7 @@ public final class Session implements AutoCloseable {
             }
 
             if (object instanceof Persistable<?> pojo) {
-                // Save this object new state to later detect changed properties
+                // Save this pojo's new state to later detect changed properties
                 pojo.saveReadState();
             }
 
@@ -746,6 +705,74 @@ public final class Session implements AutoCloseable {
         } finally {
             Util.cleanup(st, rs);
         }
+    }
+
+    /*
+        checks if a property has no getter and throws
+        checks for defaults (warns if a default is a primitive)
+        checks for primary key default non-autoinc supported only for some DBs throws otherwise
+        checks for a column annotated as read-only to decide if we need to refresh after insert
+
+        fills list of param values and ColumnInfo objects to create the insert statement
+        calls convert to ensure params are of the correct SQL type
+        returns whether we need to refresh after insert
+     */
+    private <T> boolean initColumnsForInsert(T pojo, Class<?> objectClass, List<Object> params, List<ColumnInfo> columnInfos) {
+
+        Map<String, PropertyInfo> properties = metaData.getTableColumnsPropertyInfo(objectClass, connection);
+        Map<String, ColumnInfo> columns = metaData.getColumns(objectClass, connection);
+        ConnectionType connectionType = metaData.getConnectionType();
+
+        boolean refreshAfterInsert = false;
+        for (ColumnInfo columnInfo : columns.values()) {
+
+            PropertyInfo propertyInfo = properties.get(columnInfo.columnName);
+            if (propertyInfo.getter == null) {
+                throw new PersismException(Message.ClassHasNoGetterForProperty.message(objectClass, propertyInfo.propertyName));
+            }
+            if (!columnInfo.autoIncrement) {
+
+                if (columnInfo.hasDefault) {
+                    // Do not include if this column has a default and no value has been
+                    // set on it's associated property.
+                    if (propertyInfo.getter.getReturnType().isPrimitive()) {
+                        log.warnNoDuplicates(Message.PropertyShouldBeAnObjectType.message(propertyInfo.propertyName, columnInfo.columnName, objectClass));
+                    }
+
+                    if (propertyInfo.getValue(pojo) == null) {
+
+                        if (columnInfo.primary) {
+                            // This is supported with PostgreSQL/MSSQL but otherwise throw this an exception
+                            if (!connectionType.supportsNonAutoIncGenerated()) {
+                                throw new PersismException(Message.NonAutoIncGeneratedNotSupported.message());
+                            }
+                        }
+
+                        refreshAfterInsert = true;
+                        continue;
+                    }
+                }
+
+                // if any column is read only it usually means there's a default to read back - we don't include in the INSERT or the params.
+                if (columnInfo.readOnly) {
+                    refreshAfterInsert = true;
+                } else {
+                    Object value = propertyInfo.getValue(pojo);
+                    params.add(value);
+                    columnInfos.add(columnInfo);
+                }
+            }
+        }
+
+        assert params.size() == columnInfos.size();
+        for (int j = 0; j < params.size(); j++) {
+            ColumnInfo columnInfo = columnInfos.get(j);
+            if (params.get(j) != null) {
+                params.set(j, converter.convert(params.get(j), columnInfo.columnType.getJavaType(), columnInfo.columnName));
+            }
+        }
+
+        return refreshAfterInsert;
     }
 
     /**

@@ -568,6 +568,7 @@ public final class TestSQLite extends BaseTest {
             Util.cleanup(st, rs);
         }
 
+        // this is now implemented in newer version
         assertTrue(fail);
         assertEquals("s/b not implemented by SQLite JDBC driver", "not implemented by SQLite JDBC driver", message);
     }

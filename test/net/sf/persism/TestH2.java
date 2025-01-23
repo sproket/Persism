@@ -594,7 +594,7 @@ to the database URL (example: jdbc:h2:~/test;IGNORECASE=TRUE).
     public void testColumnDefaults() {
         Customer customer = new Customer();
         customer.setCompanyName("TEST");
-        customer.setCustomerId("MOO");
+        customer.setCustomerId("TEST1");
         customer.setAddress("123 sesame street");
         customer.setCity("city");
         customer.setContactName("fred flintstone");
@@ -615,6 +615,10 @@ to the database URL (example: jdbc:h2:~/test;IGNORECASE=TRUE).
         assertNotNull("date registered should NOT be null", customer.getDateRegistered());
         assertNotNull("Country should NOT be null", customer.getCountry());
         assertEquals("Country should be US", "US", customer.getCountry());
+
+        customer.setCustomerId("TEST2");
+        customer.setCountry("CA");
+        session.insert(customer);
     }
 
     @Override

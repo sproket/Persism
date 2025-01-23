@@ -30,6 +30,7 @@ public class AllTests {
         theTestSuite.addTestSuite(TestDerby.class);
         theTestSuite.addTestSuite(TestSQLite.class);
         theTestSuite.addTestSuite(TestMSAccess.class);
+
         theTestSuite.addTestSuite(TestInformix.class);
         theTestSuite.addTestSuite(TestMSSQL.class);
         theTestSuite.addTestSuite(TestOracle.class);
@@ -37,11 +38,11 @@ public class AllTests {
         theTestSuite.addTestSuite(TestPostgreSQL.class);
         theTestSuite.addTestSuite(TestFirebird.class);
 
-//        theTestSuite.addTestSuite(TestMetaData.class);
-//        theTestSuite.addTestSuite(TestNorthwind.class);
-//        theTestSuite.addTestSuite(TestPubs.class);
-//        theTestSuite.addTestSuite(TestStackOverflow.class);
-//        theTestSuite.addTestSuite(TestWideWorldImporters.class);
+        theTestSuite.addTestSuite(TestMetaData.class);
+        theTestSuite.addTestSuite(TestNorthwind.class);
+        theTestSuite.addTestSuite(TestPubs.class);
+        theTestSuite.addTestSuite(TestStackOverflow.class);
+        theTestSuite.addTestSuite(TestWideWorldImporters.class);
 
         return theTestSuite;
     }
