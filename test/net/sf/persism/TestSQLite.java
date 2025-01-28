@@ -543,11 +543,9 @@ public final class TestSQLite extends BaseTest {
 
         PreparedStatement st = null;
         java.sql.ResultSet rs = null;
-        boolean fail = false;
-        String message = "";
 
         try {
-            String[] keyArray = {"Date_Registered"};
+            String[] keyArray = {"Customer_ID", "Date_Registered"};
             st = con.prepareStatement(insertStatement, keyArray);
 
             st.setString(1, "JUNK");
@@ -557,20 +555,18 @@ public final class TestSQLite extends BaseTest {
             log.info("rows inserted " + ret);
             rs = st.getGeneratedKeys();
             while (rs.next()) {
-                log.info("should not even get here: " + rs.getObject(1));
+                log.warn("row: " + rs.getObject(1));
             }
 
+            List<Customer> customers = session.query(Customer.class);
+            log.warn(customers);
+            log.warn(customers.size());
         } catch (Exception e) {
-            fail = true;
-            message = e.getMessage();
             log.error(e.getMessage(), e);
+            fail(e.getMessage());
         } finally {
             Util.cleanup(st, rs);
         }
-
-        // this is now implemented in newer version
-        assertTrue(fail);
-        assertEquals("s/b not implemented by SQLite JDBC driver", "not implemented by SQLite JDBC driver", message);
     }
 
     public void testMetaData() {

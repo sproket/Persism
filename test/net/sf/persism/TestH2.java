@@ -420,7 +420,6 @@ to the database URL (example: jdbc:h2:~/test;IGNORECASE=TRUE).
                     )
                 """;
         executeCommand(sql, con);
-
     }
 
     public void testPeople() {

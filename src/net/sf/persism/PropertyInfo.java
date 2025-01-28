@@ -58,6 +58,7 @@ final class PropertyInfo {
                 field.setAccessible(false);
             }
         } catch (IllegalAccessException | InvocationTargetException e) {
+            // don't catch IllegalArgumentException - this is handled by reader to translate to human readable message
             throw new PersismException(e.getMessage(), e);
         }
     }

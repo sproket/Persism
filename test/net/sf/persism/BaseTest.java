@@ -25,7 +25,6 @@ import java.time.temporal.ChronoUnit;
 import java.util.*;
 import java.util.logging.Logger;
 
-import static net.sf.persism.Message.NumberFormatException;
 import static net.sf.persism.Message.*;
 import static net.sf.persism.Parameters.none;
 import static net.sf.persism.Parameters.params;
@@ -58,7 +57,9 @@ public abstract class BaseTest extends TestCase {
     protected void createTables() throws SQLException {
         createMultiMatch("MultiMatch", connectionType);
         createMultiMatch("Multi Match", connectionType);
+        createDepartments(connectionType);
     }
+
 
     @Override
     protected void setUp() throws Exception {
@@ -854,6 +855,69 @@ public abstract class BaseTest extends TestCase {
               "    ID int ,\n" +
               "    Name VARCHAR(10) \n" +
               "    )\n";
+        executeCommand(sql, con);
+    }
+
+
+    /**
+     * this version should work for most DBs if not override it.
+     *
+     * @param connectionType which type
+     * @throws SQLException
+     */
+    void createDepartments(ConnectionType connectionType) throws SQLException {
+
+        String sd = connectionType.getKeywordStartDelimiter();
+        String ed = connectionType.getKeywordEndDelimiter();
+
+
+        try {
+            executeCommand("DROP TABLE " + sd + "DEPARTMENT" + ed, con);
+        } catch (Exception e) {
+            System.out.println(e); // JUST ^&%&^% DROP 1
+        }
+
+
+        String sql;
+        String tableName = "DEPARTMENTS";
+        if (isTableInDatabase(connectionType.getSchemaPattern(), tableName, con)) {
+            executeCommand("DROP TABLE " + sd + tableName + ed, con);
+        }
+
+        sql = "CREATE TABLE " + sd + tableName + ed + "( ";
+        sql += """
+                   ID INT,
+                   NAME VARCHAR(20),
+                   ACTIVE BIT,
+                   SOME_TYPE char(1)
+                )
+                """;
+
+        switch (connectionType) {
+            case Oracle -> sql = sql.replace("BIT", "NUMBER(3)");
+            case MSSQL -> {
+            }
+            case JTDS -> {
+            }
+            case Derby -> sql = sql.replace("BIT", "BOOLEAN");
+            case H2 -> {
+            }
+            case MySQL -> {
+            }
+            case PostgreSQL -> sql = sql.replace("BIT", "BOOLEAN");
+
+            case SQLite -> {
+            }
+            case Firebird -> sql = sql.replace("BIT", "BOOLEAN");
+            case HSQLDB -> {
+            }
+            case UCanAccess -> {
+            }
+            case Informix -> sql = sql.replace("BIT", "CHAR(1)");
+            case Other -> {
+            }
+        }
+        log.warn("createDepartments:" + sql);
         executeCommand(sql, con);
     }
 
@@ -1890,6 +1954,37 @@ public abstract class BaseTest extends TestCase {
         assertTrue("collect", order2.isCollect());
     }
 
+
+    public void testCharPrimitive() {
+        Department department = new Department();
+        log.warn("what is type?" + department.getSomeType());
+
+        char defaultChar = department.getSomeType();
+
+        department.setId(1);
+        department.setName("test dep");
+        department.setActive(true);
+        department.setSomeType('1');
+        session.insert(department);
+
+        department = new Department();
+        department.setId(2);
+        department.setName("test dep");
+        department.setActive(true);
+        department.setSomeType(defaultChar);
+        session.insert(department);
+
+        department.setId(2);
+        session.fetch(department);
+        log.warn("what is type? from 2:" + department.getSomeType());
+        assertEquals("s/b defaultChar", defaultChar, department.getSomeType());
+
+        department.setId(1);
+        session.fetch(department);
+        log.warn("what is type? from 1: " + department.getSomeType());
+        assertEquals("s/b '1'", '1', department.getSomeType());
+    }
+
     public void testInvoice() {
 
         Customer customer = new Customer();
@@ -2076,11 +2171,11 @@ public abstract class BaseTest extends TestCase {
     public void XtestGetMultipleResultSets() throws Exception {
         String sql = """
                 SELECT * FROM CUSTOMERS;
-
+                
                 SELECT * FROM INVOICES;
-
+                
                 SELECT * FROM CONTACTS;
-                                
+                
                 """;
 
         try (Statement st = con.createStatement()) {
@@ -2189,7 +2284,7 @@ public abstract class BaseTest extends TestCase {
 
         session.fetch(customer);
 
-        log.info("found "  + customer);
+        log.info("found " + customer);
 
         log.info("invoides? " + customer.getInvoices());
 

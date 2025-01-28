@@ -923,8 +923,9 @@ public class TestMSSQL extends BaseTest {
         } catch (Exception e) {
             failed = true;
 
-            log.info(e.getMessage(), e);
+            log.warn(e.getMessage(), e);
 
+            // todo fix
             assertEquals("message s/b 'IllegalArgumentReadingColumn'",
                     Message.IllegalArgumentReadingColumn.message("region", Customer.class, "Region", Region.class, String.class, "NOTAREGION"),
                     e.getMessage());

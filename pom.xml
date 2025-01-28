@@ -454,9 +454,10 @@
         <dependency>
             <groupId>org.xerial</groupId>
             <artifactId>sqlite-jdbc</artifactId>
+<!--            todo test latest but keep this version as a baseline -->
             <version>3.41.2.2</version>
-<!--            <version>3.36.0.2</version>-->
-<!--            <version>3.42.0.1</version>-->
+<!--            <version>3.36.0.2</version> Didn't support multiple generated keys -->
+<!--            <version>3.42.0.1</version> BUGGY VERSION -->
         </dependency>
 
 

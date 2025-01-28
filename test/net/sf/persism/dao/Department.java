@@ -1,9 +1,14 @@
 package net.sf.persism.dao;
 
+import net.sf.persism.annotations.Column;
+
 public final class Department {
+    @Column(primary = true)
     private Integer id;
+
     private String name;
     private Boolean active;
+    private char someType;
 
     public Integer getId() {
         return id;
@@ -27,5 +32,13 @@ public final class Department {
 
     public void setActive(Boolean active) {
         this.active = active;
+    }
+
+    public char getSomeType() {
+        return someType;
+    }
+
+    public void setSomeType(char someType) {
+        this.someType = someType;
     }
 }

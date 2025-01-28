@@ -126,21 +126,30 @@ public final class Session implements AutoCloseable {
         }
 
         List<String> primaryKeys = metaData.getPrimaryKeys(objectClass, connection);
-        if (primaryKeys.size() == 0) {
+        if (primaryKeys.isEmpty()) {
             throw new PersismException(Message.TableHasNoPrimaryKeys.message("FETCH", metaData.getTableInfo(objectClass).name()));
         }
 
         Map<String, PropertyInfo> properties = metaData.getTableColumnsPropertyInfo(objectClass, connection);
-        Parameters params = new Parameters();
+        Map<String, ColumnInfo> columns = metaData.getColumns(objectClass, connection);
 
+        // reset object
+        for (String key : properties.keySet()) {
+            PropertyInfo propertyInfo = properties.get(key);
+            ColumnInfo columnInfo = columns.get(key);
+            if (!columnInfo.primary) {
+                propertyInfo.setValue(object, defaultForPrimitive(propertyInfo.field.getType()));
+            }
+        }
+
+        Parameters params = new Parameters();
         List<ColumnInfo> columnInfos = new ArrayList<>(properties.size());
-        Map<String, ColumnInfo> cols = metaData.getColumns(objectClass, connection);
         JDBCResult result = new JDBCResult();
         try {
             for (String column : primaryKeys) {
                 PropertyInfo propertyInfo = properties.get(column);
                 params.add(propertyInfo.getValue(object));
-                columnInfos.add(cols.get(column));
+                columnInfos.add(columns.get(column));
             }
             assert params.size() == columnInfos.size();
 
@@ -162,12 +171,47 @@ public final class Session implements AutoCloseable {
                 return true;
             }
             return false;
-
         } catch (Exception e) {
             Util.rollback(connection);
             throw new PersismException(e.getMessage(), e);
         } finally {
             Util.cleanup(result.st, result.rs);
+        }
+    }
+
+    private Object defaultForPrimitive(Class<?> type) {
+
+        JavaType jtype = JavaType.getType(type);
+        assert jtype != null;
+
+        switch (jtype) {
+            case booleanType -> {
+                return false;
+            }
+            case byteType -> {
+                return (byte)0;
+            }
+            case shortType -> {
+                return (short)0;
+            }
+            case integerType -> {
+                return 0;
+            }
+            case longType -> {
+                return 0L;
+            }
+            case floatType -> {
+                return 0F;
+            }
+            case doubleType -> {
+                return 0D;
+            }
+            case characterType -> {
+                return '\u0000';
+            }
+            default -> {
+                return null;
+            }
         }
     }
 
@@ -438,7 +482,7 @@ public final class Session implements AutoCloseable {
         // Any properties not marked by NotColumn should have been set (or if they have a getter only)
         // If not throw a PersismException
         Collection<PropertyInfo> allProperties = MetaData.getPropertyInfo(objectClass).stream().filter(p -> !p.isJoin).toList();
-        if (properties.values().size() < allProperties.size()) {
+        if (properties.size() < allProperties.size()) {
             Set<PropertyInfo> missing = new HashSet<>(allProperties.size());
             missing.addAll(allProperties);
             missing.removeAll(properties.values());
@@ -605,7 +649,7 @@ public final class Session implements AutoCloseable {
                 }
             }
 
-            if (generatedKeys.size() > 0) {
+            if (!generatedKeys.isEmpty()) {
                 String[] keyArray = generatedKeys.toArray(new String[0]);
                 st = connection.prepareStatement(insertStatement, keyArray);
             } else {
@@ -636,7 +680,7 @@ public final class Session implements AutoCloseable {
 
             // Retrieve the primary identity value
             List<Object> primaryKeyValues = new ArrayList<>();
-            if (generatedKeys.size() > 0) {
+            if (!generatedKeys.isEmpty()) {
                 if (insertReturnedResults) {
                     rs = st.getResultSet();
                 } else {
@@ -673,7 +717,7 @@ public final class Session implements AutoCloseable {
             boolean isRecord = isRecord(objectClass);
 
             // If it's a record we can't assign the autoinc - we need a refresh
-            if (generatedKeys.size() > 0 && isRecord) {
+            if (!generatedKeys.isEmpty() && isRecord) {
                 refreshAfterInsert = true;
             }
 
@@ -786,7 +830,7 @@ public final class Session implements AutoCloseable {
     public <T> Result<T> delete(T object) throws PersismException {
 
         // Catch if user mistakenly passes a class to this method
-        if (object instanceof java.lang.Class c) {
+        if (object instanceof Class c) {
             throw new PersismException(Message.DeleteExpectsInstanceOfDataObjectNotAClass.message(c.getName()));
         }
 

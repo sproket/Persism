@@ -55,6 +55,9 @@ public class TestInformix extends BaseTest {
 
     @Override
     protected void createTables() throws SQLException {
+        // super.createTables(); super has syntax error for multi match table which we don't need
+        createDepartments(connectionType); // just use this direct
+
         String sql;
 
         if (isTableInDatabase("Orders", con)) {

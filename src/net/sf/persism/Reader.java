@@ -68,7 +68,7 @@ final class Reader {
         return (T) object;
     }
 
-    <T> T readRecord(RecordInfo<T> recordInfo, ResultSet rs) throws SQLException, IOException, InvocationTargetException, InstantiationException, IllegalAccessException {
+    <T> T readRecord(RecordInfo<T> recordInfo, ResultSet rs) throws SQLException, IOException, InvocationTargetException, InstantiationException, IllegalAccessException, IllegalArgumentException {
 
         long now;
         now = System.nanoTime();

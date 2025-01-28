@@ -36,10 +36,10 @@ public final class TestHSQLDB extends BaseTest {
 
         String home = createHomeFolder("pinfhsqldb");
         String url = replace(props.getProperty("database.url"), "{$home}", home);
-        log.info(url);
+        log.warn(url);
 
         con = DriverManager.getConnection(url, props);
-        log.info("DRIVER: " + con.getMetaData().getDatabaseProductName() + " | " + con.getMetaData().getDatabaseProductVersion());
+        log.warn("DRIVER: " + con.getMetaData().getDatabaseProductName() + " | " + con.getMetaData().getDatabaseProductVersion());
         createTables();
 
         session = new Session(con);

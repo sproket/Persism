@@ -148,7 +148,6 @@ public class UtilsForTests {
         home = replace(home, "\\", "/");
         home += "/" + subFolder;
 
-
         log.info("createHomeFolder: " + home);
         boolean success = new File(home).mkdirs();
         log.info("createHomeFolder success: " + success);

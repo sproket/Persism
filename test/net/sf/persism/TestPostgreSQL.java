@@ -430,8 +430,11 @@ public class TestPostgreSQL extends BaseTest {
 //        ResultSet rs  = pstmt.getGeneratedKeys();
 //        UUID id = null;
 //        if (rs.next()) id = rs.getObject(1, UUID.class);
+    }
 
-
+    @Override
+    public void testCharPrimitive() {
+        // https://stackoverflow.com/questions/1347646/postgres-error-on-insert-error-invalid-byte-sequence-for-encoding-utf8-0x0
     }
 
     @Override
