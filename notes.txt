@@ -69,7 +69,7 @@ mvn install:install-file -Dfile=persism-1.0.3b.jar -DgroupId=io.github.sproket -
 
 mvn install:install-file -Dfile=persism-2.2.1a.jar -DgroupId=io.github.sproket -DartifactId=persism -Dversion=2.2.1a -Dpackaging=jar
 
-mvn install:install-file -Dfile=./target/persism-2.2.1d.jar -DgroupId=io.github.sproket -DartifactId=persism -Dversion=2.2.1d -Dpackaging=jar
+mvn install:install-file -Dfile=./target/persism-2.2.1d.jar -DgroupId=io.github.sproket -DartifactId=persism -Dversion=2.2.1d -Dpackaging=jar -Dmaven.test.skip
 
 
 
@@ -108,6 +108,18 @@ code coverage Convertor
     NO sql.Date to LocalTime
     * ZonedDateTimeType or similar for warning coverage
     * direct Clob or Blob fields for warning coverage
+
+
+*parent not found*
+
+NOTE about Object type:  Usually code generation of data classes ignore UUID and make the fields Object.
+This can cause conversion problems in persism where you have 99c9fbf9-2429-11eb-88fc-000ec68b57fd and
+99C9FBF9-2429-11EB-88FC-000EC68B57FD. Solution: USE UUID as the field type. Not Object.
+
+
+Also occurs if you use LIMIT or TOP since the child doesn't know about which TOP rows to query from it's WHERE clause (derived from parent)
+CAN BE FIXED if we revert to IN LIST rather that EXISTS but that has LIMITS on the size of the IN LIST (different for different DBs)
+SEE https://sproket.github.io/Persism/n+1.html
 
 
 

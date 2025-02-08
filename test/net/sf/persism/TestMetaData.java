@@ -41,8 +41,14 @@ public final class TestMetaData extends TestCase {
         session = new Session(con);
     }
 
+    @Override
+    protected void tearDown() throws Exception {
+        log.info("TestMetaData tearDown");
+        super.tearDown();
+    }
+
     public void testLogger() {
-        log.debug("debug %s","x");
+        log.debug("debug %s", "x");
         log.debug("debug");
         log.info("info");
         log.info("info", new Throwable());
@@ -82,7 +88,7 @@ public final class TestMetaData extends TestCase {
             // "Could not determine a table for type: net.sf.persism.TestDerby Guesses were: [TestDerby, TestDerbies, TestDerbys, Test Derby, Test_Derby, Test Derbies, Test_Derbies, Test Derbys, Test_Derbys] and we found multiple matching: [TEST_DERBY, TESTDERBY]",
             List<String> guesses = List.of("TestDerby", "TestDerbies", "TestDerbys", "Test Derby", "Test_Derby", "Test Derbies", "Test_Derbies", "Test Derbys", "Test_Derbys");
             assertEquals("Message s/b equal",
-                    Message.CouldNotDetermineTableOrViewForTypeMultipleMatches.message("table", TestDerby.class.getName(),guesses, List.of("TEST_DERBY", "TESTDERBY")),
+                    Message.CouldNotDetermineTableOrViewForTypeMultipleMatches.message("table", TestDerby.class.getName(), guesses, List.of("TEST_DERBY", "TESTDERBY")),
                     e.getMessage());
         }
         assertTrue(failed);
@@ -110,6 +116,7 @@ public final class TestMetaData extends TestCase {
         assertEquals("s/b 'SELECT * FROM RecordTest2 -- what about this?'", "SELECT * FROM RecordTest2 -- what about this?", sql1.toString());
         log.info("-------");
     }
+
     public void testDeterminePropertyInfo() {
         Collection<PropertyInfo> propertyInfo = MetaData.getPropertyInfo(ByteData.class);
         log.warn(propertyInfo.size());

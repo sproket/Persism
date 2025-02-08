@@ -2085,6 +2085,9 @@ public abstract class BaseTest extends TestCase {
             assertEquals("msg s/b ' " + msg + "' ", msg, e.getMessage());
         }
         assertTrue(fail);
+
+        List<Customer> customers = session.query(Customer.class, where(":city = ?"), params("city"));
+        log.warn(customers.size());
     }
 
     // RecordTest1 is invalid, so it should fail on query and fetch

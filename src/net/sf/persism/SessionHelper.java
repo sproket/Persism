@@ -491,7 +491,7 @@ final class SessionHelper {
                 // We expect this method not to be called if the result query has 0 rows.
                 assert ((Collection<?>) parent).size() > 0;
             }
-// todo what if we have a complex query with multiple where clauses????
+
             String parentWhere;
             if (parentSql.toUpperCase().contains(" WHERE ")) {
                 parentWhere = parentSql.substring(parentSql.toUpperCase().indexOf(" WHERE ") + 7);
@@ -561,6 +561,7 @@ final class SessionHelper {
             for (Object child : childList) {
                 Object parent = parentMap.get(childPropertyInfo.getValue(child));
                 if (parent == null) {
+                    // todo this could occur many to 1 where the 1 is not a required value
                     log.warnNoDuplicates("parent not found: " + childPropertyInfo.getValue(child) + " : " + joinInfo + "DAO: " + child); // Should not usually occur. Why would we not find a parent?
                 } else {
                     setPropertyFromJoinInfo(joinInfo, parent, child);
@@ -586,6 +587,7 @@ final class SessionHelper {
                 KeyBox keyBox = new KeyBox(joinInfo.caseSensitive(), values.toArray());
                 Object parent = parentMap.get(keyBox);
                 if (parent == null) {
+                    // todo this can occur need to handle it.
                     log.warnNoDuplicates("parent not found: " + keyBox); // Should not usually occur. Why would we not find a parent?
                 } else {
                     setPropertyFromJoinInfo(joinInfo, parent, child);
@@ -648,6 +650,11 @@ final class SessionHelper {
         int n = parentWhere.toUpperCase().indexOf("ORDER BY");
         if (n > -1) {
             parentWhere = parentWhere.substring(0, n);
+        }
+        // Issue #45
+        // ensure parentWhere has () to prevent bad results if it has OR or similar because this gets appended with AND parentId = childId in the sub selects
+        if (!parentWhere.trim().isEmpty()) {
+            parentWhere = "(" + parentWhere + ")";
         }
 
         String parentAlias = "";

@@ -7,7 +7,7 @@
     <groupId>io.github.sproket</groupId>
     <artifactId>persism</artifactId>
 <!--    c prior test d mysql 8.4.0  -->
-    <version>2.2.1d</version>
+    <version>2.2.1f</version>
     <packaging>jar</packaging>
 
     <name>persism</name>
