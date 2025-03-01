@@ -1,5 +1,7 @@
 package net.sf.persism.dao.so;
 
+import net.sf.persism.annotations.Join;
+
 import java.sql.Timestamp;
 import java.util.Objects;
 
@@ -11,6 +13,9 @@ public final class Vote {
     private int bountyAmount;
     private Integer voteTypeId;
     private Timestamp creationDate;
+
+    @Join(to = VoteType.class, onProperties = "voteTypeId", toProperties = "id")
+    private VoteType voteType;
 
     public Integer id() {
         return id;
@@ -64,6 +69,10 @@ public final class Vote {
     public Vote setCreationDate(Timestamp creationDate) {
         this.creationDate = creationDate;
         return this;
+    }
+
+    public VoteType getVoteType() {
+        return voteType;
     }
 
     @Override

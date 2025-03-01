@@ -18,6 +18,8 @@ public final class SQL {
 
     String processedSQL = null;
 
+    int limit;
+
     private static final Pattern commentPattern = Pattern.compile("/\\*.*?\\*/", Pattern.DOTALL);
 
     SQL(String sql) {
@@ -98,6 +100,11 @@ public final class SQL {
      */
     public static SQL proc(String storedProc) {
         return new SQL(storedProc, SQLType.StoredProc);
+    }
+
+    public SQL limit(int limit) {
+        this.limit = limit;
+        return this;
     }
 
     /**

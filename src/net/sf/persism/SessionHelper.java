@@ -9,7 +9,6 @@ import java.sql.*;
 import java.util.*;
 import java.util.stream.Collectors;
 
-import static net.sf.persism.Parameters.params;
 import static net.sf.persism.SQL.where;
 
 // Non-public code Session uses.
@@ -63,12 +62,28 @@ final class SessionHelper {
             sqlQuery = session.metaData.getSelectStatement(objectClass, session.connection) + parsePropertyNames(sqlQuery, objectClass, session.connection);
             sql.processedSQL = sqlQuery;
         }
-        exec(result, sqlQuery, parameters.toArray());
+
+        if (sql.limit > 0) {
+            sqlQuery = addLimitToSQL(sqlQuery, sql.limit, session.metaData.getConnectionType());
+            sql.processedSQL = sqlQuery;
+        }
+        executeSelect(result, sqlQuery, parameters.toArray());
         return result;
     }
 
+    private static String addLimitToSQL(String sqlQuery, int limit, ConnectionType connectionType) {
+        switch (connectionType) {
+            // for other (unknown type we'll just guess at 2008 standard)
+            case Oracle, Derby, Other -> sqlQuery += " FETCH FIRST " + limit + " ROWS ONLY";
+            case MSSQL, JTDS, UCanAccess -> sqlQuery = "SELECT TOP " + limit + " " + sqlQuery.substring(7);
+            case MySQL, PostgreSQL, H2, SQLite, HSQLDB, Informix -> sqlQuery += " LIMIT " + limit;
+            case Firebird -> sqlQuery = "SELECT FIRST " + limit + " " + sqlQuery.substring(7);
+        }
+        return sqlQuery;
+    }
+
     // this method should only be used by query or fetch
-    void exec(JDBCResult result, String sql, Object... parameters) throws SQLException {
+    void executeSelect(JDBCResult result, String sql, Object... parameters) throws SQLException {
         long now = System.currentTimeMillis();
 
         if (sqllog.isDebugEnabled()) {
@@ -282,7 +297,7 @@ final class SessionHelper {
             }
         }
 
-        if (propertiesNotFound.size() > 0) {
+        if (!propertiesNotFound.isEmpty()) {
             throw new PersismException(Message.QueryPropertyNamesMissingOrNotFound.message(propertiesNotFound, sql));
         }
         String parsedSql = " " + parsedQuery;
@@ -477,10 +492,12 @@ final class SessionHelper {
 
     // todo we really need a way to detect infinite loops and FAIL FAST
     // parent is a POJO or a List of POJOs
-    void handleJoins(Object parent, Class<?> parentClass, String parentSql, Parameters parentParams) {
+    void handleJoins(Object parent, Class<?> parentClass, SQL parentSql, Parameters parentParams, boolean isRoot) {
         // maybe we could add a check for fetch after insert. In those cases there's no need to query for child lists
         // BUT we do need query for child SINGLES AND IT'S POSSIBLE THAT CHILD RECORDS GET INSERTED 1st!
         // NOT really important. At most 1 extra query per type will be run (and no child queries after that)
+
+        log.debug("handleJoins: Root?" + isRoot + " " + parent.getClass() + " parentSql: " + parentSql);
 
         List<PropertyInfo> joinProperties = MetaData.getPropertyInfo(parentClass).stream().filter(PropertyInfo::isJoin).toList();
 
@@ -489,23 +506,26 @@ final class SessionHelper {
             JoinInfo joinInfo = JoinInfo.getInstance(joinAnnotation, joinProperty, parent, parentClass);
             if (joinInfo.parentIsAQuery()) {
                 // We expect this method not to be called if the result query has 0 rows.
-                assert ((Collection<?>) parent).size() > 0;
+                assert !((Collection<?>) parent).isEmpty();
             }
 
+            String sql = parentSql.toString();
             String parentWhere;
-            if (parentSql.toUpperCase().contains(" WHERE ")) {
-                parentWhere = parentSql.substring(parentSql.toUpperCase().indexOf(" WHERE ") + 7);
+            if (sql.toUpperCase().contains(" WHERE ")) {
+                parentWhere = sql.substring(sql.toUpperCase().indexOf(" WHERE ") + 7);
             } else {
                 parentWhere = "";
             }
 
-            String whereClause = getChildWhereClause(joinInfo, parentWhere);
-            List<Object> params = new ArrayList<>(parentParams.parameters);
+            String whereClause;
+            whereClause = getChildWhereClause(joinInfo, parentWhere);
+
+            log.debug("whereClause: " + whereClause);
 
             // join to a collection
             if (Collection.class.isAssignableFrom(joinProperty.field.getType())) {
                 // query
-                List<?> childList = session.query(joinInfo.childClass(), where(whereClause), params(params.toArray()));
+                List<?> childList = childQuery(joinInfo.childClass(), where(whereClause), parentParams);
 
                 if (joinInfo.parentIsAQuery()) {
                     // many to many
@@ -520,11 +540,11 @@ final class SessionHelper {
 
                 if (joinInfo.parentIsAQuery()) {
                     // many to one
-                    List<?> childList = session.query(joinInfo.childClass(), where(whereClause), params(params.toArray()));
+                    List<?> childList = childQuery(joinInfo.childClass(), where(whereClause), parentParams);
                     stitch(joinInfo.swapParentAndChild(), childList, (List<?>) parent);
                 } else {
                     // one to one
-                    Object child = session.fetch(joinInfo.childClass(), where(whereClause), params(params.toArray()));
+                    Object child = childFetch(joinInfo.childClass(), where(whereClause), parentParams);
                     if (child != null) {
                         joinProperty.setValue(parent, child);
                     }
@@ -533,11 +553,21 @@ final class SessionHelper {
         }
     }
 
+    // to distinguish our internal call vs public call
+    private Object childFetch(Class<?> aClass, SQL where, Parameters params) {
+        return session.fetch(aClass, where, params, false);
+    }
+
+    // to distinguish our internal call vs public call
+    private List<?> childQuery(Class<?> aClass, SQL where, Parameters params) {
+        return session.query(aClass, where, params, false);
+    }
+
     // called with many to many or many to one
     private void stitch(JoinInfo joinInfo, List<?> parentList, List<?> childList) {
         blog.debug("STITCH " + joinInfo);
 
-        if (childList.size() == 0) {
+        if (childList.isEmpty()) {
             return;
         }
         long now = System.currentTimeMillis();

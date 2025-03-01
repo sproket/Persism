@@ -122,7 +122,7 @@ public final class Parameters {
         Set<String> mistypeSet = new TreeSet<>(namedParameters.keySet());
         mistypeSet.removeAll(parameterMap.keySet());
 
-        if (paramsNotFound.size() > 0) {
+        if (!paramsNotFound.isEmpty()) {
             throw new PersismException(Message.QueryParameterNamesMissingOrNotFound.message(paramsNotFound, mistypeSet));
         }
         parameters.clear();

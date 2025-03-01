@@ -37,7 +37,7 @@ public class TestStackOverflow extends TestCase {
         super.tearDown();
     }
 
-    public void testExtendedUsers() {
+    public void testQueryExtendedUsers() {
 
         long ms = System.currentTimeMillis();
         // List<ExtendedUser> users = session.query(ExtendedUser.class, where("Id < ?"), params(1000));
@@ -46,7 +46,7 @@ public class TestStackOverflow extends TestCase {
         System.out.println("time: " + (System.currentTimeMillis() - ms));
     }
 
-    public void testExtendedUser() {
+    public void testFetchExtendedUser() {
         long ms = System.currentTimeMillis();
         ExtendedUser user = session.fetch(ExtendedUser.class, where("Id = ?"), params(4918));
         System.out.println("time: " + (System.currentTimeMillis() - ms));
@@ -57,6 +57,8 @@ public class TestStackOverflow extends TestCase {
         assertEquals(442, user.getPosts().size());
         assertEquals(83, user.getBadges().size());
         assertEquals(0, user.getOtherStuff().size()); // because we marked it "transient"
+
+
     }
 
     public void testGetPost() {

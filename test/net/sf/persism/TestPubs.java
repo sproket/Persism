@@ -5,6 +5,7 @@ import net.sf.persism.categories.ExternalDB;
 import net.sf.persism.dao.pubs.Author;
 import net.sf.persism.dao.pubs.JobType;
 import net.sf.persism.dao.pubs.PublisherInfo;
+import net.sf.persism.dao.pubs.PublisherTitle;
 import org.junit.*;
 import org.junit.experimental.categories.Category;
 
@@ -24,7 +25,6 @@ public class TestPubs extends TestCase {
     Connection con;
     static Session session;
 
-    @Before
     public void setUp() throws Exception {
 
         if (getClass().equals(TestPubs.class)) {
@@ -42,12 +42,10 @@ public class TestPubs extends TestCase {
         }
     }
 
-    @After
     public void tearDown() throws Exception {
         con.close();
     }
 
-    @Test
     public void testAuthors() {
 
         Author author = new Author();
@@ -118,7 +116,14 @@ public class TestPubs extends TestCase {
         }
     }
 
-    @Test
+    public void testTopQuery() {
+        List<PublisherTitle> publisherTitles = session.query(PublisherTitle.class);
+
+        log.info(publisherTitles);
+
+    }
+
+
     public void testJobTypes() {
         List<JobType> jobs = session.query(JobType.class, sql("select * from jobs"));
         log.info(jobs);
@@ -139,10 +144,5 @@ public class TestPubs extends TestCase {
         Assert.assertEquals("min lvl s/b ", 175, jobType.getMinLevel());
         Assert.assertEquals("max lvl s/b ", 250, jobType.getMaxLevel());
 
-    }
-
-    @AfterClass
-    public static void Xfinally() {
-        log.warn(session.getMetaData());
     }
 }

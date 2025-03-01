@@ -136,9 +136,13 @@ public final class Session implements AutoCloseable {
         // reset object
         for (String key : properties.keySet()) {
             PropertyInfo propertyInfo = properties.get(key);
-            ColumnInfo columnInfo = columns.get(key);
-            if (!columnInfo.primary) {
-                propertyInfo.setValue(object, defaultForPrimitive(propertyInfo.field.getType()));
+            if (!propertyInfo.isJoin) {
+                ColumnInfo columnInfo = columns.get(key);
+                if (!columnInfo.primary) {
+                    propertyInfo.setValue(object, defaultForPrimitive(propertyInfo.field.getType()));
+                }
+            } else {
+                // todo what if it is a join? Clear collection? NO - need to eval this. Possible we do insert and then fetch which would potentially clear lists where the user still wants that data!
             }
         }
 
@@ -161,13 +165,13 @@ public final class Session implements AutoCloseable {
                 }
             }
 
-            helper.exec(result, sql, params.toArray());
+            helper.executeSelect(result, sql, params.toArray());
 
             verifyPropertyInfoForQuery(objectClass, properties, result.rs);
 
             if (result.rs.next()) {
                 reader.readObject(object, properties, result.rs);
-                helper.handleJoins(object, objectClass, sql, params);
+                helper.handleJoins(object, objectClass, SQL.sql(sql), params, true);
                 return true;
             }
             return false;
@@ -179,6 +183,7 @@ public final class Session implements AutoCloseable {
         }
     }
 
+    // todo move to sessionhelper - what about other non public methods here...?
     private Object defaultForPrimitive(Class<?> type) {
 
         JavaType jtype = JavaType.getType(type);
@@ -189,10 +194,10 @@ public final class Session implements AutoCloseable {
                 return false;
             }
             case byteType -> {
-                return (byte)0;
+                return (byte) 0;
             }
             case shortType -> {
-                return (short)0;
+                return (short) 0;
             }
             case integerType -> {
                 return 0;
@@ -268,6 +273,10 @@ public final class Session implements AutoCloseable {
      * @throws PersismException Well, this is a runtime exception, so it actually could be anything really.
      */
     public <T> T fetch(Class<T> objectClass, SQL sql, Parameters parameters) {
+        return fetch(objectClass, sql, parameters, true);
+    }
+
+    <T> T fetch(Class<T> objectClass, SQL sql, Parameters parameters, boolean isRoot) {
         // If we know this type it means it's a primitive type. Not a DAO so we use a different rule to read those
         boolean isPOJO = JavaType.getType(objectClass) == null;
         boolean isRecord = isPOJO && isRecord(objectClass);
@@ -291,14 +300,14 @@ public final class Session implements AutoCloseable {
                 if (isRecord) {
                     RecordInfo<T> recordInfo = new RecordInfo<>(objectClass, properties, result.rs);
                     var ret = reader.readRecord(recordInfo, result.rs);
-                    helper.handleJoins(ret, objectClass, sql.toString(), parameters);
+                    helper.handleJoins(ret, objectClass, sql, parameters, isRoot);
                     return ret;
 
                 } else if (isPOJO) {
                     var pojo = objectClass.getDeclaredConstructor().newInstance();
                     verifyPropertyInfoForQuery(objectClass, properties, result.rs);
                     var ret = reader.readObject(pojo, properties, result.rs);
-                    helper.handleJoins(ret, objectClass, sql.toString(), parameters);
+                    helper.handleJoins(ret, objectClass, sql, parameters, isRoot);
                     return ret;
 
                 } else {
@@ -388,13 +397,15 @@ public final class Session implements AutoCloseable {
 
         primaryKeyValues.areKeys = true;
 
+        // TODO this also has the problem of LIMIT
+
         if (primaryKeyValues.size() == primaryKeys.size()) {
             // single select
-            return query(objectClass, sql(metaData.getDefaultSelectStatement(objectClass, connection)), primaryKeyValues);
+            return query(objectClass, sql(metaData.getDefaultSelectStatement(objectClass, connection)).limit(1), primaryKeyValues);
         }
 
-        String query = metaData.getSelectStatement(objectClass, connection) + metaData.getPrimaryInClause(objectClass, primaryKeyValues.size(), connection);
-        SQL sql = sql(query);
+        String query = metaData.getSelectStatement(objectClass, connection) + " WHERE " + metaData.getPrimaryInClause(objectClass, primaryKeyValues.size(), connection);
+        SQL sql = sql(query).limit(primaryKeyValues.size());
         return query(objectClass, sql, primaryKeyValues);
     }
 
@@ -410,7 +421,11 @@ public final class Session implements AutoCloseable {
      * @throws PersismException If something goes wrong you get a big stack trace.
      */
     public <T> List<T> query(Class<T> objectClass, SQL sql, Parameters parameters) {
+        return query(objectClass, sql, parameters, true);
+    }
 
+
+    <T> List<T> query(Class<T> objectClass, SQL sql, Parameters parameters, boolean isRoot) {
         helper.checkIfStoredProcOrSQL(objectClass, sql);
 
         List<T> list = new ArrayList<>(32);
@@ -441,7 +456,7 @@ public final class Session implements AutoCloseable {
                 }
             } else if (isPOJO) {
                 verifyPropertyInfoForQuery(objectClass, properties, result.rs);
-                while (result.rs.next()) {
+                while (result.rs.next()) { // here it fails?
                     var pojo = objectClass.getDeclaredConstructor().newInstance();
                     list.add(reader.readObject(pojo, properties, result.rs));
                 }
@@ -456,9 +471,9 @@ public final class Session implements AutoCloseable {
             //blog.debug("TIME TO READ " + objectClass + " " + (System.currentTimeMillis() - now) + " SIZE " + list.size());
             blog.debug("READ time: %s SIZE: %s %s", (System.currentTimeMillis() - now), list.size(), objectClass);
 
-            if (list.size() > 0) {
+            if (!list.isEmpty()) {
                 now = System.currentTimeMillis();
-                helper.handleJoins(list, objectClass, sql.toString(), parameters);
+                helper.handleJoins(list, objectClass, sql, parameters, isRoot);
             }
 
             if (blog.isDebugEnabled()) {
@@ -920,7 +935,7 @@ public final class Session implements AutoCloseable {
 
         primaryKeyValues.areKeys = true;
 
-        String deleteStatement = metaData.getDeleteStatement(objectClass, connection) + metaData.getPrimaryInClause(objectClass, primaryKeyValues.size(), connection);
+        String deleteStatement = metaData.getDeleteStatement(objectClass, connection) + " WHERE " + metaData.getPrimaryInClause(objectClass, primaryKeyValues.size(), connection);
         if (sqllog.isDebugEnabled()) {
             sqllog.debug("%s params: %s", deleteStatement, primaryKeyValues);
         }
@@ -1000,7 +1015,7 @@ public final class Session implements AutoCloseable {
         }
     }
 
-
+// do we need these getters? we have them in case we ever need expose these for some feature...
     MetaData getMetaData() {
         return metaData;
     }

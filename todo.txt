@@ -212,3 +212,36 @@ Caused by: java.lang.AssertionError: 38662144 != 26615808
 	at com.h2database@2.2.224/org.h2.mvstore.FileStore.storeBuffer(FileStore.java:1524)
 	... 6 common frames omitted
 
+************
+Not a great error message with Record findConstructor:
+
+public record Unit(int identity, String name, String code, double diviser, boolean appDensity) {
+}
+
+"appDensity" should be ApplyDensity (mistyped in the record)
+
+table looks like:
+CREATE TABLE [dbo].[Units](
+	[identity] [int] IDENTITY(1,1) NOT NULL,
+	[Name] [nvarchar](20) NOT NULL,
+	[Code] [char](2) NOT NULL,
+	[Diviser] [float] NOT NULL,
+	[ApplyDensity] [bit] NOT NULL)
+
+error message is
+
+findConstructor: Could not find a constructor for class: blah.models.Unit properties: [identity, name, code, diviser]
+
+It's showing the FOUND but it should show the NOT found one....
+*********************
+
+Tutorial on how to generate java classes for ORM
+
+https://stackoverflow.com/questions/34377496/where-is-the-persistence-tool-window-in-intellij-idea-15
+
+todo target type is blah and value type is blah - s/b property type is blah IN CLASS Someclass and column type is blah in TABLE "BLAH"
+
+
+todo Convertor should probably be instantiated when needed passing some kind of context string to include in any warnings or errors
+
+todo check how we handle multiple primary keys and call query or fetch with just class and params (which means select where in primary keys) find usages Params.areKeys

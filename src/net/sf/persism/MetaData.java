@@ -752,7 +752,7 @@ final class MetaData {
         String ed = connectionType.getKeywordEndDelimiter();
         String andSep = "";
 
-        String query = " WHERE ";
+        String query = "";
 
         List<String> primaryKeys = getPrimaryKeys(objectClass, connection);
 
