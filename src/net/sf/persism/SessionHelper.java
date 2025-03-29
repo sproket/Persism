@@ -517,6 +517,35 @@ final class SessionHelper {
                 parentWhere = "";
             }
 
+            // TODO what if root is a general query - not a table. Blowing up.... fail with no primary key
+            // todo limit > 0 with fetch? makes no sense
+            if (isRoot && (parentSql.limit > 0 || !joinInfo.parentIsAQuery())) {
+                // log.warn("original where: " + parentWhere + " " + parentParams);
+                // replace parent where with IN (ID, ID, ID) - replace parameters with keys
+                if (joinInfo.parentIsAQuery()) {
+                    Collection<?> list = (Collection<?>) parent;
+                    parentWhere = session.metaData.getPrimaryInClause(parentClass, list.size(), session.connection);
+                    List<String> keys = session.metaData.getPrimaryKeys(parentClass, session.connection);
+                    parentParams = new Parameters();
+                    for (String key : keys) {
+                        for (Object pojo : list) {
+                            PropertyInfo prop = session.getMetaData().getTableColumnsPropertyInfo(parentClass, session.connection).get(key);
+                            Object value = prop.getValue(pojo);
+                            parentParams.add(value);
+                        }
+                    }
+                } else {
+                    parentWhere = session.metaData.getWhereClause(parentClass, session.connection);
+                    List<String> keys = session.metaData.getPrimaryKeys(parentClass, session.connection);
+                    parentParams = new Parameters();
+                    for (String key : keys) {
+                        PropertyInfo prop = session.getMetaData().getTableColumnsPropertyInfo(parentClass, session.connection).get(key);
+                        Object value = prop.getValue(parent);
+                        parentParams.add(value);
+                    }
+                }
+            }
+
             String whereClause;
             whereClause = getChildWhereClause(joinInfo, parentWhere);
 

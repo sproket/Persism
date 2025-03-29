@@ -11,7 +11,6 @@ import java.lang.annotation.*;
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.METHOD, ElementType.FIELD})
-@Repeatable(Joins.class)
 public @interface Join {
 
     Class<?> from() default void.class;

@@ -15,6 +15,7 @@ import java.util.List;
 import java.util.Properties;
 
 import static net.sf.persism.SQL.sql;
+import static net.sf.persism.SQL.where;
 
 // Does not share common tests - this is just to do some specific tests on SQL with PUBS DB
 @Category(ExternalDB.class)
@@ -117,9 +118,11 @@ public class TestPubs extends TestCase {
     }
 
     public void testTopQuery() {
-        List<PublisherTitle> publisherTitles = session.query(PublisherTitle.class);
+        long now = System.currentTimeMillis();
+        List<PublisherTitle> publisherTitles = session.query(PublisherTitle.class, where("1=1").limit(4));
 
-        log.info(publisherTitles);
+        log.info(publisherTitles.size());
+        log.info("time: " + (System.currentTimeMillis() - now));
 
     }
 

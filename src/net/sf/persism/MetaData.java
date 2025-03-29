@@ -700,7 +700,7 @@ final class MetaData {
     }
 
     String getDefaultDeleteStatement(Class<?> objectClass, Connection connection) {
-        return getDeleteStatement(objectClass, connection) + getWhereClause(objectClass, connection);
+        return getDeleteStatement(objectClass, connection) + " WHERE " + getWhereClause(objectClass, connection);
     }
 
     private synchronized String determineDeleteStatement(Class<?> objectClass, Connection connection) {
@@ -800,7 +800,7 @@ final class MetaData {
             throw new PersismException(Message.TableHasNoPrimaryKeysForWhere.message(getTableInfo(objectClass).name()));
         }
 
-        sb.append(" WHERE ");
+        //sb.append(" WHERE ");
 
         sep = "";
         for (String column : primaryKeys) {
@@ -823,7 +823,7 @@ final class MetaData {
         assert objectClass.getAnnotation(View.class) == null;
         assert objectClass.getAnnotation(NotTable.class) == null;
 
-        return getSelectStatement(objectClass, connection) + getWhereClause(objectClass, connection);
+        return getSelectStatement(objectClass, connection) + " WHERE " + getWhereClause(objectClass, connection);
     }
 
     /**

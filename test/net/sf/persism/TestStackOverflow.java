@@ -18,6 +18,8 @@ import static net.sf.persism.SQL.where;
 @Category(ExternalDB.class)
 public class TestStackOverflow extends TestCase {
 
+    // private static final Logger log = LoggerFactory.getLogger(StackOverflow.class);
+
     Connection con;
     Session session;
 
@@ -36,6 +38,24 @@ public class TestStackOverflow extends TestCase {
     protected void tearDown() throws Exception {
         super.tearDown();
     }
+
+
+    public void testUserWithBadges() {
+        long ms = System.currentTimeMillis();
+
+        List<UserWithBadges> users = session.query(UserWithBadges.class, where(":reputation > ? ORDER BY :reputation DESC").limit(20), params(10000));
+
+        System.out.println("users rep > 10000 - count: " + users.size());
+        System.out.println("Time: " + (System.currentTimeMillis() - ms));
+
+        for (UserWithBadges user : users) {
+            System.out.println(user.getDisplayName() + " has " + user.getBadges().size() + " badges!");
+        }
+
+        UserWithBadges user1 = session.fetch(UserWithBadges.class, where(":reputation > ? ORDER BY :reputation DESC").limit(20), params(10000));
+        UserWithBadges user2 = session.fetch(UserWithBadges.class, where(":reputation > ? ORDER BY :reputation DESC"), params(10000));
+    }
+
 
     public void testQueryExtendedUsers() {
 

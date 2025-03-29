@@ -232,7 +232,7 @@ error message is
 
 findConstructor: Could not find a constructor for class: blah.models.Unit properties: [identity, name, code, diviser]
 
-It's showing the FOUND but it should show the NOT found one....
+It's showing the FOUND but it should show the NOT FOUND one....
 *********************
 
 Tutorial on how to generate java classes for ORM
@@ -245,3 +245,9 @@ todo target type is blah and value type is blah - s/b property type is blah IN C
 todo Convertor should probably be instantiated when needed passing some kind of context string to include in any warnings or errors
 
 todo check how we handle multiple primary keys and call query or fetch with just class and params (which means select where in primary keys) find usages Params.areKeys
+
+WORKS JOIN to View (currently I think we fail with no primary key???) DOES WORK: see [ProductsFromPackaging] in Revision
+
+todo insert into pojo with joins child data gets cleared on fetch where there are defaults to read back?
+
+todo PersistableObject does this clone child records? How would we handle update with joins? Right now we do nothing special i think.

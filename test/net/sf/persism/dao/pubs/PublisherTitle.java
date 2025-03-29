@@ -4,9 +4,7 @@ import net.sf.persism.annotations.Column;
 import net.sf.persism.annotations.Join;
 import net.sf.persism.annotations.Table;
 
-import java.awt.image.TileObserver;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 @Table("pub_info")
@@ -22,8 +20,7 @@ public class PublisherTitle {
     private String information;
 
     // @Join(to = Title.class, onProperties = "id", toProperties = "pubId")
-    @Join(from = PublisherTitle.class, to = Title.class, onProperties = "id", toProperties = "pubId")
-    @Join(from = TileObserver.class, to = Object.class, onProperties = "id", toProperties = "pubId")
+    @Join(to = Title.class, onProperties = "id", toProperties = "pubId")
     private final List<Title> titles = new ArrayList<>();
 
     public String getId() {
