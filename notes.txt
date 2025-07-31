@@ -62,8 +62,8 @@ Oracle not on maven...
 https://stackoverflow.com/questions/9898499/oracle-jdbc-ojdbc6-jar-as-a-maven-dependency
 
 To build a local instance for another project to test
-mvn install -Dmaven.test.skip
-mvn install:install-file -Dfile=./target/persism-2.3.b1.jar -DgroupId=io.github.sproket -DartifactId=persism -Dversion=2.2.b1 -Dpackaging=jar -Dmaven.test.skip
+mvn package -Dmaven.test.skip
+mvn install:install-file -Dfile=./target/persism-2.3.b1.jar -DgroupId=io.github.sproket -DartifactId=persism -Dversion=2.3.b1 -Dpackaging=jar -Dmaven.test.skip
 
 
 

@@ -105,6 +105,10 @@ public final class Session implements AutoCloseable {
      * @throws PersismException if something goes wrong.
      */
     public boolean fetch(Object object) throws PersismException {
+         return fetch(object, true);
+    }
+
+    boolean fetch(Object object, boolean handleJoins) {
         Class<?> objectClass = object.getClass();
 
         // If we know this type it means it's a primitive type. This method cannot be used for primitives
@@ -133,7 +137,7 @@ public final class Session implements AutoCloseable {
         Map<String, PropertyInfo> properties = metaData.getTableColumnsPropertyInfo(objectClass, connection);
         Map<String, ColumnInfo> columns = metaData.getColumns(objectClass, connection);
 
-        // reset object
+        // reset object fields before refreshing from DB
         for (String key : properties.keySet()) {
             PropertyInfo propertyInfo = properties.get(key);
             if (!propertyInfo.isJoin) {
@@ -141,8 +145,6 @@ public final class Session implements AutoCloseable {
                 if (!columnInfo.primary) {
                     propertyInfo.setValue(object, defaultForPrimitive(propertyInfo.field.getType()));
                 }
-            } else {
-                // todo what if it is a join? Clear collection? NO - need to eval this. Possible we do insert and then fetch which would potentially clear lists where the user still wants that data!
             }
         }
 
@@ -171,7 +173,9 @@ public final class Session implements AutoCloseable {
 
             if (result.rs.next()) {
                 reader.readObject(object, properties, result.rs);
-                helper.handleJoins(object, objectClass, SQL.sql(sql), params, true);
+                if (handleJoins) {
+                    helper.handleJoins(object, objectClass, SQL.sql(sql), params, true);
+                }
                 return true;
             }
             return false;
@@ -744,7 +748,7 @@ public final class Session implements AutoCloseable {
                     SQL sql = new SQL(metaData.getDefaultSelectStatement(objectClass, connection));
                     returnObject = fetch(objectClass, sql, params(primaryKeyValues.toArray()));
                 } else {
-                    fetch(object);
+                    fetch(object, false);
                     returnObject = object;
                 }
             } else {
