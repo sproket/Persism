@@ -620,7 +620,7 @@ final class SessionHelper {
             for (Object child : childList) {
                 Object parent = parentMap.get(childPropertyInfo.getValue(child));
                 if (parent == null) {
-                    // todo this could occur many to 1 where the 1 is not a required value
+                    // todo this could occur many to 1 where the 1 is not a required valueA clear and concise description of what the bug is.
                     log.warnNoDuplicates("parent not found: " + childPropertyInfo.getValue(child) + " : " + joinInfo + "DAO: " + child); // Should not usually occur. Why would we not find a parent?
                 } else {
                     setPropertyFromJoinInfo(joinInfo, parent, child);
@@ -775,7 +775,7 @@ final class SessionHelper {
 
     boolean isSelect(String sql) {
         assert sql != null;
-        return sql.trim().substring(0, 7).equalsIgnoreCase("select ");
+        return sql.trim().substring(0, 6).equalsIgnoreCase("select");
     }
 
     <T> void checkIfStoredProcOrSQL(Class<T> objectClass, SQL sql) {
