@@ -620,7 +620,7 @@ final class SessionHelper {
             for (Object child : childList) {
                 Object parent = parentMap.get(childPropertyInfo.getValue(child));
                 if (parent == null) {
-                    // todo this could occur many to 1 where the 1 is not a required valueA clear and concise description of what the bug is.
+                    // todo this could occur many to 1 where the 1 is not a required value
                     log.warnNoDuplicates("parent not found: " + childPropertyInfo.getValue(child) + " : " + joinInfo + "DAO: " + child); // Should not usually occur. Why would we not find a parent?
                 } else {
                     setPropertyFromJoinInfo(joinInfo, parent, child);
