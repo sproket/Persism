@@ -775,7 +775,7 @@ final class SessionHelper {
 
     boolean isSelect(String sql) {
         assert sql != null;
-        return sql.trim().substring(0, 7).equalsIgnoreCase("select ");
+        return sql.trim().substring(0, 6).equalsIgnoreCase("select");
     }
 
     <T> void checkIfStoredProcOrSQL(Class<T> objectClass, SQL sql) {
