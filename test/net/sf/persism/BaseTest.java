@@ -79,6 +79,7 @@ public abstract class BaseTest extends TestCase {
     }
 
     public final void messageTester(String message, Runnable block) {
+        log.warn("messageTester " + message);
         boolean fail = false;
 
         try {

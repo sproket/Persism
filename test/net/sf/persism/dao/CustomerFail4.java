@@ -10,7 +10,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Table("Customers")
-public class CustomerFail3 {
+public class CustomerFail4 {
 
     private String customerId;
     private int groupId;
@@ -32,9 +32,10 @@ public class CustomerFail3 {
     private LocalDateTime dateOfLastOrder;
 
     @Join(to = Invoice.class, onProperties = "CustomerId,Status", toProperties = "CustomerId, Status")
-    private List<Invoice> invoices; // fail on not instantiated. Collections need a new ArrayList or similar.
+    private final List<Invoice> invoices = new ArrayList<>();
 
-    public List<Invoice> getInvoices() {
+    // misspell getter or missing getter - same effect.
+    public List<Invoice> getInviices() {
         return invoices;
     }
 
@@ -42,7 +43,7 @@ public class CustomerFail3 {
         return customerId;
     }
 
-    public CustomerFail3 setCustomerId(String customerId) {
+    public CustomerFail4 setCustomerId(String customerId) {
         this.customerId = customerId;
         return this;
     }
@@ -52,7 +53,7 @@ public class CustomerFail3 {
         return groupId;
     }
 
-    public CustomerFail3 setGroupId(int groupId) {
+    public CustomerFail4 setGroupId(int groupId) {
         this.groupId = groupId;
         return this;
     }
@@ -61,7 +62,7 @@ public class CustomerFail3 {
         return companyName;
     }
 
-    public CustomerFail3 setCompanyName(String companyName) {
+    public CustomerFail4 setCompanyName(String companyName) {
         this.companyName = companyName;
         return this;
     }
@@ -70,7 +71,7 @@ public class CustomerFail3 {
         return contactName;
     }
 
-    public CustomerFail3 setContactName(String contactName) {
+    public CustomerFail4 setContactName(String contactName) {
         this.contactName = contactName;
         return this;
     }
@@ -79,7 +80,7 @@ public class CustomerFail3 {
         return contactTitle;
     }
 
-    public CustomerFail3 setContactTitle(String contactTitle) {
+    public CustomerFail4 setContactTitle(String contactTitle) {
         this.contactTitle = contactTitle;
         return this;
     }
@@ -88,7 +89,7 @@ public class CustomerFail3 {
         return address;
     }
 
-    public CustomerFail3 setAddress(String address) {
+    public CustomerFail4 setAddress(String address) {
         this.address = address;
         return this;
     }
@@ -97,7 +98,7 @@ public class CustomerFail3 {
         return city;
     }
 
-    public CustomerFail3 setCity(String city) {
+    public CustomerFail4 setCity(String city) {
         this.city = city;
         return this;
     }
@@ -106,7 +107,7 @@ public class CustomerFail3 {
         return region;
     }
 
-    public CustomerFail3 setRegion(Region region) {
+    public CustomerFail4 setRegion(Region region) {
         this.region = region;
         return this;
     }
@@ -115,7 +116,7 @@ public class CustomerFail3 {
         return postalCode;
     }
 
-    public CustomerFail3 setPostalCode(String postalCode) {
+    public CustomerFail4 setPostalCode(String postalCode) {
         this.postalCode = postalCode;
         return this;
     }
@@ -124,7 +125,7 @@ public class CustomerFail3 {
         return country;
     }
 
-    public CustomerFail3 setCountry(String country) {
+    public CustomerFail4 setCountry(String country) {
         this.country = country;
         return this;
     }
@@ -133,7 +134,7 @@ public class CustomerFail3 {
         return phone;
     }
 
-    public CustomerFail3 setPhone(String phone) {
+    public CustomerFail4 setPhone(String phone) {
         this.phone = phone;
         return this;
     }
@@ -142,7 +143,7 @@ public class CustomerFail3 {
         return fax;
     }
 
-    public CustomerFail3 setFax(String fax) {
+    public CustomerFail4 setFax(String fax) {
         this.fax = fax;
         return this;
     }
@@ -151,7 +152,7 @@ public class CustomerFail3 {
         return status;
     }
 
-    public CustomerFail3 setStatus(Character status) {
+    public CustomerFail4 setStatus(Character status) {
         this.status = status;
         return this;
     }
@@ -160,7 +161,7 @@ public class CustomerFail3 {
         return dateRegistered;
     }
 
-    public CustomerFail3 setDateRegistered(Timestamp dateRegistered) {
+    public CustomerFail4 setDateRegistered(Timestamp dateRegistered) {
         this.dateRegistered = dateRegistered;
         return this;
     }
@@ -169,7 +170,7 @@ public class CustomerFail3 {
         return dateOfLastOrder;
     }
 
-    public CustomerFail3 setDateOfLastOrder(LocalDateTime dateOfLastOrder) {
+    public CustomerFail4 setDateOfLastOrder(LocalDateTime dateOfLastOrder) {
         this.dateOfLastOrder = dateOfLastOrder;
         return this;
     }

@@ -281,6 +281,4 @@ Caused by: com.microsoft.sqlserver.jdbc.SQLServerException: Implicit conversion 
 
 SessionHelper 622 add and write a test where child has null to parent? Where's the use-case?
 
-todo when we have a join but misspell the getter for the collection we get null pointer on "this.getter" we should have a field name that we looked for to include in the message!
-
 todo executeQuery doesn't cover case of passing several params and one or more is null (should be supported and work)

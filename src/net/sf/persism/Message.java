@@ -33,6 +33,7 @@ enum Message {
     CannotDeleteWithNoPrimaryKeys("Cannot DELETE with no primary keys provided"),
     MoreThanOneTableOrViewInDifferentSchemas("MORE THAN 1 %s in different schemas found for %s (use an annotation to specify the schema)"),
     NamedParametersUsedWithStoredProc("Using named parameters with a stored proc (%s) can't work."),
+    MissingGetter("Cannot invoke getter for property: %s. Getter not found!"),
 
     // WARNINGS
     UnknownConnectionType("Unknown connection type. Please contact Persism to add support for %s"),

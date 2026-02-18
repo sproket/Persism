@@ -42,9 +42,13 @@ final class PropertyInfo {
     // Convenience getter with runtime exception for functional
     Object getValue(Object object) {
         try {
-            return getter.invoke(object);
+            if (getter != null) {
+                return getter.invoke(object);
+            } else {
+                throw new PersismException(Message.MissingGetter.message(propertyName));
+            }
         } catch (IllegalAccessException | InvocationTargetException e) {
-            throw new PersismException(e.getMessage(), e);
+            throw new PersismException(e.getMessage() + "(" + this.propertyName + ")", e);
         }
     }
 

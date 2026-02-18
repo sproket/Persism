@@ -13,6 +13,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
+import static net.sf.persism.Parameters.none;
 import static net.sf.persism.Parameters.params;
 import static net.sf.persism.SQL.sql;
 import static net.sf.persism.UtilsForTests.isTableInDatabase;
@@ -95,17 +96,17 @@ to the database URL (example: jdbc:h2:~/test;IGNORECASE=TRUE).
         }
 
         sql = "CREATE TABLE Orders ( " +
-              " ID IDENTITY PRIMARY KEY, " +
-              " NAME VARCHAR(30) NULL, " +
-              " PAID BIT NULL, " +
-              " Prepaid BIT NULL," + // would match to getter? Not if it's GETPrePaid FFS
-              " IsCollect BIT NULL," +
-              " IsCancelled BIT NULL," + // property is IsCancelled
-              " Customer_ID VARCHAR(10) NULL, " +
-              " Created TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL, " +
-              " Date_Paid TIMESTAMP NULL, " +
-              " Date_Something TIMESTAMP NULL " +
-              ") ";
+                " ID IDENTITY PRIMARY KEY, " +
+                " NAME VARCHAR(30) NULL, " +
+                " PAID BIT NULL, " +
+                " Prepaid BIT NULL," + // would match to getter? Not if it's GETPrePaid FFS
+                " IsCollect BIT NULL," +
+                " IsCancelled BIT NULL," + // property is IsCancelled
+                " Customer_ID VARCHAR(10) NULL, " +
+                " Created TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL, " +
+                " Date_Paid TIMESTAMP NULL, " +
+                " Date_Something TIMESTAMP NULL " +
+                ") ";
 
         executeCommand(sql, con);
 
@@ -119,24 +120,24 @@ to the database URL (example: jdbc:h2:~/test;IGNORECASE=TRUE).
         }
 
         sql = "CREATE TABLE Customers ( " +
-              " Customer_ID varchar(10) PRIMARY KEY NOT NULL, " +
-              " GROUP_ID INT NULL, " +
-              " Company_Name VARCHAR(30) NULL, " +
-              " Contact_Name VARCHAR(30) NULL, " +
-              " Contact_Title VARCHAR(10) NULL, " +
-              " Address VARCHAR(40) NULL, " +
-              " City VARCHAR(30) NULL, " +
-              " Region ENUM('North', 'South', 'East', 'West'), " +
-              " Postal_Code VARCHAR(10) NULL, " +
-              " Country VARCHAR(2) DEFAULT 'US', " +
-              " Phone VARCHAR(30) NULL, " +
-              " Fax VARCHAR(30) NULL, " +
-              " Status CHAR(1) NULL, " +
-              " Date_Registered datetime default current_timestamp, " +
-              " Date_Of_Last_Order DATE NULL, " +
-              " TestLocalDate date NULL, " +
-              " TestLocalDateTime datetime NULL" +
-              ") ";
+                " Customer_ID varchar(10) PRIMARY KEY NOT NULL, " +
+                " GROUP_ID INT NULL, " +
+                " Company_Name VARCHAR(30) NULL, " +
+                " Contact_Name VARCHAR(30) NULL, " +
+                " Contact_Title VARCHAR(10) NULL, " +
+                " Address VARCHAR(40) NULL, " +
+                " City VARCHAR(30) NULL, " +
+                " Region ENUM('North', 'South', 'East', 'West'), " +
+                " Postal_Code VARCHAR(10) NULL, " +
+                " Country VARCHAR(2) DEFAULT 'US', " +
+                " Phone VARCHAR(30) NULL, " +
+                " Fax VARCHAR(30) NULL, " +
+                " Status CHAR(1) NULL, " +
+                " Date_Registered datetime default current_timestamp, " +
+                " Date_Of_Last_Order DATE NULL, " +
+                " TestLocalDate date NULL, " +
+                " TestLocalDateTime datetime NULL" +
+                ") ";
         executeCommand(sql, con);
 
         if (isTableInDatabase("Invoices", con)) {
@@ -144,16 +145,16 @@ to the database URL (example: jdbc:h2:~/test;IGNORECASE=TRUE).
         }
 
         sql = "CREATE TABLE Invoices ( " +
-              " Invoice_ID IDENTITY PRIMARY KEY, " +
-              " Customer_ID varchar(10) NOT NULL, " +
-              " Paid BIT NOT NULL, " +
-              " Price NUMERIC(7,3) NOT NULL, " +
-              " ActualPrice NUMERIC(7,3) NOT NULL, " +
-              " Status CHAR(1) DEFAULT '1', " +
-              " Created DateTime default current_timestamp, " + // make read-only in Invoice Object
-              " Quantity NUMERIC(10) NOT NULL, " +
-              " Discount NUMERIC(10,3) NOT NULL " +
-              ") ";
+                " Invoice_ID IDENTITY PRIMARY KEY, " +
+                " Customer_ID varchar(10) NOT NULL, " +
+                " Paid BIT NOT NULL, " +
+                " Price NUMERIC(7,3) NOT NULL, " +
+                " ActualPrice NUMERIC(7,3) NOT NULL, " +
+                " Status CHAR(1) DEFAULT '1', " +
+                " Created DateTime default current_timestamp, " + // make read-only in Invoice Object
+                " Quantity NUMERIC(10) NOT NULL, " +
+                " Discount NUMERIC(10,3) NOT NULL " +
+                ") ";
         executeCommand(sql, con);
 
         sql = """
@@ -170,12 +171,12 @@ to the database URL (example: jdbc:h2:~/test;IGNORECASE=TRUE).
         }
 
         sql = "CREATE TABLE TABLEMULTIPRIMARY ( " +
-              " OrderID INT NOT NULL, " +
-              " ProductID VARCHAR(10) NOT NULL, " +
-              " UnitPrice DECIMAL NOT NULL, " +
-              " Quantity SMALLINT NOT NULL, " +
-              " Discount REAL NOT NULL " +
-              ") ";
+                " OrderID INT NOT NULL, " +
+                " ProductID VARCHAR(10) NOT NULL, " +
+                " UnitPrice DECIMAL NOT NULL, " +
+                " Quantity SMALLINT NOT NULL, " +
+                " Discount REAL NOT NULL " +
+                ") ";
         executeCommand(sql, con);
 
         executeCommand("ALTER TABLE TABLEMULTIPRIMARY ADD PRIMARY KEY (ProductID, OrderID)", con);
@@ -188,18 +189,18 @@ to the database URL (example: jdbc:h2:~/test;IGNORECASE=TRUE).
         // TO_CHAR(CURRENT_TIMESTAMP(9)) NOT NULL DEFAULT '' VARCHAR(32) PRIMARY KEY
         sql = "CREATE TABLE SavedGames ( " +
 //              " ID IDENTITY PRIMARY KEY  , " +
-              //" ID VARCHAR(20) IDENTITY PRIMARY KEY, " + // this worked in 1.x not in 2.x?
-              " ID VARCHAR(20) PRIMARY KEY, " +
+                //" ID VARCHAR(20) IDENTITY PRIMARY KEY, " + // this worked in 1.x not in 2.x?
+                " ID VARCHAR(20) PRIMARY KEY, " +
 //              "  id UUID DEFAULT RANDOM_UUID() PRIMARY KEY, " +
-              " Name VARCHAR(100), " +
-              " Some_Date_And_Time TIMESTAMP NULL, " +
-              " Platinum REAL NULL, " +
-              " Gold REAL NULL, " +
-              " Silver REAL NULL, " +
-              " Copper REAL NULL, " +
-              " Data TEXT NULL, " +
-              " WhatTimeIsIt Time NULL, " +
-              " SomethingBig BLOB NULL) ";
+                " Name VARCHAR(100), " +
+                " Some_Date_And_Time TIMESTAMP NULL, " +
+                " Platinum REAL NULL, " +
+                " Gold REAL NULL, " +
+                " Silver REAL NULL, " +
+                " Copper REAL NULL, " +
+                " Data TEXT NULL, " +
+                " WhatTimeIsIt Time NULL, " +
+                " SomethingBig BLOB NULL) ";
 
         log.error(sql);
         executeCommand(sql, con);
@@ -210,32 +211,32 @@ to the database URL (example: jdbc:h2:~/test;IGNORECASE=TRUE).
         }
 
         sql = "CREATE TABLE Contacts ( " +
-              "   identity binary(16) NOT NULL PRIMARY KEY, " +  // test binary(16)
-              "   PartnerID varchar(36) NOT NULL, " + // test varchar(36)
-              "   Type char(2) NOT NULL, " +
-              "   Firstname varchar(50) NOT NULL, " +
-              "   Lastname varchar(50) NOT NULL, " +
-              "   ContactName varchar(50) NOT NULL, " +
-              "   Company varchar(50) NOT NULL, " +
-              "   Division varchar(50) NULL, " +
-              "   Email varchar(50) NULL, " +
-              "   Address1 varchar(50) NULL, " +
-              "   Address2 varchar(50) NULL, " +
-              "   City varchar(50) NULL, " +
-              "   Status TINYINT NULL, " +
-              "   StateProvince varchar(50) NULL, " +
-              "   ZipPostalCode varchar(10) NULL, " +
-              "   Country varchar(50) NULL, " +
-              "   DateAdded Date NULL, " +
-              "   LastModified DateTime NULL, " +
-              "   Notes text NULL, " +
-              "   AmountOwed REAL NULL, " +
-              "   BigInt DECIMAL(20) NULL, " +
-              "   Some_DATE Datetime NULL, " +
-              "   TestInstant Datetime NULL, " +
-              "   TestInstant2 DATE NULL, " + // DATE NOT SUPPORTED MAPPED TO INSTANCE UnsupportedOperationException
-              "   WhatMiteIsIt TIME NULL, " +
-              "   WhatTimeIsIt TIME NULL) ";
+                "   identity binary(16) NOT NULL PRIMARY KEY, " +  // test binary(16)
+                "   PartnerID varchar(36) NOT NULL, " + // test varchar(36)
+                "   Type char(2) NOT NULL, " +
+                "   Firstname varchar(50) NOT NULL, " +
+                "   Lastname varchar(50) NOT NULL, " +
+                "   ContactName varchar(50) NOT NULL, " +
+                "   Company varchar(50) NOT NULL, " +
+                "   Division varchar(50) NULL, " +
+                "   Email varchar(50) NULL, " +
+                "   Address1 varchar(50) NULL, " +
+                "   Address2 varchar(50) NULL, " +
+                "   City varchar(50) NULL, " +
+                "   Status TINYINT NULL, " +
+                "   StateProvince varchar(50) NULL, " +
+                "   ZipPostalCode varchar(10) NULL, " +
+                "   Country varchar(50) NULL, " +
+                "   DateAdded Date NULL, " +
+                "   LastModified DateTime NULL, " +
+                "   Notes text NULL, " +
+                "   AmountOwed REAL NULL, " +
+                "   BigInt DECIMAL(20) NULL, " +
+                "   Some_DATE Datetime NULL, " +
+                "   TestInstant Datetime NULL, " +
+                "   TestInstant2 DATE NULL, " + // DATE NOT SUPPORTED MAPPED TO INSTANCE UnsupportedOperationException
+                "   WhatMiteIsIt TIME NULL, " +
+                "   WhatTimeIsIt TIME NULL) ";
 
         executeCommand(sql, con);
 
@@ -244,24 +245,24 @@ to the database URL (example: jdbc:h2:~/test;IGNORECASE=TRUE).
         }
 
         sql = "CREATE TABLE DateTest ( " +
-              " ID INT, " +
-              " Description VARCHAR(100), " +
-              " SqlDate1 DATETIME, " +
-              " SqlDate2 DATE, " +
-              " LocalDate1 DATETIME, " +
-              " LocalDate2 DATE, " +
-              " UtilDate1 DATETIME, " +
-              " UtilDate2 DATE, " +
-              " Instant1 DATETIME, " +
-              " Instant2 DATE, " +
-              " Timestamp1 DATETIME, " +
-              " Timestamp2 DATE, " +
-              " LocalDateTime1 DATETIME, " +
-              " LocalDateTime2 DATE, " +
-              " Time1 TIME," +
-              " Time2 TIME," +
-              " LocalTime1 TIME," +
-              " LocalTime2 TIME) ";
+                " ID INT, " +
+                " Description VARCHAR(100), " +
+                " SqlDate1 DATETIME, " +
+                " SqlDate2 DATE, " +
+                " LocalDate1 DATETIME, " +
+                " LocalDate2 DATE, " +
+                " UtilDate1 DATETIME, " +
+                " UtilDate2 DATE, " +
+                " Instant1 DATETIME, " +
+                " Instant2 DATE, " +
+                " Timestamp1 DATETIME, " +
+                " Timestamp2 DATE, " +
+                " LocalDateTime1 DATETIME, " +
+                " LocalDateTime2 DATE, " +
+                " Time1 TIME," +
+                " Time2 TIME," +
+                " LocalTime1 TIME," +
+                " LocalTime2 TIME) ";
 
         executeCommand(sql, con);
 
@@ -270,11 +271,11 @@ to the database URL (example: jdbc:h2:~/test;IGNORECASE=TRUE).
         }
 
         sql = "CREATE TABLE DateTestLocalTypes ( " +
-              " ID INT, " +
-              " Description VARCHAR(100), " +
-              " DateOnly DATE, " +
-              " TimeOnly TIME," +
-              " DateAndTime DATETIME) ";
+                " ID INT, " +
+                " Description VARCHAR(100), " +
+                " DateOnly DATE, " +
+                " TimeOnly TIME," +
+                " DateAndTime DATETIME) ";
 
         executeCommand(sql, con);
 
@@ -283,12 +284,12 @@ to the database URL (example: jdbc:h2:~/test;IGNORECASE=TRUE).
         }
 
         sql = "CREATE TABLE DateTestSQLTypes ( " +
-              " ID INT, " +
-              " Description VARCHAR(100), " +
-              " DateOnly DATE, " +
-              " TimeOnly TIME," +
-              " UtilDateAndTime DATETIME," +
-              " DateAndTime DATETIME) ";
+                " ID INT, " +
+                " Description VARCHAR(100), " +
+                " DateOnly DATE, " +
+                " TimeOnly TIME," +
+                " UtilDateAndTime DATETIME," +
+                " DateAndTime DATETIME) ";
 
         executeCommand(sql, con);
 
@@ -296,32 +297,32 @@ to the database URL (example: jdbc:h2:~/test;IGNORECASE=TRUE).
             executeCommand("DROP TABLE ByteData", con);
         }
         sql = "CREATE TABLE ByteData ( " +
-              "ID VARCHAR(1), " +
-              "BYTE1 INT, " +
-              "BYTE2 INT ) ";
+                "ID VARCHAR(1), " +
+                "BYTE1 INT, " +
+                "BYTE2 INT ) ";
         executeCommand(sql, con);
 
         if (isTableInDatabase("RecordTest1", con)) {
             executeCommand("DROP TABLE RecordTest1", con);
         }
         sql = "CREATE TABLE RecordTest1 ( " +
-              "ID binary(16), " +
-              "NAME VARCHAR(20), " +
-              "QTY INT, " +
-              "PRICE REAL " +
-              ") ";
+                "ID binary(16), " +
+                "NAME VARCHAR(20), " +
+                "QTY INT, " +
+                "PRICE REAL " +
+                ") ";
         executeCommand(sql, con);
 
         if (isTableInDatabase("RecordTest2", con)) {
             executeCommand("DROP TABLE RecordTest2", con);
         }
         sql = "CREATE TABLE RecordTest2 ( " +
-              "ID IDENTITY PRIMARY KEY, " +
-              "DESCRIPTION VARCHAR(20), " +
-              "QTY INT, " +
-              "PRICE REAL, " +
-              "CREATED_ON DATETIME default current_timestamp" +
-              ") ";
+                "ID IDENTITY PRIMARY KEY, " +
+                "DESCRIPTION VARCHAR(20), " +
+                "QTY INT, " +
+                "PRICE REAL, " +
+                "CREATED_ON DATETIME default current_timestamp" +
+                ") ";
         executeCommand(sql, con);
 
         if (isTableInDatabase("PUBLIC", "USERS", con)) {
@@ -329,18 +330,18 @@ to the database URL (example: jdbc:h2:~/test;IGNORECASE=TRUE).
         }
 
         sql = "CREATE TABLE PUBLIC.USERS ( " +
-              "   USER_NO IDENTITY PRIMARY KEY, " +
-              "   USERCODE varchar(23) NULL, " +
-              "   UserPass varchar(32) NULL, " +
-              "   Name varchar(50) NULL, " +
-              "   PasswordLastChg datetime NULL, " +
-              "   Status varchar(1) NULL, " +
-              "   LastLogin datetime NULL, " +
-              "   TypeOfUser varchar(1) NULL, " +
-              "   License_No varchar(20) NULL, " +
-              "   BillingGroup varchar(30) NULL, " +
-              "   Department int NULL, " +
-              "   Phone text NULL ) ";
+                "   USER_NO IDENTITY PRIMARY KEY, " +
+                "   USERCODE varchar(23) NULL, " +
+                "   UserPass varchar(32) NULL, " +
+                "   Name varchar(50) NULL, " +
+                "   PasswordLastChg datetime NULL, " +
+                "   Status varchar(1) NULL, " +
+                "   LastLogin datetime NULL, " +
+                "   TypeOfUser varchar(1) NULL, " +
+                "   License_No varchar(20) NULL, " +
+                "   BillingGroup varchar(30) NULL, " +
+                "   Department int NULL, " +
+                "   Phone text NULL ) ";
 
         executeCommand(sql, con);
 
@@ -796,6 +797,24 @@ to the database URL (example: jdbc:h2:~/test;IGNORECASE=TRUE).
         assertTrue("nullInsertFail s/b true", nullInsertFail);
 
         //session.query(TableMultiPrimary.class, PrimaryKey.keys(1,1));
+    }
+
+    public void testFailOnMissingCollectionGetter() {
+        queryDataSetup();
+
+        // the error message is net.sf.persism.PersismException: Cannot invoke "java.lang.reflect.Method.invoke(Object, Object[])" because "this.getter" is null
+        // which doesn't tell you WTF property you're talking about!
+        boolean fail = false;
+        String message = null;
+        try {
+            session.query(CustomerFail4.class, none());
+        } catch (PersismException e) {
+            fail = true;
+            message = e.getMessage();
+        }
+
+        assertTrue(fail);
+        assertEquals(message, Message.MissingGetter.message("invoices"));
     }
 
     public void testColumnDef() {
