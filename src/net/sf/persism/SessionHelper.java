@@ -117,7 +117,7 @@ final class SessionHelper {
             throw new SQLException(e.getMessage() + " SQL: " + sql + " params: " + Arrays.asList(parameters), e);
         } finally {
             if (blog.isDebugEnabled()) {
-                blog.debug("exec time: " + (System.currentTimeMillis() - now) + " " + sql + " params: " + Arrays.asList(parameters));
+                blog.debug("exec time: " + (System.currentTimeMillis() - now) + "ms " + sql + " params: " + Arrays.asList(parameters));
             }
         }
     }
@@ -455,7 +455,7 @@ final class SessionHelper {
 
                     case EnumType:
                         if (session.metaData.getConnectionType() == ConnectionType.PostgreSQL) {
-                            st.setObject(n, param.toString(), java.sql.Types.OTHER);
+                            st.setObject(n, param.toString(), Types.OTHER);
                         } else {
                             st.setString(n, param.toString());
                         }
@@ -479,7 +479,7 @@ final class SessionHelper {
             } else {
                 // param is null
                 if (session.metaData.getConnectionType() == ConnectionType.UCanAccess) {
-                    st.setNull(n, java.sql.Types.OTHER);
+                    st.setNull(n, Types.OTHER);
                 } else {
                     st.setObject(n, null);
                 }
@@ -618,12 +618,15 @@ final class SessionHelper {
                     }, o -> o, (o1, o2) -> o1));
 
             for (Object child : childList) {
-                Object parent = parentMap.get(childPropertyInfo.getValue(child));
-                if (parent == null) {
-                    // todo this could occur many to 1 where the 1 is not a required value
-                    log.warnNoDuplicates("parent not found: " + childPropertyInfo.getValue(child) + " : " + joinInfo + "DAO: " + child); // Should not usually occur. Why would we not find a parent?
-                } else {
-                    setPropertyFromJoinInfo(joinInfo, parent, child);
+
+                Object childValue = childPropertyInfo.getValue(child);
+                if (childValue != null) {
+                    Object parent = parentMap.get(childValue);
+                    if (parent == null) {
+                        log.warnNoDuplicates("parent not found: " + childValue + " : " + joinInfo + "DAO: " + child); // Should not usually occur. Why would we not find a parent?
+                    } else {
+                        setPropertyFromJoinInfo(joinInfo, parent, child);
+                    }
                 }
             }
 
@@ -644,12 +647,13 @@ final class SessionHelper {
                 }
 
                 KeyBox keyBox = new KeyBox(joinInfo.caseSensitive(), values.toArray());
-                Object parent = parentMap.get(keyBox);
-                if (parent == null) {
-                    // todo this can occur need to handle it.
-                    log.warnNoDuplicates("parent not found: " + keyBox); // Should not usually occur. Why would we not find a parent?
-                } else {
-                    setPropertyFromJoinInfo(joinInfo, parent, child);
+                if (!keyBox.isAllNull()) {
+                    Object parent = parentMap.get(keyBox);
+                    if (parent == null) {
+                        log.warnNoDuplicates("parent not found: " + keyBox + " : " + joinInfo + "DAO: " + child); // Should not usually occur. Why would we not find a parent?
+                    } else {
+                        setPropertyFromJoinInfo(joinInfo, parent, child);
+                    }
                 }
             }
         }
@@ -679,7 +683,6 @@ final class SessionHelper {
         if (joinTo == null) {
             throw new PersismException(Message.CannotNotJoinToNullProperty.message(joinProperty.propertyName));
         }
-        joinTo.clear();
         joinTo.addAll(list);
     }
 

@@ -47,6 +47,8 @@ public class OracleDataSource {
         if (username != null) {
             poolProps.setProperty("user", username);
             poolProps.setProperty("password", password);
+            poolProps.setProperty("defaultRowPrefetch", "20");
+            poolProps.setProperty("defaultBatchValue", "20");
         }
 
         ConnectionFactory connectionFactory = new DriverManagerConnectionFactory(url, poolProps);

@@ -11,7 +11,6 @@ import net.jodah.typetools.TypeResolver;
 import net.sf.persism.dao.Customer;
 import net.sf.persism.dao.Invoice;
 import net.sf.persism.dao.Postman;
-import org.checkerframework.checker.units.qual.C;
 import org.junit.Test;
 
 import java.lang.reflect.Field;
@@ -42,12 +41,8 @@ public class TestUtil extends TestCase {
         Customer customer = new Customer();
 
         System.out.println(customer.getInvoices().getClass().arrayType().isAssignableFrom(Invoice.class));
-
-        List<?> assList =  new ArrayList<>() {
-
-        };
-
     }
+
     public void testReplaceAll() {
         String text = "this is a test";
         text = text.replaceAll(" ", "_");
@@ -211,10 +206,10 @@ public class TestUtil extends TestCase {
         map.compute("A", x);
     }
 
-    class E extends Exception {
-        @Override
-        public synchronized Throwable fillInStackTrace() {
-            return this;
-        }
+    public void testNullInKeyBox() {
+        KeyBox keyBox = new KeyBox(true, null, null, null);
+        System.out.println(keyBox);
+        System.out.println(keyBox.isAllNull());
     }
+
 }

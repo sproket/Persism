@@ -29,23 +29,25 @@ public final class TestOracle extends BaseTest {
 
     @Override
     protected void setUp() throws Exception {
+        long now = System.currentTimeMillis();
+
         connectionType = ConnectionType.Oracle;
         super.setUp();
+        System.out.println("super setup " +  (System.currentTimeMillis() - now));
 
         Properties props = new Properties();
         props.load(getClass().getResourceAsStream("/oracle.properties"));
+
 
         String driver = props.getProperty("database.driver");
         Class.forName(driver);
         con = OracleDataSource.getInstance().getConnection();
         log.info("DRIVER: " + con.getMetaData().getDatabaseProductName() + " | " + con.getMetaData().getDatabaseProductVersion());
-        createTables();
+        System.out.println("get connection " +  (System.currentTimeMillis() - now));
 
-//        if (isTableInDatabase("Invoice Line Items", con)) {
-//            String sd = connectionType.getKeywordStartDelimiter();
-//            String ed = connectionType.getKeywordEndDelimiter();
-//            executeCommand("DROP TABLE " + sd + "Invoice Line Items" + ed, con);
-//        }
+        createTables();
+        System.out.println("create tables " +  (System.currentTimeMillis() - now));
+
         session = new Session(con);
 
         // Possible UUID

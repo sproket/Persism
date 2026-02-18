@@ -104,7 +104,7 @@ final class Reader {
 
         if (returnType.isEnum()) {
             // Some DBs may read an enum type as other 1111 - we can tell it here to read it as a string.
-            sqlColumnType = java.sql.Types.CHAR;
+            sqlColumnType = Types.CHAR;
         }
 
         JavaType columnType = JavaType.convert(sqlColumnType); // note this could be null if we can't match a type

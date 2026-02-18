@@ -251,3 +251,36 @@ WORKS JOIN to View (currently I think we fail with no primary key???) DOES WORK:
 todo insert into pojo with joins child data gets cleared on fetch where there are defaults to read back?
 
 todo PersistableObject does this clone child records? How would we handle update with joins? Right now we do nothing special i think.
+
+todo Add Session parameter which tell Persism to auto-check all relations via primary/foreign keys defined in the DB to decide on how/whether to join tables for a query
+
+
+todo This occurs on MSSQL when you have a varbinary(max) type and  private byte[] property that is NULL.
+the "fix" was setParameters in SessionHelper using the same logic as UCanAccess connection type. NEEDS FULL TEST null/not null and other types...
+2025-04-28 | 06:54:35.936 | http-nio-8083-exec-3 | ERROR | com.thermallube.revision.LoginListener | Implicit conversion from data type nvarchar to varbinary(max) is not allowed. Use the CONVERT function to run this query.
+net.sf.persism.PersismException: Implicit conversion from data type nvarchar to varbinary(max) is not allowed. Use the CONVERT function to run this query.
+	at net.sf.persism.Session.insert(Session.java:777)
+	at com.thermallube.revision.features.common.CommonService.logTransaction(CommonService.java:40)
+	at com.thermallube.revision.LoginListener.onApplicationEvent(LoginListener.java:29)
+	at com.thermallube.revision.LoginListener.onApplicationEvent(LoginListener.java:11)
+
+Caused by: com.microsoft.sqlserver.jdbc.SQLServerException: Implicit conversion from data type nvarchar to varbinary(max) is not allowed. Use the CONVERT function to run this query.
+	at com.microsoft.sqlserver.jdbc.SQLServerException.makeFromDatabaseError(SQLServerException.java:265)
+	at com.microsoft.sqlserver.jdbc.SQLServerStatement.getNextResult(SQLServerStatement.java:1662)
+	at com.microsoft.sqlserver.jdbc.SQLServerPreparedStatement.doExecutePreparedStatement(SQLServerPreparedStatement.java:615)
+	at com.microsoft.sqlserver.jdbc.SQLServerPreparedStatement$PrepStmtExecCmd.doExecute(SQLServerPreparedStatement.java:537)
+	at com.microsoft.sqlserver.jdbc.TDSCommand.execute(IOBuffer.java:7417)
+	at com.microsoft.sqlserver.jdbc.SQLServerConnection.executeCommand(SQLServerConnection.java:3488)
+	at com.microsoft.sqlserver.jdbc.SQLServerStatement.executeCommand(SQLServerStatement.java:262)
+	at com.microsoft.sqlserver.jdbc.SQLServerStatement.executeStatement(SQLServerStatement.java:237)
+	at com.microsoft.sqlserver.jdbc.SQLServerPreparedStatement.execute(SQLServerPreparedStatement.java:515)
+	at com.zaxxer.hikari.pool.ProxyPreparedStatement.execute(ProxyPreparedStatement.java:44)
+	at com.zaxxer.hikari.pool.HikariProxyPreparedStatement.execute(HikariProxyPreparedStatement.java)
+	at net.sf.persism.Session.insert(Session.java:702)
+
+
+SessionHelper 622 add and write a test where child has null to parent? Where's the use-case?
+
+todo when we have a join but misspell the getter for the collection we get null pointer on "this.getter" we should have a field name that we looked for to include in the message!
+
+todo executeQuery doesn't cover case of passing several params and one or more is null (should be supported and work)
