@@ -1023,6 +1023,7 @@ public abstract class BaseTest extends TestCase {
         Customer c2 = new Customer();
         c2.setCustomerId("456");
         c2.setCompanyName("XYZ INC");
+        c2.setContactName("Fred Flintstone");
         c2.setStatus('1');
         session.insert(c2);
 

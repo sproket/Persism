@@ -693,6 +693,33 @@ public class TestMSSQL extends BaseTest {
         executeCommand(sql, con);
     }
 
+    public void testNullParams() {
+        queryDataSetup();
+        var list = session.query(Customer.class, params("456", null));
+        log.warn(list.size() + " " + list);
+        assertEquals(1, list.size());
+
+        Customer cust = new Customer();
+        cust.setCustomerId("888");
+        cust.setCompanyName("XYZ INC");
+        cust.setStatus('1');
+        session.insert(cust);
+
+        var list2 = session.query(Customer.class, where(":companyName = ?"), params("XYZ INC"));
+        log.warn(list2.size() + " " + list2);
+        assertEquals(2, list2.size());
+
+        // this way won't work
+//        var list3 = session.query(Customer.class, where(":companyName = ? and :contactName = ?"), params("XYZ INC", null));
+
+        // but if you are looking for null
+        var list3 = session.query(Customer.class, where(":companyName = ? and :contactName is NULL"), params("XYZ INC"));
+
+        log.warn(list3.size() + " " + list3);
+        assertEquals(1, list3.size());
+    }
+
+
     @Override
     public void testContactTable() throws SQLException {
         COLUMN_FIRST_NAME = "First Name";

@@ -16,6 +16,7 @@ import java.util.Properties;
 import static net.sf.persism.Parameters.none;
 import static net.sf.persism.Parameters.params;
 import static net.sf.persism.SQL.sql;
+import static net.sf.persism.SQL.where;
 import static net.sf.persism.UtilsForTests.isTableInDatabase;
 import static net.sf.persism.UtilsForTests.isViewInDatabase;
 
@@ -816,6 +817,7 @@ to the database URL (example: jdbc:h2:~/test;IGNORECASE=TRUE).
         assertTrue(fail);
         assertEquals(message, Message.MissingGetter.message("invoices"));
     }
+
 
     public void testColumnDef() {
 
