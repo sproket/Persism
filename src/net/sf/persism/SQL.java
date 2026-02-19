@@ -102,6 +102,16 @@ public final class SQL {
         return new SQL(storedProc, SQLType.StoredProc);
     }
 
+    /**
+     * Specifies a limit to the query result which will translate to the specific SQL syntax when executed.
+     * <pre>{@code
+     *      List<PublisherTitle> publisherTitles = session.query(PublisherTitle.class, where("1=1").limit(4));
+     * }</pre>
+     *
+     * @param limit positive integer number
+     * @return current SQL object
+     * @since 2.3
+     */
     public SQL limit(int limit) {
         this.limit = limit;
         return this;

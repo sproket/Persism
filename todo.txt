@@ -279,6 +279,7 @@ Caused by: com.microsoft.sqlserver.jdbc.SQLServerException: Implicit conversion 
 	at net.sf.persism.Session.insert(Session.java:702)
 
 
-SessionHelper 622 add and write a test where child has null to parent? Where's the use-case?
-
 todo executeQuery doesn't cover case of passing several params and one or more is null (should be supported and work)
+
+SQL could have a static select() method and then add an instance orderBy method and avoid the static version. this would just equal SELECT *
+Where could extend SQL -

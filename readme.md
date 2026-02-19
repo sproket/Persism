@@ -1,4 +1,4 @@
-![](logo1.png) [Release notes 2.2.0](release-notes.md) -- [Getting Started Guide](https://sproket.github.io/Persism/manual2.html)
+![](logo1.png) [Release notes 2.3.0](release-notes.md) -- [Getting Started Guide](https://sproket.github.io/Persism/manual2.html)
 
 [Table joins are now supported!](https://sproket.github.io/Persism/join.html)
 
@@ -13,7 +13,7 @@ For Java 8 or later see the 1.x branch https://github.com/sproket/Persism/tree/p
 <dependency>
     <groupId>io.github.sproket</groupId>
     <artifactId>persism</artifactId>
-    <version>2.2.0</version>
+    <version>2.3.0</version>
 </dependency>
 ```
 ```Java 

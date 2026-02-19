@@ -1,5 +1,5 @@
 /**
- * Persism 2.2.0
+ * Persism 2.3.0
  */
 module sproket.github.io.persism {
     requires java.sql;
