@@ -195,12 +195,14 @@ as the name in the annotation.
 
 ### Limit
 
-As of version 2.3.0, Persism supports a limit to the query result which will translate to the specific SQL syntax when executed.
-
+As of version 2.3.0, Persism supports a limit to the query result which will translate to the specific SQL syntax when executed. 
 
 ```java
 List<PublisherTitle> publisherTitles = session.query(PublisherTitle.class, where("1=1").limit(4));
 ```
+*Note that in this context Persism will use select in (?,?,?) for joins 
+so the limit value is constrained to your database maximum allowed parameters.
+Different databases have different limits. For example MSSQL has a limit of 2100 parameters.*
 
 ## Updating Data
 
