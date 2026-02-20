@@ -1,4 +1,4 @@
-[Current Version 2.2.0](release-notes.md)
+[Current Version 2.3](release-notes.md)
 
 <div style="float: right">
 <span style="font-weight: bold">By the numbers</span>
@@ -7,10 +7,10 @@
 100k jar
 </li>
 <li style="list-style-type:none;">
-439 unit tests
+465 unit tests
 </li>
 <li style="list-style-type:none;">
-96% code coverage
+97% code coverage
 </li>
 <li style="list-style-type:none;">
 11 supported dbs
@@ -30,9 +30,9 @@ Persism is a light weight, auto-discovery, auto-configuration, and convention ov
 <span style="font-style: italic"> "Coding by convention, kind of like Apache Wicket... I guess it has its place, yes. jOOQ also does auto-mapping of column names. But not of table names. Nice thinking" </span>
 <a href="https://www.reddit.com/r/java/comments/1hxgrc/jooqs_reason_for_being_compared_to_jpa_linq_jdbc/cb1hgnw/">&nbsp; lukaseder - Author of JOOQ</a>
 
-[**Get Started!**](/manual2.md)
+[**Get Started!**](manual2.md)
 
-For Java 8 developers go [here](/manual1.md)
+For Java 8 developers go [here](manual1.md)
 
 ## Simple
 

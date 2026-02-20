@@ -4,12 +4,14 @@
 <!DOCTYPE html>
 <html id="htmlId">
 <head>
+  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"> 
   <title>Coverage Report > PersismException</title>
   <style type="text/css">
     @import "../../css/coverage.css";
-    @import "../../css/highlight-idea.css";
+    @import "../../css/idea.min.css";
   </style>
-  <script type="text/javascript" src="../../js/highlight.pack.js"></script>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
 </head>
 
 <body>
@@ -73,38 +75,38 @@ Current scope:     <a href="../../index.html">all classes</a>
 
 
 <pre>
-<div class="sourceCode" id="sourceCode"><i class="no-highlight">1</i>&nbsp;package net.sf.persism;
-<i class="no-highlight">2</i>&nbsp;
-<i class="no-highlight">3</i>&nbsp;/**
-<i class="no-highlight">4</i>&nbsp; * General RuntimeException used by Persism. Note that Persism will rollback transactions if the exception is an SQLException.
-<i class="no-highlight">5</i>&nbsp; *
-<i class="no-highlight">6</i>&nbsp; * @author Dan Howard
-<i class="no-highlight">7</i>&nbsp; * @since 9/8/11 6:41 AM
-<i class="no-highlight">8</i>&nbsp; *
-<i class="no-highlight">9</i>&nbsp; */
-<i class="no-highlight">10</i>&nbsp;public final class PersismException extends RuntimeException {
-<i class="no-highlight">11</i>&nbsp;
-<i class="no-highlight">12</i>&nbsp;    private static final long serialVersionUID = 3629404706918664936L;
-<i class="no-highlight">13</i>&nbsp;
-<i class="no-highlight">14</i>&nbsp;    /**
-<i class="no-highlight">15</i>&nbsp;     * PersismException with a message
-<i class="no-highlight">16</i>&nbsp;     * @param message message string
-<i class="no-highlight">17</i>&nbsp;     */
-<i class="no-highlight">18</i>&nbsp;    public PersismException(String message) {
-<b class="fc"><i class="no-highlight">19</i>&nbsp;        this(message, new Throwable(message));</b>
-<i class="no-highlight">20</i>&nbsp;    }
-<i class="no-highlight">21</i>&nbsp;
-<i class="no-highlight">22</i>&nbsp;    /**
-<i class="no-highlight">23</i>&nbsp;     * PersismException with a message and a cause
-<i class="no-highlight">24</i>&nbsp;     * @param message message string
-<i class="no-highlight">25</i>&nbsp;     * @param cause Throwable cause
-<i class="no-highlight">26</i>&nbsp;     */
-<i class="no-highlight">27</i>&nbsp;    public PersismException(String message, Throwable cause) {
-<b class="fc"><i class="no-highlight">28</i>&nbsp;        super(message, cause);</b>
-<i class="no-highlight">29</i>&nbsp;    }
-<i class="no-highlight">30</i>&nbsp;
-<i class="no-highlight">31</i>&nbsp;}
-</div>
+<code class="sourceCode" id="sourceCode">&nbsp;package net.sf.persism;
+&nbsp;
+&nbsp;/**
+&nbsp; * General RuntimeException used by Persism. Note that Persism will rollback transactions if the exception is an SQLException.
+&nbsp; *
+&nbsp; * @author Dan Howard
+&nbsp; * @since 9/8/11 6:41 AM
+&nbsp; *
+&nbsp; */
+&nbsp;public final class PersismException extends RuntimeException {
+&nbsp;
+&nbsp;    private static final long serialVersionUID = 3629404706918664936L;
+&nbsp;
+&nbsp;    /**
+&nbsp;     * PersismException with a message
+&nbsp;     * @param message message string
+&nbsp;     */
+&nbsp;    public PersismException(String message) {
+<b class="fc">&nbsp;        this(message, new Throwable(message));</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    /**
+&nbsp;     * PersismException with a message and a cause
+&nbsp;     * @param message message string
+&nbsp;     * @param cause Throwable cause
+&nbsp;     */
+&nbsp;    public PersismException(String message, Throwable cause) {
+<b class="fc">&nbsp;        super(message, cause);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;}
+</code>
 </pre>
 </div>
 
@@ -119,18 +121,15 @@ Current scope:     <a href="../../index.html">all classes</a>
     @*/
 
     if (!msie || msie && msie9) {
-        var codeBlock = document.getElementById('sourceCode');
-
-        if (codeBlock) {
-            hljs.highlightBlock(codeBlock);
-        }
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
     }
 })();
 </script>
 
 <div class="footer">
     
-    <div style="float:right;">generated on 2022-09-16 07:41</div>
+    <div style="float:right;">generated on 2026-02-19 07:36</div>
 </div>
 </body>
 </html>

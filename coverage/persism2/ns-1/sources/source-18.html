@@ -4,12 +4,14 @@
 <!DOCTYPE html>
 <html id="htmlId">
 <head>
+  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"> 
   <title>Coverage Report > Persistable</title>
   <style type="text/css">
     @import "../../css/coverage.css";
-    @import "../../css/highlight-idea.css";
+    @import "../../css/idea.min.css";
   </style>
-  <script type="text/javascript" src="../../js/highlight.pack.js"></script>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
 </head>
 
 <body>
@@ -37,37 +39,37 @@ Current scope:     <a href="../../index.html">all classes</a>
 
 
 <pre>
-<div class="sourceCode" id="sourceCode"><i class="no-highlight">1</i>&nbsp;package net.sf.persism;
-<i class="no-highlight">2</i>&nbsp;
-<i class="no-highlight">3</i>&nbsp;/**
-<i class="no-highlight">4</i>&nbsp; * Indicates that Persism should keep track of changed columns in order to only include those columns in the SQL UPDATE statement.
-<i class="no-highlight">5</i>&nbsp; * You can use this interface in situations where you can&#39;t or don&#39;t want your data objects to inherit PersistableObject.
-<i class="no-highlight">6</i>&nbsp; *
-<i class="no-highlight">7</i>&nbsp; * @author Dan Howard
-<i class="no-highlight">8</i>&nbsp; * @see PersistableObject PersistableObject for implementation.
-<i class="no-highlight">9</i>&nbsp; * @since 10/8/11 9:51 AM
-<i class="no-highlight">10</i>&nbsp; */
-<i class="no-highlight">11</i>&nbsp;public interface Persistable&lt;T&gt; extends Cloneable {
-<i class="no-highlight">12</i>&nbsp;
-<i class="no-highlight">13</i>&nbsp;
-<i class="no-highlight">14</i>&nbsp;    /**
-<i class="no-highlight">15</i>&nbsp;     * Saves the current state of the data object to later detect changes for SQL UPDATE statements.
-<i class="no-highlight">16</i>&nbsp;     * Persism calls this method internally, you usually don&#39;t have to call this method yourself.
-<i class="no-highlight">17</i>&nbsp;     *
-<i class="no-highlight">18</i>&nbsp;     * @throws PersismException If an SQL or other exception occurs.
-<i class="no-highlight">19</i>&nbsp;     * @see PersistableObject for example implementation
-<i class="no-highlight">20</i>&nbsp;     */
-<i class="no-highlight">21</i>&nbsp;    void saveReadState() throws PersismException;
-<i class="no-highlight">22</i>&nbsp;
-<i class="no-highlight">23</i>&nbsp;    /**
-<i class="no-highlight">24</i>&nbsp;     * Getter (but not a Getter) for the data object in it&#39;s original state. The state at the time it was read from the database.
-<i class="no-highlight">25</i>&nbsp;     *
-<i class="no-highlight">26</i>&nbsp;     * @return The data object in it&#39;s original state.
-<i class="no-highlight">27</i>&nbsp;     * @see PersistableObject for example implementation
-<i class="no-highlight">28</i>&nbsp;     */
-<i class="no-highlight">29</i>&nbsp;    T readOriginalValue();
-<i class="no-highlight">30</i>&nbsp;}
-</div>
+<code class="sourceCode" id="sourceCode">&nbsp;package net.sf.persism;
+&nbsp;
+&nbsp;/**
+&nbsp; * Indicates that Persism should keep track of changed columns in order to only include those columns in the SQL UPDATE statement.
+&nbsp; * You can use this interface in situations where you can&#39;t or don&#39;t want your data objects to inherit PersistableObject.
+&nbsp; *
+&nbsp; * @author Dan Howard
+&nbsp; * @see PersistableObject PersistableObject for implementation.
+&nbsp; * @since 10/8/11 9:51 AM
+&nbsp; */
+&nbsp;public interface Persistable&lt;T&gt; extends Cloneable {
+&nbsp;
+&nbsp;
+&nbsp;    /**
+&nbsp;     * Saves the current state of the data object to later detect changes for SQL UPDATE statements.
+&nbsp;     * Persism calls this method internally, you usually don&#39;t have to call this method yourself.
+&nbsp;     *
+&nbsp;     * @throws PersismException If an SQL or other exception occurs.
+&nbsp;     * @see PersistableObject for example implementation
+&nbsp;     */
+&nbsp;    void saveReadState() throws PersismException;
+&nbsp;
+&nbsp;    /**
+&nbsp;     * Getter (but not a Getter) for the data object in it&#39;s original state. The state at the time it was read from the database.
+&nbsp;     *
+&nbsp;     * @return The data object in it&#39;s original state.
+&nbsp;     * @see PersistableObject for example implementation
+&nbsp;     */
+&nbsp;    T readOriginalValue();
+&nbsp;}
+</code>
 </pre>
 </div>
 
@@ -82,18 +84,15 @@ Current scope:     <a href="../../index.html">all classes</a>
     @*/
 
     if (!msie || msie && msie9) {
-        var codeBlock = document.getElementById('sourceCode');
-
-        if (codeBlock) {
-            hljs.highlightBlock(codeBlock);
-        }
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
     }
 })();
 </script>
 
 <div class="footer">
     
-    <div style="float:right;">generated on 2022-09-16 07:41</div>
+    <div style="float:right;">generated on 2026-02-19 07:36</div>
 </div>
 </body>
 </html>

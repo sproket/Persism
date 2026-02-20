@@ -2,12 +2,14 @@
 <!DOCTYPE html>
 <html id="htmlId">
 <head>
+  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"> 
   <title>Coverage Report > net.sf.persism.annotations</title>
   <style type="text/css">
     @import "../css/coverage.css";
-    @import "../css/highlight-idea.css";
+    @import "../css/idea.min.css";
   </style>
-  <script type="text/javascript" src="../js/highlight.pack.js"></script>
+  <script type="text/javascript" src="../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../js/highlightjs-line-numbers.min.js"></script>
 </head>
 
 <body>
@@ -52,18 +54,15 @@ net.sf.persism.annotations</div>
     @*/
 
     if (!msie || msie && msie9) {
-        var codeBlock = document.getElementById('sourceCode');
-
-        if (codeBlock) {
-            hljs.highlightBlock(codeBlock);
-        }
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
     }
 })();
 </script>
 
 <div class="footer">
     
-    <div style="float:right;">generated on 2022-09-16 07:41</div>
+    <div style="float:right;">generated on 2026-02-19 07:36</div>
 </div>
 </body>
 </html>

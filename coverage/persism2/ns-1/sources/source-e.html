@@ -4,12 +4,14 @@
 <!DOCTYPE html>
 <html id="htmlId">
 <head>
+  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"> 
   <title>Coverage Report > PersistableObject</title>
   <style type="text/css">
     @import "../../css/coverage.css";
-    @import "../../css/highlight-idea.css";
+    @import "../../css/idea.min.css";
   </style>
-  <script type="text/javascript" src="../../js/highlight.pack.js"></script>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
 </head>
 
 <body>
@@ -58,10 +60,10 @@ Current scope:     <a href="../../index.html">all classes</a>
 </td>
 <td class="coverageStat">
   <span class="percent">
-    71.4%
+    83.3%
   </span>
   <span class="absValue">
-    (5/7)
+    (5/6)
   </span>
 </td>
 </tr>
@@ -73,47 +75,47 @@ Current scope:     <a href="../../index.html">all classes</a>
 
 
 <pre>
-<div class="sourceCode" id="sourceCode"><i class="no-highlight">1</i>&nbsp;package net.sf.persism;
-<i class="no-highlight">2</i>&nbsp;
-<i class="no-highlight">3</i>&nbsp;import net.sf.persism.annotations.NotColumn;
-<i class="no-highlight">4</i>&nbsp;
-<i class="no-highlight">5</i>&nbsp;/**
-<i class="no-highlight">6</i>&nbsp; * Persism uses information from this class to detect which properties are modified in your data objects and only
-<i class="no-highlight">7</i>&nbsp; * includes those columns in the SQL UPDATE statements. Data objects can optionally inherit from this class.
-<i class="no-highlight">8</i>&nbsp; *
-<i class="no-highlight">9</i>&nbsp; * @author Dan Howard
-<i class="no-highlight">10</i>&nbsp; * @since 9/15/11 7:14 AM
-<i class="no-highlight">11</i>&nbsp; */
-<b class="fc"><i class="no-highlight">12</i>&nbsp;public abstract class PersistableObject&lt;T&gt; implements Persistable&lt;T&gt; {</b>
-<i class="no-highlight">13</i>&nbsp;
-<b class="fc"><i class="no-highlight">14</i>&nbsp;    @NotColumn</b>
-<i class="no-highlight">15</i>&nbsp;    private T persismOriginalValue = null;
-<i class="no-highlight">16</i>&nbsp;
-<i class="no-highlight">17</i>&nbsp;    @Override
-<i class="no-highlight">18</i>&nbsp;    public final void saveReadState() throws PersismException {
-<b class="fc"><i class="no-highlight">19</i>&nbsp;        persismOriginalValue = clone();</b>
-<i class="no-highlight">20</i>&nbsp;    }
-<i class="no-highlight">21</i>&nbsp;
-<i class="no-highlight">22</i>&nbsp;    @Override
-<i class="no-highlight">23</i>&nbsp;    public final T readOriginalValue() {
-<b class="fc"><i class="no-highlight">24</i>&nbsp;        return persismOriginalValue;</b>
-<i class="no-highlight">25</i>&nbsp;    }
-<i class="no-highlight">26</i>&nbsp;
-<i class="no-highlight">27</i>&nbsp;    /**
-<i class="no-highlight">28</i>&nbsp;     * Used by saveReadState for persismOriginalValue
-<i class="no-highlight">29</i>&nbsp;     *
-<i class="no-highlight">30</i>&nbsp;     * @return Clone of T
-<i class="no-highlight">31</i>&nbsp;     */
-<i class="no-highlight">32</i>&nbsp;    @Override
-<i class="no-highlight">33</i>&nbsp;    public final T clone() {
-<i class="no-highlight">34</i>&nbsp;        try {
-<b class="fc"><i class="no-highlight">35</i>&nbsp;            return (T) super.clone();</b>
-<b class="nc"><i class="no-highlight">36</i>&nbsp;        } catch (CloneNotSupportedException e) {</b>
-<b class="nc"><i class="no-highlight">37</i>&nbsp;            throw new PersismException(e.getMessage(), e);</b>
-<i class="no-highlight">38</i>&nbsp;        }
-<i class="no-highlight">39</i>&nbsp;    }
-<i class="no-highlight">40</i>&nbsp;}
-</div>
+<code class="sourceCode" id="sourceCode">&nbsp;package net.sf.persism;
+&nbsp;
+&nbsp;import net.sf.persism.annotations.NotColumn;
+&nbsp;
+&nbsp;/**
+&nbsp; * Persism uses information from this class to detect which properties are modified in your data objects and only
+&nbsp; * includes those columns in the SQL UPDATE statements. Data objects can optionally inherit from this class.
+&nbsp; *
+&nbsp; * @author Dan Howard
+&nbsp; * @since 9/15/11 7:14 AM
+&nbsp; */
+<b class="fc">&nbsp;public abstract class PersistableObject&lt;T&gt; implements Persistable&lt;T&gt; {</b>
+&nbsp;
+<b class="fc">&nbsp;    @NotColumn</b>
+&nbsp;    private transient T persismOriginalValue = null; // https://github.com/sproket/Persism/issues/38
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public final void saveReadState() throws PersismException {
+<b class="fc">&nbsp;        persismOriginalValue = clone();</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public final T readOriginalValue() {
+<b class="fc">&nbsp;        return persismOriginalValue;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    /**
+&nbsp;     * Used by saveReadState for persismOriginalValue
+&nbsp;     *
+&nbsp;     * @return Clone of T
+&nbsp;     */
+&nbsp;    @Override
+&nbsp;    public final T clone() {
+&nbsp;        try {
+<b class="fc">&nbsp;            return (T) super.clone();</b>
+&nbsp;        } catch (CloneNotSupportedException e) {
+<b class="nc">&nbsp;            throw new PersismException(e.getMessage(), e);</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;}
+</code>
 </pre>
 </div>
 
@@ -128,18 +130,15 @@ Current scope:     <a href="../../index.html">all classes</a>
     @*/
 
     if (!msie || msie && msie9) {
-        var codeBlock = document.getElementById('sourceCode');
-
-        if (codeBlock) {
-            hljs.highlightBlock(codeBlock);
-        }
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
     }
 })();
 </script>
 
 <div class="footer">
     
-    <div style="float:right;">generated on 2022-09-16 07:41</div>
+    <div style="float:right;">generated on 2026-02-19 07:36</div>
 </div>
 </body>
 </html>

@@ -4,12 +4,14 @@
 <!DOCTYPE html>
 <html id="htmlId">
 <head>
+  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"> 
   <title>Coverage Report > Table</title>
   <style type="text/css">
     @import "../../css/coverage.css";
-    @import "../../css/highlight-idea.css";
+    @import "../../css/idea.min.css";
   </style>
-  <script type="text/javascript" src="../../js/highlight.pack.js"></script>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
 </head>
 
 <body>
@@ -37,36 +39,36 @@ Current scope:     <a href="../../index.html">all classes</a>
 
 
 <pre>
-<div class="sourceCode" id="sourceCode"><i class="no-highlight">1</i>&nbsp;package net.sf.persism.annotations;
-<i class="no-highlight">2</i>&nbsp;
-<i class="no-highlight">3</i>&nbsp;/*
-<i class="no-highlight">4</i>&nbsp; * Created by IntelliJ IDEA.
-<i class="no-highlight">5</i>&nbsp; * User: DHoward
-<i class="no-highlight">6</i>&nbsp; * Date: 9/8/11
-<i class="no-highlight">7</i>&nbsp; * Time: 6:17 AM
-<i class="no-highlight">8</i>&nbsp; */
-<i class="no-highlight">9</i>&nbsp;
-<i class="no-highlight">10</i>&nbsp;import java.lang.annotation.ElementType;
-<i class="no-highlight">11</i>&nbsp;import java.lang.annotation.Retention;
-<i class="no-highlight">12</i>&nbsp;import java.lang.annotation.RetentionPolicy;
-<i class="no-highlight">13</i>&nbsp;import java.lang.annotation.Target;
-<i class="no-highlight">14</i>&nbsp;
-<i class="no-highlight">15</i>&nbsp;/**
-<i class="no-highlight">16</i>&nbsp; * Defines the table name for a given class. This annotation is optional since Persism can detect the table name
-<i class="no-highlight">17</i>&nbsp; * from the class in most situations.
-<i class="no-highlight">18</i>&nbsp; */
-<i class="no-highlight">19</i>&nbsp;@Retention(value = RetentionPolicy.RUNTIME)
-<i class="no-highlight">20</i>&nbsp;@Target(ElementType.TYPE)
-<i class="no-highlight">21</i>&nbsp;public @interface Table {
-<i class="no-highlight">22</i>&nbsp;
-<i class="no-highlight">23</i>&nbsp;    /**
-<i class="no-highlight">24</i>&nbsp;     * Table Name
-<i class="no-highlight">25</i>&nbsp;     * @return Table Name
-<i class="no-highlight">26</i>&nbsp;     */
-<i class="no-highlight">27</i>&nbsp;    String value();
-<i class="no-highlight">28</i>&nbsp;
-<i class="no-highlight">29</i>&nbsp;}
-</div>
+<code class="sourceCode" id="sourceCode">&nbsp;package net.sf.persism.annotations;
+&nbsp;
+&nbsp;/*
+&nbsp; * Created by IntelliJ IDEA.
+&nbsp; * User: DHoward
+&nbsp; * Date: 9/8/11
+&nbsp; * Time: 6:17 AM
+&nbsp; */
+&nbsp;
+&nbsp;import java.lang.annotation.ElementType;
+&nbsp;import java.lang.annotation.Retention;
+&nbsp;import java.lang.annotation.RetentionPolicy;
+&nbsp;import java.lang.annotation.Target;
+&nbsp;
+&nbsp;/**
+&nbsp; * Defines the table name for a given class. This annotation is optional since Persism can detect the table name
+&nbsp; * from the class in most situations.
+&nbsp; */
+&nbsp;@Retention(value = RetentionPolicy.RUNTIME)
+&nbsp;@Target(ElementType.TYPE)
+&nbsp;public @interface Table {
+&nbsp;
+&nbsp;    /**
+&nbsp;     * Table Name
+&nbsp;     * @return Table Name
+&nbsp;     */
+&nbsp;    String value();
+&nbsp;
+&nbsp;}
+</code>
 </pre>
 </div>
 
@@ -81,18 +83,15 @@ Current scope:     <a href="../../index.html">all classes</a>
     @*/
 
     if (!msie || msie && msie9) {
-        var codeBlock = document.getElementById('sourceCode');
-
-        if (codeBlock) {
-            hljs.highlightBlock(codeBlock);
-        }
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
     }
 })();
 </script>
 
 <div class="footer">
     
-    <div style="float:right;">generated on 2022-09-16 07:41</div>
+    <div style="float:right;">generated on 2026-02-19 07:36</div>
 </div>
 </body>
 </html>

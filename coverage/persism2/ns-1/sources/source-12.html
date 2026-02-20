@@ -4,12 +4,14 @@
 <!DOCTYPE html>
 <html id="htmlId">
 <head>
+  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"> 
   <title>Coverage Report > Result</title>
   <style type="text/css">
     @import "../../css/coverage.css";
-    @import "../../css/highlight-idea.css";
+    @import "../../css/idea.min.css";
   </style>
-  <script type="text/javascript" src="../../js/highlight.pack.js"></script>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
 </head>
 
 <body>
@@ -73,51 +75,51 @@ Current scope:     <a href="../../index.html">all classes</a>
 
 
 <pre>
-<div class="sourceCode" id="sourceCode"><i class="no-highlight">1</i>&nbsp;package net.sf.persism;
-<i class="no-highlight">2</i>&nbsp;
-<i class="no-highlight">3</i>&nbsp;/**
-<i class="no-highlight">4</i>&nbsp; * Result of an insert, update or delete. Contains the rows affected returned by JDBC and the original copy of the data object.
-<i class="no-highlight">5</i>&nbsp; */
-<i class="no-highlight">6</i>&nbsp;public final class Result&lt;T&gt; {
-<i class="no-highlight">7</i>&nbsp;    private final int rows;
-<i class="no-highlight">8</i>&nbsp;    private final T dataObject;
-<i class="no-highlight">9</i>&nbsp;
-<i class="no-highlight">10</i>&nbsp;    /**
-<i class="no-highlight">11</i>&nbsp;     *
-<i class="no-highlight">12</i>&nbsp;     * @param rows rows affected
-<i class="no-highlight">13</i>&nbsp;     * @param dataObject possibly changed object after an insert. Use for Records which are immutable.
-<i class="no-highlight">14</i>&nbsp;     */
-<b class="fc"><i class="no-highlight">15</i>&nbsp;    public Result(int rows, T dataObject) {</b>
-<b class="fc"><i class="no-highlight">16</i>&nbsp;        this.rows = rows;</b>
-<b class="fc"><i class="no-highlight">17</i>&nbsp;        this.dataObject = dataObject;</b>
-<i class="no-highlight">18</i>&nbsp;    }
-<i class="no-highlight">19</i>&nbsp;
-<i class="no-highlight">20</i>&nbsp;    /**
-<i class="no-highlight">21</i>&nbsp;     * Return value from jdbc statement getUpdateCount after an insert.
-<i class="no-highlight">22</i>&nbsp;     * @return row count changed
-<i class="no-highlight">23</i>&nbsp;     */
-<i class="no-highlight">24</i>&nbsp;    public int rows() {
-<b class="fc"><i class="no-highlight">25</i>&nbsp;        return rows;</b>
-<i class="no-highlight">26</i>&nbsp;    }
-<i class="no-highlight">27</i>&nbsp;
-<i class="no-highlight">28</i>&nbsp;    /**
-<i class="no-highlight">29</i>&nbsp;     * Instance of the possibly modified object after insert.
-<i class="no-highlight">30</i>&nbsp;     * @return dataObject of type T
-<i class="no-highlight">31</i>&nbsp;     */
-<i class="no-highlight">32</i>&nbsp;    public T dataObject() {
-<b class="fc"><i class="no-highlight">33</i>&nbsp;        return dataObject;</b>
-<i class="no-highlight">34</i>&nbsp;    }
-<i class="no-highlight">35</i>&nbsp;
-<i class="no-highlight">36</i>&nbsp;    @Override
-<i class="no-highlight">37</i>&nbsp;    public String toString() {
-<b class="fc"><i class="no-highlight">38</i>&nbsp;        final StringBuilder sb = new StringBuilder(&quot;Result{&quot;);</b>
-<b class="fc"><i class="no-highlight">39</i>&nbsp;        sb.append(&quot;rows=&quot;).append(rows);</b>
-<b class="fc"><i class="no-highlight">40</i>&nbsp;        sb.append(&quot;, dataObject=&quot;).append(dataObject);</b>
-<b class="fc"><i class="no-highlight">41</i>&nbsp;        sb.append(&#39;}&#39;);</b>
-<b class="fc"><i class="no-highlight">42</i>&nbsp;        return sb.toString();</b>
-<i class="no-highlight">43</i>&nbsp;    }
-<i class="no-highlight">44</i>&nbsp;}
-</div>
+<code class="sourceCode" id="sourceCode">&nbsp;package net.sf.persism;
+&nbsp;
+&nbsp;/**
+&nbsp; * Result of an insert, update or delete. Contains the rows affected returned by JDBC and the original copy of the data object.
+&nbsp; */
+&nbsp;public final class Result&lt;T&gt; {
+&nbsp;    private final int rows;
+&nbsp;    private final T dataObject;
+&nbsp;
+&nbsp;    /**
+&nbsp;     *
+&nbsp;     * @param rows rows affected
+&nbsp;     * @param dataObject possibly changed object after an insert. Use for Records which are immutable.
+&nbsp;     */
+<b class="fc">&nbsp;    public Result(int rows, T dataObject) {</b>
+<b class="fc">&nbsp;        this.rows = rows;</b>
+<b class="fc">&nbsp;        this.dataObject = dataObject;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    /**
+&nbsp;     * Return value from jdbc statement getUpdateCount after an insert.
+&nbsp;     * @return row count changed
+&nbsp;     */
+&nbsp;    public int rows() {
+<b class="fc">&nbsp;        return rows;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    /**
+&nbsp;     * Instance of the possibly modified object after insert.
+&nbsp;     * @return dataObject of type T
+&nbsp;     */
+&nbsp;    public T dataObject() {
+<b class="fc">&nbsp;        return dataObject;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public String toString() {
+<b class="fc">&nbsp;        final StringBuilder sb = new StringBuilder(&quot;Result{&quot;);</b>
+<b class="fc">&nbsp;        sb.append(&quot;rows=&quot;).append(rows);</b>
+<b class="fc">&nbsp;        sb.append(&quot;, dataObject=&quot;).append(dataObject);</b>
+<b class="fc">&nbsp;        sb.append(&#39;}&#39;);</b>
+<b class="fc">&nbsp;        return sb.toString();</b>
+&nbsp;    }
+&nbsp;}
+</code>
 </pre>
 </div>
 
@@ -132,18 +134,15 @@ Current scope:     <a href="../../index.html">all classes</a>
     @*/
 
     if (!msie || msie && msie9) {
-        var codeBlock = document.getElementById('sourceCode');
-
-        if (codeBlock) {
-            hljs.highlightBlock(codeBlock);
-        }
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
     }
 })();
 </script>
 
 <div class="footer">
     
-    <div style="float:right;">generated on 2022-09-16 07:41</div>
+    <div style="float:right;">generated on 2026-02-19 07:36</div>
 </div>
 </body>
 </html>

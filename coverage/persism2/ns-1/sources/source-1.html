@@ -4,12 +4,14 @@
 <!DOCTYPE html>
 <html id="htmlId">
 <head>
+  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"> 
   <title>Coverage Report > ColumnInfo</title>
   <style type="text/css">
     @import "../../css/coverage.css";
-    @import "../../css/highlight-idea.css";
+    @import "../../css/idea.min.css";
   </style>
-  <script type="text/javascript" src="../../js/highlight.pack.js"></script>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
 </head>
 
 <body>
@@ -73,56 +75,56 @@ Current scope:     <a href="../../index.html">all classes</a>
 
 
 <pre>
-<div class="sourceCode" id="sourceCode"><i class="no-highlight">1</i>&nbsp;package net.sf.persism;
-<i class="no-highlight">2</i>&nbsp;
-<i class="no-highlight">3</i>&nbsp;/**
-<i class="no-highlight">4</i>&nbsp; * Information about columns used for insert, update and delete.
-<i class="no-highlight">5</i>&nbsp; * Queries do not use this object.
-<i class="no-highlight">6</i>&nbsp; *
-<i class="no-highlight">7</i>&nbsp; * @author Dan Howard
-<i class="no-highlight">8</i>&nbsp; * @since 5/4/12 6:22 AM
-<i class="no-highlight">9</i>&nbsp; */
-<b class="fc"><i class="no-highlight">10</i>&nbsp;final class ColumnInfo {</b>
-<i class="no-highlight">11</i>&nbsp;
-<i class="no-highlight">12</i>&nbsp;    String columnName;
-<i class="no-highlight">13</i>&nbsp;
-<i class="no-highlight">14</i>&nbsp;    // SQLite - Date - comes back as StringType
-<i class="no-highlight">15</i>&nbsp;    // H2 - BIT - comes back NULL
-<i class="no-highlight">16</i>&nbsp;    JavaType columnType;
-<i class="no-highlight">17</i>&nbsp;
-<i class="no-highlight">18</i>&nbsp;    // kept for possible future use
-<i class="no-highlight">19</i>&nbsp;    int sqlColumnType;
-<i class="no-highlight">20</i>&nbsp;    String sqlColumnTypeName;
-<i class="no-highlight">21</i>&nbsp;
-<i class="no-highlight">22</i>&nbsp;    // indicates this column is generated. Only for Auto-Inc for now
-<i class="no-highlight">23</i>&nbsp;    boolean autoIncrement;
-<i class="no-highlight">24</i>&nbsp;
-<i class="no-highlight">25</i>&nbsp;    // Indicates this is primary key column
-<i class="no-highlight">26</i>&nbsp;    boolean primary;
-<i class="no-highlight">27</i>&nbsp;
-<i class="no-highlight">28</i>&nbsp;    boolean hasDefault;
-<i class="no-highlight">29</i>&nbsp;
-<i class="no-highlight">30</i>&nbsp;    // Only set by annotation
-<i class="no-highlight">31</i>&nbsp;    boolean readOnly;
-<i class="no-highlight">32</i>&nbsp;
-<i class="no-highlight">33</i>&nbsp;    int length; // for string to varchar length checking
-<i class="no-highlight">34</i>&nbsp;
-<i class="no-highlight">35</i>&nbsp;    @Override
-<i class="no-highlight">36</i>&nbsp;    public String toString() {
-<b class="fc"><i class="no-highlight">37</i>&nbsp;        return &quot;ColumnInfo{&quot; +</b>
-<i class="no-highlight">38</i>&nbsp;                &quot;columnName=&#39;&quot; + columnName + &#39;\&#39;&#39; +
-<i class="no-highlight">39</i>&nbsp;                &quot;, columnType=&quot; + columnType +
-<i class="no-highlight">40</i>&nbsp;                &quot;, sqlColumnType=&quot; + sqlColumnType +
-<i class="no-highlight">41</i>&nbsp;                &quot;, sqlColumnTypeName=&quot; + sqlColumnTypeName +
-<i class="no-highlight">42</i>&nbsp;                &quot;, autoIncrement=&quot; + autoIncrement +
-<i class="no-highlight">43</i>&nbsp;                &quot;, primary=&quot; + primary +
-<i class="no-highlight">44</i>&nbsp;                &quot;, hasDefault=&quot; + hasDefault +
-<i class="no-highlight">45</i>&nbsp;               &quot;, readOnly=&quot; + readOnly +
-<i class="no-highlight">46</i>&nbsp;                &quot;, length=&quot; + length +
-<i class="no-highlight">47</i>&nbsp;                &#39;}&#39;;
-<i class="no-highlight">48</i>&nbsp;    }
-<i class="no-highlight">49</i>&nbsp;}
-</div>
+<code class="sourceCode" id="sourceCode">&nbsp;package net.sf.persism;
+&nbsp;
+&nbsp;/**
+&nbsp; * Information about columns used for insert, update and delete.
+&nbsp; * Queries do not use this object.
+&nbsp; *
+&nbsp; * @author Dan Howard
+&nbsp; * @since 5/4/12 6:22 AM
+&nbsp; */
+<b class="fc">&nbsp;final class ColumnInfo {</b>
+&nbsp;
+&nbsp;    String columnName;
+&nbsp;
+&nbsp;    // SQLite - Date - comes back as StringType
+&nbsp;    // H2 - BIT - comes back NULL
+&nbsp;    JavaType columnType;
+&nbsp;
+&nbsp;    // kept for possible future use
+&nbsp;    int sqlColumnType;
+&nbsp;    String sqlColumnTypeName;
+&nbsp;
+&nbsp;    // indicates this column is generated. Only for Auto-Inc for now
+&nbsp;    boolean autoIncrement;
+&nbsp;
+&nbsp;    // Indicates this is primary key column
+&nbsp;    boolean primary;
+&nbsp;
+&nbsp;    boolean hasDefault;
+&nbsp;
+&nbsp;    // Only set by annotation
+&nbsp;    boolean readOnly;
+&nbsp;
+&nbsp;    int length; // for string to varchar length checking
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public String toString() {
+<b class="fc">&nbsp;        return &quot;ColumnInfo{&quot; +</b>
+&nbsp;                &quot;columnName=&#39;&quot; + columnName + &#39;\&#39;&#39; +
+&nbsp;                &quot;, columnType=&quot; + columnType +
+&nbsp;                &quot;, sqlColumnType=&quot; + sqlColumnType +
+&nbsp;                &quot;, sqlColumnTypeName=&quot; + sqlColumnTypeName +
+&nbsp;                &quot;, autoIncrement=&quot; + autoIncrement +
+&nbsp;                &quot;, primary=&quot; + primary +
+&nbsp;                &quot;, hasDefault=&quot; + hasDefault +
+&nbsp;               &quot;, readOnly=&quot; + readOnly +
+&nbsp;                &quot;, length=&quot; + length +
+&nbsp;                &#39;}&#39;;
+&nbsp;    }
+&nbsp;}
+</code>
 </pre>
 </div>
 
@@ -137,18 +139,15 @@ Current scope:     <a href="../../index.html">all classes</a>
     @*/
 
     if (!msie || msie && msie9) {
-        var codeBlock = document.getElementById('sourceCode');
-
-        if (codeBlock) {
-            hljs.highlightBlock(codeBlock);
-        }
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
     }
 })();
 </script>
 
 <div class="footer">
     
-    <div style="float:right;">generated on 2022-09-16 07:41</div>
+    <div style="float:right;">generated on 2026-02-19 07:36</div>
 </div>
 </body>
 </html>

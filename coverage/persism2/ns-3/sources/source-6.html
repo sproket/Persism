@@ -4,12 +4,14 @@
 <!DOCTYPE html>
 <html id="htmlId">
 <head>
-  <title>Coverage Report > NotColumn</title>
+  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"> 
+  <title>Coverage Report > Join</title>
   <style type="text/css">
     @import "../../css/coverage.css";
-    @import "../../css/highlight-idea.css";
+    @import "../../css/idea.min.css";
   </style>
-  <script type="text/javascript" src="../../js/highlight.pack.js"></script>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
 </head>
 
 <body>
@@ -20,14 +22,14 @@ Current scope:     <a href="../../index.html">all classes</a>
     <a href="../index.html">net.sf.persism.annotations</a>
 </div>
 
-<h1>Coverage Summary for Class: NotColumn (net.sf.persism.annotations)</h1>
+<h1>Coverage Summary for Class: Join (net.sf.persism.annotations)</h1>
 
 <table class="coverageStats">
 <tr>
   <th class="name">Class</th>
 </tr>
 <tr>
-  <td class="name">NotColumn</td>
+  <td class="name">Join</td>
 </tr>
 
 </table>
@@ -37,20 +39,53 @@ Current scope:     <a href="../../index.html">all classes</a>
 
 
 <pre>
-<div class="sourceCode" id="sourceCode"><i class="no-highlight">1</i>&nbsp;package net.sf.persism.annotations;
-<i class="no-highlight">2</i>&nbsp;
-<i class="no-highlight">3</i>&nbsp;import java.lang.annotation.*;
-<i class="no-highlight">4</i>&nbsp;
-<i class="no-highlight">5</i>&nbsp;/**
-<i class="no-highlight">6</i>&nbsp; * Indicates that the property is not mapped to a column. This annotation can appear on the class field, getter or setter.
-<i class="no-highlight">7</i>&nbsp; * Persism ignores read-only properties so this annotation is only required where you have a read/write property which does not map to any column.
-<i class="no-highlight">8</i>&nbsp; */
-<i class="no-highlight">9</i>&nbsp;@Retention(RetentionPolicy.RUNTIME)
-<i class="no-highlight">10</i>&nbsp;@Target(value = {ElementType.METHOD, ElementType.FIELD})
-<i class="no-highlight">11</i>&nbsp;public @interface NotColumn {
-<i class="no-highlight">12</i>&nbsp;
-<i class="no-highlight">13</i>&nbsp;}
-</div>
+<code class="sourceCode" id="sourceCode">&nbsp;package net.sf.persism.annotations;
+&nbsp;
+&nbsp;import java.lang.annotation.*;
+&nbsp;
+&nbsp;/**
+&nbsp; * Indicates that the property value is set by joining from another table (pojo class). You may use this on a
+&nbsp; * single object (one to one, many to one), or on a collection (one to many, many to many). If joining to a
+&nbsp; * collection, make sure that you instantiate it as a modifiable collection. Persism will not do that fo you.
+&nbsp; *
+&nbsp; * @see &lt;a href=&quot;https://sproket.github.io/Persism/join.html&quot;&gt;How to use the new @Join Annotation&lt;/a&gt;
+&nbsp; */
+&nbsp;@Retention(RetentionPolicy.RUNTIME)
+&nbsp;@Target({ElementType.METHOD, ElementType.FIELD})
+&nbsp;public @interface Join {
+&nbsp;
+&nbsp;    Class&lt;?&gt; from() default void.class;
+&nbsp;
+&nbsp;    /**
+&nbsp;     * Class of the POJO that this class joins to.
+&nbsp;     *
+&nbsp;     * @return target POJO Class
+&nbsp;     */
+&nbsp;    Class&lt;?&gt; to();
+&nbsp;
+&nbsp;    /**
+&nbsp;     * Comma seperated property names whose values are used to join to the target table.
+&nbsp;     *
+&nbsp;     * @return property names
+&nbsp;     */
+&nbsp;    String onProperties();
+&nbsp;
+&nbsp;    /**
+&nbsp;     * Comma seperated property names whose values are used to join to the parent table.
+&nbsp;     *
+&nbsp;     * @return property names
+&nbsp;     */
+&nbsp;    String toProperties();
+&nbsp;
+&nbsp;    /**
+&nbsp;     * Indicates that you use String primary/foreign key values in your DB which are case-sensitive. Default false.
+&nbsp;     *
+&nbsp;     * @return case-sensitive
+&nbsp;     */
+&nbsp;    boolean caseSensitive() default false;
+&nbsp;}
+&nbsp;
+</code>
 </pre>
 </div>
 
@@ -65,18 +100,15 @@ Current scope:     <a href="../../index.html">all classes</a>
     @*/
 
     if (!msie || msie && msie9) {
-        var codeBlock = document.getElementById('sourceCode');
-
-        if (codeBlock) {
-            hljs.highlightBlock(codeBlock);
-        }
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
     }
 })();
 </script>
 
 <div class="footer">
     
-    <div style="float:right;">generated on 2022-09-16 07:41</div>
+    <div style="float:right;">generated on 2026-02-19 07:36</div>
 </div>
 </body>
 </html>

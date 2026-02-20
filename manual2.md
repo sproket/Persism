@@ -9,9 +9,16 @@ If you are using Maven:
 <dependency>
     <groupId>io.github.sproket</groupId>
     <artifactId>persism</artifactId>
-    <version>2.2.0</version>
+    <version>2.3</version>
 </dependency>
 ```
+
+If you are using gradle:
+```
+// Source: https://mvnrepository.com/artifact/io.github.sproket/persism
+implementation("io.github.sproket:persism:2.3")
+```
+
 ### Upgrading from 1.x
 
 If you used Persism 1.x, you may get compile errors if you referenced the
@@ -186,6 +193,14 @@ As of version 2.2.0, Persism recognizes schema names and includes them in the SQ
 has multiple schema names you can now specify the schema name in the Table or View annotation. Use "Schema.Table"
 as the name in the annotation.
 
+### Limit
+
+As of version 2.3.0, Persism supports a limit to the query result which will translate to the specific SQL syntax when executed.
+
+
+```java
+List<PublisherTitle> publisherTitles = session.query(PublisherTitle.class, where("1=1").limit(4));
+```
 
 ## Updating Data
 

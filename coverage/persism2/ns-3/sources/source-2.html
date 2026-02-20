@@ -4,12 +4,14 @@
 <!DOCTYPE html>
 <html id="htmlId">
 <head>
-  <title>Coverage Report > Join</title>
+  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"> 
+  <title>Coverage Report > Column</title>
   <style type="text/css">
     @import "../../css/coverage.css";
-    @import "../../css/highlight-idea.css";
+    @import "../../css/idea.min.css";
   </style>
-  <script type="text/javascript" src="../../js/highlight.pack.js"></script>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
 </head>
 
 <body>
@@ -20,14 +22,14 @@ Current scope:     <a href="../../index.html">all classes</a>
     <a href="../index.html">net.sf.persism.annotations</a>
 </div>
 
-<h1>Coverage Summary for Class: Join (net.sf.persism.annotations)</h1>
+<h1>Coverage Summary for Class: Column (net.sf.persism.annotations)</h1>
 
 <table class="coverageStats">
 <tr>
   <th class="name">Class</th>
 </tr>
 <tr>
-  <td class="name">Join</td>
+  <td class="name">Column</td>
 </tr>
 
 </table>
@@ -37,48 +39,77 @@ Current scope:     <a href="../../index.html">all classes</a>
 
 
 <pre>
-<div class="sourceCode" id="sourceCode"><i class="no-highlight">1</i>&nbsp;package net.sf.persism.annotations;
-<i class="no-highlight">2</i>&nbsp;
-<i class="no-highlight">3</i>&nbsp;import java.lang.annotation.ElementType;
-<i class="no-highlight">4</i>&nbsp;import java.lang.annotation.Retention;
-<i class="no-highlight">5</i>&nbsp;import java.lang.annotation.RetentionPolicy;
-<i class="no-highlight">6</i>&nbsp;import java.lang.annotation.Target;
-<i class="no-highlight">7</i>&nbsp;
-<i class="no-highlight">8</i>&nbsp;/**
-<i class="no-highlight">9</i>&nbsp; * Indicates that the property value is set by joining from another table (pojo class). You may use this on a
-<i class="no-highlight">10</i>&nbsp; * single object (one to one, many to one), or on a collection (one to many, many to many). If joining to a
-<i class="no-highlight">11</i>&nbsp; * collection, make sure that you instantiate it as a modifiable collection. Persism will not do that fo you.
-<i class="no-highlight">12</i>&nbsp; * @see &lt;a href=&quot;https://sproket.github.io/Persism/join.html&quot;&gt;How to use the new @Join Annotation&lt;/a&gt;
-<i class="no-highlight">13</i>&nbsp; */
-<i class="no-highlight">14</i>&nbsp;@Retention(RetentionPolicy.RUNTIME)
-<i class="no-highlight">15</i>&nbsp;@Target({ElementType.METHOD, ElementType.FIELD})
-<i class="no-highlight">16</i>&nbsp;public @interface Join {
-<i class="no-highlight">17</i>&nbsp;
-<i class="no-highlight">18</i>&nbsp;    /**
-<i class="no-highlight">19</i>&nbsp;     * Class of the POJO that this class joins to.
-<i class="no-highlight">20</i>&nbsp;     * @return target POJO Class
-<i class="no-highlight">21</i>&nbsp;     */
-<i class="no-highlight">22</i>&nbsp;    Class&lt;?&gt; to();
-<i class="no-highlight">23</i>&nbsp;
-<i class="no-highlight">24</i>&nbsp;    /**
-<i class="no-highlight">25</i>&nbsp;     * Comma seperated property names whose values are used to join to the target table.
-<i class="no-highlight">26</i>&nbsp;     * @return property names
-<i class="no-highlight">27</i>&nbsp;     */
-<i class="no-highlight">28</i>&nbsp;    String onProperties();
-<i class="no-highlight">29</i>&nbsp;
-<i class="no-highlight">30</i>&nbsp;    /**
-<i class="no-highlight">31</i>&nbsp;     * Comma seperated property names whose values are used to join to the parent table.
-<i class="no-highlight">32</i>&nbsp;     * @return property names
-<i class="no-highlight">33</i>&nbsp;     */
-<i class="no-highlight">34</i>&nbsp;    String toProperties();
-<i class="no-highlight">35</i>&nbsp;
-<i class="no-highlight">36</i>&nbsp;    /**
-<i class="no-highlight">37</i>&nbsp;     * Indicates that you use String primary/foreign key values in your DB which are case-sensitive. Default false.
-<i class="no-highlight">38</i>&nbsp;     * @return case-sensitive
-<i class="no-highlight">39</i>&nbsp;     */
-<i class="no-highlight">40</i>&nbsp;    boolean caseSensitive() default false;
-<i class="no-highlight">41</i>&nbsp;}
-</div>
+<code class="sourceCode" id="sourceCode">&nbsp;package net.sf.persism.annotations;
+&nbsp;
+&nbsp;/*
+&nbsp; * Created by IntelliJ IDEA.
+&nbsp; * User: DHoward
+&nbsp; * Date: 9/8/11
+&nbsp; * Time: 6:18 AM
+&nbsp; */
+&nbsp;
+&nbsp;import java.lang.annotation.ElementType;
+&nbsp;import java.lang.annotation.Retention;
+&nbsp;import java.lang.annotation.RetentionPolicy;
+&nbsp;import java.lang.annotation.Target;
+&nbsp;
+&nbsp;/**
+&nbsp; * Optional annotation defining a column mapping for a property on the class. This annotation can appear on the class field, getter or setter.
+&nbsp; */
+&nbsp;@Retention(RetentionPolicy.RUNTIME)
+&nbsp;@Target({ElementType.METHOD, ElementType.FIELD})
+&nbsp;public @interface Column {
+&nbsp;
+&nbsp;    /**
+&nbsp;     * Name of the column mapped to the property. Used when the property cannot be auto-mapped to a table column.
+&nbsp;     * &lt;p&gt;
+&nbsp;     * It&#39;s only required if Persism cannot discover the column/property mapping on its own.
+&nbsp;     *
+&nbsp;     * @return Name of the column mapped to the property.
+&nbsp;     */
+&nbsp;    String name() default &quot;&quot;;
+&nbsp;
+&nbsp;    /**
+&nbsp;     * Indicates if the column is an auto increment field.
+&nbsp;     * This will tell Persism to exclude this column in insert statements and to
+&nbsp;     * update the object with this column value after the insert.
+&nbsp;     * &lt;p&gt;
+&nbsp;     * It&#39;s only required if Persism cannot detect this column attribute on its own.
+&nbsp;     * The only case for this seems to be Oracle before version 12. To maybe be deprecated later on.
+&nbsp;     *
+&nbsp;     * @return true if this column is autoIncrement.
+&nbsp;     */
+&nbsp;    @Deprecated
+&nbsp;    boolean autoIncrement() default false;
+&nbsp;
+&nbsp;    /**
+&nbsp;     * Indicates that this column is a primary key.
+&nbsp;     * &lt;p&gt;
+&nbsp;     * It&#39;s only required if Persism cannot detect this column attribute on its own.
+&nbsp;     *
+&nbsp;     * @return true if this column is a primary key.
+&nbsp;     */
+&nbsp;    boolean primary() default false;
+&nbsp;
+&nbsp;    /**
+&nbsp;     * Indicates that this column has a default value in the database. This tells Persism that if the data object
+&nbsp;     * did not specify a value then Persism will update the data object with the default after an insert.
+&nbsp;     * &lt;p&gt;
+&nbsp;     * It&#39;s only required if Persism cannot detect this column attribute on its own.
+&nbsp;     *
+&nbsp;     * @return true if this column has a default value in the database.
+&nbsp;     */
+&nbsp;    boolean hasDefault() default false;
+&nbsp;
+&nbsp;    /**
+&nbsp;     * Indicates this column is read-only. It will be included in the SELECT to be initialized but will not be included
+&nbsp;     * in INSERT or UPDATE statements.
+&nbsp;     * @return true if this column is identified by the annotation as read-only.
+&nbsp;     */
+&nbsp;    boolean readOnly() default false;
+&nbsp;
+&nbsp;}
+</code>
 </pre>
 </div>
 
@@ -93,18 +124,15 @@ Current scope:     <a href="../../index.html">all classes</a>
     @*/
 
     if (!msie || msie && msie9) {
-        var codeBlock = document.getElementById('sourceCode');
-
-        if (codeBlock) {
-            hljs.highlightBlock(codeBlock);
-        }
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
     }
 })();
 </script>
 
 <div class="footer">
     
-    <div style="float:right;">generated on 2022-09-16 07:41</div>
+    <div style="float:right;">generated on 2026-02-19 07:36</div>
 </div>
 </body>
 </html>

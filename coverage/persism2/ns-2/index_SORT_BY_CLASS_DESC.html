@@ -2,12 +2,14 @@
 <!DOCTYPE html>
 <html id="htmlId">
 <head>
+  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"> 
   <title>Coverage Report > net.sf.persism.logging</title>
   <style type="text/css">
     @import "../css/coverage.css";
-    @import "../css/highlight-idea.css";
+    @import "../css/idea.min.css";
   </style>
-  <script type="text/javascript" src="../js/highlight.pack.js"></script>
+  <script type="text/javascript" src="../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../js/highlightjs-line-numbers.min.js"></script>
 </head>
 
 <body>
@@ -32,6 +34,10 @@ net.sf.persism.logging</div>
 </th>
 <th class="coverageStat 
 ">
+  Branch, %
+</th>
+<th class="coverageStat 
+">
   Line, %
 </th>
   </tr>
@@ -39,26 +45,34 @@ net.sf.persism.logging</div>
     <td class="name">net.sf.persism.logging</td>
 <td class="coverageStat">
   <span class="percent">
-    100%
+    83.3%
   </span>
   <span class="absValue">
-    (6/6)
+    (5/6)
   </span>
 </td>
 <td class="coverageStat">
   <span class="percent">
-    100%
+    77.8%
   </span>
   <span class="absValue">
-    (45/45)
+    (35/45)
   </span>
 </td>
 <td class="coverageStat">
   <span class="percent">
-    92.7%
+    37.5%
   </span>
   <span class="absValue">
-    (51/55)
+    (6/16)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    74.5%
+  </span>
+  <span class="absValue">
+    (41/55)
   </span>
 </td>
   </tr>
@@ -82,6 +96,10 @@ net.sf.persism.logging</div>
 </th>
 <th class="coverageStat 
 ">
+  <a href="index_SORT_BY_BLOCK.html">Branch, %</a>
+</th>
+<th class="coverageStat 
+">
   <a href="index_SORT_BY_LINE.html">Line, %</a>
 </th>
 </tr>
@@ -101,6 +119,14 @@ net.sf.persism.logging</div>
   </span>
   <span class="absValue">
     (10/10)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    50%
+  </span>
+  <span class="absValue">
+    (2/4)
   </span>
 </td>
 <td class="coverageStat">
@@ -130,6 +156,7 @@ net.sf.persism.logging</div>
     (2/2)
   </span>
 </td>
+    <td class="coverageStat"/>
 <td class="coverageStat">
   <span class="percent">
     100%
@@ -159,37 +186,18 @@ net.sf.persism.logging</div>
 </td>
 <td class="coverageStat">
   <span class="percent">
+    50%
+  </span>
+  <span class="absValue">
+    (2/4)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
     100%
   </span>
   <span class="absValue">
     (12/12)
-  </span>
-</td>
-  </tr>
-  <tr>
-    <td class="name"><a href="sources/source-3.html">Log4j2Logger</a></td>
-<td class="coverageStat">
-  <span class="percent">
-    100%
-  </span>
-  <span class="absValue">
-    (1/1)
-  </span>
-</td>
-<td class="coverageStat">
-  <span class="percent">
-    100%
-  </span>
-  <span class="absValue">
-    (10/10)
-  </span>
-</td>
-<td class="coverageStat">
-  <span class="percent">
-    83.3%
-  </span>
-  <span class="absValue">
-    (10/12)
   </span>
 </td>
   </tr>
@@ -209,6 +217,14 @@ net.sf.persism.logging</div>
   </span>
   <span class="absValue">
     (10/10)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    50%
+  </span>
+  <span class="absValue">
+    (2/4)
   </span>
 </td>
 <td class="coverageStat">
@@ -238,12 +254,48 @@ net.sf.persism.logging</div>
     (3/3)
   </span>
 </td>
+    <td class="coverageStat"/>
 <td class="coverageStat">
   <span class="percent">
     100%
   </span>
   <span class="absValue">
     (5/5)
+  </span>
+</td>
+  </tr>
+  <tr>
+    <td class="name"><a href="sources/source-3.html">Log4j2Logger</a></td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/10)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/4)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/12)
   </span>
 </td>
   </tr>
@@ -262,18 +314,15 @@ net.sf.persism.logging</div>
     @*/
 
     if (!msie || msie && msie9) {
-        var codeBlock = document.getElementById('sourceCode');
-
-        if (codeBlock) {
-            hljs.highlightBlock(codeBlock);
-        }
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
     }
 })();
 </script>
 
 <div class="footer">
     
-    <div style="float:right;">generated on 2022-09-16 07:41</div>
+    <div style="float:right;">generated on 2026-02-19 07:36</div>
 </div>
 </body>
 </html>
