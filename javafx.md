@@ -98,7 +98,7 @@ public final class ObservablePlayer {
 }
 ~~~
 
-Straight forward. This will work fine for querying Player objects from a query. 
+Straight forward. This will work fine for querying Player objects from the database. 
 
 ### Persistable interface vs PersistableObject base class
 
@@ -118,7 +118,7 @@ UPDATE PLAYERS SET NAME = ?, HIT_POINTS = ? WHERE PLAYER_ID = ? params: [Fred, 1
 
 Persism can optionally keep track of changed fields either by extending PersistableObject or implementing the Persistable interface.
 
-So let's change Player class to extend PersistableObject and see what happens. (First change net.sf.persism logging level to INFO)
+So let's change ObservablePlayer class to extend PersistableObject and see what happens. (First change net.sf.persism logging level to INFO)
 
 ~~~
 @Table("Players")
@@ -169,7 +169,7 @@ public final class ObservablePlayer implements Persistable<ObservablePlayerGood>
     private final StringProperty name = new SimpleStringProperty(this, "name");
     private final IntegerProperty hitPoints = new SimpleIntegerProperty(this, "hitPoints");
 
-    private transient ObservablePlayerGood original;
+    private transient ObservablePlayer original;
 
     public ObservablePlayer() {
     }
