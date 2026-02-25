@@ -78,6 +78,8 @@ at runtime - SLF4J, LOG4J2, LOG4J or JUL.
 
 [Cookbook: Implementing Persistable interface](cookbook-persistable.md)
 
+[Cookbook: Using Persism with JavaFX Observable Objects](javafx.md)
+
 [All about Records](records.md)
 
 [SELECT N+1 Problem?](n+1.md)
@@ -85,6 +87,8 @@ at runtime - SLF4J, LOG4J2, LOG4J or JUL.
 [How to use the new @Join Annotation](join.md)
 
 [Using Persism with Modules](modules.md)
+
+
 
 Supported Databases
 

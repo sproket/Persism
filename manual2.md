@@ -636,6 +636,12 @@ a date type is ```yyyy-MM-dd hh:mm:ss``` for DateTime types and ```yyyy-MM-dd```
 **Note:** Persism has no specific requirements for logging. It will utilize whatever logging framework 
 your application is using. 
 
+### Logger names
+
+* net.sf.persism - General logging. Usually can be default WARN.
+* net.sf.persism.SQL - Log SQL statements Persism produces if set to DEBUG level
+* net.sf.persism
+
 Here's an example logback configuration for logging with Persism:
 
 ```xml
@@ -671,6 +677,12 @@ Here's an example logback configuration for logging with Persism:
     <logger name="net" level="ERROR"/>
     <logger name="net.sf.persism" level="WARN"/>
 
+    <!-- SET TO DEBUG to log the SQL statements Persism produces -->
+    <logger name="net.sf.persism.SQL" level="OFF"/>
+  
+    <!-- SET TO DEBUG to log timings of Persism operations -->
+    <logger name="net.sf.persism.Benchmarks" level="OFF"/>
+  
     <root level="INFO">
         <appender-ref ref="A1"/>
         <appender-ref ref="R"/>
