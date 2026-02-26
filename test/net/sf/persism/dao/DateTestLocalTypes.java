@@ -1,12 +1,8 @@
 package net.sf.persism.dao;
 
+import net.sf.persism.PersistableObject;
 import net.sf.persism.annotations.Column;
-import net.sf.persism.annotations.NotColumn;
 
-import java.sql.Date;
-import java.sql.Time;
-import java.sql.Timestamp;
-import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
@@ -28,7 +24,7 @@ DateTime (Timestamp)
 Time
 */
 
-public final class DateTestLocalTypes {
+public final class DateTestLocalTypes extends PersistableObject<DateTestLocalTypes> {
     @Column(primary = true)
     private int id;
 

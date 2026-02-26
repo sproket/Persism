@@ -47,7 +47,7 @@ enum Message {
     PossibleOverflow("Possible overflow column %s - Target type is %s and Value type is %s"),
     PropertyShouldBeAnObjectType("Property %s for column %s for %s should be an Object type to properly detect NULL for defaults (change it from the primitive type to its Boxed version)"),
     SettersFoundInReadOnlyObject("Setters found in read only object %s %s"),
-    UnknownSQLType("Convert: Unknown SQL TYPE: %s"),
+    UnknownSQLType("Convert: Unknown SQL TYPE: %s COLUMN: %s"),
     ConverterValueTypeNotYetSupported("%s not yet supported"),
     ConverterDoNotUseClobOrBlobAsAPropertyType("Usually you should not use blob or clob as a property type on a POJO. Blob maps to byteArray, Clob maps to String"),
     ColumnTypeNotKnownForSQLType("Column type not known for SQL type %s. Reading column: %s as Object. Actual type: %s"),

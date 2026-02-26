@@ -223,7 +223,7 @@ final class MetaData {
                     columnInfo.primary = columnInfo.autoIncrement;
                     columnInfo.sqlColumnType = rsMetaData.getColumnType(i);
                     columnInfo.sqlColumnTypeName = rsMetaData.getColumnTypeName(i);
-                    columnInfo.columnType = JavaType.convert(columnInfo.sqlColumnType);
+                    columnInfo.columnType = JavaType.convert(columnInfo.sqlColumnType, columnInfo.columnName);
                     columnInfo.length = rsMetaData.getColumnDisplaySize(i);
 
                     if (!primaryKeysFound) {
@@ -324,7 +324,7 @@ final class MetaData {
                         if (containsColumn(rs, "TYPE_NAME")) {
                             columnInfo.sqlColumnTypeName = rs.getString("TYPE_NAME");
                         }
-                        columnInfo.columnType = JavaType.convert(columnInfo.sqlColumnType);
+                        columnInfo.columnType = JavaType.convert(columnInfo.sqlColumnType, columnInfo.columnName);
                     }
                 }
                 columnsCount++;

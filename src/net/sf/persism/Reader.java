@@ -107,7 +107,7 @@ final class Reader {
             sqlColumnType = Types.CHAR;
         }
 
-        JavaType columnType = JavaType.convert(sqlColumnType); // note this could be null if we can't match a type
+        JavaType columnType = JavaType.convert(sqlColumnType, columnName); // note this could be null if we can't match a type
 
         Object value = null;
 

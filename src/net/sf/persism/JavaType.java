@@ -80,7 +80,7 @@ enum JavaType {
         return null;
     }
 
-    public static JavaType convert(int sqlType) {
+    public static JavaType convert(int sqlType, String columnName) {
         JavaType result = null;
 
         switch (sqlType) {
@@ -160,7 +160,7 @@ enum JavaType {
         }
 
         if (result == null) {
-            log.warnNoDuplicates(Message.UnknownSQLType.message(sqlType));
+            log.warnNoDuplicates(Message.UnknownSQLType.message(sqlType, columnName));
         }
 
         return result;

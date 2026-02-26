@@ -16,7 +16,6 @@ import java.util.Properties;
 import static net.sf.persism.Parameters.none;
 import static net.sf.persism.Parameters.params;
 import static net.sf.persism.SQL.sql;
-import static net.sf.persism.SQL.where;
 import static net.sf.persism.UtilsForTests.isTableInDatabase;
 import static net.sf.persism.UtilsForTests.isViewInDatabase;
 
@@ -422,6 +421,21 @@ to the database URL (example: jdbc:h2:~/test;IGNORECASE=TRUE).
                     )
                 """;
         executeCommand(sql, con);
+
+        if (isTableInDatabase("Players", con)) {
+            executeCommand("DROP TABLE Players", con);
+        }
+
+        sql = """
+                CREATE TABLE Players (
+                    PLAYER_ID IDENTITY PRIMARY KEY,
+                    NAME VARCHAR(50),
+                    HIT_POINTS int
+                    )
+                """;
+        executeCommand(sql, con);
+
+
     }
 
     public void testPeople() {
@@ -440,6 +454,41 @@ to the database URL (example: jdbc:h2:~/test;IGNORECASE=TRUE).
         session.insert(pebbles);
 
         System.out.println(session.query(ExtendedPerson.class));
+    }
+
+    public void testFXProperties() {
+        ObservablePlayerBad player = new ObservablePlayerBad();
+        player.setName("Fred");
+        player.setHitPoints(10);
+        session.insert(player);
+
+        assertEquals(1, player.getPlayerId());
+        log.info(player);
+
+        player.setHitPoints(11);
+        session.update(player);
+
+        player = session.fetch(ObservablePlayerBad.class, params(1));
+        assertNotNull(player);
+        assertEquals(10, player.getHitPoints()); // it will not be changed!!!
+
+
+        // Try again with proper implementation
+        ObservablePlayer player2 = new ObservablePlayer();
+        player2.setName("Fred");
+        player2.setHitPoints(10);
+        session.insert(player2);
+
+        assertEquals(2, player2.getPlayerId());
+        log.info(player2);
+
+        player2.setHitPoints(11);
+        session.update(player2);
+
+        player2 = session.fetch(ObservablePlayer.class, params(2));
+        assertNotNull(player2);
+        assertEquals(11, player2.getHitPoints()); // Should be changed to 11!
+
     }
 
     public void testHolidays() {

@@ -443,7 +443,7 @@ grant create trigger, create sequence to pinf;
             ResultSetMetaData rsmd = rs.getMetaData();
 
             while (rs.next()) {
-                log.info("testTimeStamp: TYPE: " + rsmd.getColumnType(2) + " " + JavaType.convert(rsmd.getColumnType(2))); // second column
+                log.info("testTimeStamp: TYPE: " + rsmd.getColumnType(2) + " " + JavaType.convert(rsmd.getColumnType(2),"TS")); // second column
                 Date dt = rs.getDate("TS"); // loses time component
                 Object obj = rs.getObject("TS"); // returns fucken oracle.sql.TIMESTAMP class
                 Timestamp ts = rs.getTimestamp("TS");
