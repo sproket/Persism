@@ -1,13 +1,14 @@
 package net.sf.persism;
 
 import java.util.Arrays;
+import java.util.Objects;
 
 // wrapper class for when you join on multiple columns
 final class KeyBox {
 
     final Object[] keyValues;
 
-    public KeyBox(boolean caseSensitive, Object... keyValues) {
+    KeyBox(boolean caseSensitive, Object... keyValues) {
         this.keyValues = keyValues;
 
         // If not case-sensitive then make String values upper case
@@ -19,6 +20,10 @@ final class KeyBox {
                 }
             }
         }
+    }
+
+    public boolean isAllNull() {
+        return Arrays.stream(keyValues).allMatch(Objects::isNull);
     }
 
     @Override

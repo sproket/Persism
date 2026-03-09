@@ -1,8 +1,6 @@
 package net.sf.persism;
 
-// todo add isXSupported methods.
-
-enum ConnectionTypes {
+enum ConnectionType {
     Oracle("%", "\"", "\""),
 
     MSSQL(null, "[", "]"),
@@ -12,7 +10,7 @@ enum ConnectionTypes {
 
     Derby(null, "\"", "\""),
 
-    H2(null, "\"", "\""),
+    H2("PUBLIC", "\"", "\""),
 
     MySQL(null, "`", "`"),
 
@@ -32,17 +30,16 @@ enum ConnectionTypes {
     ;
 
     private final String schemaPattern;
-    // todo need more than 1 but always use the 1st. We need to know if the DB supports multiple delims to skip them when parsing....
     private final String keywordStartDelimiter;
     private final String keywordEndDelimiter;
 
-    ConnectionTypes(String schemaPattern, String keywordStartDelimiter, String keywordEndDelimiter) {
+    ConnectionType(String schemaPattern, String keywordStartDelimiter, String keywordEndDelimiter) {
         this.schemaPattern = schemaPattern;
         this.keywordStartDelimiter = keywordStartDelimiter;
         this.keywordEndDelimiter = keywordEndDelimiter;
     }
 
-    public static ConnectionTypes get(String connectionUrl) {
+    public static ConnectionType get(String connectionUrl) {
         if (connectionUrl == null) {
             return null;
         }
@@ -108,5 +105,21 @@ enum ConnectionTypes {
 
     public String getKeywordEndDelimiter() {
         return keywordEndDelimiter;
+    }
+
+    public boolean supportsReadingFromClobType() {
+        return ConnectionType.H2 == this || ConnectionType.Oracle == this || ConnectionType.HSQLDB == this || ConnectionType.Derby == this;
+    }
+
+    public boolean supportsReadingFromBlobType() {
+        return ConnectionType.Oracle == this;
+    }
+
+    public boolean supportsSpacesInTableNames() {
+        return Util.isNotEmpty(this.keywordStartDelimiter);
+    }
+
+    public boolean supportsNonAutoIncGenerated() {
+        return ConnectionType.PostgreSQL == this || ConnectionType.MSSQL == this;
     }
 }

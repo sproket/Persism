@@ -4,6 +4,8 @@ import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.HashSet;
+import java.util.List;
 
 /**
  * @author Dan Howard
@@ -90,15 +92,19 @@ final class Util {
     }
 
     public static <T> boolean isRecord(Class<T> objectClass) {
-        // Java 8 test for isRecord since class.isRecord doesn't exist in Java 8
-        Class<?> sup = objectClass.getSuperclass();
-        while (!sup.equals(Object.class)) {
-            if ("java.lang.Record".equals(sup.getName())) {
-                return true;
-            }
-            sup = sup.getSuperclass();
+        return objectClass.isRecord();
+    }
+
+    public static void trimArray(String[] arr) {
+        // forget regex....
+        for (int j = 0; j < arr.length; j++) {
+            arr[j] = arr[j].trim();
         }
-        return false;
+    }
+
+    // https://stackoverflow.com/questions/1075656/simple-way-to-find-if-two-different-lists-contain-exactly-the-same-elements
+    public static <T> boolean listEqualsIgnoreOrder(List<T> list1, List<T> list2) {
+        return new HashSet<>(list1).equals(new HashSet<>(list2));
     }
 
     public static void trimArray(String[] arr) {

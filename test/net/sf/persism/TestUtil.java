@@ -7,6 +7,7 @@
 package net.sf.persism;
 
 import junit.framework.TestCase;
+import net.jodah.typetools.TypeResolver;
 import net.sf.persism.dao.Customer;
 import net.sf.persism.dao.Invoice;
 import net.sf.persism.dao.Postman;
@@ -15,6 +16,7 @@ import org.junit.Test;
 import java.lang.reflect.Field;
 import java.lang.reflect.ParameterizedType;
 import java.util.*;
+import java.util.function.BiFunction;
 
 public class TestUtil extends TestCase {
 
@@ -26,6 +28,19 @@ public class TestUtil extends TestCase {
 
     protected void tearDown() throws Exception {
         super.tearDown();
+    }
+
+
+    public void testTypeResolves() {
+        List<?> stringList = new ArrayList<String>() {
+
+        };
+        Class<?> stringType = TypeResolver.resolveRawArgument(List.class, stringList.getClass());
+        System.out.println(stringType);
+        assertEquals(stringType, String.class);
+        Customer customer = new Customer();
+
+        System.out.println(customer.getInvoices().getClass().arrayType().isAssignableFrom(Invoice.class));
     }
 
     public void testReplaceAll() {
@@ -84,13 +99,6 @@ public class TestUtil extends TestCase {
         });
     }
 
-    public void testFieldReflection() {
-        // https://docs.oracle.com/javase/tutorial/reflect/member/fieldModifiers.html
-
-        FieldModifierSpy.spy(Invoice.class, "final", "private");
-
-    }
-
     public void testMod() {
         int count = 6;
         System.out.println(count / 1);
@@ -119,10 +127,10 @@ public class TestUtil extends TestCase {
         result = String.format("a b c %o %o", 1, 2);
         log.info(result);
 
-        log.info(Messages.ObjectNotProperlyInitialized.message("Junk", "col, col2m, cop;le"));
+        log.info(Message.ObjectNotProperlyInitialized.message("Junk", "col, col2m, cop;le"));
 
-        log.warn(Messages.UnknownSQLType.message(1));
-        log.warn(Messages.ConverterValueTypeNotYetSupported.message(Types.InstantType.getJavaType()));
+        log.warn(Message.UnknownSQLType.message(1));
+        log.warn(Message.ConverterValueTypeNotYetSupported.message(JavaType.InstantType.getJavaType()));
     }
 
     public void testStringToArray() {
@@ -185,10 +193,23 @@ public class TestUtil extends TestCase {
         System.out.println(custListClass); // ?
     }
 
-    class E extends Exception {
-        @Override
-        public synchronized Throwable fillInStackTrace() {
-            return this;
-        }
+    public void testLambda() {
+
+        // https://stackoverflow.com/questions/21920039/how-do-you-assign-a-lambda-to-a-variable-in-java-8
+        Map<String, Integer> map = new HashMap<>();
+        map.put("A", 1);
+        map.put("B", 2);
+        map.put("C", 3);
+        map.compute("A", (k, v) -> v == null ? 42 : v + 41);
+
+        BiFunction<String, Integer, Integer> x = (k, v) -> v == null ? 42 : v + 41;
+        map.compute("A", x);
     }
+
+    public void testNullInKeyBox() {
+        KeyBox keyBox = new KeyBox(true, null, null, null);
+        System.out.println(keyBox);
+        System.out.println(keyBox.isAllNull());
+    }
+
 }

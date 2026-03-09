@@ -1,28 +1,35 @@
 package net.sf.persism;
 
 import junit.framework.TestCase;
+import net.jodah.typetools.TypeResolver;
 import net.sf.persism.dao.*;
 import net.sf.persism.dao.records.*;
 
+import java.io.File;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Parameter;
 import java.lang.reflect.RecordComponent;
 import java.math.BigDecimal;
+import java.nio.file.Files;
 import java.sql.Date;
 import java.sql.*;
 import java.text.DateFormat;
 import java.text.NumberFormat;
 import java.text.SimpleDateFormat;
-import java.time.*;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
 import java.util.*;
 import java.util.logging.Logger;
 
+import static net.sf.persism.Message.*;
 import static net.sf.persism.Parameters.none;
 import static net.sf.persism.Parameters.params;
 import static net.sf.persism.SQL.*;
+import static net.sf.persism.UtilsForTests.isTableInDatabase;
 
 /**
  * Comments for BaseTest go here.
@@ -38,20 +45,29 @@ public abstract class BaseTest extends TestCase {
 
     Session session;
 
-    ConnectionTypes connectionType;
+    ConnectionType connectionType;
 
     static String UUID1 = "d316ad81-946d-416b-98e3-3f3b03aa73db";
     static String UUID2 = "a0d00c5a-3de6-4ae8-ba11-e3e02c2b3a83";
+    static String UUID3 = "d0d00a5c-4de6-4ae8-ba33-f3e02c2b3a84";
 
     String COLUMN_FIRST_NAME = "FirstName";
     String COLUMN_LAST_NAME = "LastName";
 
-    protected abstract void createTables() throws SQLException;
+    protected void createTables() throws SQLException {
+        createMultiMatch("MultiMatch", connectionType);
+        createMultiMatch("Multi Match", connectionType);
+        createDepartments(connectionType);
+    }
+
 
     @Override
     protected void setUp() throws Exception {
+        log.info("LOG MODE: " + log.getLogMode() + " " + log.getLogName());
+        assertNotNull(connectionType);
         super.setUp();
     }
+
 
     @Override
     protected void tearDown() throws Exception {
@@ -60,6 +76,19 @@ public abstract class BaseTest extends TestCase {
             con.close();
         }
         super.tearDown();
+    }
+
+    public final void messageTester(String message, Runnable block) {
+        log.warn("messageTester " + message);
+        boolean fail = false;
+
+        try {
+            block.run();
+        } catch (PersismException e) {
+            assertEquals("s/b same", message, e.getMessage());
+            fail = true;
+        }
+        assertTrue(fail);
     }
 
     public void testDates() {
@@ -78,7 +107,7 @@ public abstract class BaseTest extends TestCase {
         customer.setFax("fax");
         customer.setPhone("phone");
         customer.setPostalCode("12345");
-        customer.setRegion(Regions.East);
+        customer.setRegion(Region.East);
         customer.setStatus('2');
 
         String dateOfLastOrder = "20120528000000"; //sql.date - no time in it.
@@ -101,7 +130,7 @@ public abstract class BaseTest extends TestCase {
 
         session.fetch(customer2);
 
-        if (connectionType == ConnectionTypes.SQLite || connectionType == ConnectionTypes.Oracle) {
+        if (connectionType == ConnectionType.SQLite || connectionType == ConnectionType.Oracle) {
             // SQLite does not support DATE on it's own
             // Oracle DATE also includes time so JDBC driver reports it as timestamp
         } else {
@@ -127,7 +156,7 @@ public abstract class BaseTest extends TestCase {
         // add ;sendTimeAsDateTime=false to connection string
         // https://stackoverflow.com/questions/38954422/the-data-types-time-and-datetime-are-incompatible-in-the-greater-than-or-equal-t
         // Doesn't work at all with JTDS
-        if (connectionType != ConnectionTypes.JTDS) {
+        if (connectionType != ConnectionType.JTDS) {
             LocalTime time = LocalTime.now();
             session.query(Contact.class,
                     where(":whatMiteIsIt between ? AND ?"),
@@ -180,8 +209,7 @@ public abstract class BaseTest extends TestCase {
             customer1.setDateRegistered(null);
 
             assertEquals("Customer 1 country should be CA ", "CA", customer1.getCountry());
-            assertEquals("Customer 1 date registered should be null", null, customer1.getDateRegistered());
-
+            assertNull("Customer 1 date registered should be null", customer1.getDateRegistered());
 
             session.fetch(customer1);
 
@@ -189,6 +217,7 @@ public abstract class BaseTest extends TestCase {
             // we cannot test long. Need to format a date and compare as string to the seconds or minutes because SQL does not store dates with exact accuracy
             log.info(new Date(dateRegistered) + " = ? " + new Date(customer1.getDateRegistered().getTime()));
             assertEquals("Customer 1 date registered should be more or less equal since SQL can be off by 7 millis.?", "" + new Date(dateRegistered), "" + new Date(customer1.getDateRegistered().getTime()));
+
         } catch (SQLException e) {
             log.error(e.getMessage(), e);
             fail(e.getMessage());
@@ -212,13 +241,13 @@ public abstract class BaseTest extends TestCase {
         customer.setFax("123-456-7890");
         customer.setPhone("456-678-1234");
         customer.setPostalCode("54321");
-        customer.setRegion(Regions.East);
+        customer.setRegion(Region.East);
         customer.setStatus('1');
 
         session.delete(customer); // i case it already exists.
         session.insert(customer);
 
-        customer.setRegion(Regions.North);
+        customer.setRegion(Region.North);
         session.update(customer);
 
         boolean failOnMissingProperties = false;
@@ -245,7 +274,7 @@ public abstract class BaseTest extends TestCase {
         assertEquals("list should be 1", 1, list.size());
 
         Customer c2 = list.get(0);
-        assertEquals("region s/b north ", Regions.North, c2.getRegion());
+        assertEquals("region s/b north ", Region.North, c2.getRegion());
 
         // test util date as param
         session.query(Customer.class, where("DATE_REGISTERED = ?"), params(new java.util.Date(customer.getDateRegistered().getTime())));
@@ -254,6 +283,7 @@ public abstract class BaseTest extends TestCase {
     public void testQueryResult() throws Exception {
         queryDataSetup();
 
+        // Create a query that will fail with not enough columns.
         StringBuilder sb = new StringBuilder();
         sb.append("SELECT c.Customer_ID, c.Company_Name");
         sb.append(" FROM Orders o");
@@ -283,8 +313,9 @@ public abstract class BaseTest extends TestCase {
         sql += " WHERE 1 = ?";
         log.info(sql);
 
-        // this should work now since we don't use keys() method - this should not fail any longer if I remove they keys() method
-        results = session.query(CustomerOrder.class, sql(sql), params(1));
+        // test a fetch too
+        var co2 = session.fetch(CustomerOrder.class, sql(sql), params(1));
+        assertNotNull(co2);
 
         // This should not fail - we will refresh the metadata
         results = session.query(CustomerOrder.class, sql(sql), params(1));
@@ -309,7 +340,7 @@ public abstract class BaseTest extends TestCase {
         customer.setCustomerId("1234");
         customer.setContactName("Fred");
         customer.setCompanyName("Slate Quarry");
-        customer.setRegion(Regions.East);
+        customer.setRegion(Region.East);
         customer.setStatus('1');
         customer.setAddress("123 Sesame Street");
 
@@ -325,58 +356,28 @@ public abstract class BaseTest extends TestCase {
         log.info(result);
         assertEquals("should be Fred", "Fred", result);
 
-        Integer count = session.fetch(Integer.class, sql("select count(*) from Customers where Region = ?"), params(Regions.East));
+        Integer count = session.fetch(Integer.class, sql("select count(*) from Customers where Region = ?"), params(Region.East));
         log.info("count " + count);
         assertEquals("should be 1", "1", "" + count);
 
-        fail = false;
-        try {
-            session.query(Logger.class); // this kind of shit fails too
-        } catch (PersismException e) {
-            fail = true;
-            assertEquals("s/b 'Could not determine a table for type: java.util.logging.Logger Guesses were: [Logger, Loggers]'",
-                    "Could not determine a table for type: java.util.logging.Logger Guesses were: [Logger, Loggers]",
-                    e.getMessage());
-        }
-        assertTrue(fail);
+        // Arbitrary object query for table non in db.
+        messageTester("Could not determine a table for type: java.util.logging.Logger Guesses were: [Logger, Loggers]",
+                () -> session.query(Logger.class));
 
-        // Test Query on NotTable with no SQL provided
-        fail = false;
-        try {
-
-            session.query(CustomerOrder.class, params("junk"));
-        } catch (PersismException e) {
-            fail = true;
-            assertEquals("s/b class net.sf.persism.dao.CustomerOrder: QUERY w/o specifying the SQL operation not supported for @NotTable classes",
-                    "class net.sf.persism.dao.CustomerOrder: QUERY w/o specifying the SQL operation not supported for @NotTable classes",
-                    e.getMessage());
-        }
-        assertTrue(fail);
+        messageTester("class net.sf.persism.dao.CustomerOrder: QUERY w/o specifying the SQL operation not supported for @NotTable classes",
+                () -> session.query(CustomerOrder.class, params("junk")));
 
         // Test Fetch on NotTable with no SQL provided
-        fail = false;
-        try {
-
-            session.fetch(CustomerOrder.class, params("junk"));
-        } catch (PersismException e) {
-            fail = true;
-            assertEquals("s/b class net.sf.persism.dao.CustomerOrder: FETCH w/o specifying the SQL operation not supported for @NotTable classes",
-                    "class net.sf.persism.dao.CustomerOrder: FETCH w/o specifying the SQL operation not supported for @NotTable classes",
-                    e.getMessage());
-        }
-        assertTrue(fail);
+        messageTester("class net.sf.persism.dao.CustomerOrder: FETCH w/o specifying the SQL operation not supported for @NotTable classes",
+                () -> session.fetch(CustomerOrder.class, params("junk")));
 
         // Test simple object Fetch with NotTable
-        fail = false;
-        try {
-            session.fetch(customerOrder);
-        } catch (PersismException e) {
-            fail = true;
-            assertEquals("s/b class net.sf.persism.dao.CustomerOrder: FETCH operation not supported for @NotTable classes",
-                    "class net.sf.persism.dao.CustomerOrder: FETCH operation not supported for @NotTable classes",
-                    e.getMessage());
-        }
-        assertTrue(fail);
+        messageTester("class net.sf.persism.dao.CustomerOrder: FETCH operation not supported for @NotTable classes",
+                () -> session.fetch(customerOrder));
+
+        messageTester("class net.sf.persism.dao.CustomerInvoice: FETCH operation not supported for Views", () -> session.fetch(new CustomerInvoice()));
+
+        messageTester("WHERE clause not supported for Queries (using @NotTable). If this is a View annotate the class as @View", () -> session.fetch(CustomerOrder.class, where("1=1")));
 
         List<CustomerRec> customerRecs = session.query(CustomerRec.class);
         assertTrue(customerRecs.size() > 0);
@@ -384,9 +385,19 @@ public abstract class BaseTest extends TestCase {
         CustomerRec crec = session.fetch(CustomerRec.class, params(customerRecs.get(0).customerId()));
         assertNotNull(crec);
 
-        CustomerRec crec2 = new CustomerRec(crec.customerId(), crec.companyName(), crec.contactName(), 'x');
+        CustomerRec crec2 = new CustomerRec('x', crec.customerId(), crec.companyName(), crec.contactName());
         Result<CustomerRec> res = session.update(crec2);
         log.warn(res);
+    }
+
+    public void testJoinsCustomer() {
+        queryDataSetup();
+
+        var customer = session.fetch(Customer.class, where(":customerId = ?"), params("123"));
+        assertNotNull(customer);
+        System.out.println("***********************************************************");
+        var customers = session.query(Customer.class, where(":customerId IS NOT NULL"));
+        assertTrue(customers.size() > 0);
     }
 
     public void testJoinsParentFetch() throws SQLException {
@@ -408,8 +419,8 @@ public abstract class BaseTest extends TestCase {
         var customerRec = session.fetch(CustomerRec.class, where(":customerId = ?"), params);
         assertNotNull(customerRec);
 
-        invoices = customerRec.invoices();
-        assertEquals(2, invoices.size());
+        var invoices2 = customerRec.invoices();
+        assertEquals(2, invoices2.size());
 
 
         InvoiceLineItem invoiceLineItem = session.fetch(InvoiceLineItem.class, params(1));
@@ -418,16 +429,9 @@ public abstract class BaseTest extends TestCase {
         assertNotNull(invoiceLineItem);
         assertNotNull(invoiceLineItem.getProduct());
 
-
-        // this should fail miserably
-        boolean fail = false;
-        try {
-            InvoiceLineItemRec invoiceLineItemRec = session.fetch(InvoiceLineItemRec.class, params(1));
-        } catch (PersismException e) {
-            fail = true;
-            assertEquals("msg s/b ?", "Can not set final net.sf.persism.dao.Product field net.sf.persism.dao.records.InvoiceLineItemRec.product to net.sf.persism.dao.Product", e.getMessage());
-        }
-        assertTrue(fail);
+        // this should fail miserably as we can't set fields on records
+        messageTester("Can not set final net.sf.persism.dao.Product field net.sf.persism.dao.records.InvoiceLineItemRec.product to net.sf.persism.dao.Product",
+                () -> session.fetch(InvoiceLineItemRec.class, params(1)));
     }
 
     public void testJoinsParentQuery() throws SQLException {
@@ -444,13 +448,17 @@ public abstract class BaseTest extends TestCase {
         assertEquals(2, list2.size());
         assertEquals(2, list2.get(0).invoices().size());
         assertEquals(0, list2.get(1).invoices().size());
+        var invoices = list1.get(0).getInvoices();
+        var invoice = invoices.stream().filter(invoice1 -> invoice1.getInvoiceId() == 1).findFirst().get();
+        assertNotNull(invoice.getLineItems().get(0).getProduct());
+    }
 
-        assertNotNull(list1.get(0).getInvoices().get(0).getLineItems().get(0).getProduct());
+    public void testUnknownConnectionType() throws Exception {
+        Class.forName("org.xbib.jdbc.csv.CsvDriver");
 
-        // todo parse for child property name if there's an alias. The "i" needs to match the alias specified in the annotation THIS WONT REALLY WORK
-        // session.query(Customer.class, where(":contactName=? and (:i.quantity > ? or :city=?)"), params("Fred", 10, "MTL"));
-
-
+        var con = DriverManager.getConnection("jdbc:xbib:csv:" + System.getProperty("user.home"));
+        Session session2 = new Session(con);
+        assertNotNull(session2);
     }
 
     public void testSelectMultipleByPrimaryKey() throws SQLException {
@@ -465,6 +473,11 @@ public abstract class BaseTest extends TestCase {
 
         assertEquals("should be 2 ", 2, orders.size());
 
+        orders = session.query(Order.class, params(2, 3));
+        assertEquals("should be 2 ", 2, orders.size());
+
+        orders = session.query(Order.class, params(2, 3, 1, 4));
+        assertEquals("should be 4 ", 4, orders.size());
 
     }
 
@@ -543,13 +556,11 @@ public abstract class BaseTest extends TestCase {
         boolean failed = false;
 
         try {
-            var fail1 = session.query(CustomerOrderGarbage.class, sql(sql));
+            session.query(CustomerOrderGarbage.class, sql(sql));
         } catch (PersismException e) {
             // should fail since there are other properties on CustomerOrderGarbage not referenced by the query AND we don't do anything with @NotColumn
-            log.error(e.getMessage());
-            assertTrue("startswith",
-                    e.getMessage().startsWith("findConstructor: Could not find a constructor for class: class net.sf.persism.dao.records.CustomerOrderGarbage"));
-            // todo older message was more informative. findConstructor should have some way to provide more info on what's wrong.
+            log.error(e.getMessage(), e);
+            assertEquals("s/b eq", CouldNotFindConstructorForRecord.message(CustomerOrderGarbage.class.getName(), "[customerId]"), e.getMessage());
             failed = true;
         }
         // This will fail if we compile with -parameters
@@ -567,21 +578,398 @@ public abstract class BaseTest extends TestCase {
         // should fail will no appropriate constructor
         // DOESNT FAIL - IGNORES ALL OTHER COLUMNS. WTF
         try {
-            var fail2 = session.query(CustomerOrderGarbage.class, sql(sql));
-
+            session.query(CustomerOrderGarbage.class, sql(sql));
         } catch (PersismException e) {
             // should fail since there are other properties on CustomerOrderGarbage not referenced by the query AND we don't do anything with @NotColumn
             // AND we can't match these property names
-            log.error(e.getMessage());
-            assertTrue("startswith",
-                    e.getMessage().startsWith("findConstructor: Could not find a constructor for class: class net.sf.persism.dao.records.CustomerOrderGarbage"));
+            log.error(e.getMessage(), e);
+            assertEquals("s/b eq", CouldNotFindConstructorForRecord.message(CustomerOrderGarbage.class.getName(), "[customerId]"), e.getMessage());
             failed = true;
         }
         assertTrue(failed);
     }
 
+    public void testMessages() throws Exception {
+        String sd = connectionType.getKeywordStartDelimiter();
+        String ed = connectionType.getKeywordEndDelimiter();
+        String sql;
+        boolean fail;
 
-    private void queryDataSetup() throws SQLException {
+        Product product = new Product(4, "test", 10.00);
+        product.setBadNumber(new BigDecimal("10"));
+        session.insert(product);
+
+        session.query(Product.class); // should work
+
+        var info = session.metaData.getTableInfo(Product.class);
+        // set this to something junk
+        sql = "UPDATE " + info.name() + " SET BADNUMBER=? WHERE ID=?";
+        session.helper.execute(sql, "NAN JUNK", product.getId());
+
+        fail = false;
+        // should fail with NumberFormatException
+        try {
+            session.query(Product.class);
+        } catch (Exception e) {
+            log.error(e.getMessage(), e);
+            fail = true;
+            assertEquals("s/b number format exception",
+                    NumberFormatException.message("BADNUMBER", BigDecimal.class, String.class, "NAN JUNK").toLowerCase(),
+                    e.getMessage().toLowerCase());
+        }
+        assertTrue(fail);
+
+        sql = "UPDATE " + info.name() + " SET BADDATE=?, BADNUMBER=? WHERE ID=?";
+        session.helper.execute(sql, "NAD JUNK", "0", product.getId());
+
+        fail = false;
+        // should fail with DateFormatException
+        try {
+            session.query(Product.class);
+        } catch (Exception e) {
+            log.error(e.getMessage(), e);
+            fail = true;
+            assertEquals("s/b date format exception",
+                    DateFormatException.message("Unparseable date: \"NAD JUNK\"", "BADDATE",
+                            java.util.Date.class, String.class, "NAD JUNK").toLowerCase(),
+                    e.getMessage().toLowerCase());
+        }
+        assertTrue(fail);
+
+        sql = "UPDATE " + info.name() + " SET BADTIMESTAMP=?, BADDATE=?, BADNUMBER=? WHERE ID=?";
+        session.helper.execute(sql, "NAD JUNK", null, "0", product.getId());
+
+        fail = false;
+        // should fail with DateFormatException
+        try {
+            session.query(Product.class);
+        } catch (Exception e) {
+            log.error(e.getMessage(), e);
+            fail = true;
+            assertEquals("s/b date format exception",
+                    DateFormatException.message("Timestamp format must be yyyy-mm-dd hh:mm:ss[.fffffffff]", "BADTIMESTAMP", Timestamp.class, String.class, "NAD JUNK").toLowerCase(),
+                    e.getMessage().toLowerCase());
+        }
+        assertTrue(fail);
+
+        // throw new PersismException(Messages.ReadRecordColumnNotFound.message(objectClass, col));
+
+        RecordTest2 rt2 = new RecordTest2(0, "test 1", 10, 3.99, LocalDateTime.now());
+        session.insert(rt2);
+
+        fail = false;
+        // should fail with ReadRecordColumnNotFound
+        try {
+            session.query(RecordTest2.class, SQL.sql("select description, qty, price FROM RecordTest2"));
+        } catch (Exception e) {
+            log.error(e.getMessage(), e);
+            fail = true;
+            assertEquals("s/b ReadRecordColumnNotFound exception",
+                    ReadRecordColumnNotFound.message(RecordTest2.class, "ID").toLowerCase(),
+                    e.getMessage().toLowerCase());
+        }
+        assertTrue(fail);
+
+        // TableHasNoPrimaryKeys
+        TableInfo table = session.metaData.getTableInfo(CorporateHoliday.class);
+        CorporateHoliday holiday = new CorporateHoliday("-99", "blah", LocalDate.now());
+        session.insert(holiday);
+
+        messageTester(TableHasNoPrimaryKeys.message("FETCH", table.name()), () -> session.fetch(holiday));
+
+        messageTester(TableHasNoPrimaryKeysForWhere.message(table.name()), () -> session.fetch(CorporateHoliday.class, params(1, 2, 3)));
+
+        messageTester("class net.sf.persism.dao.CustomerInvoice: FETCH w/o specifying the SQL with @View operation not supported for Views", () -> session.fetch(CustomerInvoice.class, params(1, 2, 3)));
+
+        messageTester("class java.lang.String: QUERY w/o specifying the SQL operation not supported for Java types", () -> session.query(String.class));
+
+        messageTester("class java.lang.String: QUERY operation not supported for Java types", () -> session.query(String.class, params(1, 2, 3)));
+
+        var tableInfo = session.metaData.getTableInfo(TableNoPrimary.class);
+        messageTester("Cannot perform QUERY - " + tableInfo + " has no primary keys", () -> session.query(TableNoPrimary.class, params(1, 2, 3)));
+
+        messageTester("Cannot perform DELETE - " + tableInfo + " has no primary keys", () -> session.delete(TableNoPrimary.class, params(1, 2, 3)));
+
+        if (connectionType != ConnectionType.Informix) {
+            // Informix doesn't allow a manually specified primary on the POJO
+            // Error In Specifying Automatically (Server) Generated Keys.
+            fail = false;
+            Postman postman = null;
+            try {
+                postman = new Postman().host("host").port(1).user("dan").password("123");
+                session.insert(postman);
+            } catch (PersismException e) {
+                log.error(e.getMessage(), e);
+                assertEquals("s/b EQUAL ", ClassHasNoGetterForProperty.message(Postman.class, "missingGetter"), e.getMessage());
+                fail = true;
+            }
+            assertTrue(fail);
+
+            fail = false;
+            // insert has the check - so we'll insert outside and test query
+            sql = session.metaData.getInsertStatement(postman, con);
+            System.out.println(sql);
+            session.helper.execute(sql, "host", 1, "dan", "123", 456);
+            try {
+                session.query(Postman.class);
+            } catch (PersismException e) {
+                log.error(e.getMessage(), e);
+                assertEquals("s/b EQUAL ", ClassHasNoGetterForProperty.message(Postman.class, "missingGetter"), e.getMessage());
+                fail = true;
+            }
+            assertTrue(fail);
+        }
+
+        if (connectionType.supportsNonAutoIncGenerated()) {
+            CustomerFail customer = new CustomerFail();
+            customer.setCompanyName("abc inc");
+            session.insert(customer);
+            System.out.println("ASS! *********** " + customer.customerId());
+            assertNotNull(customer.customerId());
+        } else {
+            fail = false;
+            try {
+                CustomerFail customer = new CustomerFail();
+                customer.setCompanyName("abc inc");
+                session.insert(customer);
+            } catch (PersismException e) {
+                log.error(e.getMessage(), e);
+                assertEquals("s/b EQUAL ", NonAutoIncGeneratedNotSupported.message(), e.getMessage());
+                fail = true;
+            }
+            assertTrue(fail);
+        }
+
+        fail = false;
+        try {
+            CustomerFail2 customer2 = new CustomerFail2();
+            customer2.setCompanyName("abc inc");
+            session.insert(customer2);
+        } catch (PersismException e) {
+            log.error(e.getMessage(), e);
+            assertEquals("s/b EQUAL ", CouldNotFindTableNameInTheDatabase.message("CustomerTABLEDOESNTEXIST", CustomerFail2.class.getName()), e.getMessage());
+            fail = true;
+        }
+        assertTrue(fail);
+
+        fail = false;
+        try {
+            session.query(CustomerInvoiceFail.class);
+        } catch (PersismException e) {
+            log.error(e.getMessage(), e);
+            assertEquals("s/b EQUAL ", CouldNotFindViewNameInTheDatabase.message("NOVIEWNAMEDCustomerInvoiceFail", CustomerInvoiceFail.class.getName()), e.getMessage());
+            fail = true;
+        }
+        assertTrue(fail);
+
+        fail = false;
+        try {
+            session.query(CustomerInvoiceFail2.class);
+        } catch (PersismException e) {
+            log.error(e.getMessage(), e);
+            assertEquals("s/b EQUAL ",
+                    CouldNotDetermineTableOrViewForType.message("view",
+                            CustomerInvoiceFail2.class.getName(),
+                            "[CustomerInvoiceFail2, CustomerInvoiceFail2s, Customer Invoice Fail2, Customer_Invoice_Fail2, Customer Invoice Fail2s, Customer_Invoice_Fail2s]"),
+                    e.getMessage());
+            fail = true;
+        }
+        assertTrue(fail);
+
+        fail = false;
+        try {
+            session.fetch("");
+        } catch (PersismException e) {
+            log.error(e.getMessage(), e);
+            assertEquals("s/b EQUAL ",
+                    OperationNotSupportedForJavaType.message(String.class, "FETCH"), e.getMessage());
+            fail = true;
+        }
+        assertTrue(fail);
+
+        fail = false;
+        try {
+            session.fetch(new CustomerRec('a', "123", "name", "contact"));
+        } catch (PersismException e) {
+            log.error(e.getMessage(), e);
+            assertEquals("s/b EQUAL ",
+                    OperationNotSupportedForRecord.message(CustomerRec.class, "FETCH"), e.getMessage());
+            fail = true;
+        }
+        assertTrue(fail);
+
+        queryDataSetup();
+
+        fail = false;
+        try {
+            session.query(InvoiceFail2.class);
+        } catch (PersismException e) {
+            log.error(e.getMessage(), e);
+            assertEquals("s/b EQUAL ",
+                    CannotNotJoinToNullProperty.message("lineItems"), e.getMessage());
+            fail = true;
+        }
+        assertTrue(fail);
+
+        fail = false;
+        try {
+            session.query(InvoiceFail3.class);
+        } catch (PersismException e) {
+            log.error(e.getMessage(), e);
+            assertEquals("s/b EQUAL ",
+                    PropertyNotFoundForJoin.message("invoice0d", InvoiceFail3.class), e.getMessage());
+            fail = true;
+        }
+        assertTrue(fail);
+
+
+        // Create 2 tables to match on table search which should fail
+        if (session.metaData.getConnectionType().supportsSpacesInTableNames()) {
+            fail = false;
+            try {
+
+                session.query(MultiMatch.class);
+
+            } catch (PersismException e) {
+                fail = true;
+
+                String message = CouldNotDetermineTableOrViewForTypeMultipleMatches.
+                        message("table", MultiMatch.class.getName(),
+                                "[multimatch, multimatchs, multi match, multi_match, multi matchs, multi_matchs]",
+                                "[Multi match, MultiMatch]").toLowerCase();
+
+                assertEquals("S/B equal", message, e.getMessage().toLowerCase());
+            }
+            assertTrue(fail);
+        }
+    }
+
+    private void createMultiMatch(String tableName, ConnectionType connectionType) throws SQLException {
+        String sd = connectionType.getKeywordStartDelimiter();
+        String ed = connectionType.getKeywordEndDelimiter();
+
+        String sql;
+        if (isTableInDatabase(connectionType.getSchemaPattern(), tableName, con)) {
+            executeCommand("DROP TABLE " + sd + tableName + ed, con);
+        }
+        sql = "CREATE TABLE " + sd + tableName + ed + "(\n" +
+              "    ID int ,\n" +
+              "    Name VARCHAR(10) \n" +
+              "    )\n";
+        executeCommand(sql, con);
+    }
+
+
+    /**
+     * this version should work for most DBs if not override it.
+     *
+     * @param connectionType which type
+     * @throws SQLException
+     */
+    void createDepartments(ConnectionType connectionType) throws SQLException {
+
+        String sd = connectionType.getKeywordStartDelimiter();
+        String ed = connectionType.getKeywordEndDelimiter();
+
+
+        try {
+            executeCommand("DROP TABLE " + sd + "DEPARTMENT" + ed, con);
+        } catch (Exception e) {
+            System.out.println(e); // JUST ^&%&^% DROP 1
+        }
+
+
+        String sql;
+        String tableName = "DEPARTMENTS";
+        if (isTableInDatabase(connectionType.getSchemaPattern(), tableName, con)) {
+            executeCommand("DROP TABLE " + sd + tableName + ed, con);
+        }
+
+        sql = "CREATE TABLE " + sd + tableName + ed + "( ";
+        sql += """
+                   ID INT,
+                   NAME VARCHAR(20),
+                   ACTIVE BIT,
+                   SOME_TYPE char(1)
+                )
+                """;
+
+        switch (connectionType) {
+            case Oracle -> sql = sql.replace("BIT", "NUMBER(3)");
+            case MSSQL -> {
+            }
+            case JTDS -> {
+            }
+            case Derby -> sql = sql.replace("BIT", "BOOLEAN");
+            case H2 -> {
+            }
+            case MySQL -> {
+            }
+            case PostgreSQL -> sql = sql.replace("BIT", "BOOLEAN");
+
+            case SQLite -> {
+            }
+            case Firebird -> sql = sql.replace("BIT", "BOOLEAN");
+            case HSQLDB -> {
+            }
+            case UCanAccess -> {
+            }
+            case Informix -> sql = sql.replace("BIT", "CHAR(1)");
+            case Other -> {
+            }
+        }
+        log.warn("createDepartments:" + sql);
+        executeCommand(sql, con);
+    }
+
+
+    public void testTableNoPrimary() {
+        TableNoPrimary junk = new TableNoPrimary();
+        junk.setId(1);
+        junk.setName("JUNK");
+
+        // This should work OK
+        session.insert(junk);
+
+        log.info(session.query(TableNoPrimary.class, sql("SELECT * FROM " + session.metaData.getTableInfo(TableNoPrimary.class).name())));
+
+        boolean shouldFail = false;
+
+        junk.setName("NO WORKEE!");
+        try {
+            session.update(junk);
+        } catch (PersismException e) {
+            shouldFail = true;
+            assertEquals("Message s/b eq",
+                    Message.TableHasNoPrimaryKeys.message("UPDATE", "TableNoPrimary").toLowerCase(),
+                    e.getMessage().toLowerCase());
+        }
+        assertTrue(shouldFail);
+
+        shouldFail = false;
+        try {
+            session.fetch(junk);
+        } catch (PersismException e) {
+            shouldFail = true;
+            assertEquals("Message s/b eq",
+                    Message.TableHasNoPrimaryKeys.message("FETCH", "TableNoPrimary").toLowerCase(),
+                    e.getMessage().toLowerCase());
+        }
+        assertTrue(shouldFail);
+
+        shouldFail = false;
+        try {
+            session.delete(junk);
+        } catch (PersismException e) {
+            shouldFail = true;
+            assertEquals("Message s/b eq",
+                    Message.TableHasNoPrimaryKeys.message("DELETE", "TableNoPrimary").toLowerCase(),
+                    e.getMessage().toLowerCase());
+        }
+        assertTrue(shouldFail);
+    }
+
+    final void queryDataSetup() {
 
         Invoice invoice1 = new Invoice();
         invoice1.setCustomerId("123");
@@ -635,6 +1023,7 @@ public abstract class BaseTest extends TestCase {
         Customer c2 = new Customer();
         c2.setCustomerId("456");
         c2.setCompanyName("XYZ INC");
+        c2.setContactName("Fred Flintstone");
         c2.setStatus('1');
         session.insert(c2);
 
@@ -692,7 +1081,7 @@ public abstract class BaseTest extends TestCase {
         customer.setFax("123-456-7890");
         customer.setPhone("456-678-1234");
         customer.setPostalCode("54321");
-        customer.setRegion(Regions.East);
+        customer.setRegion(Region.East);
         customer.setStatus('2');
 
 
@@ -794,8 +1183,6 @@ public abstract class BaseTest extends TestCase {
         contact.setLastModified(Timestamp.valueOf(ldt2));
         contact.setWhatTimeIsIt(Time.valueOf(ldt3.toLocalTime()));
         contact.setWhatMiteIsIt(contact.getWhatTimeIsIt().toLocalTime());
-        contact.setTestInstant(ldt4.toInstant(ZoneOffset.UTC));
-        contact.setTestInstant2(ldt4.toInstant(ZoneOffset.UTC));
         contact.setSomeDate(date);
         return contact;
     }
@@ -812,26 +1199,34 @@ public abstract class BaseTest extends TestCase {
         invoice.setActualPrice(BigDecimal.valueOf(9.99d));
         invoice.setStatus((char) 1);
         session.insert(invoice);
-        Customer customer1 = session.fetch(Customer.class, "SELECT * FROM Customers WHERE Company_Name = ?", "ABC Inc");
+        Customer customer1 = session.fetch(Customer.class, sql("SELECT * FROM Customers WHERE Company_Name = ?"), params("ABC Inc"));
         assertNotNull(customer1);
-        CustomerInvoice customerInvoice = session.fetch(CustomerInvoice.class, "SELECT * FROM CustomerInvoice WHERE Company_Name = ?", "ABC Inc");
+        CustomerInvoice customerInvoice = session.fetch(CustomerInvoice.class, sql("SELECT * FROM CustomerInvoice WHERE Company_Name = ?"), params("ABC Inc"));
         assertNotNull(customerInvoice);
 
-        CustomerInvoiceRec customerInvoiceRec = session.fetch(CustomerInvoiceRec.class, "SELECT * FROM CustomerInvoice WHERE Company_Name = ?", "ABC Inc");
+        CustomerInvoiceRec customerInvoiceRec = session.fetch(CustomerInvoiceRec.class, sql("SELECT * FROM CustomerInvoice WHERE Company_Name = ?"), params("ABC Inc"));
         assertNotNull(customerInvoiceRec);
 
-        CustomerInvoiceTestView customerInvoiceTestView = session.fetch(CustomerInvoiceTestView.class, "SELECT * FROM CustomerInvoice WHERE Company_Name = ?", "ABC Inc");
+        CustomerInvoiceTestView customerInvoiceTestView = session.fetch(CustomerInvoiceTestView.class, sql("SELECT * FROM CustomerInvoice WHERE Company_Name = ?"), params("ABC Inc"));
         List<CustomerInvoiceTestView> list2 = session.query(CustomerInvoiceTestView.class);
 
         assertNotNull(customerInvoiceTestView);
         assertTrue(list2.size() > 0);
+
+
+        if (connectionType.supportsNonAutoIncGenerated()) {
+            Customer customer2 = new Customer();
+            customer.setCompanyName("abc inc");
+            session.insert(customer2);
+            assertNotNull(customer2.getCustomerId());
+        }
 
         boolean fail = false;
         try {
             session.insert(customerInvoiceTestView);
         } catch (PersismException e) {
             fail = true;
-            assertEquals("s/b", Messages.OperationNotSupportedForView.message(customerInvoiceTestView.getClass(), "Insert"), e.getMessage());
+            assertEquals("s/b", Message.OperationNotSupportedForView.message(customerInvoiceTestView.getClass(), "INSERT"), e.getMessage());
         }
         assertTrue(fail);
 
@@ -840,7 +1235,7 @@ public abstract class BaseTest extends TestCase {
             session.update(customerInvoiceTestView);
         } catch (PersismException e) {
             fail = true;
-            assertEquals("s/b", Messages.OperationNotSupportedForView.message(customerInvoiceTestView.getClass(), "Update"), e.getMessage());
+            assertEquals("s/b", Message.OperationNotSupportedForView.message(customerInvoiceTestView.getClass(), "UPDATE"), e.getMessage());
         }
         assertTrue(fail);
 
@@ -849,7 +1244,7 @@ public abstract class BaseTest extends TestCase {
             session.delete(customerInvoiceTestView);
         } catch (PersismException e) {
             fail = true;
-            assertEquals("s/b", Messages.OperationNotSupportedForView.message(customerInvoiceTestView.getClass(), "Delete"), e.getMessage());
+            assertEquals("s/b", Message.OperationNotSupportedForView.message(customerInvoiceTestView.getClass(), "DELETE"), e.getMessage());
         }
         assertTrue(fail);
 
@@ -862,7 +1257,7 @@ public abstract class BaseTest extends TestCase {
 
             fail = true;
             assertEquals("s/b",
-                    Messages.OperationNotSupportedForNotTableQuery.message(CustomerInvoiceResult.class, "QUERY w/o specifying the SQL"),
+                    Message.OperationNotSupportedForNotTableQuery.message(CustomerInvoiceResult.class, "QUERY w/o specifying the SQL"),
                     e.getMessage());
         }
         assertTrue(fail);
@@ -880,16 +1275,15 @@ public abstract class BaseTest extends TestCase {
         invoice.setStatus((char) 1);
         session.insert(invoice);
 
-        customerInvoice = session.fetch(CustomerInvoice.class, where(":companyName = ?"), params("ABC Inc"));
-        List<CustomerInvoice> list = session.query(CustomerInvoice.class);
-        list = session.query(CustomerInvoice.class, where(":companyName = ?"), params("ABC Inc"));
-        list = session.query(CustomerInvoice.class, sql("SELECT * FROM CustomerInvoice"));
+        session.fetch(CustomerInvoice.class, where(":companyName = ?"), params("ABC Inc"));
+        session.query(CustomerInvoice.class);
+        session.query(CustomerInvoice.class, where(":companyName = ?"), params("ABC Inc"));
+        session.query(CustomerInvoice.class, sql("SELECT * FROM CustomerInvoice"));
 
         customerInvoiceTestView = session.fetch(CustomerInvoiceTestView.class, where(":companyName = ?"), params("ABC Inc"));
-        list2 = session.query(CustomerInvoiceTestView.class);
-        list2 = session.query(CustomerInvoiceTestView.class, where(":companyName = ?"), params("ABC Inc"));
-        list2 = session.query(CustomerInvoiceTestView.class, sql("SELECT * FROM CustomerInvoice"));
-
+        session.query(CustomerInvoiceTestView.class);
+        session.query(CustomerInvoiceTestView.class, where(":companyName = ?"), params("ABC Inc"));
+        session.query(CustomerInvoiceTestView.class, sql("SELECT * FROM CustomerInvoice"));
 
         assertNotNull(customerInvoiceTestView);
 
@@ -898,7 +1292,7 @@ public abstract class BaseTest extends TestCase {
             session.insert(customerInvoiceTestView); // not supported error
         } catch (PersismException e) {
             log.info(e.getMessage());
-            assertEquals("s/b Operation not supported for Views.", Messages.OperationNotSupportedForView.message(customerInvoiceTestView.getClass(), "Insert"), e.getMessage());
+            assertEquals("s/b Operation not supported for Views.", Message.OperationNotSupportedForView.message(customerInvoiceTestView.getClass(), "INSERT"), e.getMessage());
             fail = true;
         }
         assertTrue(fail);
@@ -908,7 +1302,7 @@ public abstract class BaseTest extends TestCase {
             session.update(customerInvoiceTestView);
         } catch (PersismException e) {
             log.info(e.getMessage());
-            assertEquals("s/b Operation not supported for Views.", Messages.OperationNotSupportedForView.message(customerInvoiceTestView.getClass(), "Update"), e.getMessage());
+            assertEquals("s/b Operation not supported for Views.", Message.OperationNotSupportedForView.message(customerInvoiceTestView.getClass(), "UPDATE"), e.getMessage());
             fail = true;
         }
         assertTrue(fail);
@@ -918,7 +1312,7 @@ public abstract class BaseTest extends TestCase {
             session.delete(customerInvoiceTestView);
         } catch (PersismException e) {
             log.info(e.getMessage());
-            assertEquals("s/b Operation not supported for Views.", Messages.OperationNotSupportedForView.message(customerInvoiceTestView.getClass(), "Delete"), e.getMessage());
+            assertEquals("s/b Operation not supported for Views.", Message.OperationNotSupportedForView.message(customerInvoiceTestView.getClass(), "DELETE"), e.getMessage());
             fail = true;
         }
         assertTrue(fail);
@@ -928,13 +1322,13 @@ public abstract class BaseTest extends TestCase {
             session.insert(customerInvoiceTestView);
         } catch (PersismException e) {
             log.info(e.getMessage());
-            assertEquals("s/b Operation not supported for Views.", Messages.OperationNotSupportedForView.message(customerInvoiceTestView.getClass(), "Upsert"), e.getMessage());
+            assertEquals("s/b Operation not supported for Views.", Message.OperationNotSupportedForView.message(customerInvoiceTestView.getClass(), "INSERT"), e.getMessage());
             fail = true;
         }
         assertTrue(fail);
 
         // old call
-        List<CustomerInvoiceResult> results = session.query(CustomerInvoiceResult.class, "SELECT * FROM CustomerInvoice");
+        List<CustomerInvoiceResult> results = session.query(CustomerInvoiceResult.class, sql("SELECT * FROM CustomerInvoice"));
         log.info(results);
 
         // todo CustomerInvoiceResult with named parameters YES TODO
@@ -944,52 +1338,50 @@ public abstract class BaseTest extends TestCase {
             // should fail with WHERE clause not supported
             List<CustomerOrder> junk = session.query(CustomerOrder.class, where(":customerId = ?"), params("x"));
         } catch (PersismException e) {
-            assertEquals("message should be WHERE clause not supported...", Messages.WhereNotSupportedForNotTableQueries.message(), e.getMessage());
+            assertEquals("message should be WHERE clause not supported...", Message.WhereNotSupportedForNotTableQueries.message(), e.getMessage());
             fail = true;
         }
         assertTrue(fail);
 
-        // now lets try query with property names - total fail....
-        // can only work MAYBE with view
-        // select * seems to return SQL itself as col 1?
-        // Customer_ID, Company_Name, Invoice_ID, Status, DateCreated, PAID, Quantity
-        String sql =
-                """
-                            SELECT * FROM CUSTOMERINVOICE
-                        """;
-        list = session.query(CustomerInvoice.class, sql(sql), none());
-        sql = """
-                        SELECT Customer_ID, Company_Name, Invoice_ID, Status, DateCreated, PAID, Quantity FROM CUSTOMERINVOICE
-                """;
-        list = session.query(CustomerInvoice.class, sql(sql), none());
+        session.query(CustomerInvoice.class, none());
+
+        var customerInvoiceView = session.metaData.getTableInfo(CustomerInvoice.class).name();
+
+        String sql = "SELECT * FROM " + customerInvoiceView;
+
+        session.query(CustomerInvoice.class, sql(sql), none());
+        sql = "SELECT Customer_ID, Company_Name, Invoice_ID, Status, DateCreated, PAID, Quantity FROM " + customerInvoiceView;
+
+        session.query(CustomerInvoice.class, sql(sql), none());
 
         // we ARE NOT supporting property names for general SQL. Not really worth it. - YES IT IS! NO IT ISNT!
         fail = false;
         try {
-            sql = """
-                    SELECT :customerId, :companyName, :invoiceId, :status, :dateCreated, :paid, :quantity
-                    FROM "CUSTOMERINVOICE"
-                    """;
-            list = session.query(CustomerInvoice.class, sql(sql), none());
+            sql = "SELECT :customerId, :companyName, :invoiceId, :status, :dateCreated, :paid, :quantity FROM " + customerInvoiceView;
+
+            session.query(CustomerInvoice.class, sql(sql), none());
 
         } catch (PersismException e) {
             // message would be different for different DBS.
-            log.warn(e.getMessage(), e);
+            log.info(e.getMessage(), e);
             fail = true;
         }
         assertTrue(fail);
-
-
     }
 
     public void testContactTable() throws SQLException {
 
         Contact contact = getContactForTest();
 
-        log.info("Local Date: " + ldt4 + " INSTANT: " + contact.getTestInstant());
-        log.info("Local Date: " + LocalDateTime.now() + " INSTANT: " + Instant.now());
+        assertNotNull(contact.getIdentity());
 
         assertEquals("expect 1", 1, session.insert(contact).rows());
+
+        assertNotNull(contact.getIdentity());
+
+        // query back with the identity UUID
+        Contact resultX = session.fetch(Contact.class, params(identity));
+        assertNotNull(resultX);
 
         contact.setNotes(null);
         assertEquals("expect 1", 1, session.update(contact).rows());
@@ -1000,6 +1392,22 @@ public abstract class BaseTest extends TestCase {
         assertNotNull(contact2.getPartnerId());
         assertEquals(contact2.getIdentity(), identity);
         assertEquals(contact2.getPartnerId(), partnerId);
+
+        contact2 = new Contact();
+        contact2.setIdentity(UUID.fromString(UUID3));
+        contact2.setPartnerId(partnerId);
+        contact2.setContactName("test 2");
+        contact2.setFirstname("wilma");
+        contact2.setLastname("flintstone");
+        contact2.setCompany("compaty");
+        contact2.setType("X");
+        session.insert(contact2);
+
+        // test query with primary params
+        var list = session.query(Contact.class, params(UUID.fromString(UUID1), UUID.fromString(UUID2), UUID.fromString(UUID3)));
+        assertEquals("list should be 2", 2, list.size());
+        session.delete(contact2);
+
 
         contact.setDivision("Y");
         assertEquals("1 update?", 1, session.update(contact).rows());
@@ -1014,6 +1422,14 @@ public abstract class BaseTest extends TestCase {
         Contact contact1 = contacts.get(0);
         log.info("CONTACT: " + contact1);
 
+        // TODO we can't convert parameters that are not primary keys since we don't know for sure which column they may refer to,
+        Object param = partnerId;
+        if (ConnectionType.Firebird == session.metaData.getConnectionType()) {
+            param = Converter.asBytesFromUUID(partnerId);
+        }
+        contacts = session.query(Contact.class, where(":partnerId = ?"), params(param));
+        assertEquals("should have 1", 1, contacts.size());
+
         assertEquals("1?", 1, session.delete(contact).rows());
 
         assertEquals("UDDI should be the same ", UUID1, contact1.getIdentity().toString());
@@ -1026,7 +1442,7 @@ public abstract class BaseTest extends TestCase {
         // Actual   :1997-02-17 10:23:43.0
         // https://dev.mysql.com/doc/refman/5.7/en/date-and-time-types.html
         // Has the accuracy in v8 so once we update the DB and driver we should retest
-        if (connectionType == ConnectionTypes.MySQL) {
+        if (connectionType == ConnectionType.MySQL) {
             assertEquals("last modified util.Date s/b '1997-02-17 10:23:43.0'", "1997-02-17 10:23:43.0", "" + contact1.getLastModified());
         } else {
             assertEquals("last modified util.Date s/b '1997-02-17 10:23:43.123'", "1997-02-17 10:23:43.123", "" + contact1.getLastModified());
@@ -1051,6 +1467,7 @@ public abstract class BaseTest extends TestCase {
                 contactForTest.setIdentity(randomUUID);
                 session.insert(contactForTest);
                 contactForTest.setContactName("HELLO?!");
+                contactForTest.setCompany("some company");
                 session.update(contactForTest);
                 session.fetch(contactForTest);
 
@@ -1105,20 +1522,18 @@ public abstract class BaseTest extends TestCase {
         // As long as they use the query/fetch without the SQL param.
         String columnName = session.getMetaData().getPrimaryKeys(Contact.class, con).get(0);
         String where = session.getMetaData().getConnectionType().getKeywordStartDelimiter() +
-                columnName +
-                session.getMetaData().getConnectionType().getKeywordEndDelimiter() +
-                "=?";
+                       columnName +
+                       session.getMetaData().getConnectionType().getKeywordEndDelimiter() +
+                       "=?";
         log.info("testContactTable " + where);
         // testing that this should not fail.
         List<Contact> results = session.query(Contact.class, params(identity));
         log.info(results);
 
-        Contact result = session.fetch(Contact.class, params(identity));
-        log.info(result);
-        assertNotNull(result);
+        Contact contactx = session.fetch(Contact.class, params(identity));
+        log.info(contactx);
+        assertNotNull(contactx);
 
-        //todo Try this. should it convert foreign key property? WE CANT !
-        assertTrue(session.query(Contact.class, where(":partnerId = ?"), params(contact.getPartnerId())).size() > 0);
 
         var sd = session.getMetaData().getConnectionType().getKeywordStartDelimiter();
         var ed = session.getMetaData().getConnectionType().getKeywordEndDelimiter();
@@ -1169,7 +1584,7 @@ public abstract class BaseTest extends TestCase {
         } catch (PersismException e) {
             failed = true;
             log.info(e.getMessage(), e);
-            String msg = Messages.QueryParameterNamesMissingOrNotFound.message("[last, name]", "[Xame, Xast]");
+            String msg = Message.QueryParameterNamesMissingOrNotFound.message("[last, name]", "[Xame, Xast]");
             assertEquals("s/b " + msg, msg, e.getMessage());
         }
         assertTrue(failed);
@@ -1185,11 +1600,17 @@ public abstract class BaseTest extends TestCase {
         } catch (PersismException e) {
             failed = true;
             log.info(e.getMessage(), e);
-            String msg = Messages.QueryPropertyNamesMissingOrNotFound.message("[firstXame, Xompany]", "");
+            String msg = Message.QueryPropertyNamesMissingOrNotFound.message("[firstXame, Xompany]", "");
             assertTrue("s/b (starts with) " + msg, e.getMessage().startsWith(msg));
         }
         assertTrue(failed);
 
+        contact.setCompany("XYZ");
+        session.update(contact);
+        contact.setContactName("JOE");
+        session.update(contact);
+
+        log.info(contact);
     }
 
     public void testReuse() {
@@ -1272,6 +1693,61 @@ public abstract class BaseTest extends TestCase {
     static java.sql.Timestamp ts = new Timestamp(udate.getTime());
     static java.sql.Time time = new Time(udate.getTime());
 
+    public void testVariousTypesLikeClobAndBlob() throws Exception {
+
+        if (connectionType == ConnectionType.Informix) {
+            // https://stackoverflow.com/questions/49441015/informix-no-such-dbspace-error-when-inserting-a-record
+            // todo Invalid default sbspace name (sbspace). needs to be added to docker image
+            return;
+        }
+        // note Data is read as a CLOB
+        SavedGame saveGame = new SavedGame();
+        saveGame.setName("BLAH");
+        saveGame.setSomeDateAndTime(new java.util.Date());
+        saveGame.setData("HJ LHLH H H                     ';lk ;lk ';l k                                K HLHLHH LH LH LH LHLHLHH LH H H H LH HHLGHLJHGHGFHGFGJFDGHFDHFDGJFDKGHDGJFDD KHGD KHG DKHDTG HKG DFGHK  GLJHG LJHG LJH GLJ");
+        saveGame.setGold(100.23f);
+        saveGame.setSilver(200);
+        saveGame.setCopper(100L);
+        saveGame.setWhatTimeIsIt(new Time(System.currentTimeMillis()));
+        saveGame.setSomethingBig(null);
+
+        saveGame.setId("1");
+
+        File file = new File(getClass().getResource("/logo1.png").toURI());
+        saveGame.setSomethingBig(Files.readAllBytes(file.toPath()));
+        int size = saveGame.getSomethingBig().length;
+        log.info("SIZE?" + saveGame.getSomethingBig().length);
+        session.insert(saveGame);
+
+        SavedGame returnedSavedGame = new SavedGame();
+        returnedSavedGame.setId(saveGame.getId());
+        assertTrue(session.fetch(returnedSavedGame));
+        // test that a util date returned has a time still in it.
+        Calendar cal = Calendar.getInstance();
+        cal.setTime(returnedSavedGame.getSomeDateAndTime());
+        log.info("WHAT DO THESE LOOK LIKE? " + returnedSavedGame.getSomeDateAndTime());
+        log.info(" ETC>>> " + returnedSavedGame.getWhatTimeIsIt());
+        assertTrue("TIME s/b > 0 - we should have time:", cal.get(Calendar.HOUR_OF_DAY) + cal.get(Calendar.MINUTE) + cal.get(Calendar.SECOND) > 0);
+
+        List<SavedGame> savedGames = session.query(SavedGame.class, params("1"));
+        log.info("ALL SAVED GAMES " + savedGames.size() + " " + savedGames.get(0).getName() + " id: " + savedGames.get(0).getId());
+        saveGame = session.fetch(SavedGame.class, sql("select * from SavedGames"), none());
+        assertNotNull(saveGame);
+        log.info("SAVED GOLD: " + saveGame.getGold());
+        log.info("SAVED SILVER: " + saveGame.getSilver());
+        log.info("AFTER FETCH SIZE?" + saveGame.getSomethingBig().length);
+        assertEquals("size should be the same ", size, saveGame.getSomethingBig().length);
+
+        byte[] bytes = {};
+        saveGame.setSomethingBig(bytes);
+        session.update(saveGame);
+        session.fetch(saveGame);
+
+        SavedGame sg = session.fetch(SavedGame.class, where("Silver > ?"), params(199));
+        log.warn(sg);
+//        sg = session.fetch(SavedGame.class, proc("spSearchSilver"), params(199));
+    }
+
     public void testAllDates() {
         SQLDateTypesTests();
         LocalDateTypesTest();
@@ -1307,7 +1783,7 @@ public abstract class BaseTest extends TestCase {
 
             assertEquals("date s/b '1992-02-17'", sdate.toString(), testSQLTypes2.getDateOnly().toString());
             assertEquals("time s/b '22:23:41'", time.toString(), testSQLTypes2.getTimeOnly().toString());
-            if (connectionType == ConnectionTypes.MySQL) {
+            if (connectionType == ConnectionType.MySQL) {
                 // MySQL rounds off milliseconds - comes out like 1992-02-17 10:23:41.0
                 String s1 = ts.toString();
                 String s2 = testSQLTypes2.getDateAndTime().toString();
@@ -1360,7 +1836,7 @@ public abstract class BaseTest extends TestCase {
             assertEquals("date s/b '1997-02-17'", ld.format(DateTimeFormatter.ISO_DATE), testLocalTypes2.getDateOnly().format(DateTimeFormatter.ISO_DATE));
             assertEquals("time s/b '10:23:43'", localTime, testLocalTypes2.getTimeOnly().format(DateTimeFormatter.ISO_TIME));
 
-            if (connectionType == ConnectionTypes.MySQL) {
+            if (connectionType == ConnectionType.MySQL) {
                 // MySQL rounds off milliseconds - 1998-02-17T10:23:43.567 comes out like 1998-02-17T10:23:43
                 String s = ldt.format(DateTimeFormatter.ISO_DATE_TIME);
                 assertEquals("datetime s/b '1998-02-17 10:23:43'",
@@ -1480,6 +1956,37 @@ public abstract class BaseTest extends TestCase {
         assertTrue("collect", order2.isCollect());
     }
 
+
+    public void testCharPrimitive() {
+        Department department = new Department();
+        log.warn("what is type?" + department.getSomeType());
+
+        char defaultChar = department.getSomeType();
+
+        department.setId(1);
+        department.setName("test dep");
+        department.setActive(true);
+        department.setSomeType('1');
+        session.insert(department);
+
+        department = new Department();
+        department.setId(2);
+        department.setName("test dep");
+        department.setActive(true);
+        department.setSomeType(defaultChar);
+        session.insert(department);
+
+        department.setId(2);
+        session.fetch(department);
+        log.warn("what is type? from 2:" + department.getSomeType());
+        assertEquals("s/b defaultChar", defaultChar, department.getSomeType());
+
+        department.setId(1);
+        session.fetch(department);
+        log.warn("what is type? from 1: " + department.getSomeType());
+        assertEquals("s/b '1'", '1', department.getSomeType());
+    }
+
     public void testInvoice() {
 
         Customer customer = new Customer();
@@ -1494,11 +2001,45 @@ public abstract class BaseTest extends TestCase {
         customer.setFax("123-456-7890");
         customer.setPhone("456-678-1234");
         customer.setPostalCode("54321");
-        customer.setRegion(Regions.East);
+        customer.setRegion(Region.East);
         //customer.setStatus('1');
         session.insert(customer);
 
-        session.fetch(customer); // DOESNT FAIl?
+        session.fetch(customer);
+
+
+        Customer customer2 = new Customer();
+        customer2.setCompanyName("TEST2");
+        customer2.setCustomerId("MOO2");
+        customer2.setAddress("123 sesame street 2");
+        customer2.setCity("city");
+        customer2.setContactName("fred flintstone");
+        customer2.setContactTitle("Lord");
+        customer2.setCountry("CA");
+        // customer2.setDateRegistered(new java.sql.Timestamp(System.currentTimeMillis()));
+        customer2.setFax("123-456-7890");
+        customer2.setPhone("456-678-1234");
+        customer2.setPostalCode("54321");
+        customer2.setRegion(Region.East);
+        customer2.setStatus('1');
+        session.insert(customer2);
+
+        Customer customer3 = new Customer();
+        customer3.setCompanyName("TEST2");
+        customer3.setCustomerId("MOO3");
+        customer3.setAddress("123 sesame street 3");
+        customer3.setCity("city");
+        customer3.setContactName("fred flintstone");
+        customer3.setContactTitle("Lord");
+        // customer3.setCountry("CA");
+        // customer3.setDateRegistered(new java.sql.Timestamp(System.currentTimeMillis()));
+        customer3.setFax("123-456-7890");
+        customer3.setPhone("456-678-1234");
+        customer3.setPostalCode("54321");
+        customer3.setRegion(Region.East);
+        customer3.setStatus('1');
+        session.insert(customer3);
+
 
         assertEquals("country s/b US", "US", customer.getCountry());
 
@@ -1534,6 +2075,21 @@ public abstract class BaseTest extends TestCase {
         NumberFormat nf = NumberFormat.getInstance();
 
         assertEquals("totals/b 105.00", nf.format(105.0f), invoice.getTotal().toString());
+
+        boolean fail = false;
+
+        try {
+            // invoice fail
+            session.query(InvoiceFail.class, where("CUSTOMER_ID=? ORDER BY CUSTOMER_ID"), params("123"));
+        } catch (PersismException e) {
+            fail = true;
+            String msg = Message.PropertyCountMismatchForJoin.message(InvoiceFail.class, "invoiceId, price", "invoiceId");
+            assertEquals("msg s/b ' " + msg + "' ", msg, e.getMessage());
+        }
+        assertTrue(fail);
+
+        List<Customer> customers = session.query(Customer.class, where(":city = ?"), params("city"));
+        log.warn(customers.size());
     }
 
     // RecordTest1 is invalid, so it should fail on query and fetch
@@ -1543,28 +2099,11 @@ public abstract class BaseTest extends TestCase {
 
         session.insert(rt1);
 
-        Object paramValue = id;
-        switch (session.getMetaData().getConnectionType()) {
-
-            case MSSQL:
-            case JTDS:
-            case UCanAccess: // todo verify
-            case Informix: // don't really know yet.
-            case SQLite:
-            case Firebird:
-            case PostgreSQL:
-                paramValue = id;
-                break;
-
-            case MySQL:
-            case Oracle:
-            case Other:
-            case Derby:
-            case HSQLDB:
-            case H2:
-                paramValue = Converter.asBytes(id);
-                break;
-        }
+        Object paramValue = switch (session.getMetaData().getConnectionType()) { // todo verify
+            // don't really know yet.
+            case MSSQL, JTDS, UCanAccess, Informix, SQLite, Firebird, PostgreSQL -> id;
+            case MySQL, Oracle, Other, Derby, HSQLDB, H2 -> Converter.asBytes(id);
+        };
 
         // Any fetch or query should fail - see RecordTest1 has a bad constructor
         boolean fail = false;
@@ -1575,8 +2114,9 @@ public abstract class BaseTest extends TestCase {
         } catch (PersismException e) {
             fail = true;
             log.warn(e.getMessage(), e);
-            assertTrue("msg should start with 'readRecord: Could instantiate the constructor for: class net.sf.persism.dao.records.RecordTest1'",
-                    e.getMessage().startsWith("readRecord: Could instantiate the constructor for: class net.sf.persism.dao.records.RecordTest1"));
+            log.warn(Message.ReadRecordCouldNotInstantiate.message(RecordTest1.class, "..."));
+            assertTrue("msg should start with 'readRecord: Could not instantiate the constructor for: class net.sf.persism.dao.records.RecordTest1'",
+                    e.getMessage().startsWith("readRecord: Could not instantiate the constructor for: class net.sf.persism.dao.records.RecordTest1"));
         }
         assertTrue(fail);
 
@@ -1621,6 +2161,7 @@ public abstract class BaseTest extends TestCase {
             log.info(rt23);
 
         } catch (PersismException e) {
+            log.error(e.getMessage(), e);
             fail = true;
             // todo this should be the common object message instead defined by Messages.ObjectNotProperlyInitializedByQuery
             assertEquals("s/b 'readrecord: could not find column in the sql query for class: class net.sf.persism.dao.records.recordtest2. missing column: created_on'".toLowerCase(),
@@ -1635,9 +2176,9 @@ public abstract class BaseTest extends TestCase {
     public void XtestGetMultipleResultSets() throws Exception {
         String sql = """
                 SELECT * FROM CUSTOMERS;
-
+                
                 SELECT * FROM INVOICES;
-
+                
                 SELECT * FROM CONTACTS;
                 
                 """;
@@ -1658,6 +2199,28 @@ public abstract class BaseTest extends TestCase {
 
     }
 
+    public void testDelete() {
+        log.info(session.metaData.getDeleteStatement(Customer.class, con));
+        log.info(session.metaData.getDefaultDeleteStatement(Customer.class, con));
+
+        Customer customer = new Customer();
+        customer.setCustomerId("DELETEME");
+        customer.setRegion(Region.North);
+        customer.setCompanyName("test 1243");
+        session.insert(customer);
+        int result = session.delete(Customer.class, where(":region = ?"), params(Region.North));
+        log.info(result);
+        assertEquals("s/b 1", 1, result);
+
+        result = session.delete(Customer.class, params("1", "3", "hello"));
+        assertEquals("s/b 0", 0, result);
+
+
+        messageTester(DeleteExpectsInstanceOfDataObjectNotAClass.message(Customer.class.getName()), () -> session.delete(Customer.class));
+        messageTester(CannotDeleteWithNoPrimaryKeys.message(), () -> session.delete(Customer.class, params()));
+        messageTester(DeleteCanOnlyUseWhereClause.message(), () -> session.delete(Customer.class, sql("should fail")));
+    }
+
     public void testRecords() {
         RecordTest2 rt2 = new RecordTest2(0, "desc2", 100, 25.434f);
         log.info(rt2);
@@ -1671,30 +2234,111 @@ public abstract class BaseTest extends TestCase {
         assertEquals("Object ID s/b 1", 1, result.dataObject().id());
         assertNotNull("should have createdOn ", result.dataObject().createdOn());
         log.info("after: " + result.dataObject());
-        boolean fail = false;
-        try {
-            session.fetch(rt2);
 
-        } catch (PersismException e) {
-            fail = true;
-            assertEquals("s/b 'class net.sf.persism.dao.records.RecordTest2: FETCH operation not supported for record types'",
-                    "class net.sf.persism.dao.records.RecordTest2: FETCH operation not supported for record types",
-                    e.getMessage());
-        }
-        assertTrue(fail);
+        messageTester(OperationNotSupportedForRecord.message(RecordTest2.class, "FETCH"), () -> session.fetch(rt2));
+    }
 
+    public void testFetchOnViewShouldFail() {
+
+        messageTester(Message.OperationNotSupportedForView.message(CustomerInvoice.class, "FETCH"), () -> {
+            CustomerInvoice ci = new CustomerInvoice();
+            session.fetch(ci); // fail can't fetch view
+        });
+
+        // this should work
+        session.fetch(CustomerInvoice.class, where("1=1"));
+    }
+
+    public void testQueryOnViewWithPrimaryKeysShouldFail() {
+        String message = Message.OperationNotSupportedForView.message(CustomerInvoice.class, "QUERY w/o specifying the SQL with @View since we don't have Primary Keys");
+        messageTester(message, () -> session.query(CustomerInvoice.class, params(1, 2, 3)));
+    }
+
+    public void testFetchOnNonTableClass() {
+        CustomerInvoice customerInvoice = new CustomerInvoice();
+        messageTester(OperationNotSupportedForView.message(CustomerInvoice.class, "FETCH"), () -> session.fetch(customerInvoice));
+    }
+
+    public void testFetchWithPrimitiveShouldFail() {
+        messageTester(OperationNotSupportedForJavaType.message(String.class, "FETCH"), () -> session.fetch(""));
+    }
+
+    public void testDeleteWithPrimaryKeysNoParamsShouldFail() {
+        messageTester(CannotDeleteWithNoPrimaryKeys.message(), () -> session.delete(Customer.class, none()));
     }
 
 
+    public void testCheckIfOkForWriteOperationForInvalidCases() {
+        messageTester(OperationNotSupportedForView.message(CustomerInvoice.class, "INSERT"), () -> session.insert(new CustomerInvoice()));
+        messageTester(OperationNotSupportedForNotTableQuery.message(CustomerOrder.class, "INSERT"), () -> session.insert(new CustomerOrder()));
+        messageTester(OperationNotSupportedForJavaType.message(java.util.Date.class, "INSERT"), () -> session.insert(new java.util.Date()));
+    }
+
+    public void testJoinToNullCollection() {
+        queryDataSetup();
+
+        messageTester(CannotNotJoinToNullProperty.message("invoices"), () -> session.query(CustomerFail3.class, none()));
+        messageTester(CannotNotJoinToNullProperty.message("invoices"), () -> session.fetch(CustomerFail3.class, params("123")));
+    }
+
+    public void testClassMismatchOnJoin() {
+        queryDataSetup();
+
+        CustomerJoinFail customer = new CustomerJoinFail();
+        customer.setCustomerId("123");
+
+        session.fetch(customer);
+
+        log.info("found " + customer);
+
+        log.info("invoides? " + customer.getInvoices());
+
+        log.info("whastever? " + customer.getWhatever());
+
+        var type1 = TypeResolver.reify(customer.getInvoices().getClass());
+
+        Class<?> typeArg = TypeResolver.resolveRawArgument(type1, customer.getInvoices().getClass());
+        log.warn(typeArg);
+
+        Class<?> type2 = TypeResolver.resolveRawArgument(Set.class, customer.getInvoices().getClass());
+        log.warn(type2);
+
+    }
+
+    // todo metadata call getDefaultSelectStatement on view?
+    // @OrderWith()
     public void testGetDbMetaData() throws SQLException {
         if (true) {
             return;
         }
         DatabaseMetaData dmd = con.getMetaData();
-        log.info("GetDbMetaData for " + dmd.getDatabaseProductName());
+        System.out.println("GetDbMetaData for " + dmd.getDatabaseProductName());
 
-        System.out.println("PROCS");
-        System.out.println("-----");
+        System.out.println("tables and views?");
+
+        String[] tableTypes = {"TABLE", "VIEW"};
+
+        ResultSetMetaData rsmd;
+        ResultSet rs;
+        // get attributes
+        //rs = dmd.getAttributes("", "", "", "");
+        //List<String> tables = new ArrayList<>(32);
+        rs = dmd.getTables(null, session.getMetaData().getConnectionType().getSchemaPattern(), null, tableTypes);
+        rsmd = rs.getMetaData();
+        while (rs.next()) {
+//            for (int i = 1; i <= rsmd.getColumnCount(); i++) {
+//                System.out.println(rsmd.getColumnName(i) + " = " + rs.getObject(i));
+//            }
+            //  tables.add(rs.getString("TABLE_NAME"));
+            System.out.println(rs.getString("TABLE_NAME") + " " + rs.getString("TABLE_TYPE"));
+        }
+        System.out.println("----------");
+        if (true) {
+            return;
+        }
+
+//        System.out.println("PROCS");
+//        System.out.println("-----");
 //        ResultSet result = dmd.getProcedures(null, "%", "%");
 //        for (int i = 1; i <= result.getMetaData().getColumnCount(); i++) {
 //            System.out.println(i + " - " + result.getMetaData().getColumnLabel(i));
@@ -1707,35 +2351,35 @@ public abstract class BaseTest extends TestCase {
 //                    " - " + result.getString("PROCEDURE_NAME"));
 //        }
 
-        String[] tableTypes = {"TABLE"};
-
-        ResultSetMetaData rsmd;
-        ResultSet rs;
-        // get attributes
-        //rs = dmd.getAttributes("", "", "", "");
-        List<String> tables = new ArrayList<>(32);
-        rs = dmd.getTables(null, session.getMetaData().getConnectionType().getSchemaPattern(), null, tableTypes);
-        rsmd = rs.getMetaData();
-        while (rs.next()) {
-            for (int i = 1; i <= rsmd.getColumnCount(); i++) {
-                System.out.println(rsmd.getColumnName(i) + " = " + rs.getObject(i));
-            }
-            tables.add(rs.getString("TABLE_NAME"));
-            System.out.println("----------");
-        }
-
-        for (String table : tables) {
-            System.out.println("Table " + table + " COLUMN INFO");
-            rs = dmd.getColumns(null, session.getMetaData().getConnectionType().getSchemaPattern(), table, null);
-            rsmd = rs.getMetaData();
-            while (rs.next()) {
-                for (int i = 1; i <= rsmd.getColumnCount(); i++) {
-                    System.out.println(rsmd.getColumnName(i) + " = " + rs.getObject(i));
-                }
-                System.out.println("----------");
-            }
-
-        }
+//        String[] tableTypes = {"TABLE"};
+//
+//        ResultSetMetaData rsmd;
+//        ResultSet rs;
+//        // get attributes
+//        //rs = dmd.getAttributes("", "", "", "");
+//        List<String> tables = new ArrayList<>(32);
+//        rs = dmd.getTables(null, session.getMetaData().getConnectionType().getSchemaPattern(), null, tableTypes);
+//        rsmd = rs.getMetaData();
+//        while (rs.next()) {
+//            for (int i = 1; i <= rsmd.getColumnCount(); i++) {
+//                System.out.println(rsmd.getColumnName(i) + " = " + rs.getObject(i));
+//            }
+//            tables.add(rs.getString("TABLE_NAME"));
+//            System.out.println("----------");
+//        }
+//
+//        for (String table : tables) {
+//            System.out.println("Table " + table + " COLUMN INFO");
+//            rs = dmd.getColumns(null, session.getMetaData().getConnectionType().getSchemaPattern(), table, null);
+//            rsmd = rs.getMetaData();
+//            while (rs.next()) {
+//                for (int i = 1; i <= rsmd.getColumnCount(); i++) {
+//                    System.out.println(rsmd.getColumnName(i) + " = " + rs.getObject(i));
+//                }
+//                System.out.println("----------");
+//            }
+//
+//        }
 
         System.out.println("VIEWS");
         System.out.println("-----");
@@ -1780,8 +2424,9 @@ public abstract class BaseTest extends TestCase {
 
     // use if you want to run commands one at a time for debugging or testing
     static void executeCommand(String command, Connection con) throws SQLException {
+        //System.out.println(command);
+        log.info(command);
         try (Statement st = con.createStatement()) {
-            log.info(command);
             st.execute(command);
         }
     }

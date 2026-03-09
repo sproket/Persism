@@ -49,7 +49,7 @@ public class TestParse {
         }
         buf.append(query, start, query.length());
         return new ParameterizedQuery(
-                buf.toString(), parms.toArray(new XParameter[parms.size()]));
+                buf.toString(), parms.toArray(new XParameter[0]));
     }
 
     private static ParameterizedQuery[] simplify(ParameterizedQuery[] queries) {

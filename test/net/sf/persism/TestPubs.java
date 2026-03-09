@@ -5,15 +5,17 @@ import net.sf.persism.categories.ExternalDB;
 import net.sf.persism.dao.pubs.Author;
 import net.sf.persism.dao.pubs.JobType;
 import net.sf.persism.dao.pubs.PublisherInfo;
-import org.junit.AfterClass;
+import net.sf.persism.dao.pubs.PublisherTitle;
+import org.junit.*;
 import org.junit.experimental.categories.Category;
-
 
 import java.sql.Connection;
 import java.sql.DriverManager;
-import java.util.*;
+import java.util.List;
+import java.util.Properties;
 
 import static net.sf.persism.SQL.sql;
+import static net.sf.persism.SQL.where;
 
 // Does not share common tests - this is just to do some specific tests on SQL with PUBS DB
 @Category(ExternalDB.class)
@@ -22,11 +24,9 @@ public class TestPubs extends TestCase {
     private static final Log log = Log.getLogger(TestPubs.class);
 
     Connection con;
-    Session session;
+    static Session session;
 
-    @Override
-    protected void setUp() throws Exception {
-        super.setUp();
+    public void setUp() throws Exception {
 
         if (getClass().equals(TestPubs.class)) {
             Properties props = new Properties();
@@ -43,10 +43,8 @@ public class TestPubs extends TestCase {
         }
     }
 
-    @Override
-    protected void tearDown() throws Exception {
+    public void tearDown() throws Exception {
         con.close();
-        super.tearDown();
     }
 
     public void testAuthors() {
@@ -82,13 +80,13 @@ public class TestPubs extends TestCase {
             // test constraints
             // phone defaults to UNKNOWN
 //            assertEquals("Phone should be UNKNOWN (char(12))", "UNKNOWN     ", author.getPhone());
-            assertTrue("contract s/b true", author.isContract());
-            assertEquals("First name Dan", "Dan", author.getFirstName());
-            assertEquals("Last name Howard", "Howard", author.getLastName());
-            assertEquals("Street 123 Sesame Street...", "123 Sesame Street", author.getAddress());
-            assertEquals("City MTL...", "MTL", author.getCity());
-            assertEquals("State OH...", "OH", author.getState());
-            assertEquals("zip 45143...", "45143", author.getPostalCode());
+            Assert.assertTrue("contract s/b true", author.isContract());
+            Assert.assertEquals("First name Dan", "Dan", author.getFirstName());
+            Assert.assertEquals("Last name Howard", "Howard", author.getLastName());
+            Assert.assertEquals("Street 123 Sesame Street...", "123 Sesame Street", author.getAddress());
+            Assert.assertEquals("City MTL...", "MTL", author.getCity());
+            Assert.assertEquals("State OH...", "OH", author.getState());
+            Assert.assertEquals("zip 45143...", "45143", author.getPostalCode());
 
 
             log.info(author);
@@ -101,9 +99,9 @@ public class TestPubs extends TestCase {
             } catch (PersismException e) {
                 constraintFailed = true;
                 log.error(e.getMessage());
-                assertTrue("should contain 'The UPDATE statement conflicted with the CHECK constraint'", e.getMessage().contains("The UPDATE statement conflicted with the CHECK constraint"));
+                Assert.assertTrue("should contain 'The UPDATE statement conflicted with the CHECK constraint'", e.getMessage().contains("The UPDATE statement conflicted with the CHECK constraint"));
             }
-            assertTrue("phone constraint should fail", constraintFailed);
+            Assert.assertTrue("phone constraint should fail", constraintFailed);
 
             List<Author> list = session.query(Author.class, sql("Select * From authors"));
             log.info(list.size());
@@ -113,11 +111,21 @@ public class TestPubs extends TestCase {
 
         } catch (Exception e) {
             log.error(e.getMessage(), e);
-            fail(e.getMessage());
+            Assert.fail(e.getMessage());
         } finally {
             session.delete(author);
         }
     }
+
+    public void testTopQuery() {
+        long now = System.currentTimeMillis();
+        List<PublisherTitle> publisherTitles = session.query(PublisherTitle.class, where("1=1").limit(4));
+
+        log.info(publisherTitles.size());
+        log.info("time: " + (System.currentTimeMillis() - now));
+
+    }
+
 
     public void testJobTypes() {
         List<JobType> jobs = session.query(JobType.class, sql("select * from jobs"));
@@ -127,22 +135,17 @@ public class TestPubs extends TestCase {
         JobType jobType = new JobType();
         jobType.setJobId(4);
         // JobType{jobId=4, description='Chief Financial Officier', minLevel=175, maxLevel=250},
-        assertTrue("should be found", session.fetch(jobType));
+        Assert.assertTrue("should be found", session.fetch(jobType));
 
         // lets fix the spelling error
         jobType.setDescription("Chief Financial Officer");
 
         session.update(jobType);
-        assertTrue("should be found", session.fetch(jobType)); // dont need to do this. just testing reading again
+        Assert.assertTrue("should be found", session.fetch(jobType)); // dont need to do this. just testing reading again
 
-        assertEquals("description s/b ", "Chief Financial Officer", jobType.getDescription());
-        assertEquals("min lvl s/b ", 175, jobType.getMinLevel());
-        assertEquals("max lvl s/b ", 250, jobType.getMaxLevel());
+        Assert.assertEquals("description s/b ", "Chief Financial Officer", jobType.getDescription());
+        Assert.assertEquals("min lvl s/b ", 175, jobType.getMinLevel());
+        Assert.assertEquals("max lvl s/b ", 250, jobType.getMaxLevel());
 
-    }
-
-    @AfterClass
-    public void Xfinally() {
-        log.warn(session.getMetaData());
     }
 }

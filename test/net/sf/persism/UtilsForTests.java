@@ -1,20 +1,17 @@
 package net.sf.persism;
 
-import net.sf.persism.ddl.FieldDef;
-import net.sf.persism.ddl.TableDef;
-
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.UncheckedIOException;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 import java.sql.*;
 import java.util.Calendar;
 import java.util.List;
 import java.util.Scanner;
 
 /**
- *
  * @author Dan Howard
  * @since 9/25/11 3:54 PM
  */
@@ -72,6 +69,20 @@ public class UtilsForTests {
         return result;
     }
 
+    public static boolean isTableInDatabase(String schema, String tableName, Connection con) throws SQLException {
+        boolean result = false;
+        DatabaseMetaData dma = con.getMetaData();
+        try (ResultSet rs = dma.getTables(null, schema, null, tableType)) {
+            while (rs.next()) {
+                if (tableName.equalsIgnoreCase(rs.getString("TABLE_NAME"))) {
+                    result = true;
+                    break;
+                }
+            }
+        }
+        return result;
+    }
+
     public static boolean isViewInDatabase(String viewName, Connection con) throws SQLException {
         boolean result = false;
         DatabaseMetaData dma = con.getMetaData();
@@ -118,12 +129,24 @@ public class UtilsForTests {
         return result;
     }
 
+
+    public static void deleteDir(File file) {
+        File[] contents = file.listFiles();
+        if (contents != null) {
+            for (File f : contents) {
+                if (!Files.isSymbolicLink(f.toPath())) {
+                    deleteDir(f);
+                }
+            }
+        }
+        file.delete();
+    }
+
     public static String createHomeFolder(String subFolder) {
 
         String home = System.getProperty("user.home");
         home = replace(home, "\\", "/");
         home += "/" + subFolder;
-
 
         log.info("createHomeFolder: " + home);
         boolean success = new File(home).mkdirs();
@@ -149,106 +172,106 @@ public class UtilsForTests {
         }
     }
 
-    public static void createTable(TableDef table, Connection con) throws SQLException {
-        StringBuilder sb = new StringBuilder();
-        sb.append("CREATE TABLE ").append(table.getName()).append(" (");
-        List<FieldDef> fields = table.getFields();
-        String sep = "";
-        for (FieldDef field : fields) {
-
-            Types type = Types.getType(field.getType());
-            String sqlType = null;
-            switch (type) {
-
-                case booleanType:
-                case BooleanType:
-                    sqlType = "BIT";
-                    break;
-
-                case byteType:
-                case ByteType:
-                    break;
-
-                case shortType:
-                case ShortType:
-                    break;
-
-                case integerType:
-                case IntegerType:
-                    sqlType = "INT";
-                    break;
-
-                case longType:
-                case LongType:
-                    sqlType = "NUMBER(" + field.getLength() + ")";
-                    break;
-
-                case floatType:
-                case FloatType:
-                    sqlType = "NUMBER(" + field.getLength() + "," + field.getScale() + ")";
-                    break;
-
-                case doubleType:
-                case DoubleType:
-                    sqlType = "NUMBER(" + field.getLength() + "," + field.getScale() + ")";
-                    break;
-
-                case BigDecimalType:
-                    sqlType = "NUMBER(" + field.getLength() + "," + field.getScale() + ")";
-                    break;
-
-                case StringType:
-                    sqlType = "VARCHAR(" + field.getLength() + ")";
-                    break;
-
-                case characterType:
-                case CharacterType:
-                    sqlType = "CHAR(" + field.getLength() + ")";
-                    break;
-
-                case UtilDateType:
-                case SQLDateType:
-                    sqlType = "DATE"; // DATETIME IN SQL SERVER?
-                    break;
-
-                case TimeType:
-                    break;
-
-                case TimestampType:
-                    sqlType = "TIMESTAMP";
-                    break;
-
-                case byteArrayType:
-                case ByteArrayType:
-                    break;
-
-                case ClobType:
-                    break;
-
-                case BlobType:
-                    break;
-            }
-
-            sb.append(sep).append(field.getName()).append(" ").append(sqlType);
-            sep = ", ";
-        }
-        sb.append(") ");
-
-
-        log.info(sb.toString());
-
-        Statement st = null;
-        try {
-            st = con.createStatement();
-            if (isTableInDatabase(table.getName(), con)) {
-                st.execute("DROP TABLE " + table.getName());
-            }
-            st.execute(sb.toString());
-        } finally {
-            cleanup(st, null);
-        }
-
-    }
+//    public static void createTable(TableDef table, Connection con) throws SQLException {
+//        StringBuilder sb = new StringBuilder();
+//        sb.append("CREATE TABLE ").append(table.getName()).append(" (");
+//        List<FieldDef> fields = table.getFields();
+//        String sep = "";
+//        for (FieldDef field : fields) {
+//
+//            JavaType type = JavaType.getType(field.getType());
+//            String sqlType = null;
+//            switch (type) {
+//
+//                case booleanType:
+//                case BooleanType:
+//                    sqlType = "BIT";
+//                    break;
+//
+//                case byteType:
+//                case ByteType:
+//                    break;
+//
+//                case shortType:
+//                case ShortType:
+//                    break;
+//
+//                case integerType:
+//                case IntegerType:
+//                    sqlType = "INT";
+//                    break;
+//
+//                case longType:
+//                case LongType:
+//                    sqlType = "NUMBER(" + field.getLength() + ")";
+//                    break;
+//
+//                case floatType:
+//                case FloatType:
+//                    sqlType = "NUMBER(" + field.getLength() + "," + field.getScale() + ")";
+//                    break;
+//
+//                case doubleType:
+//                case DoubleType:
+//                    sqlType = "NUMBER(" + field.getLength() + "," + field.getScale() + ")";
+//                    break;
+//
+//                case BigDecimalType:
+//                    sqlType = "NUMBER(" + field.getLength() + "," + field.getScale() + ")";
+//                    break;
+//
+//                case StringType:
+//                    sqlType = "VARCHAR(" + field.getLength() + ")";
+//                    break;
+//
+//                case characterType:
+//                case CharacterType:
+//                    sqlType = "CHAR(" + field.getLength() + ")";
+//                    break;
+//
+//                case UtilDateType:
+//                case SQLDateType:
+//                    sqlType = "DATE"; // DATETIME IN SQL SERVER?
+//                    break;
+//
+//                case TimeType:
+//                    break;
+//
+//                case TimestampType:
+//                    sqlType = "TIMESTAMP";
+//                    break;
+//
+//                case byteArrayType:
+//                case ByteArrayType:
+//                    break;
+//
+//                case ClobType:
+//                    break;
+//
+//                case BlobType:
+//                    break;
+//            }
+//
+//            sb.append(sep).append(field.getName()).append(" ").append(sqlType);
+//            sep = ", ";
+//        }
+//        sb.append(") ");
+//
+//
+//        log.info(sb.toString());
+//
+//        Statement st = null;
+//        try {
+//            st = con.createStatement();
+//            if (isTableInDatabase(table.getName(), con)) {
+//                st.execute("DROP TABLE " + table.getName());
+//            }
+//            st.execute(sb.toString());
+//        } finally {
+//            cleanup(st, null);
+//        }
+//
+//    }
 
 
     // YYYYMMDDhhmmss          yyyyMMDDhhmmss ?

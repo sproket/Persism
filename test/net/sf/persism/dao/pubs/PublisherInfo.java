@@ -44,8 +44,8 @@ public final class PublisherInfo {
     public String toString() {
         return "PublisherInfo{" +
                 "id='" + id + '\'' +
-                ", information='" + information + '\'' +
-                ", logo=" + Arrays.toString(logo) +
+//                ", information='" + information + '\'' +
+//                ", logo=" + Arrays.toString(logo) +
                 '}';
     }
 }

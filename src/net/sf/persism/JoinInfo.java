@@ -6,8 +6,11 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 final class JoinInfo {
+
+    static final List<JoinInfo> joinInfos = new CopyOnWriteArrayList<>();
 
     private String[] parentPropertyNames;
     private String[] childPropertyNames;
@@ -20,7 +23,7 @@ final class JoinInfo {
     private final boolean parentIsAQuery;
     private boolean reversed = false;
 
-    JoinInfo(JoinInfo other) {
+    private JoinInfo(JoinInfo other) {
         parentPropertyNames = other.parentPropertyNames;
         childPropertyNames = other.childPropertyNames;
         parentProperties = other.parentProperties;
@@ -34,18 +37,15 @@ final class JoinInfo {
     }
 
     // note parent may be a POJO or a list of POJOs
-    public JoinInfo(Join joinAnnotation, PropertyInfo joinProperty, Object parent, Class<?> parentClass) {
+    private JoinInfo(Join joinAnnotation, PropertyInfo joinProperty, Object parent, Class<?> parentClass) {
         this.joinProperty = joinProperty;
         parentPropertyNames = joinAnnotation.onProperties().split(",");
         childPropertyNames = joinAnnotation.toProperties().split(",");
         if (parentPropertyNames.length != childPropertyNames.length) {
-            throw new PersismException("how would I match these?"); // todo add to Messages
+            throw new PersismException(Message.PropertyCountMismatchForJoin.message(parentClass, joinAnnotation.onProperties(), joinAnnotation.toProperties()));
         }
         Util.trimArray(parentPropertyNames);
         Util.trimArray(childPropertyNames);
-
-        // todo test these properties exist and fail otherwise - fix messages
-        // todo maybe defensive (unmodifiable) copies of array lists parentProperties and childProperties since we have getters
 
         caseSensitive = joinAnnotation.caseSensitive();
 
@@ -57,23 +57,26 @@ final class JoinInfo {
         parentProperties = new ArrayList<>(parentPropertyNames.length);
         childProperties = new ArrayList<>(childPropertyNames.length);
 
-        for (String prop : parentPropertyNames) {
-            var opt = MetaData.getPropertyInfo(parentClass).stream().filter(p -> p.propertyName.equals(prop)).findFirst();
+        for (int j = 0; j < parentPropertyNames.length; j++) {
+            String prop = parentPropertyNames[j];
+            var opt = MetaData.getPropertyInfo(parentClass).stream().filter(p -> p.propertyName.equalsIgnoreCase(prop)).findFirst();
             if (opt.isPresent()) {
                 parentProperties.add(opt.get());
+                parentPropertyNames[j] = opt.get().propertyName; // ensure names match exact
             } else {
-                throw new PersismException("PROPERTY NOT FOUND " + prop + " in " + parentClass);
+                throw new PersismException(Message.PropertyNotFoundForJoin.message(prop, parentClass));
             }
         }
 
-        for (String prop : childPropertyNames) {
-            var opt = MetaData.getPropertyInfo(childClass).stream().filter(p -> p.propertyName.equals(prop)).findFirst();
+        for (int j = 0; j < childPropertyNames.length; j++) {
+            String prop = childPropertyNames[j];
+            var opt = MetaData.getPropertyInfo(childClass).stream().filter(p -> p.propertyName.equalsIgnoreCase(prop)).findFirst();
             if (opt.isPresent()) {
                 childProperties.add(opt.get());
+                childPropertyNames[j] = opt.get().propertyName; // ensure names match exact
             } else {
-                throw new PersismException("PROPERTY NOT FOUND " + prop + " in " + childClass);
+                throw new PersismException(Message.PropertyNotFoundForJoin.message(prop, childClass));
             }
-
         }
     }
 
@@ -95,6 +98,37 @@ final class JoinInfo {
         info.reversed = true;
         return info;
     }
+
+    public static JoinInfo getInstance(Join joinAnnotation, PropertyInfo joinProperty, Object parent, Class<?> parentClass) {
+//        if (true) {
+//            return new JoinInfo(joinAnnotation, joinProperty, parent, parentClass);
+//        }
+        JoinInfo foundInfo = null;
+        for (JoinInfo joinInfo : joinInfos) {
+            if (joinInfo.joinProperty().equals(joinProperty) && joinInfo.parentClass().equals(parentClass)) {
+                if (Collection.class.isAssignableFrom(parent.getClass())) {
+                    if (joinInfo.parentIsAQuery()) {
+                        foundInfo = joinInfo;
+                        break;
+                    }
+                } else {
+                    if (!joinInfo.parentIsAQuery()) {
+                        foundInfo = joinInfo;
+                        break;
+                    }
+                }
+            }
+        }
+
+        if (foundInfo != null) {
+            return foundInfo;
+        } else {
+            JoinInfo joinInfo = new JoinInfo(joinAnnotation, joinProperty, parent, parentClass);
+            joinInfos.add(joinInfo);
+            return joinInfo;
+        }
+    }
+
 
     public String[] parentPropertyNames() {
         return parentPropertyNames;
@@ -138,15 +172,14 @@ final class JoinInfo {
 
     @Override
     public String toString() {
-        return "JoinInfo{" +
-                "parentPropertyNames=" + Arrays.toString(parentPropertyNames) +
-                ", childPropertyNames=" + Arrays.toString(childPropertyNames) +
-                ", parentProperties=" + parentProperties +
-                ", childProperties=" + childProperties +
-                ", parentClass=" + parentClass +
-                ", childClass=" + childClass +
-                ", caseSensitive=" + caseSensitive +
-                ", parentIsAQuery=" + parentIsAQuery +
+        return "" +
+                "Parent property name(s)=" + Arrays.toString(parentPropertyNames) +
+                ", Child property name(s)=" + Arrays.toString(childPropertyNames) +
+                ", Parent class=" + parentClass.getSimpleName() +
+                ", Child class=" + childClass.getSimpleName() +
+                ", Join property name=" + joinProperty.propertyName +
+                ", Is parent a query?=" + parentIsAQuery +
+                ", Is reversed?=" + reversed +
                 '}';
     }
 }

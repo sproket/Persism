@@ -15,6 +15,7 @@ import java.util.Properties;
 
 import static net.sf.persism.Parameters.params;
 import static net.sf.persism.SQL.sql;
+import static net.sf.persism.SQL.where;
 
 
 /**
@@ -86,6 +87,20 @@ public class TestNorthwind extends TestCase {
             //fail(e.getMessage());
         }
 
+    }
+
+    public void testJoins() {
+        List<Customer> customers = session.query(Customer.class);
+        log.info("total customers " + customers.size());
+
+        // use a Country with more than 5 - should not get any parent not found warnings.
+
+        customers = session.query(Customer.class, sql("select * from Customers where Country = ?").limit(5), params("USA"));
+        // customers = session.query(Customer.class, where(":country = ?").limit(10), params("USA"));
+        log.info("top 5 customers " + customers.size());
+
+        customers = session.query(Customer.class, where(":country = ?").limit(5), params("USA"));
+        log.info("top 5 customers with where " + customers.size());
     }
 
     public void testCustomers() {
@@ -161,16 +176,16 @@ public class TestNorthwind extends TestCase {
 
 
     static final String ORDER_QUERY = "SELECT o.OrderID, o.CustomerID, o.EmployeeID, o.OrderDate, " +
-            "o.RequiredDate, o.ShippedDate, d.ProductID,  " +
-            "d.UnitPrice, d.Quantity, d.Discount,  " +
-            "e.LastName + ', ' + e.FirstName EmployeeName, " +
-            "c.CompanyName CustomerName, " +
-            "p.ProductName " +
-            "FROM Orders o " +
-            "JOIN \"Order Details\" d ON o.OrderID = d.OrderID " +
-            "JOIN Employees e ON o.EmployeeID = e.EmployeeID " +
-            "JOIN Customers c ON o.CustomerID = c.CustomerID " +
-            "JOIN Products p ON d.ProductID = p.ProductID ";
+                                      "o.RequiredDate, o.ShippedDate, d.ProductID,  " +
+                                      "d.UnitPrice, d.Quantity, d.Discount,  " +
+                                      "e.LastName + ', ' + e.FirstName EmployeeName, " +
+                                      "c.CompanyName CustomerName, " +
+                                      "p.ProductName " +
+                                      "FROM Orders o " +
+                                      "JOIN \"Order Details\" d ON o.OrderID = d.OrderID " +
+                                      "JOIN Employees e ON o.EmployeeID = e.EmployeeID " +
+                                      "JOIN Customers c ON o.CustomerID = c.CustomerID " +
+                                      "JOIN Products p ON d.ProductID = p.ProductID ";
 
     public void testQuery() {
 

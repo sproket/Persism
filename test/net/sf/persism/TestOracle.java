@@ -9,15 +9,12 @@ package net.sf.persism;
 
 import net.sf.persism.categories.ExternalDB;
 import net.sf.persism.dao.*;
-import net.sf.persism.ddl.FieldDef;
-import net.sf.persism.ddl.TableDef;
 import org.junit.experimental.categories.Category;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.sql.*;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Properties;
@@ -32,24 +29,24 @@ public final class TestOracle extends BaseTest {
 
     @Override
     protected void setUp() throws Exception {
-        connectionType = ConnectionTypes.Oracle;
-        MSSQLDataSource.removeInstance();
+        long now = System.currentTimeMillis();
+
+        connectionType = ConnectionType.Oracle;
         super.setUp();
+        System.out.println("super setup " +  (System.currentTimeMillis() - now));
 
         Properties props = new Properties();
         props.load(getClass().getResourceAsStream("/oracle.properties"));
 
-        String driver = props.getProperty("database.driver");
-        String url = props.getProperty("database.url");
-        String username = props.getProperty("database.username");
-        String password = props.getProperty("database.password");
 
+        String driver = props.getProperty("database.driver");
         Class.forName(driver);
-        log.error(props);
-        //con = DriverManager.getConnection(url, username, password);
         con = OracleDataSource.getInstance().getConnection();
+        log.info("DRIVER: " + con.getMetaData().getDatabaseProductName() + " | " + con.getMetaData().getDatabaseProductVersion());
+        System.out.println("get connection " +  (System.currentTimeMillis() - now));
 
         createTables();
+        System.out.println("create tables " +  (System.currentTimeMillis() - now));
 
         session = new Session(con);
 
@@ -74,6 +71,8 @@ grant create trigger, create sequence to pinf;
 
     @Override
     protected void createTables() throws SQLException {
+        super.createTables();
+
         String sql;
 
         if (isTableInDatabase("ORDERS", con)) {
@@ -298,12 +297,63 @@ grant create trigger, create sequence to pinf;
                 CREATE TABLE Products (
                     ID int,
                     Description VARCHAR(50),
+                    BadNumber VARCHAR(30),
+                    BadDate VARCHAR(30),
+                    BadTimeStamp VARCHAR(30),
                     COST NUMERIC(10,3)
                     )
                 """;
         executeCommand(sql, con);
 
+        if (isTableInDatabase("SavedGames", con)) {
+            executeCommand("DROP TABLE SavedGames", con);
+        }
 
+        executeCommand("CREATE TABLE SavedGames ( " +
+                " ID VARCHAR(20) NOT NULL PRIMARY KEY, " +
+                " Name VARCHAR(100), " +
+                " Some_Date_And_Time TIMESTAMP NULL, " +
+                " Platinum REAL NULL, " +
+                " Gold REAL NULL, " +
+                " Silver REAL NULL, " +
+                " Copper REAL NULL, " +
+                " Data CLOB NULL, " +
+                " WhatTimeIsIt TIMESTAMP NULL, " +
+                " SomethingBig BLOB NULL) ", con);
+
+        if (isTableInDatabase("Postman", con)) {
+            executeCommand("DROP TABLE Postman", con);
+        }
+        sql = """
+                CREATE TABLE Postman (
+                    AUTO VARCHAR(50),
+                    Host VARCHAR(50),
+                    Port NUMERIC(8),
+                    "User" VARCHAR(50),
+                    Password VARCHAR(50),
+                    missingGetter NUMERIC(10,3)
+                    )
+                """;
+        executeCommand(sql, con);
+
+        // Test for Y ending table who's plural isn't ies....
+        if (isTableInDatabase("CorporateHolidays", con)) {
+            executeCommand("DROP TABLE CorporateHolidays", con);
+        }
+        sql = """
+                CREATE TABLE CorporateHolidays (
+                    ID varchar(10),
+                    NAME varchar(40),
+                    "DATE" date
+                    )
+                """;
+        executeCommand(sql, con);
+
+        if (isTableInDatabase("TABLENOPRIMARY", con)) {
+            executeCommand("DROP TABLE TABLENOPRIMARY", con);
+        }
+
+        executeCommand("CREATE TABLE TABLENOPRIMARY (  ID INT,  Name VARCHAR(30),  Field4 VARCHAR(30),  Field5 DATE,  Field6 INT,  Field7 INT,  Field8 INT )", con);
     }
 
 
@@ -393,7 +443,7 @@ grant create trigger, create sequence to pinf;
             ResultSetMetaData rsmd = rs.getMetaData();
 
             while (rs.next()) {
-                log.info("testTimeStamp: TYPE: " + rsmd.getColumnType(2) + " " + Types.convert(rsmd.getColumnType(2))); // second column
+                log.info("testTimeStamp: TYPE: " + rsmd.getColumnType(2) + " " + JavaType.convert(rsmd.getColumnType(2),"TS")); // second column
                 Date dt = rs.getDate("TS"); // loses time component
                 Object obj = rs.getObject("TS"); // returns fucken oracle.sql.TIMESTAMP class
                 Timestamp ts = rs.getTimestamp("TS");
@@ -467,26 +517,26 @@ grant create trigger, create sequence to pinf;
     }
 
     public void testCreateTableFromTableDef() {
-        Statement st = null;
-        try {
-            st = con.createStatement();
-            TableDef table = new TableDef();
-            table.setName("PINFEmployees");
-            table.addField(new FieldDef("ID", Integer.class, 10, 0));
-            table.addField(new FieldDef("Name", String.class, 50, 0));
-            table.addField(new FieldDef("HireDate", Date.class));
-            table.addField(new FieldDef("Salary1", BigDecimal.class, 20, 3));
-            table.addField(new FieldDef("Salary2", Double.class, 14, 3));
-            table.addField(new FieldDef("Salary3", Float.class, 9, 3));
-
-            UtilsForTests.createTable(table, con);
-
-        } catch (SQLException e) {
-            log.error(e.getMessage(), e);
-            fail(e.getMessage());
-        } finally {
-            UtilsForTests.cleanup(st, null);
-        }
+//        Statement st = null;
+//        try {
+//            st = con.createStatement();
+//            TableDef table = new TableDef();
+//            table.setName("PINFEmployees");
+//            table.addField(new FieldDef("ID", Integer.class, 10, 0));
+//            table.addField(new FieldDef("Name", String.class, 50, 0));
+//            table.addField(new FieldDef("HireDate", Date.class));
+//            table.addField(new FieldDef("Salary1", BigDecimal.class, 20, 3));
+//            table.addField(new FieldDef("Salary2", Double.class, 14, 3));
+//            table.addField(new FieldDef("Salary3", Float.class, 9, 3));
+//
+//            UtilsForTests.createTable(table, con);
+//
+//        } catch (SQLException e) {
+//            log.error(e.getMessage(), e);
+//            fail(e.getMessage());
+//        } finally {
+//            UtilsForTests.cleanup(st, null);
+//        }
     }
 
     public void testGetTriggerMetaData() throws SQLException {
@@ -588,6 +638,6 @@ grant create trigger, create sequence to pinf;
     @Override
     public void testGetDbMetaData() throws SQLException {
         // TODO SUPER SLOW ON NEW ORACLE FWR
-        //super.testGetDbMetaData();
+        super.testGetDbMetaData();
     }
 }

@@ -18,6 +18,8 @@ import static net.sf.persism.SQL.where;
 @Category(ExternalDB.class)
 public class TestStackOverflow extends TestCase {
 
+    // private static final Logger log = LoggerFactory.getLogger(StackOverflow.class);
+
     Connection con;
     Session session;
 
@@ -32,14 +34,39 @@ public class TestStackOverflow extends TestCase {
         session = new Session(con);
     }
 
-    public void testExtendedUsers() {
+    @Override
+    protected void tearDown() throws Exception {
+        super.tearDown();
+    }
+
+
+    public void testUserWithBadges() {
         long ms = System.currentTimeMillis();
-        List<ExtendedUser> users = session.query(ExtendedUser.class, where("Id < ?"), params(1000));
+
+        List<UserWithBadges> users = session.query(UserWithBadges.class, where(":reputation > ? ORDER BY :reputation DESC").limit(20), params(10000));
+
+        System.out.println("users rep > 10000 - count: " + users.size());
+        System.out.println("Time: " + (System.currentTimeMillis() - ms));
+
+        for (UserWithBadges user : users) {
+            System.out.println(user.getDisplayName() + " has " + user.getBadges().size() + " badges!");
+        }
+
+        UserWithBadges user1 = session.fetch(UserWithBadges.class, where(":reputation > ? ORDER BY :reputation DESC").limit(20), params(10000));
+        UserWithBadges user2 = session.fetch(UserWithBadges.class, where(":reputation > ? ORDER BY :reputation DESC"), params(10000));
+    }
+
+
+    public void testQueryExtendedUsers() {
+
+        long ms = System.currentTimeMillis();
+        // List<ExtendedUser> users = session.query(ExtendedUser.class, where("Id < ?"), params(1000));
+        List<ExtendedUser> users = session.query(ExtendedUser.class, where("Id = ?"), params(36));
         System.out.println(users.size());
         System.out.println("time: " + (System.currentTimeMillis() - ms));
     }
 
-    public void testExtendedUser() {
+    public void testFetchExtendedUser() {
         long ms = System.currentTimeMillis();
         ExtendedUser user = session.fetch(ExtendedUser.class, where("Id = ?"), params(4918));
         System.out.println("time: " + (System.currentTimeMillis() - ms));
@@ -50,6 +77,8 @@ public class TestStackOverflow extends TestCase {
         assertEquals(442, user.getPosts().size());
         assertEquals(83, user.getBadges().size());
         assertEquals(0, user.getOtherStuff().size()); // because we marked it "transient"
+
+
     }
 
     public void testGetPost() {
@@ -130,7 +159,7 @@ public class TestStackOverflow extends TestCase {
         System.out.println(vote);
     }
 
-    public void testExistVSIN() {
+    public void testExistVsIN() {
         String sql;
         int rowsIn;
         int rowsExists;
@@ -147,82 +176,83 @@ public class TestStackOverflow extends TestCase {
         // Posts IN
         sql = """
                 SELECT [Id], [AcceptedAnswerId], [AnswerCount], [Body], [ClosedDate], [CommentCount], [CommunityOwnedDate],
-                 [CreationDate], [FavoriteCount], [LastActivityDate], [LastEditDate], [LastEditorDisplayName], [LastEditorUserId], 
-                 [OwnerUserId], [ParentId], [PostTypeId], [Score], [Tags], [Title], [ViewCount] 
-                 FROM [dbo].[Posts] 
-                 WHERE [OwnerUserId] IN (SELECT [Id] FROM [Users] WHERE Id < ?)                 
-                    """;
+                 [CreationDate], [FavoriteCount], [LastActivityDate], [LastEditDate], [LastEditorDisplayName], [LastEditorUserId],
+                 [OwnerUserId], [ParentId], [PostTypeId], [Score], [Tags], [Title], [ViewCount]
+                 FROM [dbo].[Posts]
+                 WHERE [OwnerUserId] IN (SELECT [Id] FROM [Users] WHERE Id < ?)
+                 """;
         rowsIn = exec(Post.class, sql, 1000);
 
         // Posts EXISTS
         sql = """
-                SELECT [Id], [AcceptedAnswerId], [AnswerCount], [Body], [ClosedDate], [CommentCount], [CommunityOwnedDate], 
-                 [CreationDate], [FavoriteCount], [LastActivityDate], [LastEditDate], [LastEditorDisplayName], [LastEditorUserId], 
-                 [OwnerUserId], [ParentId], [PostTypeId], [Score], [Tags], [Title], [ViewCount] 
-                 FROM [dbo].[Posts] 
-                 WHERE EXISTS (SELECT [Id] FROM [Users] WHERE Id < ?  AND [Users].[Id] = [Posts].[OwnerUserId])                 
-                    """;
+                SELECT [Id], [AcceptedAnswerId], [AnswerCount], [Body], [ClosedDate], [CommentCount], [CommunityOwnedDate],
+                 [CreationDate], [FavoriteCount], [LastActivityDate], [LastEditDate], [LastEditorDisplayName], [LastEditorUserId],
+                 [OwnerUserId], [ParentId], [PostTypeId], [Score], [Tags], [Title], [ViewCount]
+                 FROM [dbo].[Posts]
+                 WHERE EXISTS (SELECT [Id] FROM [Users] WHERE Id < ?  AND [Users].[Id] = [Posts].[OwnerUserId])
+                 """;
         rowsExists = exec(Post.class, sql, 1000);
         assertEquals(rowsIn, rowsExists);
 
         // Comments IN
         sql = """
-                SELECT [Id], [CreationDate], [PostId], [Score], [Text], [UserId] 
-                 FROM [dbo].[Comments] 
-                 WHERE [PostId] IN (SELECT [Id] FROM [Posts] 
-                    WHERE [OwnerUserId] IN (SELECT [Id] FROM [Users] WHERE Id < ?))                 
+                SELECT [Id], [CreationDate], [PostId], [Score], [Text], [UserId]
+                 FROM [dbo].[Comments]
+                 WHERE [PostId] IN (SELECT [Id] FROM [Posts]
+                    WHERE [OwnerUserId] IN (SELECT [Id] FROM [Users] WHERE Id < ?))
                     """;
         rowsIn = exec(Comment.class, sql, 1000);
 
         // Comments EXISTS
         sql = """
-                SELECT [Id], [CreationDate], [PostId], [Score], [Text], [UserId] 
-                FROM [dbo].[Comments] 
-                 WHERE EXISTS (SELECT [Id] FROM [Posts] 
-                    WHERE EXISTS (SELECT [Id] FROM [Users] WHERE Id < ?  AND [Users].[Id] = [Posts].[OwnerUserId])  AND [Posts].[Id] = [Comments].[PostId])                 
+                SELECT [Id], [CreationDate], [PostId], [Score], [Text], [UserId]
+                FROM [dbo].[Comments]
+                 WHERE EXISTS (SELECT [Id] FROM [Posts]
+                    WHERE EXISTS (SELECT [Id] FROM [Users] WHERE Id < ?  AND [Users].[Id] = [Posts].[OwnerUserId])  AND [Posts].[Id] = [Comments].[PostId])
                     """;
         rowsExists = exec(Comment.class, sql, 1000);
         assertEquals(rowsIn, rowsExists);
 
         // Users IN (from Comments)
         sql = """
-                SELECT [Id], [AboutMe], [Age], [CreationDate], [DisplayName], [DownVotes], [EmailHash], [LastAccessDate], 
-                 [Location], [Reputation], [UpVotes], [Views], [WebsiteUrl], [AccountId] 
-                 FROM [dbo].[Users] 
-                 WHERE [Id] IN (SELECT [UserId] FROM [Comments] 
-                  WHERE [PostId] IN (SELECT [Id] FROM [Posts] 
-                      WHERE [OwnerUserId] IN (SELECT [Id] FROM [Users] WHERE Id < ?)))   
-                  """;
+                SELECT [Id], [AboutMe], [Age], [CreationDate], [DisplayName], [DownVotes], [EmailHash], [LastAccessDate],
+                 [Location], [Reputation], [UpVotes], [Views], [WebsiteUrl], [AccountId]
+                 FROM [dbo].[Users]
+                 WHERE [Id] IN (SELECT [UserId] FROM [Comments]
+                  WHERE [PostId] IN (SELECT [Id] FROM [Posts]
+                      WHERE [OwnerUserId] IN (SELECT [Id] FROM [Users] WHERE Id < ?)))
+                      """;
         rowsIn = exec(User.class, sql, 1000);
 
         // Users EXISTS (from Comments)
         sql = """
-                SELECT [Id], [AboutMe], [Age], [CreationDate], [DisplayName], [DownVotes], [EmailHash], [LastAccessDate], 
-                 [Location], [Reputation], [UpVotes], [Views], [WebsiteUrl], [AccountId] 
-                 FROM [dbo].[Users] 
-                 WHERE EXISTS (SELECT [UserId] FROM [Comments] 
-                    WHERE EXISTS (SELECT [Id] FROM [Posts] 
-                        WHERE EXISTS (SELECT [Id] FROM [Users] WHERE Id < ?  AND [Users].[Id] = [Posts].[OwnerUserId])  AND [Posts].[Id] = [Comments].[PostId])  AND [Comments].[UserId] = [Users].[Id]) 
-                """;
+                SELECT [Id], [AboutMe], [Age], [CreationDate], [DisplayName], [DownVotes], [EmailHash], [LastAccessDate],
+                 [Location], [Reputation], [UpVotes], [Views], [WebsiteUrl], [AccountId]
+                 FROM [dbo].[Users]
+                 WHERE EXISTS (SELECT [UserId] FROM [Comments]
+                    WHERE EXISTS (SELECT [Id] FROM [Posts]
+                        WHERE EXISTS (SELECT [Id] FROM [Users] WHERE Id < ?  AND [Users].[Id] = [Posts].[OwnerUserId])
+                        AND [Posts].[Id] = [Comments].[PostId])  AND [Comments].[UserId] = [Users].[Id])
+                        """;
         rowsExists = exec(User.class, sql, 1000);
         assertEquals(rowsIn, rowsExists);
 
         // Comment for post user IN
         sql = """
-                SELECT [Id], [CreationDate], [PostId], [Score], [Text], [UserId] 
-                 FROM [dbo].[Comments] 
-                 WHERE [PostId] IN (SELECT [Id] FROM [Posts] 
-                    WHERE [OwnerUserId] IN (SELECT [Id] FROM [Users] WHERE Id < ?))  AND [UserId] IN (SELECT [OwnerUserId] FROM [Posts] 
-                        WHERE [OwnerUserId] IN (SELECT [Id] FROM [Users] WHERE Id < ?))        
-                """;
+                SELECT [Id], [CreationDate], [PostId], [Score], [Text], [UserId]
+                 FROM [dbo].[Comments]
+                 WHERE [PostId] IN (SELECT [Id] FROM [Posts]
+                    WHERE [OwnerUserId] IN (SELECT [Id] FROM [Users] WHERE Id < ?))  AND [UserId] IN (SELECT [OwnerUserId] FROM [Posts]
+                        WHERE [OwnerUserId] IN (SELECT [Id] FROM [Users] WHERE Id < ?))
+                        """;
         rowsIn = exec(Comment.class, sql, 1000, 1000);
 
         // comment for post user EXISTS
         sql = """
-                SELECT [Id], [CreationDate], [PostId], [Score], [Text], [UserId] 
-                 FROM [dbo].[Comments] 
-                 WHERE EXISTS (SELECT [Id],[OwnerUserId] FROM [Posts] 
-                    WHERE EXISTS (SELECT [Id] FROM [Users] WHERE Id < ?  AND [Users].[Id] = [Posts].[OwnerUserId])  AND [Posts].[Id] = [Comments].[PostId] AND [Posts].[OwnerUserId] = [Comments].[UserId])                 
+                SELECT [Id], [CreationDate], [PostId], [Score], [Text], [UserId]
+                 FROM [dbo].[Comments]
+                 WHERE EXISTS (SELECT [Id],[OwnerUserId] FROM [Posts]
+                    WHERE EXISTS (SELECT [Id] FROM [Users] WHERE Id < ?  AND [Users].[Id] = [Posts].[OwnerUserId])  AND [Posts].[Id] = [Comments].[PostId] AND [Posts].[OwnerUserId] = [Comments].[UserId])
                 """;
         rowsExists = exec(Comment.class, sql, 1000);
         // these are NOT equal. IN with multiple rows returns EXTRA WE WONT WANT
@@ -230,25 +260,26 @@ public class TestStackOverflow extends TestCase {
 
         //  user comment for post user IN
         sql = """
-                SELECT [Id], [AboutMe], [Age], [CreationDate], [DisplayName], [DownVotes], [EmailHash], [LastAccessDate], 
-                 [Location], [Reputation], [UpVotes], [Views], [WebsiteUrl], [AccountId] 
-                 FROM [dbo].[Users] 
-                 WHERE [Id] IN (SELECT [UserId] FROM [Comments] 
-                    WHERE [PostId] IN (SELECT [Id] FROM [Posts] 
-                        WHERE [OwnerUserId] IN (SELECT [Id] FROM [Users] WHERE Id < ?))  AND [UserId] IN (SELECT [OwnerUserId] FROM [Posts] 
-                            WHERE [OwnerUserId] IN (SELECT [Id] FROM [Users] WHERE Id < ?)))                 
-                    """;
+                SELECT [Id], [AboutMe], [Age], [CreationDate], [DisplayName], [DownVotes], [EmailHash], [LastAccessDate],
+                 [Location], [Reputation], [UpVotes], [Views], [WebsiteUrl], [AccountId]
+                 FROM [dbo].[Users]
+                 WHERE [Id] IN (SELECT [UserId] FROM [Comments]
+                    WHERE [PostId] IN (SELECT [Id] FROM [Posts]
+                        WHERE [OwnerUserId] IN (SELECT [Id] FROM [Users] WHERE Id < ?))  AND [UserId] IN (SELECT [OwnerUserId] FROM [Posts]
+                            WHERE [OwnerUserId] IN (SELECT [Id] FROM [Users] WHERE Id < ?)))
+                            """;
         rowsIn = exec(User.class, sql, 1000, 1000);
 
         //  user comment for post user EXISTS
         sql = """
-                SELECT [Id], [AboutMe], [Age], [CreationDate], [DisplayName], [DownVotes], [EmailHash], [LastAccessDate], 
-                 [Location], [Reputation], [UpVotes], [Views], [WebsiteUrl], [AccountId] 
-                 FROM [dbo].[Users] 
-                 WHERE EXISTS (SELECT [UserId] FROM [Comments] 
-                    WHERE EXISTS (SELECT [Id],[OwnerUserId] FROM [Posts] 
-                        WHERE EXISTS (SELECT [Id] FROM [Users] WHERE Id < ?  AND [Users].[Id] = [Posts].[OwnerUserId])  AND [Posts].[Id] = [Comments].[PostId] AND [Posts].[OwnerUserId] = [Comments].[UserId])  AND [Comments].[UserId] = [Users].[Id])                 
-                    """;
+                SELECT [Id], [AboutMe], [Age], [CreationDate], [DisplayName], [DownVotes], [EmailHash], [LastAccessDate],
+                 [Location], [Reputation], [UpVotes], [Views], [WebsiteUrl], [AccountId]
+                 FROM [dbo].[Users]
+                 WHERE EXISTS (SELECT [UserId] FROM [Comments]
+                    WHERE EXISTS (SELECT [Id],[OwnerUserId] FROM [Posts]
+                        WHERE EXISTS (SELECT [Id] FROM [Users] WHERE Id < ?  AND [Users].[Id] = [Posts].[OwnerUserId])
+                        AND [Posts].[Id] = [Comments].[PostId] AND [Posts].[OwnerUserId] = [Comments].[UserId])  AND [Comments].[UserId] = [Users].[Id])
+                        """;
         rowsExists = exec(User.class, sql, 1000);
         // Same with comment query
         assertTrue(rowsIn > rowsExists);

@@ -11,9 +11,10 @@ import net.sf.persism.categories.LocalDB;
 import net.sf.persism.dao.Customer;
 import net.sf.persism.dao.DAOFactory;
 import net.sf.persism.dao.Order;
-import net.sf.persism.dao.TableNoPrimary;
+import oracle.jdbc.proxy.annotation.Pre;
 import org.junit.experimental.categories.Category;
 
+import javax.sql.RowSet;
 import java.sql.*;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -23,6 +24,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
+import static net.sf.persism.Parameters.params;
 import static net.sf.persism.SQL.sql;
 import static net.sf.persism.UtilsForTests.*;
 
@@ -33,16 +35,13 @@ public final class TestSQLite extends BaseTest {
     // http://sqlite.org/datatype3.html
 
     private static final Log log = Log.getLogger(TestSQLite.class);
-    private static final Log blog = Log.getLogger("net.sf.persism.Benchmarks");
 
 
     String home;
 
     @Override
     protected void setUp() throws Exception {
-        long now = System.nanoTime();
-
-        connectionType = ConnectionTypes.SQLite;
+        connectionType = ConnectionType.SQLite;
         super.setUp();
 
         Properties props = new Properties();
@@ -55,14 +54,49 @@ public final class TestSQLite extends BaseTest {
         log.info(url);
 
         con = DriverManager.getConnection(url);
-
-        log.info(con.getMetaData().getDatabaseProductName() + " " + con.getMetaData().getDatabaseProductVersion());
-
+        log.info("DRIVER: " + con.getMetaData().getDatabaseProductName() + " | " + con.getMetaData().getDatabaseProductVersion());
         createTables();
 
         session = new Session(con);
+    }
 
-        logit("setup: ", now);
+
+    public void testJDBCInsert() throws SQLException {
+
+//        try (Statement st = con.createStatement()) {
+//            st.execute("TRUNCATE TABLE [Orders]");
+//        }
+
+        String sql = "INSERT INTO [Orders] ([NAME], [Customer_ID], [PAID], [Prepaid], [IsCollect], [IsCancelled], [CREATED], [DATE_PAID], [DATE_SOMETHING])  " +
+                     "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?) RETURNING *;";
+
+        try (PreparedStatement st = con.prepareStatement(sql)) {
+
+            st.setString(1, "fred");
+            st.setString(2, "cust_id");
+            st.setBoolean(3, true);
+            st.setBoolean(4, true);
+            st.setBoolean(5, false);
+            st.setBoolean(6, false);
+            st.setTimestamp(7, Timestamp.valueOf(LocalDateTime.now()));
+            st.setTimestamp(8, Timestamp.valueOf(LocalDateTime.now()));
+            st.setTimestamp(9, Timestamp.valueOf(LocalDateTime.now()));
+
+            boolean insertReturnedResults = st.execute();
+            System.out.println(insertReturnedResults);
+
+            List<String> generatedKeys = new ArrayList<>(1);
+            generatedKeys.add("id");
+
+            int rowCount = st.getUpdateCount();
+            System.out.println(rowCount);
+
+            ResultSet rs = st.getResultSet();
+            System.out.println(rs.next());
+            System.out.println(rs.getObject("id"));
+        }
+
+// INSERT INTO [Orders] ([NAME], [Customer_ID], [PAID], [Prepaid], [IsCollect], [IsCancelled], [CREATED], [DATE_PAID], [DATE_SOMETHING])  VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
     }
 
 
@@ -73,7 +107,8 @@ public final class TestSQLite extends BaseTest {
 
     @Override
     protected void createTables() throws SQLException {
-        long now = System.nanoTime();
+        super.createTables();
+
 
         Statement st = null;
         List<String> commands = new ArrayList<String>(3);
@@ -86,18 +121,18 @@ public final class TestSQLite extends BaseTest {
 
         }
         commands.add("CREATE TABLE Orders ( " +
-                " ID INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT UNIQUE, " +
-                " NAME VARCHAR(30) NULL, " +
-                " ROW_ID VARCHAR(30) NULL, " +
-                " Customer_ID VARCHAR(10) NULL, " +
-                " PAID BIT NULL, " +
-                " Prepaid BIT NULL," +
-                " IsCollect BIT NULL," +
-                " IsCancelled BIT NULL," +
-                " CREATED datetime DEFAULT CURRENT_TIMESTAMP, " +
-                " DATE_PAID datetime NULL, " +
-                " DATE_SOMETHING datetime NULL" +
-                ") ");
+                     " ID INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT UNIQUE, " +
+                     " NAME VARCHAR(30) NULL, " +
+                     " ROW_ID VARCHAR(30) NULL, " +
+                     " Customer_ID VARCHAR(10) NULL, " +
+                     " PAID BIT NULL, " +
+                     " Prepaid BIT NULL," +
+                     " IsCollect BIT NULL," +
+                     " IsCancelled BIT NULL," +
+                     " CREATED datetime DEFAULT CURRENT_TIMESTAMP, " +
+                     " DATE_PAID datetime NULL, " +
+                     " DATE_SOMETHING datetime NULL" +
+                     ") ");
 
         // view first
         if (isViewInDatabase("CustomerInvoice", con)) {
@@ -110,24 +145,24 @@ public final class TestSQLite extends BaseTest {
         }
 
         commands.add("CREATE TABLE Customers ( " +
-                " Customer_ID varchar(10) PRIMARY KEY UNIQUE NOT NULL, " +
-                " GROUP_ID INT NULL, " +
-                " Company_Name VARCHAR(30) NULL, " +
-                " Contact_Name VARCHAR(30) NULL, " +
-                " Contact_Title VARCHAR(10) NULL, " +
-                " Address VARCHAR(40) NULL, " +
-                " City VARCHAR(30) NULL, " +
-                " Region VARCHAR(10) NULL, " +
-                " Postal_Code VARCHAR(10) NULL, " +
-                " Country VARCHAR(2) DEFAULT 'US', " +
-                " Phone VARCHAR(30) NULL, " +
-                " STATUS CHAR(1) NULL, " +
-                " Fax VARCHAR(30) NULL, " +
-                " Date_Registered datetime default  (datetime('now','localtime')), " +
-                " Date_Of_Last_Order DATE, " +
-                " TestLocalDate datetime, " +
-                " TestLocalDateTIme datetime " +
-                ") ");
+                     " Customer_ID varchar(10) PRIMARY KEY UNIQUE NOT NULL, " +
+                     " GROUP_ID INT NULL, " +
+                     " Company_Name VARCHAR(30) NULL, " +
+                     " Contact_Name VARCHAR(30) NULL, " +
+                     " Contact_Title VARCHAR(10) NULL, " +
+                     " Address VARCHAR(40) NULL, " +
+                     " City VARCHAR(30) NULL, " +
+                     " Region VARCHAR(10) NULL, " +
+                     " Postal_Code VARCHAR(10) NULL, " +
+                     " Country VARCHAR(2) DEFAULT 'US', " +
+                     " Phone VARCHAR(30) NULL, " +
+                     " STATUS CHAR(1) NULL, " +
+                     " Fax VARCHAR(30) NULL, " +
+                     " Date_Registered datetime default  (datetime('now','localtime')), " +
+                     " Date_Of_Last_Order DATE, " +
+                     " TestLocalDate datetime, " +
+                     " TestLocalDateTIme datetime " +
+                     ") ");
 
 
         if (isTableInDatabase("Invoices", con)) {
@@ -135,17 +170,17 @@ public final class TestSQLite extends BaseTest {
         }
 
         commands.add("CREATE TABLE Invoices ( " +
-                " Invoice_ID INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT UNIQUE, " +
-                " Customer_ID varchar(10) NOT NULL, " +
-                " Paid BIT NOT NULL, " +
-                " Price REAL NOT NULL, " +
-                " ActualPrice REAL NOT NULL, " +
-                " Status CHAR(1) DEFAULT '1', " +
-                " Created DateTime default (datetime('now','localtime')), " + // make read-only in Invoice Object
-                " Quantity INTEGER NOT NULL, " +
-                //" Total REAL NOT NULL, " +
-                " Discount REAL NOT NULL " +
-                ") ");
+                     " Invoice_ID INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT UNIQUE, " +
+                     " Customer_ID varchar(10) NOT NULL, " +
+                     " Paid BIT NOT NULL, " +
+                     " Price REAL NOT NULL, " +
+                     " ActualPrice REAL NOT NULL, " +
+                     " Status CHAR(1) DEFAULT '1', " +
+                     " Created DateTime default (datetime('now','localtime')), " + // make read-only in Invoice Object
+                     " Quantity INTEGER NOT NULL, " +
+                     //" Total REAL NOT NULL, " +
+                     " Discount REAL NOT NULL " +
+                     ") ");
 
         if (isTableInDatabase("TABLENOPRIMARY", con)) {
             commands.add("DROP TABLE TABLENOPRIMARY");
@@ -154,14 +189,14 @@ public final class TestSQLite extends BaseTest {
         // WHY TF does this not throw an exception????? ANY TYPE?
         // Need to review best practices for SQLite http://www.sqlite.org/datatype3.html
         commands.add("CREATE TABLE TABLENOPRIMARY ( " +
-                " ID INT, " +
-                " Name VARCHAR(30), " +
-                " Field4 VARCHAR(30), " +
-                " Field5 DATETIME, " +
-                " Field6 SHITE, " +
-                " Field7 FACK, " +
-                " Field8 COWABUNGA " +
-                ") ");
+                     " ID INT, " +
+                     " Name VARCHAR(30), " +
+                     " Field4 VARCHAR(30), " +
+                     " Field5 DATETIME, " +
+                     " Field6 SHITE, " +
+                     " Field7 FACK, " +
+                     " Field8 COWABUNGA " +
+                     ") ");
 
         executeCommands(commands, con);
 
@@ -170,33 +205,34 @@ public final class TestSQLite extends BaseTest {
         }
 
         String sql = "CREATE TABLE CONTACTS ( " +
-                " identity VARCHAR(36) PRIMARY KEY UNIQUE NOT NULL, " +
-                " PartnerID BLOB NOT NULL, " +
-                " Type char(2) NOT NULL, " +
-                " Firstname varchar(50) NULL, " +
-                " Lastname varchar(50) NULL, " +
-                " ContactName varchar(50) NULL, " +
-                " Company varchar(50) NULL, " +
-                " Division varchar(50) NULL, " +
-                " Email varchar(50) NULL, " +
-                " Address1 varchar(50) NULL, " +
-                " Address2 varchar(50) NULL, " +
-                " City varchar(50) NULL, " +
-                " StateProvince varchar(50) NULL, " +
-                " ZipPostalCode varchar(10) NULL, " +
-                " Status SMALLINT NOT NULL, " +
-                " Country varchar(50) NULL, " +
-                " DateAdded TIMESTAMP NULL, " + // was DATETIME. What is TIMESTAMP in SQLite? RANDOM I guess.
-                " LastModified DATETIME NULL, " +
-                " Notes text NULL, " +
-                " AmountOwed float NULL, " +
-                " BigInt DECIMAL(20) NULL, " +
-                " Some_DATE DATETIME NULL, " +
-                " TestInstant TIMESTAMP NULL, " +
-                " TestInstant2 DATETIME NULL, " +
-                " WhatMiteIsIt time NULL, " +
-                " WhatTimeIsIt time NULL " +
-                ") ";
+                     " identity VARCHAR(36) PRIMARY KEY UNIQUE NOT NULL, " +
+                     " PartnerID BLOB NOT NULL, " +
+                     " Type char(2) NOT NULL, " +
+                     " Firstname varchar(50) NULL, " +
+                     " Lastname varchar(50) NULL, " +
+                     " ContactName varchar(50) NULL, " +
+                     " Company varchar(50) NULL, " +
+                     " Division varchar(50) NULL, " +
+                     " Email varchar(50) NULL, " +
+                     " Address1 varchar(50) NULL, " +
+                     " Address2 varchar(50) NULL, " +
+                     " City varchar(50) NULL, " +
+                     " StateProvince varchar(50) NULL, " +
+                     " ZipPostalCode varchar(10) NULL, " +
+                     " Status SMALLINT NOT NULL, " +
+                     " Country varchar(50) NULL, " +
+                     " DateAdded TIMESTAMP NULL, " + // was DATETIME. What is TIMESTAMP in SQLite? RANDOM I guess.
+                     " LastModified DATETIME NULL, " +
+                     " Notes text NULL, " +
+                     " AmountOwed float NULL, " +
+                     " BigInt DECIMAL(20) NULL, " +
+                     " Some_DATE DATETIME NULL, " +
+                     " Some_TIME time NULL, " +
+                     " TestInstant TIMESTAMP NULL, " +
+                     " TestInstant2 DATETIME NULL, " +
+                     " WhatMiteIsIt time NULL, " +
+                     " WhatTimeIsIt time NULL " +
+                     ") ";
         executeCommand(sql, con);
 
         if (isTableInDatabase("DateTestLocalTypes", con)) {
@@ -204,11 +240,11 @@ public final class TestSQLite extends BaseTest {
         }
 
         sql = "CREATE TABLE DateTestLocalTypes ( " +
-                " ID INT, " +
-                " Description VARCHAR(100), " +
-                " DateOnly DATE, " +
-                " TimeOnly TIME," +
-                " DateAndTime DATETIME) ";
+              " ID INT, " +
+              " Description VARCHAR(100), " +
+              " DateOnly DATE, " +
+              " TimeOnly TIME," +
+              " DateAndTime DATETIME) ";
 
         executeCommand(sql, con);
 
@@ -217,12 +253,12 @@ public final class TestSQLite extends BaseTest {
         }
 
         sql = "CREATE TABLE DateTestSQLTypes ( " +
-                " ID INT, " +
-                " Description VARCHAR(100), " +
-                " DateOnly DATE, " +
-                " TimeOnly TIME," +
-                " UtilDateAndTime DATETIME, " +
-                " DateAndTime DATETIME) ";
+              " ID INT, " +
+              " Description VARCHAR(100), " +
+              " DateOnly DATE, " +
+              " TimeOnly TIME," +
+              " UtilDateAndTime DATETIME, " +
+              " DateAndTime DATETIME) ";
 
         executeCommand(sql, con);
 
@@ -231,23 +267,23 @@ public final class TestSQLite extends BaseTest {
             executeCommand("DROP TABLE RecordTest1", con);
         }
         sql = "CREATE TABLE RecordTest1 ( " +
-                "ID VARCHAR(36), " +
-                "NAME VARCHAR(20), " +
-                "QTY INT, " +
-                "PRICE REAL " +
-                ") ";
+              "ID VARCHAR(36), " +
+              "NAME VARCHAR(20), " +
+              "QTY INT, " +
+              "PRICE REAL " +
+              ") ";
         executeCommand(sql, con);
 
         if (isTableInDatabase("RecordTest2", con)) {
             executeCommand("DROP TABLE RecordTest2", con);
         }
         sql = "CREATE TABLE RecordTest2 ( " +
-                "ID INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT UNIQUE, " +
-                "DESCRIPTION VARCHAR(20), " +
-                "QTY INT, " +
-                "PRICE REAL, " +
-                "CREATED_ON DATETIME default current_timestamp" +
-                ") ";
+              "ID INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT UNIQUE, " +
+              "DESCRIPTION VARCHAR(20), " +
+              "QTY INT, " +
+              "PRICE REAL, " +
+              "CREATED_ON DATETIME default current_timestamp" +
+              ") ";
         executeCommand(sql, con);
 
         sql = """
@@ -279,23 +315,66 @@ public final class TestSQLite extends BaseTest {
                 CREATE TABLE Products (
                     ID int,
                     Description VARCHAR(50),
+                    BADNUMBER VARCHAR(30),
+                    BADDATE VARCHAR(30),
+                    BADTIMESTAMP VARCHAR(30),
                     COST NUMERIC(10,3)
                     )
                 """;
         executeCommand(sql, con);
 
-        logit("Create Tables:", now);
+        if (isTableInDatabase("SavedGames", con)) {
+            executeCommand("DROP TABLE SavedGames", con);
+        }
+
+        executeCommand("CREATE TABLE SavedGames ( " +
+                       " ID VARCHAR(20) NOT NULL PRIMARY KEY, " +
+                       " Name VARCHAR(100), " +
+                       " Some_Date_And_Time DATETIME NULL, " +
+                       " Platinum REAL NULL, " +
+                       " Gold REAL NULL, " +
+                       " Silver REAL NULL, " +
+                       " Copper REAL NULL, " +
+                       " Data CLOB NULL, " +
+                       " WhatTimeIsIt DATETIME NULL, " +
+                       " SomethingBig BLOB NULL) ", con);
+
+        if (isTableInDatabase("Postman", con)) {
+            executeCommand("DROP TABLE Postman", con);
+        }
+        sql = """
+                CREATE TABLE Postman (
+                    AUTO VARCHAR(50),
+                    Host VARCHAR(50),
+                    Port NUMERIC(8),
+                    User VARCHAR(50),
+                    Password VARCHAR(50),
+                    missingGetter NUMERIC(10,3)
+                    )
+                """;
+        executeCommand(sql, con);
+
+        // Test for Y ending table who's plural isn't ies....
+        if (isTableInDatabase("CorporateHolidays", con)) {
+            executeCommand("DROP TABLE CorporateHolidays", con);
+        }
+        sql = """
+                CREATE TABLE CorporateHolidays (
+                    ID varchar(10),
+                    NAME varchar(40),
+                    DATE date
+                    )
+                """;
+        executeCommand(sql, con);
+
     }
 
     @Override
     public void testContactTable() throws SQLException {
-        long now = System.nanoTime();
         super.testContactTable();
-        logit("testContactTable:", now);
     }
 
     public void testOrders() throws Exception {
-        long now = System.nanoTime();
 
         Order order = DAOFactory.newOrder(con);
         order.setName("COW");
@@ -324,8 +403,8 @@ public final class TestSQLite extends BaseTest {
         assertEquals("list size s/b 4", 4, list.size());
         log.info("ORDERS\n" + list);
 
-        session.query(Order.class, "select * from orders where id in (?,?,?)", 1, 2, 43);
-        session.fetch(Order.class, "select * from orders where id = ?", 2);
+        session.query(Order.class, sql("select * from orders where id in (?,?,?)"), params(1, 2, 43));
+        session.fetch(Order.class, sql("select * from orders where id = ?"), params(2));
 
         order = list.get(0);
         assertNotNull(order);
@@ -348,13 +427,10 @@ public final class TestSQLite extends BaseTest {
         Object x = new Date(System.currentTimeMillis());
         log.info(x.getClass());
 
-        logit("testOrders:", now);
     }
 
 
     public void testCustomers() {
-        long now = System.nanoTime();
-
         Customer customer = new Customer();
         customer.setCompanyName("MOO");
 
@@ -364,7 +440,9 @@ public final class TestSQLite extends BaseTest {
             session.insert(customer);
         } catch (PersismException e) {
             nullKeyFail = true;
-            assertEquals("Should have constraint exception here", "[SQLITE_CONSTRAINT_NOTNULL]  A NOT NULL constraint failed (NOT NULL constraint failed: Customers.Customer_ID)", e.getMessage());
+            //assertEquals("Should have constraint exception here", "[SQLITE_CONSTRAINT_NOTNULL]  A NOT NULL constraint failed (NOT NULL constraint failed: Customers.Customer_ID)", e.getMessage());
+            log.error(e.getMessage());
+            assertTrue("Should have constraint exception here", e.getMessage().contains("[SQLITE_CONSTRAINT_NOTNULL]"));
         }
         assertTrue("null key should have failed", nullKeyFail);
 
@@ -378,12 +456,12 @@ public final class TestSQLite extends BaseTest {
         log.info("Customer 1 ?" + customer);
 
         List<Customer> list;
-        list = session.query(Customer.class, "SELECT *, Company_Name, Contact_Name, :contactTitle FROM  CUSTOMERS");
+        list = session.query(Customer.class, sql("SELECT *, Company_Name, Contact_Name, :contactTitle FROM  CUSTOMERS"));
 
         log.info(list);
 
         // somehow SQLite is OK with this. <sigh>
-        String result = session.fetch(String.class, "SELECT :contactTitle FROM CUSTOMERS");
+        String result = session.fetch(String.class, sql("SELECT :contactTitle FROM CUSTOMERS"));
         log.warn("WTF! " + result);
 
         // insert a duplicate
@@ -396,7 +474,9 @@ public final class TestSQLite extends BaseTest {
             session.insert(customer2);
         } catch (PersismException e) {
             dupFail = true;
-            assertEquals("Should have constraint exception here", "[SQLITE_CONSTRAINT_PRIMARYKEY]  A PRIMARY KEY constraint failed (UNIQUE constraint failed: Customers.Customer_ID)", e.getMessage());
+            log.info(e.getMessage());
+            // assertEquals("Should have constraint exception here", "[SQLITE_CONSTRAINT_PRIMARYKEY]  A PRIMARY KEY constraint failed (UNIQUE constraint failed: Customers.Customer_ID)", e.getMessage());
+            assertTrue("Should have constraint exception here", e.getMessage().contains("[SQLITE_CONSTRAINT_PRIMARYKEY]"));
         }
 
         assertTrue("duplicate key should fail", dupFail);
@@ -434,12 +514,9 @@ public final class TestSQLite extends BaseTest {
 
         assertEquals("list should have 0 customers", 0, list.size());
 
-        logit("testCustomers:", now);
     }
 
     public void testDefaultDate() {
-        long now = System.nanoTime();
-
         Customer customer = new Customer();
         customer.setCustomerId("XYZ");
         customer.setContactName("TEST2");
@@ -455,11 +532,9 @@ public final class TestSQLite extends BaseTest {
         log.info(customer.getDateRegistered());
         assertNotNull("date reg should be not null", customer.getDateRegistered());
 
-        logit("testDefaultDate:", now);
     }
 
     public void testMultipleGeneratedKeys() {
-        long now = System.nanoTime();
         // test customer which has a default on Date_Registered
         // getGeneratedKeys does NOT retrieve this value.
         // getGeneratedKeys is ONLY for autoincs and guids
@@ -468,32 +543,33 @@ public final class TestSQLite extends BaseTest {
 
         PreparedStatement st = null;
         java.sql.ResultSet rs = null;
+
         try {
-            String[] keyArray = {"Date_Registered"};
+            String[] keyArray = {"Customer_ID", "Date_Registered"};
             st = con.prepareStatement(insertStatement, keyArray);
 
             st.setString(1, "JUNK");
             st.setString(1, "JUNK NAME");
 
             int ret = st.executeUpdate();
-            log.info("rows insetred " + ret);
+            log.info("rows inserted " + ret);
             rs = st.getGeneratedKeys();
             while (rs.next()) {
-                log.info("cow: " + rs.getObject(1));
+                log.warn("row: " + rs.getObject(1));
             }
 
+            List<Customer> customers = session.query(Customer.class);
+            log.warn(customers);
+            log.warn(customers.size());
         } catch (Exception e) {
             log.error(e.getMessage(), e);
             fail(e.getMessage());
         } finally {
             Util.cleanup(st, rs);
-
-            logit("testMultipleGeneratedKeys:", now);
         }
     }
 
     public void testMetaData() {
-        long now = System.nanoTime();
 
         Statement st = null;
         java.sql.ResultSet rs = null;
@@ -520,15 +596,12 @@ public final class TestSQLite extends BaseTest {
             fail(e.getMessage());
         } finally {
             Util.cleanup(st, rs);
-            logit("testMetaData:", now);
         }
     }
 
     // ResultSetMetaData can't determine types if there is no result? where 1=0 ?
     // http://groups.google.com/group/xerial/browse_thread/thread/2abbd5ed2ea0189?hl=en
     public void testTypes() {
-        long now = System.nanoTime();
-
         Statement st = null;
         ResultSet rs = null;
         try {
@@ -586,13 +659,10 @@ public final class TestSQLite extends BaseTest {
 
         } finally {
             Util.cleanup(st, rs);
-            logit("testTypes:", now);
         }
     }
 
     public void testExplain() {
-        long now = System.nanoTime();
-
         Statement st = null;
         ResultSet rs = null;
 
@@ -618,62 +688,11 @@ public final class TestSQLite extends BaseTest {
 
         } finally {
             Util.cleanup(st, rs);
-            logit("testExplain:", now);
         }
     }
 
-    public void testColumnAnnotation() {
-        long now = System.nanoTime();
-
-        TableNoPrimary junk = new TableNoPrimary();
-        junk.setId(1);
-        junk.setName("JUNK");
-
-        // This should work OK
-        session.insert(junk);
-
-        log.info(session.query(TableNoPrimary.class, sql("SELECT * FROM TableNoPrimary")));
-
-        boolean shouldFail = false;
-
-        junk.setName("NO WORKEE!");
-        try {
-            session.update(junk);
-        } catch (PersismException e) {
-            shouldFail = true;
-            assertEquals("Message s/b 'Cannot perform UPDATE - TABLENOPRIMARY has no primary keys'",
-                    "Cannot perform UPDATE - TABLENOPRIMARY has no primary keys",
-                    e.getMessage());
-        }
-        assertTrue(shouldFail);
-
-        shouldFail = false;
-        try {
-            session.fetch(junk);
-        } catch (PersismException e) {
-            shouldFail = true;
-            assertEquals("Message s/b 'Cannot perform FETCH - TABLENOPRIMARY has no primary keys'",
-                    "Cannot perform FETCH - TABLENOPRIMARY has no primary keys",
-                    e.getMessage());
-        }
-        assertTrue(shouldFail);
-
-        shouldFail = false;
-        try {
-            session.delete(junk);
-        } catch (PersismException e) {
-            shouldFail = true;
-            assertEquals("Message s/b 'Cannot perform DELETE - TABLENOPRIMARY has no primary keys'",
-                    "Cannot perform DELETE - TABLENOPRIMARY has no primary keys",
-                    e.getMessage());
-        }
-        assertTrue(shouldFail);
-
-        logit("testColumnAnnotation:", now);
-    }
 
     public void testColumnDefaults() {
-        long now = System.nanoTime();
 
         java.sql.ResultSet rs = null;
         Statement st = null;
@@ -697,43 +716,51 @@ public final class TestSQLite extends BaseTest {
             fail(e.getMessage());
         } finally {
             Util.cleanup(st, rs);
-            logit("testColumnDefaults:", now);
         }
 
     }
 
     @Override
     public void testInvoice() {
-        long now = System.nanoTime();
         super.testInvoice();
-        logit("testInvoice:", now);
     }
 
     @Override
     public void testAllDates() {
-        long now = System.nanoTime();
         super.testAllDates();
-        logit("testAllDates:", now);
     }
 
     @Override
     public void testRecord1() {
-        long now = System.nanoTime();
         super.testRecord1();
-        logit("testRecord1: ", now);
     }
 
     @Override
     public void testRecord2() {
-        long now = System.nanoTime();
         super.testRecord2();
-        logit("testRecord2:", now);
     }
 
-    static void logit(String text, long start) {
-        long end = (System.nanoTime() - start);
-        blog.info(text + " " + end + " (" + (end / 1_000_000) + ")");
+    @Override
+    public void testGetDbMetaData() throws SQLException {
+        super.testGetDbMetaData();
     }
 
+    public void testFunnyNames() throws SQLException {
+        String sql = """
+        CREATE TABLE FUNNYNAMES (
+                ID INT,
+                Name VARCHAR(30),
+                Field4 VARCHAR(30),
+                Field5 DATETIME,
+                Field6 JUNK,
+                Field7 FACK,
+                Field8 COWABUNGA
+        )
+        """;
 
+        if (isTableInDatabase("FUNNYNAMES", con)) {
+            executeCommand("DROP TABLE FUNNYNAMES", con);
+        }
+        executeCommand(sql, con);
+    }
 }

@@ -4,29 +4,22 @@ import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.function.Function;
 
 /**
  * Created by IntelliJ IDEA.
  * User: DHoward
  * Date: 9/8/11
  * Time: 8:09 AM
- * todo encapsulate this class better
  */
-final class PropertyInfo implements Convertable {
+final class PropertyInfo {
 
     String propertyName;
     Method getter;
     Method setter;
     Field field;
-    boolean readOnly;
     boolean isJoin;
-    // has to be non-generic
-    Function converter = null;
-    String converterName;
 
     Map<Class<? extends Annotation>, Annotation> annotations = new HashMap<>(4);
 
@@ -35,36 +28,27 @@ final class PropertyInfo implements Convertable {
     }
 
     // for collections
-    String propertyName() {
-        return propertyName;
-    }
-
-    Method getter() {
-        return getter;
-    }
-
-    Method setter() {
-        return setter;
-    }
-
-    Field field() {
-        return field;
-    }
-
-    boolean isReadOnly() {
-        return readOnly;
-    }
-
     boolean isJoin() {
         return isJoin;
     }
 
+
+//    todo IllegalArgumentException is a different type from the field type
+//    todo IllegalAccessException or module related or setting on a final field in a record
+//    todo InvocationTargetException the setter call where there's an exception in the setter method
+//    todo for getter should we have a field get if there's no Getter?
+
+
     // Convenience getter with runtime exception for functional
     Object getValue(Object object) {
         try {
-            return getter.invoke(object);
+            if (getter != null) {
+                return getter.invoke(object);
+            } else {
+                throw new PersismException(Message.MissingGetter.message(propertyName));
+            }
         } catch (IllegalAccessException | InvocationTargetException e) {
-            throw new PersismException(e.getMessage(), e);
+            throw new PersismException(e.getMessage() + "(" + this.propertyName + ")", e);
         }
     }
 
@@ -78,21 +62,10 @@ final class PropertyInfo implements Convertable {
                 field.setAccessible(false);
             }
         } catch (IllegalAccessException | InvocationTargetException e) {
+            // don't catch IllegalArgumentException - this is handled by reader to translate to human readable message
             throw new PersismException(e.getMessage(), e);
         }
     }
-
-    @Override
-    public void setConverter(Function<?, ?> func, String name) {
-//        new Throwable().printStackTrace();
-        converter = func;
-        converterName = name;
-    }
-
-    Map<Class<? extends Annotation>, Annotation> annotations() {
-        return annotations;
-    }
-
 
     @Override
     public String toString() {
@@ -101,8 +74,6 @@ final class PropertyInfo implements Convertable {
                 ", getter=" + getter +
                 ", setter=" + setter +
                 ", annotations=" + annotations +
-                ", readOnly=" + readOnly +
-                ", converterName=" + converterName +
                 '}';
     }
 }

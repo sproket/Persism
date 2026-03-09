@@ -6,7 +6,7 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * Indicates this class represents a view. You may optionally indicate the view name if Persism cannot find the view name on it's own.
+ * Indicates this class represents a view. You may optionally indicate the view name if Persism cannot find the view name on its own.
  */
 
 @Retention(value = RetentionPolicy.RUNTIME)

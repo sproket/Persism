@@ -1,7 +1,6 @@
 package net.sf.persism.dao.so;
 
 import net.sf.persism.annotations.Join;
-import net.sf.persism.annotations.NotColumn;
 
 import java.sql.Timestamp;
 
@@ -124,7 +123,6 @@ public final class Comment {
                 ", creationDate=" + creationDate +
                 ", postId=" + postId +
                 ", score=" + score +
-                ", text='" + text + '\'' +
                 ", userId=" + userId +
                 '}';
     }

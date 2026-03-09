@@ -1,6 +1,7 @@
 package net.sf.persism.dao.so;
 
 import net.sf.persism.annotations.Join;
+import net.sf.persism.annotations.NotColumn;
 import net.sf.persism.annotations.Table;
 
 import java.sql.Timestamp;
@@ -33,15 +34,18 @@ public final class ExtendedPost {
     @Join(to = User.class, onProperties = "ownerUserId", toProperties = "id")
     private User user;
 
-    @Join(to = Comment.class, onProperties = "id, ownerUserId", toProperties = "postId, userId ")
+    @NotColumn
+    //@Join(to = Comment.class, onProperties = "id, ownerUserId", toProperties = "postId, userId ")
     private List<Comment> myComments = new ArrayList<>();
 
+    //@NotColumn
     @Join(to = Comment.class, onProperties = "id", toProperties = "postId")
     private List<Comment> allComments = new ArrayList<>();
 
     @Join(to = PostType.class, onProperties = "postTypeId", toProperties = "id")
     private PostType postType;
 
+    // @NotColumn
     @Join(to = Post.class, onProperties = "parentId", toProperties = "id")
     private Post parentPost;
 

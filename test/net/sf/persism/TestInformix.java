@@ -13,12 +13,21 @@ import static net.sf.persism.UtilsForTests.isViewInDatabase;
 @Category(ExternalDB.class)
 public class TestInformix extends BaseTest {
 
+    /*
+        https://stackoverflow.com/questions/67550979/trying-to-connect-to-ibms-informix-docker-edition-with-jdbc
+        docker run -it --name ifx -h ifx --privileged -p 9088:9088 -p 9089:9089 -p 27017:27017 -p 27018:27018 -p 27883:27883 -e LICENSE=accept ibmcom/informix-developer-database:latest
+
+
+        https://www.ibm.com/docs/en/informix-servers/14.10?topic=docker-creating-informix-container
+        docker run -it --name ifx -h ifx --privileged -e LICENSE=accept -p 9088:9088 -p 9089:9089 -p 27017:27017 -p 27018:27018 -p 27883:27883 icr.io/informix/informix-developer-database:latest
+     */
+
     private static final Log log = Log.getLogger(TestInformix.class);
 
     @Override
     public void setUp() throws Exception {
+        connectionType = ConnectionType.Informix;
         super.setUp();
-
 
         Properties props = new Properties();
         props.load(getClass().getResourceAsStream("/informix.properties"));
@@ -33,7 +42,7 @@ public class TestInformix extends BaseTest {
         log.warn(url);
 
         con = DriverManager.getConnection(url, username, password);
-
+        log.info("DRIVER: " + con.getMetaData().getDatabaseProductName() + " | " + con.getMetaData().getDatabaseProductVersion());
         session = new Session(con);
 
         createTables();
@@ -46,6 +55,9 @@ public class TestInformix extends BaseTest {
 
     @Override
     protected void createTables() throws SQLException {
+        // super.createTables(); super has syntax error for multi match table which we don't need
+        createDepartments(connectionType); // just use this direct
+
         String sql;
 
         if (isTableInDatabase("Orders", con)) {
@@ -101,24 +113,26 @@ public class TestInformix extends BaseTest {
             executeCommand("DROP TABLE Invoices", con);
         }
 
-        executeCommand("CREATE TABLE Invoices ( " +
-                " Invoice_ID SERIAL PRIMARY KEY, " +
-                " Customer_ID varchar(10) NOT NULL, " +
-                " Paid CHAR(1) NOT NULL, " +
-                " Price NUMERIC(7,3) NOT NULL, " +
-                " ActualPrice NUMERIC(7,3) NOT NULL, " +
-                " Status CHAR(1) DEFAULT '1', " +
-                " Created datetime year to fraction(5) DEFAULT current YEAR TO fraction(5) NOT NULL, " +
-                " Quantity NUMERIC(10) NOT NULL, " +
-                " Discount NUMERIC(10,3) NOT NULL " +
-                ") ", con);
+        sql = """
+              CREATE TABLE Invoices (
+                Invoice_ID SERIAL PRIMARY KEY, 
+                Customer_ID varchar(10) NOT NULL,  
+                Paid CHAR(1) NOT NULL,  
+                Price NUMERIC(7,3) NOT NULL,  
+                ActualPrice NUMERIC(7,3) NOT NULL,  
+                Status CHAR(1) DEFAULT '1',  
+                Created datetime year to fraction(5) DEFAULT current YEAR TO fraction(5) NOT NULL,  
+                Quantity NUMERIC(10) NOT NULL,  
+                Discount NUMERIC(10,3) NOT NULL )                
+        """;
+        executeCommand(sql, con);
 
-        sql = "CREATE VIEW CustomerInvoice AS\n" +
-                " SELECT c.Customer_ID, c.Company_Name, i.Invoice_ID, i.Status, i.Created AS DateCreated, i.PAID, i.Quantity\n" +
-                "       FROM Invoices i\n" +
-                "       JOIN Customers c ON i.Customer_ID = c.Customer_ID\n";
-//                "       WHERE i.Status = 1\n";
-
+        sql = """
+                CREATE VIEW CustomerInvoice AS
+                 SELECT c.Customer_ID, c.Company_Name, i.Invoice_ID, i.Status, i.Created AS DateCreated, i.PAID, i.Quantity
+                       FROM Invoices i
+                       JOIN Customers c ON i.Customer_ID = c.Customer_ID
+                """;
         executeCommand(sql, con);
 
         if (isTableInDatabase("TABLEMULTIPRIMARY", con)) {
@@ -157,7 +171,7 @@ public class TestInformix extends BaseTest {
 
         sql = "CREATE TABLE Contacts( " +
                 "   identity varchar(36) NOT NULL PRIMARY KEY, " + // varchar is safest
-                "   PartnerID varchar(36) NOT NULL, " +
+                "   PartnerID varchar(36) NOT NULL, " + // Informix does not support byte types as fields like this. Throws Blobs are not allowed in this expression.
                 "   Type char(2) NOT NULL, " +
                 "   Firstname varchar(50) NOT NULL, " +
                 "   Lastname varchar(50) NOT NULL, " +
@@ -290,12 +304,63 @@ public class TestInformix extends BaseTest {
                 CREATE TABLE Products (
                     ID int,
                     Description VARCHAR(50),
+                    BadNumber VARCHAR(30),
+                    BadDate VARCHAR(30),
+                    BadTimeStamp VARCHAR(30),
                     COST NUMERIC(10,3)
                     )
                 """;
         executeCommand(sql, con);
 
+        if (isTableInDatabase("SavedGames", con)) {
+            executeCommand("DROP TABLE SavedGames", con);
+        }
 
+        executeCommand("CREATE TABLE SavedGames ( " +
+                " ID VARCHAR(20) PRIMARY KEY, " +
+                " Name VARCHAR(100), " +
+                " Some_Date_And_Time DateTime year to fraction(5) NULL, " +
+                " Platinum REAL NULL, " +
+                " Gold REAL NULL, " +
+                " Silver REAL NULL, " +
+                " Copper REAL NULL, " +
+                " Data CLOB NULL, " +
+                " WhatTimeIsIt DateTime year to fraction(5) NULL, " +
+                " SomethingBig BLOB NULL) ", con);
+
+        if (isTableInDatabase("Postman", con)) {
+            executeCommand("DROP TABLE Postman", con);
+        }
+        sql = """
+                CREATE TABLE Postman (
+                    AUTO VARCHAR(50),
+                    Host VARCHAR(50),
+                    Port NUMERIC(8),
+                    User VARCHAR(50),
+                    Password VARCHAR(50),
+                    missingGetter NUMERIC(10,3)
+                    )
+                """;
+        executeCommand(sql, con);
+
+        // Test for Y ending table who's plural isn't ies....
+        if (isTableInDatabase("CorporateHolidays", con)) {
+            executeCommand("DROP TABLE CorporateHolidays", con);
+        }
+        sql = """
+                CREATE TABLE CorporateHolidays (
+                    ID varchar(10),
+                    NAME varchar(40),
+                    DATE date
+                    )
+                """;
+        executeCommand(sql, con);
+
+        if (isTableInDatabase("TABLENOPRIMARY", con)) {
+            executeCommand("DROP TABLE TABLENOPRIMARY", con);
+        }
+
+        executeCommand("CREATE TABLE TABLENOPRIMARY (  ID INT,  Name VARCHAR(30),  Field4 VARCHAR(30),  Field5 DATE,  Field6 INT,  Field7 INT,  Field8 INT )", con);
     }
 
     public void testSomething() throws Exception {

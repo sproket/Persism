@@ -37,8 +37,8 @@ public final class Contact  { // implements Persistable<Contact>
 
     private String notes;
 
-//    private Object Attachments;  // this would work for unknown type - up to u to cast it or whatever.
-    private Attachment[] attachments;  // This works if you know the specific type - you can see it logged as a warning
+    private Object Attachments;  // this would work for unknown type - up to u to cast it or whatever.
+    // private Attachment[] attachments;  // This works if you know the specific type - you can see it logged as a warning
 
     private LocalDateTime created;
 
@@ -206,13 +206,21 @@ public final class Contact  { // implements Persistable<Contact>
         this.notes = notes;
     }
 
-    public Attachment[] getAttachments() {
-        return attachments;
+    public Object getAttachments() {
+        return Attachments;
     }
 
-    public void setAttachments(Attachment[] attachments) {
-        this.attachments = attachments;
+    public void setAttachments(Object attachments) {
+        Attachments = attachments;
     }
+
+    //    public Attachment[] getAttachments() {
+//        return attachments;
+//    }
+//
+//    public void setAttachments(Attachment[] attachments) {
+//        this.attachments = attachments;
+//    }
 
     @Override
     public String toString() {

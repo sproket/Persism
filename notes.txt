@@ -61,11 +61,9 @@ Blob support only up to int max size (2,147,483,647)
 Oracle not on maven...
 https://stackoverflow.com/questions/9898499/oracle-jdbc-ojdbc6-jar-as-a-maven-dependency
 
-
-mvn install:install-file -Dfile=persism-1.0.3b.jar -DgroupId=io.github.sproket -DartifactId=persism -Dversion=1.0.3b -Dpackaging=jar
-mvn install:install-file -Dfile=persism-2.0.0-beta.jar -DgroupId=io.github.sproket -DartifactId=persism -Dversion=2.0.0-beta -Dpackaging
-
-
+To build a local instance for another project to test
+mvn package -Dmaven.test.skip
+mvn install:install-file -Dfile=./target/persism-2.3.b1.jar -DgroupId=io.github.sproket -DartifactId=persism -Dversion=2.3.b1 -Dpackaging=jar -Dmaven.test.skip
 
 
 
@@ -79,4 +77,43 @@ Options:
 
 
 
- mvn install -Dmaven.test.skip
+  C:\Users\Dan\WebstormProjects\Persism\coverage\persism2
+
+CODE COVERAGE
+code coverage MetaData
+    DONE Add Table Mailbox - for Mailboxes "es" test
+    DONE Multiple view same name different schema names
+    DONE Test variable update statements + maybe insert statements
+
+code coverage SessionHelper
+    * log.warnNoDuplicates("parent not found:").....
+
+code coverage Session
+    DONE throw new PersismException("Could not retrieve value from column "... from field with no setter
+
+code coverage Reader
+    DONE case for byte as boolean or byte as byte...? (not all dbs support this. do MySQL only)
+
+code coverage Convertor
+    NO String to Time
+    NO String to LocalTime
+    NO util.Date to Time
+    NO sql.Date to Time
+    NO sql.Date to LocalTime
+    * ZonedDateTimeType or similar for warning coverage
+    * direct Clob or Blob fields for warning coverage
+
+
+*parent not found*
+
+NOTE about Object type:  Usually code generation of data classes ignore UUID and make the fields Object.
+This can cause conversion problems in persism where you have 99c9fbf9-2429-11eb-88fc-000ec68b57fd and
+99C9FBF9-2429-11EB-88FC-000EC68B57FD. Solution: USE UUID as the field type. Not Object.
+
+
+Also occurs if you use LIMIT or TOP since the child doesn't know about which TOP rows to query from it's WHERE clause (derived from parent)
+CAN BE FIXED if we revert to IN LIST rather that EXISTS but that has LIMITS on the size of the IN LIST (different for different DBs)
+SEE https://sproket.github.io/Persism/n+1.html
+
+
+

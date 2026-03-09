@@ -1,13 +1,12 @@
 package net.sf.persism.dao;
 
-import net.sf.persism.Persistable;
 import net.sf.persism.PersistableObject;
 import net.sf.persism.annotations.Column;
+import net.sf.persism.annotations.Table;
 
 import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.util.Date;
-
 public final class User extends PersistableObject<User> {
 
     @Column(name = "User_No")
@@ -123,16 +122,16 @@ public final class User extends PersistableObject<User> {
     @Override
     public String toString() {
         return "User{" +
-                "id=" + id +
-                ", userName='" + userName + '\'' +
-                ", name='" + name + '\'' +
-                ", status='" + status + '\'' +
-                ", typeOfUser='" + typeOfUser + '\'' +
-                ", department=" + department +
-                ", lastLogin=" + lastLogin +
-                ", someDate=" + someDate +
-                ", amountOwed=" + amountOwed +
-                ", amountOwedAfterHeadRemoval=" + amountOwedAfterHeadRemoval +
-                '}';
+               "id=" + id +
+               ", userName='" + userName + '\'' +
+               ", name='" + name + '\'' +
+               ", status='" + status + '\'' +
+               ", typeOfUser='" + typeOfUser + '\'' +
+               ", department=" + department +
+               ", lastLogin=" + lastLogin +
+               ", someDate=" + someDate +
+               ", amountOwed=" + amountOwed +
+               ", amountOwedAfterHeadRemoval=" + amountOwedAfterHeadRemoval +
+               '}';
     }
 }

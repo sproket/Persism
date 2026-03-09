@@ -11,7 +11,6 @@ import java.text.MessageFormat;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
-import static net.sf.persism.Conversions.*;
 import static net.sf.persism.Util.*;
 
 /**
@@ -24,49 +23,54 @@ final class MetaData {
 
     private static final Log log = Log.getLogger(MetaData.class);
 
-    // properties for each class - static because this won't need to change between MetaData instances
+    // properties for each class - static because this won't need to change between MetaData instances (collection is unmodifiable)
     private static final Map<Class<?>, Collection<PropertyInfo>> propertyMap = new ConcurrentHashMap<>(32);
 
     // column to property map for each class
     private final Map<Class<?>, Map<String, PropertyInfo>> propertyInfoMap = new ConcurrentHashMap<>(32);
     private final Map<Class<?>, Map<String, ColumnInfo>> columnInfoMap = new ConcurrentHashMap<>(32);
-    private final Map<Class<?>, List<String>> propertyNames = new ConcurrentHashMap<>(32); // not static since this is by column order which may vary
-
-    // table/view name for each class
-    private final Map<Class<?>, String> tableOrViewMap = new ConcurrentHashMap<>(32);
 
     // SQL for updates/inserts/deletes/selects for each class
     private final Map<Class<?>, String> updateStatementsMap = new ConcurrentHashMap<>(32);
-    private final Map<Class<?>, String> insertStatementsMap = new ConcurrentHashMap<>(32);
     private final Map<Class<?>, String> deleteStatementsMap = new ConcurrentHashMap<>(32);
     private final Map<Class<?>, String> selectStatementsMap = new ConcurrentHashMap<>(32);
-    private final Map<Class<?>, String> whereClauseMap = new ConcurrentHashMap<>(32);
 
-    // Key is SQL with named params, Value is SQL with ?
-    // private Map<String, String> sqlWitNamedParams = new ConcurrentHashMap<String, String>(32);
+    // key - class, value - map key: columns to include, value: associated INSERT statement - this handles defaults on columns which may not need to be specified
+    private final Map<Class<?>, Map<String, String>> insertStatements = new ConcurrentHashMap<>(32);
 
-    // Key is SQL with named params, Value list of named params
-    // private Map<String, List<String>> namedParams = new ConcurrentHashMap<String, List<String>>(32);
+    // key - class, value - map key: changed columns, value: associated UPDATE statement
+    private final Map<Class<?>, Map<String, String>> variableUpdateStatements = new ConcurrentHashMap<>(32);
 
-    // private Map<Class, List<String>> primaryKeysMap = new ConcurrentHashMap<Class, List<String>>(32); // remove later maybe?
+    // Where clauses for primary key queries for tables
+    private final Map<Class<?>, String> primaryWhereClauseMap = new ConcurrentHashMap<>(32);
+
+    // Where ID IN (?, ?, ?) kinds of queries when no SQL is used.
+    private final Map<Class<?>, Map<Integer, String>> primaryInClauseMap = new ConcurrentHashMap<>(32);
+
+    // SQL parsed from SQL.where() - key is WHERE, value is parsed where clause
+    Map<Class<?>, Map<String, String>> whereClauses = new ConcurrentHashMap<>(32);
+
+    // WHERE clauses defined by JOIN operations (maintained by SessionHelper)
+    Map<JoinInfo, Map<String, String>> childWhereClauses = new ConcurrentHashMap<>(32);
+
+    // table/view for each class
+    private final Map<Class<?>, TableInfo> tableOrViewMap = new ConcurrentHashMap<>(32);
 
     // list of tables in the DB
-    private final Set<String> tableNames = new TreeSet<>(String.CASE_INSENSITIVE_ORDER);
-    private final Map<String, TableInfo> tableInfos = new HashMap<>();
+    private final Set<TableInfo> tables = new HashSet<>();
 
     // list of views in the DB
-    private final Set<String> viewNames = new TreeSet<>(String.CASE_INSENSITIVE_ORDER);
+    private final Set<TableInfo> views = new HashSet<>();
 
-    // Map of table names + meta data
-    // private Map<String, TableInfo> tableInfoMap = new ConcurrentHashMap<String, TableInfo>(32);
+    static final Map<String, MetaData> metaData = new ConcurrentHashMap<>(4);
 
-    private static final Map<String, MetaData> metaData = new ConcurrentHashMap<String, MetaData>(4);
+    private final ConnectionType connectionType;
 
-    private final ConnectionTypes connectionType;
+    final String sessionKey;
 
     // the "extra" characters that can be used in unquoted identifier names (those beyond a-z, A-Z, 0-9 and _)
     // Was using DatabaseMetaData getExtraNameCharacters() but some drivers don't provide these and still allow
-    // for non alpha-numeric characters in column names. We'll just use a static set.
+    // for non-alphanumeric characters in column names. We'll just use a static set.
     private static final String EXTRA_NAME_CHARACTERS = "`~!@#$%^&*()-+=/|\\{}[]:;'\".,<>*";
     private static final String SELECT_FOR_COLUMNS = "SELECT * FROM {0}{1}{2} WHERE 1=0";
     private static final String SELECT_FOR_COLUMNS_WITH_SCHEMA = "SELECT * FROM {0}{1}{2}.{3}{4}{5} WHERE 1=0";
@@ -75,9 +79,10 @@ final class MetaData {
 
         log.debug("MetaData CREATING instance [%s] ", sessionKey);
 
-        connectionType = ConnectionTypes.get(sessionKey);
-        if (connectionType == ConnectionTypes.Other) {
-            log.warn(Messages.UnknownConnectionType.message(con.getMetaData().getDatabaseProductName()));
+        connectionType = ConnectionType.get(sessionKey);
+        this.sessionKey = sessionKey;
+        if (connectionType == ConnectionType.Other) {
+            log.warn(Message.UnknownConnectionType.message(con.getMetaData().getDatabaseProductName()));
         }
         populateTableList(con);
     }
@@ -97,15 +102,17 @@ final class MetaData {
 
     // Should only be called IF the map does not contain the column meta information yet.
     // Version for Tables
-    private synchronized <T> Map<String, PropertyInfo> determinePropertyInfo(Class<T> objectClass, String tableName, Connection connection) {
+    private synchronized <T> Map<String, PropertyInfo> determinePropertyInfo(Class<T> objectClass, TableInfo table, Connection connection) {
         // double check map
         if (propertyInfoMap.containsKey(objectClass)) {
             return propertyInfoMap.get(objectClass);
         }
 
+        // Not for @NotTable classes
+        assert objectClass.getAnnotation(NotTable.class) == null;
+
         String sd = connectionType.getKeywordStartDelimiter();
         String ed = connectionType.getKeywordEndDelimiter();
-        String schema = tableInfos.get(tableName).schema();
 
         ResultSet rs = null;
         Statement st = null;
@@ -113,16 +120,18 @@ final class MetaData {
             st = connection.createStatement();
             // gives us real column names with case.
             String sql;
-            if (isEmpty(schema)) {
-                sql = MessageFormat.format(SELECT_FOR_COLUMNS, sd, tableName, ed);
+            if (isEmpty(table.schema())) {
+                sql = MessageFormat.format(SELECT_FOR_COLUMNS, sd, table.name(), ed);
             } else {
-                sql = MessageFormat.format(SELECT_FOR_COLUMNS_WITH_SCHEMA, sd, schema, ed, sd, tableName, ed);
+                sql = MessageFormat.format(SELECT_FOR_COLUMNS_WITH_SCHEMA, sd, table.schema(), ed, sd, table.name(), ed);
             }
             if (log.isDebugEnabled()) {
                 log.debug("determineColumns: %s", sql);
             }
             rs = st.executeQuery(sql);
-            return determinePropertyInfo(objectClass, rs);
+            Map<String, PropertyInfo> columns = determinePropertyInfoFromResultSet(objectClass, rs);
+            propertyInfoMap.put(objectClass, columns);
+            return columns;
         } catch (SQLException e) {
             throw new PersismException(e.getMessage(), e);
         } finally {
@@ -130,517 +139,69 @@ final class MetaData {
         }
     }
 
-    // Should only be called IF the map does not contain the column meta information yet.
-    private synchronized <T> Map<String, PropertyInfo> determinePropertyInfo(Class<T> objectClass, ResultSet rs) {
-        // double check map - note this could be called with a Query where we never have that in here
-        if (propertyInfoMap.containsKey(objectClass)) {
-            return propertyInfoMap.get(objectClass);
-        }
+    private <T> Map<String, PropertyInfo> determinePropertyInfoFromResultSet(Class<T> objectClass, ResultSet rs) throws SQLException {
+        ResultSetMetaData rsmd = rs.getMetaData();
+        Collection<PropertyInfo> properties = getPropertyInfo(objectClass);
 
-        List<String> propertyNames = new ArrayList<>(32);
-        try {
-            ResultSetMetaData rsmd = rs.getMetaData();
-            Collection<PropertyInfo> properties = getPropertyInfo(objectClass);
+        int columnCount = rsmd.getColumnCount();
 
-            int columnCount = rsmd.getColumnCount();
-
-            Map<String, PropertyInfo> columns = new LinkedHashMap<>(columnCount);
-            for (int j = 1; j <= columnCount; j++) {
-                String realColumnName = rsmd.getColumnLabel(j);
-                String columnName = realColumnName.toLowerCase().replace("_", "").replace(" ", "");
-                // also replace these characters
-                for (int x = 0; x < EXTRA_NAME_CHARACTERS.length(); x++) {
-                    columnName = columnName.replace("" + EXTRA_NAME_CHARACTERS.charAt(x), "");
-                }
-                PropertyInfo foundProperty = null;
-                for (PropertyInfo propertyInfo : properties) {
-                    String checkName = propertyInfo.propertyName().toLowerCase().replace("_", "");
-                    if (checkName.equalsIgnoreCase(columnName)) {
-                        foundProperty = propertyInfo;
-                        break;
-                    } else {
-                        // check annotation against column name
-                        Column column = (Column) propertyInfo.getAnnotation(Column.class);
-                        if (column != null) {
-                            if (column.name().equalsIgnoreCase(realColumnName)) {
-                                foundProperty = propertyInfo;
-                                break;
-                            }
+        Map<String, PropertyInfo> columns = new LinkedHashMap<>(columnCount);
+        for (int j = 1; j <= columnCount; j++) {
+            String realColumnName = rsmd.getColumnLabel(j);
+            String columnName = realColumnName.toLowerCase().replace("_", "").replace(" ", "");
+            // also replace these characters
+            for (int x = 0; x < EXTRA_NAME_CHARACTERS.length(); x++) {
+                columnName = columnName.replace("" + EXTRA_NAME_CHARACTERS.charAt(x), "");
+            }
+            PropertyInfo foundProperty = null;
+            for (PropertyInfo propertyInfo : properties) {
+                String checkName = propertyInfo.propertyName.toLowerCase().replace("_", "");
+                if (checkName.equalsIgnoreCase(columnName)) {
+                    foundProperty = propertyInfo;
+                    break;
+                } else {
+                    // check annotation against column name
+                    Column column = (Column) propertyInfo.getAnnotation(Column.class);
+                    if (column != null) {
+                        if (column.name().equalsIgnoreCase(realColumnName)) {
+                            foundProperty = propertyInfo;
+                            break;
                         }
                     }
                 }
-
-                if (foundProperty != null) {
-                    columns.put(realColumnName, foundProperty);
-                    propertyNames.add(foundProperty.propertyName());
-                } else {
-                    log.warn(Messages.NoPropertyFoundForColumn.message(realColumnName, objectClass));
-                }
             }
 
-            // Do not put query classes into the metadata. It's possible the 1st run has a query with missing columns
-            // any calls afterward would fail because I never would refresh the columns again. Table is fine since we
-            // can do a SELECT * to get all columns up front but we can't do that with a query.
-            //if (objectClass.getAnnotation(NotTable.class) == null) {
-
-            // If we have properties > columns then we will later have an uninitialized object which is an error
-            // so in that case, we won't cache this. The assumption is that in the case of a long-running app which
-            // may catch and continue, we would always have a bad cache.
-            //if (properties.size() <= columnCount) {
-            if (objectClass.getAnnotation(NotTable.class) == null) {
-                propertyInfoMap.put(objectClass, columns);
+            if (foundProperty != null) {
+                columns.put(realColumnName, foundProperty);
+            } else {
+                log.warn(Message.NoPropertyFoundForColumn.message(realColumnName, objectClass));
             }
-            this.propertyNames.put(objectClass, propertyNames);
-
-            return columns;
-
-        } catch (SQLException e) {
-            throw new PersismException(e.getMessage(), e);
         }
-    }
-
-    // todo check NULL before calling
-    private void determineConverter(Convertable propOrColumnInfo, Types sourceType, Types targetType) {
-        if (true) {
-            return;
-        }
-        log.debug("determineConverter " + connectionType + " FOR " + propOrColumnInfo);
-
-        switch (sourceType) {
-            case booleanType:
-            case BooleanType:
-                if (targetType == Types.BooleanType || targetType == Types.booleanType) {
-                    break;
-                }
-
-            case byteType:
-            case ByteType:
-                break;
-
-            case shortType:
-            case ShortType:
-                break;
-
-            case integerType:
-            case IntegerType:
-
-                if (targetType == Types.IntegerType || targetType == Types.integerType) {
-                    break;
-                }
-
-                // int to bool
-                if (targetType == Types.BooleanType || targetType == Types.booleanType) {
-                    propOrColumnInfo.setConverter(IntToBoolean(), "intToBool");
-                    break;
-                }
-
-                if (targetType == Types.TimeType) {
-                    // SQLite when a Time is defined VIA a convert from LocalTime via Time.valueOf (see getContactForTest)
-                    propOrColumnInfo.setConverter(IntToTime(), "intToTime");
-                    break;
-                }
-
-                if (targetType == Types.LocalTimeType) {
-                    // SQLite for Time SQLite sees Long, for LocalTime it sees Integer
-                    propOrColumnInfo.setConverter(IntToLocalTime(), "intToLocalTime");
-                    break;
-                }
-
-                if (targetType == Types.ShortType || targetType == Types.shortType) {
-                    // todo where/when to warn
-//                    log.warnNoDuplicates(Messages.PossibleOverflow.message(col, "SHORT", "INT"));
-                    propOrColumnInfo.setConverter(IntToShort(), "intToShort");
-                    break;
-
-                }
-
-                if (targetType == Types.ByteType || targetType == Types.byteType) {
-                    // log.warnNoDuplicates(Messages.PossibleOverflow.message(col, "BYTE", "INT"));
-                    propOrColumnInfo.setConverter(IntToByte(), "intToByte");
-                    break;
-                }
-                break;
-
-            case longType:
-            case LongType:
-
-                if (targetType == Types.LongType || targetType == Types.longType) {
-                    break;
-                }
-
-                if (targetType == Types.SQLDateType) {
-                    propOrColumnInfo.setConverter(LongToSqlDate(), "longToSqlDate");
-                    break;
-
-                }
-
-                if (targetType == Types.UtilDateType) {
-                    propOrColumnInfo.setConverter(LongToUtilDate(), "longToUtilDate");
-                    break;
-
-                }
-
-                if (targetType == Types.TimestampType) {
-                    propOrColumnInfo.setConverter(LongToTimestamp(), "longToTimestamp");
-                    break;
-                }
-
-                if (targetType == Types.IntegerType || targetType == Types.integerType) {
-//                    log.warnNoDuplicates(Messages.PossibleOverflow.message(col, "INT", "LONG"));
-                    propOrColumnInfo.setConverter(LongToInt(), "longToInt");
-                    break;
-
-                }
-
-                if (targetType == Types.LocalDateType) {
-                    // SQLite reads long as date.....
-                    propOrColumnInfo.setConverter(LongToLocalDate(), "longToLocalDate");
-                    break;
-                }
-
-                if (targetType == Types.LocalDateTimeType) {
-                    propOrColumnInfo.setConverter(LongToLocalDateTime(), "longToLocalDateTime");
-                    break;
-                }
-
-                if (targetType == Types.TimeType) {
-                    // SQLite.... Again.....
-                    propOrColumnInfo.setConverter(LongToTime(), "longToTime");
-                    break;
-                }
-                break;
-
-            case floatType:
-            case FloatType:
-                break;
-
-            case doubleType:
-            case DoubleType:
-                if (targetType == Types.DoubleType || targetType == Types.doubleType) {
-                    break;
-                }
-
-                // float or doubles to BigDecimal
-                if (targetType == Types.BigDecimalType) {
-                    propOrColumnInfo.setConverter(DoubleToBigDecimal(), "doubleToBigDecimal");
-                    break;
-                }
-
-                if (targetType == Types.FloatType || targetType == Types.floatType) {
-//                    log.warnNoDuplicates(Messages.PossibleOverflow.message(col, "FLOAT", "DOUBLE"));
-                    propOrColumnInfo.setConverter(DoubleToFloat(), "doubleToFloat");
-                    break;
-                }
-
-                if (targetType == Types.IntegerType || targetType == Types.integerType) {
-                    // log.warnNoDuplicates(Messages.PossibleOverflow.message(col, "INT", "DOUBLE"));
-                    propOrColumnInfo.setConverter(DoubleToInt(), "doubleToInt");
-                    break;
-                }
-
-                if (targetType == Types.LongType || targetType == Types.longType) {
-                    // log.warnNoDuplicates(Messages.PossibleOverflow.message(col, "LONG", "DOUBLE"));
-                    propOrColumnInfo.setConverter(DoubleToLong(), "doubleToLong");
-                    break;
-                }
-                break;
-
-            case BigDecimalType:
-
-                if (targetType == Types.BigDecimalType) {
-                    break;
-                }
-
-                if (targetType == Types.FloatType || targetType == Types.floatType) {
-                    // log.warnNoDuplicates(Messages.PossibleOverflow.message(col, "FLOAT", "BigDecimal"));
-                    propOrColumnInfo.setConverter(BigDecimalToFloat(), "bigDecimalToFloat");
-                    break;
-                }
-
-                if (targetType == Types.DoubleType || targetType == Types.doubleType) {
-                    // log.warnNoDuplicates(Messages.PossibleOverflow.message(col, "DOUBLE", "BigDecimal"));
-                    propOrColumnInfo.setConverter(BigDecimalToDouble(), "bigDecimalToDouble");
-                    break;
-
-                } else if (targetType == Types.LongType || targetType == Types.longType) {
-                    // log.warnNoDuplicates(Messages.PossibleOverflow.message(col, "LONG", "BigDecimal"));
-                    propOrColumnInfo.setConverter(BigDecimalToLong(), "bigDecimalToLong");
-                    break;
-
-                } else if (targetType == Types.IntegerType || targetType == Types.integerType) {
-                    // log.warnNoDuplicates(Messages.PossibleOverflow.message(col, "INT", "BigDecimal"));
-                    propOrColumnInfo.setConverter(BigDecimalToInt(), "bigDecimalToInt");
-                    break;
-                }
-
-                if (targetType == Types.ShortType || targetType == Types.shortType) {
-                    // log.warnNoDuplicates(Messages.PossibleOverflow.message(col, "SHORT", "BigDecimal"));
-                    propOrColumnInfo.setConverter(BigDecimalToShort(), "bigDecimalToShort");
-                    break;
-                }
-
-                if (targetType == Types.BooleanType || targetType == Types.booleanType) {
-                    // BigDecimal to Boolean. Oracle (sigh) - Additional for a Char to Boolean as then (see TestOracle for links)
-                    // log.warnNoDuplicates(Messages.PossibleOverflow.message(col, "BOOLEAN", "BigDecimal"));
-                    propOrColumnInfo.setConverter(BigDecimalToBool(), "bigDecimalToBool");
-                    break;
-                }
-
-                if (targetType == Types.StringType) {
-                    propOrColumnInfo.setConverter(BigDecimalToString(), "bigDecimalToString");
-                    break;
-                }
-                break;
-
-            case StringType:
-                if (targetType == Types.StringType) {
-                    break;
-                }
-
-                if (targetType == Types.UtilDateType) {
-                    propOrColumnInfo.setConverter(StringToUtilDate(), "stringToUtilDate");
-                    break;
-                }
-
-                if (targetType == Types.SQLDateType) {
-                    propOrColumnInfo.setConverter(StringToSqlDate(), "stringToSqlDate");
-                    break;
-                }
-
-                if (targetType == Types.TimestampType) {
-                    propOrColumnInfo.setConverter(StringToTimestamp(), "stringToTimestamp");
-                    break;
-                }
-
-                if (targetType.getJavaType().isEnum()) {
-                    // If this is an enum do a case-insensitive comparison
-                    // todo BiFunction != Function so add maybe a enumConverter?
-                    //propertyInfo.converter = conversions.stringToEnum;
-                    propOrColumnInfo.setConverter(StringToEnum());
-                    break;
-                }
-
-                if (targetType == Types.UUIDType) {
-                    propOrColumnInfo.setConverter(StringToUUID(), "stringToUUID");
-                    break;
-                }
-
-                if (targetType == Types.BooleanType || targetType == Types.booleanType) {
-                    propOrColumnInfo.setConverter(StringToBoolean(), "stringToBoolean");
-                    break;
-                }
-
-                if (targetType == Types.BigDecimalType) {
-                    propOrColumnInfo.setConverter(StringToBigDecimal(), "stringToBigDecimal");
-                    break;
-                }
-
-                break;
-
-            case characterType:
-            case CharacterType:
-                break;
-
-            case LocalDateType:
-                propOrColumnInfo.setConverter(LocalDateToSqlDate(), "localDateToSqlDate");
-                break;
-
-            case LocalDateTimeType:
-                propOrColumnInfo.setConverter(LocalDateToTimestamp(), "localDateToTimestamp");
-                break;
-
-            case LocalTimeType:
-                propOrColumnInfo.setConverter(LocalTimeToTime(), "localTimeToTime");
-                break;
-
-            case UtilDateType:
-                if (targetType == Types.UtilDateType) {
-                    break;
-                }
-
-                if (targetType == Types.SQLDateType) {
-                    propOrColumnInfo.setConverter(UtilDateToSqlDate(), "utilDateToSqlDate");
-                    break;
-                }
-
-                if (targetType == Types.TimestampType) {
-                    propOrColumnInfo.setConverter(UtilDateToTimestamp(), "utilDateToTimestamp");
-                    break;
-                }
-
-                if (targetType == Types.LocalDateType) {
-                    propOrColumnInfo.setConverter(UtilDateToLocalDate(), "utilDateToLocalDate");
-                    break;
-                }
-
-                if (targetType == Types.LocalDateTimeType) {
-                    propOrColumnInfo.setConverter(UtilDateToLocalDateTime(), "utilDateToLocalDateTime");
-                    break;
-                }
-
-                if (targetType == Types.TimeType) {
-                    propOrColumnInfo.setConverter(UtilDateToTime(), "utilDateToTime");
-                    break;
-                }
-
-                if (targetType == Types.LocalTimeType) {
-                    propOrColumnInfo.setConverter(UtilDateToLocalTime(), "utilDateToLocalTime");
-                    break;
-                }
-                break;
-
-            case SQLDateType:
-                if (targetType == Types.SQLDateType) {
-                    break;
-                }
-
-                if (targetType == Types.UtilDateType) {
-                    propOrColumnInfo.setConverter(SqlDateToUtilDate(), "sqlDateToUtilDate");
-                    break;
-                }
-
-                if (targetType == Types.TimestampType) {
-                    propOrColumnInfo.setConverter(SqlDateToTimestamp(), "sqlDateToTimestamp");
-                    break;
-                }
-
-                if (targetType == Types.LocalDateType) {
-                    propOrColumnInfo.setConverter(SqlDateToLocalDate(), "sqlDateToLocalDate");
-                    break;
-                }
-
-                if (targetType == Types.LocalDateTimeType) {
-                    propOrColumnInfo.setConverter(SqlDateToLocalDateTime(), "sqlDateToLocalDateTime");
-                    break;
-                }
-
-                if (targetType == Types.TimeType) {
-                    propOrColumnInfo.setConverter(SqlDateToTime(), "sqlDateToTime");
-                    break;
-                }
-
-                if (targetType == Types.LocalTimeType) {
-                    propOrColumnInfo.setConverter(SqlDateToLocalTime(), "sqlDateToLocalTime");
-                    break;
-                }
-                break;
-
-            case TimestampType:
-                if (targetType == Types.TimestampType) {
-                    break;
-                }
-
-                if (targetType == Types.UtilDateType) {
-                    propOrColumnInfo.setConverter(TimestampToUtilDate(), "timestampToUtilDate");
-                    break;
-                }
-
-                if (targetType == Types.SQLDateType) {
-                    propOrColumnInfo.setConverter(TimestampToSqlDate(), "timestampToSqlDate");
-                    break;
-                }
-
-                if (targetType == Types.LocalDateType) {
-                    propOrColumnInfo.setConverter(TimestampToLocalDate(), "timestampToLocalDate");
-                    break;
-                }
-
-                if (targetType == Types.LocalDateTimeType) {
-                    propOrColumnInfo.setConverter(TimestampToLocalDateTime(), "timestampToLocalDateTime");
-                    break;
-                }
-
-                if (targetType == Types.TimeType) {
-                    propOrColumnInfo.setConverter(TimestampToTime(), "timestampToTime");
-                    break;
-                }
-
-                if (targetType == Types.LocalTimeType) {
-                    propOrColumnInfo.setConverter(TimestampToLocalTime(), "timestampToLocalTime");
-                    break;
-                }
-                break;
-
-            case TimeType:
-                if (targetType == Types.TimeType) {
-                    break;
-                }
-                if (targetType == Types.LocalTimeType) {
-                    propOrColumnInfo.setConverter(TimeToLocalTime(), "timeToLocalTime");
-                    break;
-                }
-                break;
-
-            case InstantType:
-            case OffsetDateTimeType:
-            case ZonedDateTimeType:
-                log.warn(Messages.ConverterValueTypeNotYetSupported.message(sourceType.getJavaType()), new Throwable());
-                break;
-
-            case byteArrayType:
-            case ByteArrayType:
-                if (targetType == Types.ByteArrayType) {
-                    break;
-                }
-
-                if (targetType == Types.UUIDType) {
-                    propOrColumnInfo.setConverter(ByteArrayToUUID(), "byteArrayToUUID");
-                    break;
-                }
-                break;
-
-            case ClobType:
-            case BlobType:
-                // todo we don't know which direction. If this is a column it's OK but what conversion?
-                log.warn(Messages.ConverterDoNotUseClobOrBlobAsAPropertyType.message(), new Throwable(""));
-                break;
-
-            case EnumType:
-                // No need to convert it here.
-                // If it's being used for the property setter then it's OK
-                // If it's being used by setParameters it's converted to String
-                // The String case above converts from the String to the Enum
-                log.debug("EnumType");
-                break;
-
-            case UUIDType:
-                if (targetType == Types.UUIDType) {
-                    break;
-                }
-                // todo how can blob work here?
-                if (targetType == Types.BlobType || targetType == Types.byteArrayType || targetType == Types.ByteArrayType) {
-                    propOrColumnInfo.setConverter(UUIDtoByteArray(), "UUIDtoByteArray");
-                }
-                break;
-
-            case ObjectType:
-                break;
-        }
+        return columns;
     }
 
     @SuppressWarnings({"JDBCExecuteWithNonConstantString", "SqlDialectInspection"})
-    private synchronized <T> Map<String, ColumnInfo> determineColumnInfo(Class<T> objectClass, String tableName, Connection connection) {
+    private synchronized <T> Map<String, ColumnInfo> determineColumnInfo(Class<T> objectClass, TableInfo table, Connection connection) {
         if (columnInfoMap.containsKey(objectClass)) {
             return columnInfoMap.get(objectClass);
         }
 
         Statement st = null;
         ResultSet rs = null;
-
         Map<String, PropertyInfo> properties = getTableColumnsPropertyInfo(objectClass, connection);
-
         String sd = connectionType.getKeywordStartDelimiter();
         String ed = connectionType.getKeywordEndDelimiter();
-        String schema = tableInfos.get(tableName).schema();
+
+        String schemaName = table.schema();
+        String tableName = table.name();
 
         try {
-
             st = connection.createStatement();
             String sql;
-            if (isEmpty(schema)) {
+            if (isEmpty(schemaName)) {
                 sql = MessageFormat.format(SELECT_FOR_COLUMNS, sd, tableName, ed);
             } else {
-                sql = MessageFormat.format(SELECT_FOR_COLUMNS_WITH_SCHEMA, sd, schema, ed, sd, tableName, ed);
+                sql = MessageFormat.format(SELECT_FOR_COLUMNS_WITH_SCHEMA, sd, schemaName, ed, sd, tableName, ed);
             }
             log.debug("determineColumnInfo %s", sql);
             rs = st.executeQuery(sql);
@@ -662,7 +223,7 @@ final class MetaData {
                     columnInfo.primary = columnInfo.autoIncrement;
                     columnInfo.sqlColumnType = rsMetaData.getColumnType(i);
                     columnInfo.sqlColumnTypeName = rsMetaData.getColumnTypeName(i);
-                    columnInfo.columnType = Types.convert(columnInfo.sqlColumnType);
+                    columnInfo.columnType = JavaType.convert(columnInfo.sqlColumnType, columnInfo.columnName);
                     columnInfo.length = rsMetaData.getColumnDisplaySize(i);
 
                     if (!primaryKeysFound) {
@@ -680,15 +241,20 @@ final class MetaData {
 
                         if (col.primary()) {
                             columnInfo.primary = true;
+                            if (!isDataClassATable(objectClass)) {
+                                log.warn(Message.PrimaryAnnotationOnViewOrQueryMakesNoSense.message(objectClass, propertyInfo.propertyName));
+                            }
                         }
 
                         if (col.autoIncrement()) {
                             columnInfo.autoIncrement = true;
                             if (!columnInfo.columnType.isEligibleForAutoinc()) {
                                 // This will probably cause some error or other problem. Notify the user.
-                                log.warn(Messages.ColumnAnnotatedAsAutoIncButNAN.message(columnInfo.columnName, columnInfo.columnType));
+                                log.warn(Message.ColumnAnnotatedAsAutoIncButNAN.message(columnInfo.columnName, columnInfo.columnType));
                             }
                         }
+
+                        columnInfo.readOnly = col.readOnly();
 
                         if (!primaryKeysFound) {
                             primaryKeysFound = columnInfo.primary;
@@ -704,13 +270,11 @@ final class MetaData {
 
             if (objectClass.getAnnotation(View.class) == null) {
 
-                if (isEmpty(schema)) {
+                if (isEmpty(schemaName)) {
                     rs = dmd.getPrimaryKeys(null, connectionType.getSchemaPattern(), tableName);
                 } else {
-                    rs = dmd.getPrimaryKeys(null, schema, tableName);
+                    rs = dmd.getPrimaryKeys(null, schemaName, tableName);
                 }
-
-                // Iterate primary keys and update column infos
                 int primaryKeysCount = 0;
                 while (rs.next()) {
                     ColumnInfo columnInfo = map.get(rs.getString("COLUMN_NAME"));
@@ -725,7 +289,7 @@ final class MetaData {
                 }
 
                 if (primaryKeysCount == 0 && !primaryKeysFound) {
-                    log.warn(Messages.DatabaseMetaDataCouldNotFindPrimaryKeys.message(tableName));
+                    log.warn(Message.DatabaseMetaDataCouldNotFindPrimaryKeys.message(table));
                 }
             }
 
@@ -733,7 +297,11 @@ final class MetaData {
              Get columns from database metadata since we don't get Type from resultSetMetaData
              with SQLite. + We also need to know if there's a default on a column.
              */
-            rs = dmd.getColumns(null, connectionType.getSchemaPattern(), tableName, null);
+            if (isEmpty(schemaName)) {
+                rs = dmd.getColumns(null, connectionType.getSchemaPattern(), tableName, null);
+            } else {
+                rs = dmd.getColumns(null, schemaName, tableName, null);
+            }
             int columnsCount = 0;
             while (rs.next()) {
                 ColumnInfo columnInfo = map.get(rs.getString("COLUMN_NAME"));
@@ -756,7 +324,7 @@ final class MetaData {
                         if (containsColumn(rs, "TYPE_NAME")) {
                             columnInfo.sqlColumnTypeName = rs.getString("TYPE_NAME");
                         }
-                        columnInfo.columnType = Types.convert(columnInfo.sqlColumnType);
+                        columnInfo.columnType = JavaType.convert(columnInfo.sqlColumnType, columnInfo.columnName);
                     }
                 }
                 columnsCount++;
@@ -764,14 +332,18 @@ final class MetaData {
             rs.close();
 
             if (columnsCount == 0) {
-                log.warn(Messages.DatabaseMetaDataCouldNotFindColumns.message(tableName));
+                // Shouldn't this be a fail? It would mean the user connecting to the DB
+                // has no permission to get the column meta-data
+                // It's a warning because it is possible to specify the column information
+                // with annotations rather than having Persism discover it.
+                log.warn(Message.DatabaseMetaDataCouldNotFindColumns.message(table));
             }
 
             // FOR Oracle which doesn't set autoinc in metadata even if we have:
             // "ID" NUMBER GENERATED BY DEFAULT ON NULL AS IDENTITY
             // Apparently that's not enough for the Oracle JDBC driver to indicate this is autoinc.
             // If we have a primary that's NUMERIC and HAS a default AND autoinc is not set then set it.
-            if (connectionType == ConnectionTypes.Oracle) {
+            if (connectionType == ConnectionType.Oracle) {
                 Optional<ColumnInfo> autoInc = map.values().stream().filter(e -> e.autoIncrement).findFirst();
                 if (autoInc.isEmpty()) {
                     // Do a second check if we have a primary that's numeric with a default.
@@ -786,13 +358,13 @@ final class MetaData {
                 }
             }
 
-            if (!primaryKeysFound && objectClass.getAnnotation(View.class) == null) {
+            if (!primaryKeysFound && isDataClassATable(objectClass)) {
                 // Should we fail-fast? Actually no, we should not fail here.
                 // It's very possible the user has a table that they will never
                 // update, delete or select (by primary).
                 // They may only want to do read operations with specified queries and in that
                 // context we don't need any primary keys. (same with insert)
-                log.warn(Messages.NoPrimaryKeyFoundForTable.message(tableName));
+                log.warn(Message.NoPrimaryKeyFoundForTable.message(table));
             }
 
             columnInfoMap.put(objectClass, map);
@@ -803,6 +375,10 @@ final class MetaData {
         } finally {
             cleanup(st, rs);
         }
+    }
+
+    private static boolean isDataClassATable(Class<?> objectClass) {
+        return objectClass.getAnnotation(Table.class) != null || (objectClass.getAnnotation(View.class) == null && objectClass.getAnnotation(NotTable.class) == null);
     }
 
     static <T> Collection<PropertyInfo> getPropertyInfo(Class<T> objectClass) {
@@ -876,7 +452,6 @@ final class MetaData {
                 }
             }
 
-            propertyInfo.readOnly = propertyInfo.setter == null;
             propertyInfo.isJoin = propertyInfo.getAnnotation(Join.class) != null;
             propertyInfos.put(propertyName.toLowerCase(), propertyInfo);
         }
@@ -887,6 +462,7 @@ final class MetaData {
         while (it.hasNext()) {
             Map.Entry<String, PropertyInfo> entry = it.next();
             PropertyInfo info = entry.getValue();
+            // added support for transient
             if (info.getAnnotation(NotColumn.class) != null || Modifier.isTransient(info.field.getModifiers())) {
                 it.remove();
             }
@@ -905,48 +481,39 @@ final class MetaData {
             }
 
             if (setters.size() > 0) {
-                log.warn(Messages.SettersFoundInReadOnlyObject.message(objectClass, setters));
+                log.warn(Message.SettersFoundInReadOnlyObject.message(objectClass, setters));
             }
         }
 
         return properties;
     }
 
-    private static final String[] tableTypes = {"TABLE"};
-    private static final String[] viewTypes = {"VIEW"};
+    private static final String TABLE = "TABLE";
+    private static final String VIEW = "VIEW";
+    private static final String[] tableTypes = {TABLE, VIEW};
 
     // Populates the tables list with table names from the DB.
     // This list is used for discovery of the table name from a class.
     // ONLY to be called from Init in a synchronized way.
-    private void populateTableList(Connection con) throws PersismException {
-
-        ResultSet rs = null;
-
-        try {
-            // NULL POINTER WITH
-            // http://social.msdn.microsoft.com/Forums/en-US/sqldataaccess/thread/5c74094a-8506-4278-ac1c-f07d1bfdb266
-            // solution:
-            // http://stackoverflow.com/questions/8988945/java7-sqljdbc4-sql-error-08s01-on-getconnection
-
-            rs = con.getMetaData().getTables(null, connectionType.getSchemaPattern(), null, tableTypes);
+    // NULL POINTER WITH
+    // http://social.msdn.microsoft.com/Forums/en-US/sqldataaccess/thread/5c74094a-8506-4278-ac1c-f07d1bfdb266
+    // solution:
+    // http://stackoverflow.com/questions/8988945/java7-sqljdbc4-sql-error-08s01-on-getconnection
+    void populateTableList(Connection con) throws PersismException {
+        views.clear();
+        tables.clear();
+        try (ResultSet rs = con.getMetaData().getTables(null, connectionType.getSchemaPattern(), null, tableTypes)) {
+            String name;
             while (rs.next()) {
-                String name = rs.getString("TABLE_NAME");
-                tableNames.add(name);
-                tableInfos.put(name, new TableInfo(name, rs.getString("TABLE_SCHEM")));
+                name = rs.getString("TABLE_NAME");
+                if (VIEW.equalsIgnoreCase(rs.getString("TABLE_TYPE"))) {
+                    views.add(new TableInfo(name, rs.getString("TABLE_SCHEM"), connectionType));
+                } else {
+                    tables.add(new TableInfo(name, rs.getString("TABLE_SCHEM"), connectionType));
+                }
             }
-
-            rs = con.getMetaData().getTables(null, connectionType.getSchemaPattern(), null, viewTypes);
-            while (rs.next()) {
-                String name = rs.getString("TABLE_NAME");
-                viewNames.add(name);
-                tableInfos.put(name, new TableInfo(name, rs.getString("TABLE_SCHEM"))); // why do we seperate 2 lists?
-            }
-
         } catch (SQLException e) {
             throw new PersismException(e.getMessage(), e);
-
-        } finally {
-            cleanup(null, rs);
         }
     }
 
@@ -958,20 +525,27 @@ final class MetaData {
      */
     String getUpdateStatement(Object object, Connection connection) throws PersismException, NoChangesDetectedForUpdateException {
 
+        String sql;
         if (object instanceof Persistable<?> pojo) {
             Map<String, PropertyInfo> changes = getChangedProperties(pojo, connection);
             if (changes.size() == 0) {
                 throw new NoChangesDetectedForUpdateException();
             }
-            // Note we don't add Persistable updates to updateStatementsMap since they will be different each time.
-            String sql = buildUpdateString(object, changes.keySet().iterator(), connection);
+
+            Class<?> objectClass = object.getClass();
+            String key = changes.keySet().toString();
+            if (variableUpdateStatements.containsKey(objectClass) && variableUpdateStatements.get(objectClass).containsKey(key)) {
+                sql = variableUpdateStatements.get(objectClass).get(key);
+            } else {
+                sql = determineUpdateStatement(pojo, connection);
+            }
+
             if (log.isDebugEnabled()) {
-                log.debug("getUpdateStatement for %s for changed fields is %s", object.getClass(), sql);
+                log.debug("getUpdateStatement for %s for changed fields is %s", objectClass, sql);
             }
             return sql;
         }
 
-        String sql;
         if (updateStatementsMap.containsKey(object.getClass())) {
             sql = updateStatementsMap.get(object.getClass());
         } else {
@@ -989,164 +563,230 @@ final class MetaData {
             return updateStatementsMap.get(object.getClass());
         }
 
-        Map<String, PropertyInfo> columns = getTableColumnsPropertyInfo(object.getClass(), connection);
+        Class<?> objectClass = object.getClass();
+        var columns = getColumns(objectClass, connection);
+        Map<String, PropertyInfo> propertyMap;
+        if (object instanceof Persistable<?> pojo) {
+            propertyMap = getChangedProperties(pojo, connection);
+        } else {
+            propertyMap = getTableColumnsPropertyInfo(objectClass, connection);
+        }
 
-        String updateStatement = buildUpdateString(object, columns.keySet().iterator(), connection);
+        String updateStatement = buildUpdateString(object, propertyMap.keySet().stream().filter(col -> !columns.get(col).readOnly).toList().iterator(), connection);
 
-        // Store static update statement for future use.
-        updateStatementsMap.put(object.getClass(), updateStatement);
+        if (object instanceof Persistable<?>) {
+            String key = propertyMap.keySet().toString();
+            if (variableUpdateStatements.containsKey(objectClass) && variableUpdateStatements.get(objectClass).containsKey(key)) {
+                return variableUpdateStatements.get(objectClass).get(key);
+            }
+
+            variableUpdateStatements.putIfAbsent(objectClass, new HashMap<>());
+            variableUpdateStatements.get(objectClass).put(key, updateStatement);
+        } else {
+            updateStatementsMap.put(objectClass, updateStatement);
+        }
+
 
         if (log.isDebugEnabled()) {
-            log.debug("determineUpdateStatement for %s is %s", object.getClass(), updateStatement);
+            log.debug("determineUpdateStatement for %s is %s", objectClass, updateStatement);
         }
 
         return updateStatement;
     }
 
-
-    // Note this will not include columns unless they have the associated property.
     String getInsertStatement(Object object, Connection connection) throws PersismException {
         String sql;
-
-        if (insertStatementsMap.containsKey(object.getClass())) {
-            sql = insertStatementsMap.get(object.getClass());
+        String key = getColumnsForInsert(object, connection).stream().map(columnInfo -> columnInfo.columnName).toList().toString();
+        Class<?> objectClass = object.getClass();
+        if (insertStatements.containsKey(objectClass) && insertStatements.get(objectClass).containsKey(key)) {
+            sql = insertStatements.get(objectClass).get(key);
         } else {
             sql = determineInsertStatement(object, connection);
         }
-
         if (log.isDebugEnabled()) {
-            log.debug("getInsertStatement for: %s %s", object.getClass(), sql);
+            log.debug("getInsertStatement for: %s %s", objectClass, sql);
         }
         return sql;
     }
 
     private synchronized String determineInsertStatement(Object object, Connection connection) {
-        if (insertStatementsMap.containsKey(object.getClass())) {
-            return insertStatementsMap.get(object.getClass());
+        List<ColumnInfo> columnsForInsert = getColumnsForInsert(object, connection);
+        String key = columnsForInsert.stream().map(columnInfo -> columnInfo.columnName).toList().toString();
+        Class<?> objectClass = object.getClass();
+
+        if (insertStatements.containsKey(objectClass) && insertStatements.get(objectClass).containsKey(key)) {
+            return insertStatements.get(objectClass).get(key);
         }
-
-        try {
-            String tableName = getTableName(object.getClass(), connection);
-            String schema = tableInfos.get(tableName).schema();
-
-            String sd = connectionType.getKeywordStartDelimiter();
-            String ed = connectionType.getKeywordEndDelimiter();
-
-            Map<String, ColumnInfo> columns = getColumns(object.getClass(), connection);
-            Map<String, PropertyInfo> properties = getTableColumnsPropertyInfo(object.getClass(), connection);
-
-            StringBuilder sb = new StringBuilder();
-            sb.append("INSERT INTO ");
-            if (isNotEmpty(schema)) {
-                sb.append(sd).append(schema).append(ed).append(".");
-            }
-            sb.append(sd).append(tableName).append(ed).append(" (");
-
-            StringBuilder sbp = new StringBuilder();
-            sbp.append(") VALUES (");
-
-            String sep = "";
-            boolean saveInMap = true;
-
-            for (ColumnInfo column : columns.values()) {
-                if (!column.autoIncrement) {
-
-                    if (column.hasDefault) {
-
-                        saveInMap = false;
-
-                        // Do not include if this column has a default and no value has been
-                        // set on it's associated property.
-                        if (properties.get(column.columnName).getValue(object) == null) {
-                            continue;
-                        }
-
-                    }
-
-                    sb.append(sep).append(sd).append(column.columnName).append(ed);
-                    sbp.append(sep).append("?");
-                    sep = ", ";
-                }
-            }
-
-            sb.append(sbp).append(") ");
-
-            String insertStatement;
-            insertStatement = sb.toString();
-
-            if (log.isDebugEnabled()) {
-                log.debug("determineInsertStatement for %s is %s", object.getClass(), insertStatement);
-            }
-
-            // Do not put this insert statement into the map if any columns have defaults
-            // because the insert statement will vary by different instances of the data object.
-            if (saveInMap) {
-                insertStatementsMap.put(object.getClass(), insertStatement);
-            } else {
-                insertStatementsMap.remove(object.getClass()); // remove just in case
-            }
-
-            return insertStatement;
-
-        } catch (Exception e) {
-            throw new PersismException(e.getMessage(), e);
-        }
-    }
-
-    String getDeleteStatement(Object object, Connection connection) {
-        if (deleteStatementsMap.containsKey(object.getClass())) {
-            return deleteStatementsMap.get(object.getClass());
-        }
-        return determineDeleteStatement(object, connection);
-    }
-
-    private synchronized String determineDeleteStatement(Object object, Connection connection) {
-        if (deleteStatementsMap.containsKey(object.getClass())) {
-            return deleteStatementsMap.get(object.getClass());
-        }
-
-        String tableName = getTableName(object.getClass(), connection);
-        String schema = tableInfos.get(tableName).schema();
 
         String sd = connectionType.getKeywordStartDelimiter();
         String ed = connectionType.getKeywordEndDelimiter();
 
-        List<String> primaryKeys = getPrimaryKeys(object.getClass(), connection);
+        TableInfo tableInfo = getTableInfo(objectClass);
+        String tableName = tableInfo.name();
+        String schemaName = tableInfo.schema();
+
+        StringBuilder sbi = new StringBuilder();
+        sbi.append("INSERT INTO ");
+        if (isNotEmpty(schemaName)) {
+            sbi.append(sd).append(schemaName).append(ed).append(".");
+        }
+        sbi.append(sd).append(tableName).append(ed).append(" (");
+
+        StringBuilder sbp = new StringBuilder();
+        sbp.append(" VALUES (");
+
+        String sep = "";
+
+        for (ColumnInfo column : columnsForInsert) {
+            sbi.append(sep).append(sd).append(column.columnName).append(ed);
+            sbp.append(sep).append("?");
+            sep = ", ";
+        }
+
+        if (connectionType == ConnectionType.MSSQL) {
+            // check if we have a sequence or other non auto-inc primary and use OUTPUT inserted.[COL] to get the value back.
+            // TODO WE COULD PROBABLY BE OK JUST ALWAYS using OUTPUT.inserted.* - but try it. CRASHES stuff. :(
+//            sbi.append("OUTPUT inserted.* ");
+            Optional<ColumnInfo> primary = getPrimaryNonAutoIncColumn(object, connection);
+            if (primary.isPresent()) {
+                ColumnInfo col = primary.get();
+                sbi.append(") ").append("OUTPUT inserted.").append(sd).append(col.columnName).append(ed).append(sbp).append(") ");
+            } else {
+                sbi.append(") ").append(sbp).append(") ");
+            }
+        } else {
+            sbi.append(") ").append(sbp).append(") ");
+        }
+
+        String insertStatement;
+        if (connectionType == ConnectionType.SQLite) {
+            sbi.append("RETURNING *");
+        }
+        insertStatement = sbi.toString();
+
+        if (log.isDebugEnabled()) {
+            log.debug("determineInsertStatement for %s is %s", object.getClass(), insertStatement);
+        }
+
+        insertStatements.putIfAbsent(objectClass, new HashMap<>());
+        insertStatements.get(objectClass).put(key, insertStatement);
+
+        return insertStatement;
+    }
+
+    private List<ColumnInfo> getColumnsForInsert(Object object, Connection connection) {
+        Map<String, ColumnInfo> columns = getColumns(object.getClass(), connection);
+        Map<String, PropertyInfo> properties = getTableColumnsPropertyInfo(object.getClass(), connection);
+        return columns.values().stream().
+                filter(col -> !col.autoIncrement).
+                filter(col -> !(col.hasDefault && properties.get(col.columnName).getValue(object) == null)).
+                filter(col -> !col.readOnly).
+                toList();
+    }
+
+    private Optional<ColumnInfo> getPrimaryNonAutoIncColumn(Object object, Connection connection) {
+        Map<String, ColumnInfo> columns = getColumns(object.getClass(), connection);
+        Map<String, PropertyInfo> properties = getTableColumnsPropertyInfo(object.getClass(), connection);
+        return columns.values().stream().
+                filter(col -> col.primary && col.hasDefault && properties.get(col.columnName).getValue(object) == null).
+                findFirst();
+    }
+
+    String getDeleteStatement(Class<?> objectClass, Connection connection) {
+        if (deleteStatementsMap.containsKey(objectClass)) {
+            return deleteStatementsMap.get(objectClass);
+        }
+        return determineDeleteStatement(objectClass, connection);
+    }
+
+    String getDefaultDeleteStatement(Class<?> objectClass, Connection connection) {
+        return getDeleteStatement(objectClass, connection) + " WHERE " + getWhereClause(objectClass, connection);
+    }
+
+    private synchronized String determineDeleteStatement(Class<?> objectClass, Connection connection) {
+        if (deleteStatementsMap.containsKey(objectClass)) {
+            return deleteStatementsMap.get(objectClass);
+        }
+
+        String sd = connectionType.getKeywordStartDelimiter();
+        String ed = connectionType.getKeywordEndDelimiter();
+
+        TableInfo tableInfo = getTableInfo(objectClass);
+        String tableName = tableInfo.name();
+        String schemaName = tableInfo.schema();
 
         StringBuilder sb = new StringBuilder();
         sb.append("DELETE FROM ");
-        if (isNotEmpty(schema)) {
-            sb.append(sd).append(schema).append(ed).append(".");
+        if (isNotEmpty(schemaName)) {
+            sb.append(sd).append(schemaName).append(ed).append(".");
         }
-        sb.append(sd).append(tableName).append(ed).append(" WHERE ");
-
-        String sep = "";
-        for (String column : primaryKeys) {
-            sb.append(sep).append(sd).append(column).append(ed).append(" = ?");
-            sep = " AND ";
-        }
-
+        sb.append(sd).append(tableName).append(ed);
         String deleteStatement = sb.toString();
 
         if (log.isDebugEnabled()) {
-            log.debug("determineDeleteStatement for %s is %s", object.getClass(), deleteStatement);
+            log.debug("determineDeleteStatement for %s is %s", objectClass, deleteStatement);
         }
 
-        deleteStatementsMap.put(object.getClass(), deleteStatement);
-
+        deleteStatementsMap.put(objectClass, deleteStatement);
         return deleteStatement;
     }
 
+    String getPrimaryInClause(Class<?> objectClass, int paramCount, Connection connection) {
+        if (primaryInClauseMap.containsKey(objectClass) && primaryInClauseMap.get(objectClass).containsKey(paramCount)) {
+            return primaryInClauseMap.get(objectClass).get(paramCount);
+        }
+        return determinePrimaryInClause(objectClass, paramCount, connection);
+    }
+
+    private synchronized String determinePrimaryInClause(Class<?> objectClass, int paramCount, Connection connection) {
+        if (primaryInClauseMap.containsKey(objectClass) && primaryInClauseMap.get(objectClass).containsKey(paramCount)) {
+            return primaryInClauseMap.get(objectClass).get(paramCount);
+        }
+
+        Map<Integer, String> map = primaryInClauseMap.get(objectClass);
+        if (map == null) {
+            map = new HashMap<>();
+        }
+
+        String sd = connectionType.getKeywordStartDelimiter();
+        String ed = connectionType.getKeywordEndDelimiter();
+        String andSep = "";
+
+        String query = "";
+
+        List<String> primaryKeys = getPrimaryKeys(objectClass, connection);
+
+        StringBuilder sb = new StringBuilder(query);
+        int groups = paramCount / primaryKeys.size();
+        for (String column : primaryKeys) {
+            String sep = "";
+            sb.append(andSep).append(sd).append(column).append(ed).append(" IN (");
+            for (int j = 0; j < groups; j++) {
+                sb.append(sep).append("?");
+                sep = ", ";
+            }
+            sb.append(")");
+            andSep = " AND ";
+        }
+        query = sb.toString();
+
+        map.put(paramCount, query);
+        primaryInClauseMap.put(objectClass, map);
+
+        return query;
+    }
+
+
     String getWhereClause(Class<?> objectClass, Connection connection) {
-        if (whereClauseMap.containsKey(objectClass)) {
-            return whereClauseMap.get(objectClass);
+        if (primaryWhereClauseMap.containsKey(objectClass)) {
+            return primaryWhereClauseMap.get(objectClass);
         }
         return determineWhereClause(objectClass, connection);
     }
 
     private synchronized String determineWhereClause(Class<?> objectClass, Connection connection) {
-        if (whereClauseMap.containsKey(objectClass)) {
-            return whereClauseMap.get(objectClass);
+        if (primaryWhereClauseMap.containsKey(objectClass)) {
+            return primaryWhereClauseMap.get(objectClass);
         }
 
         String sep = "";
@@ -1157,10 +797,10 @@ final class MetaData {
 
         List<String> primaryKeys = getPrimaryKeys(objectClass, connection);
         if (primaryKeys.size() == 0) {
-            throw new PersismException(Messages.TableHasNoPrimaryKeysForWhere.message(objectClass.getName()));
+            throw new PersismException(Message.TableHasNoPrimaryKeysForWhere.message(getTableInfo(objectClass).name()));
         }
 
-        sb.append(" WHERE ");
+        //sb.append(" WHERE ");
 
         sep = "";
         for (String column : primaryKeys) {
@@ -1172,23 +812,18 @@ final class MetaData {
         if (log.isDebugEnabled()) {
             log.debug("determineWhereClause: %s %s", objectClass.getName(), where);
         }
-        whereClauseMap.put(objectClass, where);
+        primaryWhereClauseMap.put(objectClass, where);
         return where;
     }
 
-    /**
-     * Default SELECT including WHERE Primary Keys
-     *
-     * @param objectClass
-     * @param connection
-     * @return
+    /*
+     * Default SELECT including WHERE Primary Keys - should only be called for tables
      */
     String getDefaultSelectStatement(Class<?> objectClass, Connection connection) {
-        if (objectClass.getAnnotation(View.class) != null) {
-            return getSelectStatement(objectClass, connection);
-        }
+        assert objectClass.getAnnotation(View.class) == null;
+        assert objectClass.getAnnotation(NotTable.class) == null;
 
-        return getSelectStatement(objectClass, connection) + getWhereClause(objectClass, connection);
+        return getSelectStatement(objectClass, connection) + " WHERE " + getWhereClause(objectClass, connection);
     }
 
     /**
@@ -1214,8 +849,9 @@ final class MetaData {
         String sd = connectionType.getKeywordStartDelimiter();
         String ed = connectionType.getKeywordEndDelimiter();
 
-        String tableName = getTableName(objectClass, connection);
-        String schema = tableInfos.get(tableName).schema();
+        TableInfo tableInfo = getTableInfo(objectClass);
+        String tableName = tableInfo.name();
+        String schemaName = tableInfo.schema();
 
         StringBuilder sb = new StringBuilder();
         sb.append("SELECT ");
@@ -1229,8 +865,8 @@ final class MetaData {
             sep = ", ";
         }
         sb.append(" FROM ");
-        if (isNotEmpty(schema)) {
-            sb.append(sd).append(schema).append(ed).append('.');
+        if (isNotEmpty(schemaName)) {
+            sb.append(sd).append(schemaName).append(ed).append('.');
         }
         sb.append(sd).append(tableName).append(ed);
 
@@ -1247,23 +883,21 @@ final class MetaData {
     }
 
     private String buildUpdateString(Object object, Iterator<String> it, Connection connection) throws PersismException {
-
-        // todo maybe we should exclude columns where there is no setter? Unless it's a record?
-        String tableName = getTableName(object.getClass(), connection);
-        String schema = tableInfos.get(tableName).schema();
-
         String sd = connectionType.getKeywordStartDelimiter();
         String ed = connectionType.getKeywordEndDelimiter();
+
+        TableInfo tableInfo = getTableInfo(object.getClass());
+        String tableName = tableInfo.name();
+        String schemaName = tableInfo.schema();
 
         List<String> primaryKeys = getPrimaryKeys(object.getClass(), connection);
 
         StringBuilder sb = new StringBuilder();
         sb.append("UPDATE ");
-        if (isNotEmpty(schema)) {
-            sb.append(sd).append(schema).append(ed).append(".");
+        if (isNotEmpty(schemaName)) {
+            sb.append(sd).append(schemaName).append(ed).append(".");
         }
         sb.append(sd).append(tableName).append(ed).append(" SET ");
-
         String sep = "";
 
         Map<String, ColumnInfo> columns = getColumns(object.getClass(), connection);
@@ -1288,189 +922,178 @@ final class MetaData {
 
     Map<String, PropertyInfo> getChangedProperties(Persistable<?> persistable, Connection connection) throws PersismException {
 
-        try {
-            Persistable<?> original = (Persistable<?>) persistable.readOriginalValue();
+        Persistable<?> original = (Persistable<?>) persistable.readOriginalValue();
 
-            Map<String, PropertyInfo> columns = getTableColumnsPropertyInfo(persistable.getClass(), connection);
+        Map<String, PropertyInfo> columns = getTableColumnsPropertyInfo(persistable.getClass(), connection);
 
-            if (original == null) {
-                // Could happen in the case of cloning or other operation - so it's never read, so it never sets original.
-                return columns;
-            } else {
-                Map<String, PropertyInfo> changedColumns = new HashMap<>(columns.keySet().size());
-                for (String column : columns.keySet()) {
+        if (original == null) {
+            // Could happen in the case of cloning or other operation - so it's never read, so it never sets original.
+            return columns;
+        } else {
+            Map<String, PropertyInfo> changedColumns = new LinkedHashMap<>(columns.keySet().size());
 
-                    PropertyInfo propertyInfo = columns.get(column);
+            for (String column : columns.keySet()) {
+                PropertyInfo propertyInfo = columns.get(column);
 
-                    Object newValue = null;
-                    Object orgValue = null;
-                    newValue = propertyInfo.getValue(persistable);
-                    orgValue = propertyInfo.getValue(original);
-
-                    if (newValue != null && !newValue.equals(orgValue) || orgValue != null && !orgValue.equals(newValue)) {
-                        changedColumns.put(column, propertyInfo);
-                    }
+                Object newValue = propertyInfo.getValue(persistable);
+                Object orgValue = propertyInfo.getValue(original);
+                if (!Objects.equals(newValue, orgValue)) {
+                    changedColumns.put(column, propertyInfo);
                 }
-                return changedColumns;
             }
-
-        } catch (Exception e) {
-            throw new PersismException(e.getMessage(), e);
+            return changedColumns;
         }
+
     }
 
     <T> Map<String, ColumnInfo> getColumns(Class<T> objectClass, Connection connection) throws PersismException {
         // Realistically at this point this objectClass will always be in the map since it's defined early
-        // when we get the table name but I'll double check it for determineColumnInfo anyway.
+        // when we get the table name, but I'll double-check it for determineColumnInfo anyway.
         if (columnInfoMap.containsKey(objectClass)) {
             return columnInfoMap.get(objectClass);
         }
-        return determineColumnInfo(objectClass, getTableName(objectClass), connection);
+        return determineColumnInfo(objectClass, getTableInfo(objectClass), connection);
     }
 
     <T> Map<String, PropertyInfo> getQueryColumnsPropertyInfo(Class<T> objectClass, ResultSet rs) throws PersismException {
-        // should not be mapped since ResultSet could contain different # of columns at different times. OK NOW. If properties > columns we won't cache it
-        // nope breaks records tests
-//        if (propertyInfoMap.containsKey(objectClass)) {
-//            return propertyInfoMap.get(objectClass);
-//        }
-
-        return determinePropertyInfo(objectClass, rs);
+        try {
+            return determinePropertyInfoFromResultSet(objectClass, rs);
+        } catch (SQLException e) {
+            throw new PersismException(e.getMessage(), e);
+        }
     }
 
     <T> Map<String, PropertyInfo> getTableColumnsPropertyInfo(Class<T> objectClass, Connection connection) throws PersismException {
         if (propertyInfoMap.containsKey(objectClass)) {
             return propertyInfoMap.get(objectClass);
         }
-        return determinePropertyInfo(objectClass, getTableName(objectClass), connection);
+        return determinePropertyInfo(objectClass, getTableInfo(objectClass), connection);
     }
 
-    <T> String getTableName(Class<T> objectClass) {
+    <T> TableInfo getTableInfo(Class<T> objectClass) {
         if (tableOrViewMap.containsKey(objectClass)) {
             return tableOrViewMap.get(objectClass);
         }
-        return determineTable(objectClass);
+
+        return determineTableInfo(objectClass);
     }
 
-    <T> String getFullTableName(Class<T> objectClass) {
-        // todo return schema name as well..
-        return connectionType.getKeywordStartDelimiter() + getTableName(objectClass) + connectionType.getKeywordEndDelimiter();
-    }
-
-    <T> List<String> getPropertyNames(Class<T> objectClass) {
-        return propertyNames.get(objectClass);
-    }
-
-    // internal version to retrieve meta information about this table's columns
-    // at the same time we find the table name itself.
-    // TODO This is in a synchronized context - is it aways?
-    private <T> String getTableName(Class<T> objectClass, Connection connection) {
-
-        String tableName = getTableName(objectClass);
-
-        if (!columnInfoMap.containsKey(objectClass)) {
-            determineColumnInfo(objectClass, tableName, connection);
-        }
-
-        if (!propertyInfoMap.containsKey(objectClass)) {
-            determinePropertyInfo(objectClass, tableName, connection);
-        }
-
-        // todo this needs to happen only once. Add to cache? synchronized?
-        // assign convertors
-        Map<String, ColumnInfo> columns = getColumns(objectClass, connection);
-        Map<String, PropertyInfo> properties = getTableColumnsPropertyInfo(objectClass, connection);
-
-        for (String col : columns.keySet()) {
-            ColumnInfo columnInfo = columns.get(col);
-            PropertyInfo propertyInfo = properties.get(col);
-
-            Types propertyType = Types.getType(propertyInfo.getter.getReturnType());
-
-            if (propertyType != null) {
-                determineConverter(columnInfo, columnInfo.columnType, propertyType);
-                determineConverter(propertyInfo, propertyType, columnInfo.columnType);
-            }
-        }
-        return tableName;
-    }
-
-    private synchronized <T> String determineTable(Class<T> objectClass) {
-
+    private synchronized <T> TableInfo determineTableInfo(Class<T> objectClass) {
         if (tableOrViewMap.containsKey(objectClass)) {
             return tableOrViewMap.get(objectClass);
         }
 
         String tableName;
+        String schemaName = null;
+        TableInfo foundInfo = null;
+
         Table tableAnnotation = objectClass.getAnnotation(Table.class);
         View viewAnnotation = objectClass.getAnnotation(View.class);
 
         if (tableAnnotation != null) {
             tableName = tableAnnotation.value();
-            // double check against stored table names to get the actual case of the name
+            if (tableName.contains(".")) {
+                schemaName = tableName.substring(0, tableName.indexOf("."));
+                tableName = tableName.substring(tableName.indexOf(".") + 1);
+            }
+
             boolean found = false;
-            for (String name : tableNames) {
-                if (name.equalsIgnoreCase(tableName)) {
-                    tableName = name;
-                    found = true;
+            for (TableInfo table : tables) {
+                if (table.name().equalsIgnoreCase(tableName)) {
+                    if (schemaName != null) {
+                        if (table.schema().equalsIgnoreCase(schemaName)) {
+                            foundInfo = table;
+                            found = true;
+                            break;
+                        }
+                    } else {
+                        foundInfo = table;
+                        found = true;
+                        break;
+                    }
+                }
+            }
+            if (schemaName == null) {
+                final String table = tableName;
+                if (tables.stream().filter(tableInfo -> tableInfo.name().equalsIgnoreCase(table)).count() > 1) {
+                    throw new PersismException(Message.MoreThanOneTableOrViewInDifferentSchemas.message("TABLE", table));
                 }
             }
             if (!found) {
-                throw new PersismException(Messages.CouldNotFindTableNameInTheDatabase.message(tableName, objectClass.getName()));
+                throw new PersismException(Message.CouldNotFindTableNameInTheDatabase.message(tableName, objectClass.getName()));
             }
         } else if (viewAnnotation != null && isNotEmpty(viewAnnotation.value())) {
-
             tableName = viewAnnotation.value();
+            if (tableName.contains(".")) {
+                schemaName = tableName.substring(0, tableName.indexOf("."));
+                tableName = tableName.substring(tableName.indexOf(".") + 1);
+            }
 
-            // double check against stored view names to get the actual case of the name
             boolean found = false;
-            for (String name : viewNames) {
-                if (name.equalsIgnoreCase(tableName)) {
-                    tableName = name;
-                    found = true;
+            for (TableInfo view : views) {
+                if (view.name().equalsIgnoreCase(tableName)) {
+                    if (schemaName != null) {
+                        if (view.schema().equalsIgnoreCase(schemaName)) {
+                            foundInfo = view;
+                            found = true;
+                            break;
+                        }
+                    } else {
+                        foundInfo = view;
+                        found = true;
+                        break;
+                    }
+                }
+            }
+            if (schemaName == null) {
+                final String table = tableName;
+                if (views.stream().filter(tableInfo -> tableInfo.name().equalsIgnoreCase(table)).count() > 1) {
+                    throw new PersismException(Message.MoreThanOneTableOrViewInDifferentSchemas.message("VIEW", table));
                 }
             }
             if (!found) {
-                throw new PersismException(Messages.CouldNotFindViewNameInTheDatabase.message(tableName, objectClass.getName()));
+                throw new PersismException(Message.CouldNotFindViewNameInTheDatabase.message(tableName, objectClass.getName()));
             }
         } else {
-            tableName = guessTableOrViewName(objectClass);
+            foundInfo = guessTableOrView(objectClass);
         }
-        tableOrViewMap.put(objectClass, tableName);
-        return tableName;
+        tableOrViewMap.put(objectClass, foundInfo);
+        return foundInfo;
     }
 
     // Returns the table/view name found in the DB in the same case as in the DB.
     // throws PersismException if we cannot guess any table/view name for this class.
-    private <T> String guessTableOrViewName(Class<T> objectClass) throws PersismException {
+    private <T> TableInfo guessTableOrView(Class<T> objectClass) throws PersismException {
         Set<String> guesses = new LinkedHashSet<>(6); // guess order is important
-        List<String> guessedTables = new ArrayList<>(6);
+        List<TableInfo> guessedTables = new ArrayList<>(6);
 
         String className = objectClass.getSimpleName();
 
-        Set<String> list;
+        Set<TableInfo> list;
         boolean isView = false;
         if (objectClass.getAnnotation(View.class) != null) {
-            list = viewNames;
+            list = views;
             isView = true;
         } else {
-            list = tableNames;
+            list = tables;
         }
 
         addTableGuesses(className, guesses);
-        for (String tableName : list) {
+        for (TableInfo table : list) {
             for (String guess : guesses) {
-                if (guess.equalsIgnoreCase(tableName)) {
-                    guessedTables.add(tableName);
+                if (guess.equalsIgnoreCase(table.name())) {
+                    guessedTables.add(table);
                 }
             }
         }
         if (guessedTables.size() == 0) {
-            throw new PersismException(Messages.CouldNotDetermineTableOrViewForType.message(isView ? "view" : "table", objectClass.getName(), guesses));
+            throw new PersismException(Message.CouldNotDetermineTableOrViewForType.message(isView ? "view" : "table", objectClass.getName(), guesses));
         }
 
         if (guessedTables.size() > 1) {
-            throw new PersismException(Messages.CouldNotDetermineTableOrViewForTypeMultipleMatches.message(isView ? "view" : "table", objectClass.getName(), guesses, guessedTables));
+            Set<String> multipleGuesses = new TreeSet<>(String.CASE_INSENSITIVE_ORDER);
+            multipleGuesses.addAll(guessedTables.stream().map(TableInfo::name).toList());
+            throw new PersismException(Message.CouldNotDetermineTableOrViewForTypeMultipleMatches.message(isView ? "view" : "table", objectClass.getName(), guesses, multipleGuesses));
         }
         return guessedTables.get(0);
     }
@@ -1522,9 +1145,9 @@ final class MetaData {
     }
 
     List<String> getPrimaryKeys(Class<?> objectClass, Connection connection) throws PersismException {
-
-        // ensures meta data will be available
-        String tableName = getTableName(objectClass, connection);
+        // todo cache? called by Session and SessionHelper.
+        // ensures meta-data will be available because this method could be called before getting the table info object
+        TableInfo tableInfo = getTableInfo(objectClass);
 
         List<String> primaryKeys = new ArrayList<>(4);
         Map<String, ColumnInfo> map = getColumns(objectClass, connection);
@@ -1534,12 +1157,12 @@ final class MetaData {
             }
         }
         if (log.isDebugEnabled()) {
-            log.debug("getPrimaryKeys for %s %s", tableName, primaryKeys);
+            log.debug("getPrimaryKeys for %s %s", tableInfo.name(), primaryKeys);
         }
         return primaryKeys;
     }
 
-    ConnectionTypes getConnectionType() {
+    ConnectionType getConnectionType() {
         return connectionType;
     }
 

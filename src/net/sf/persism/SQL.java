@@ -6,18 +6,21 @@ import java.util.regex.Pattern;
 /**
  * Simple wrapper for SQL String. Mainly to allow for overloads to fetch/query methods.
  *
- * @see <a href="https://sproket.github.io/Persism/manual.html">Using the new Query/Fetch methods</a>
+ * @see <a href="https://sproket.github.io/Persism/manual2.html">Using the new Query/Fetch methods</a>
  */
-// todo wrong link for now....
-// todo cache these if we do any parsing so we only parse once.
 public final class SQL {
+
+    enum SQLType {Select, Where, StoredProc}
+
+    SQLType type;
 
     final String sql;
 
-    boolean whereOnly; // flags this as WHERE only - we add the SELECT part.
-    boolean storedProc; // indicates this is a stored proc rather than an SQL statement
-
     String processedSQL = null;
+
+    int limit;
+
+    private static final Pattern commentPattern = Pattern.compile("/\\*.*?\\*/", Pattern.DOTALL);
 
     SQL(String sql) {
         sql = sql.trim();
@@ -38,11 +41,17 @@ public final class SQL {
             sql = sb.toString();
 
             // /* */ comments
-            Pattern commentPattern = Pattern.compile("/\\*.*?\\*/", Pattern.DOTALL);
+            //Pattern commentPattern = Pattern.compile("/\\*.*?\\*/", Pattern.DOTALL);
             sql = commentPattern.matcher(sql).replaceAll("").trim();
         }
 
         this.sql = sql;
+        this.type = SQLType.Select;
+    }
+
+    SQL(String sql, SQLType type) {
+        this.sql = sql.trim();
+        this.type = type;
     }
 
     /**
@@ -76,9 +85,7 @@ public final class SQL {
      * @return new SQL object
      */
     public static SQL where(String where) {
-        SQL sql = new SQL(" WHERE " + where);
-        sql.whereOnly = true;
-        return sql;
+        return new SQL("WHERE " + where, SQLType.Where);
     }
 
     /**
@@ -92,9 +99,22 @@ public final class SQL {
      * @return new SQL object
      */
     public static SQL proc(String storedProc) {
-        SQL sql = new SQL(storedProc);
-        sql.storedProc = true;
-        return sql;
+        return new SQL(storedProc, SQLType.StoredProc);
+    }
+
+    /**
+     * Specifies a limit to the query result which will translate to the specific SQL syntax when executed.
+     * <pre>{@code
+     *      List<PublisherTitle> publisherTitles = session.query(PublisherTitle.class, where("1=1").limit(4));
+     * }</pre>
+     *
+     * @param limit positive integer number
+     * @return current SQL object
+     * @since 2.3
+     */
+    public SQL limit(int limit) {
+        this.limit = limit;
+        return this;
     }
 
     /**

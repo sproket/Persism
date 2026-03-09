@@ -8,7 +8,6 @@ import java.beans.ConstructorProperties;
 
 /*
 Currently, this will not work since we don't instantiate the Product POJO first.
-It's also not great that we modify a list ....
  */
 @Table("InvoiceLineItems")
 public record InvoiceLineItemRec(

@@ -3,18 +3,15 @@ package net.sf.persism;
 import junit.framework.TestCase;
 import net.sf.persism.categories.LocalDB;
 import net.sf.persism.dao.ByteData;
-import net.sf.persism.dao.CustomerOrder;
 import net.sf.persism.dao.OracleOrder;
-import net.sf.persism.dao.records.CustomerOrderRec;
+import net.sf.persism.logging.LogMode;
 import org.junit.experimental.categories.Category;
 
 import java.lang.annotation.Annotation;
-import java.lang.invoke.MethodHandles;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.sql.Connection;
 import java.sql.DriverManager;
-import java.time.LocalDateTime;
 import java.util.*;
 
 import static java.lang.System.out;
@@ -22,7 +19,7 @@ import static java.lang.System.out;
 @Category(LocalDB.class)
 public final class TestMetaData extends TestCase {
 
-    private static final Log log = Log.getLogger(TestMetaData.class);
+    private static final Log log = Log.getLogger(TestMetaData.class, LogMode.LOG4J);
 
     Connection con;
     Session session;
@@ -44,6 +41,24 @@ public final class TestMetaData extends TestCase {
         session = new Session(con);
     }
 
+    @Override
+    protected void tearDown() throws Exception {
+        log.info("TestMetaData tearDown");
+        super.tearDown();
+    }
+
+    public void testLogger() {
+        log.debug("debug %s", "x");
+        log.debug("debug");
+        log.info("info");
+        log.info("info", new Throwable());
+        log.warn("warn");
+        log.warn("warn", new Throwable());
+        log.warnNoDuplicates("warn no dup");
+        log.error("error");
+        log.error("error", new Throwable());
+        log.isDebugEnabled();
+    }
 
     public void testGuessing() {
 
@@ -70,8 +85,10 @@ public final class TestMetaData extends TestCase {
             session.insert(new TestDerby());
         } catch (PersismException e) {
             failed = true;
-            assertEquals("Message s/b 'Could not determine a table for type: net.sf.persism.TestDerby Guesses were: [TestDerby, TestDerbies, Test Derby, Test_Derby, Test Derbies, Test_Derbies, Test Derbys, Test_Derbys] and we found multiple matching: [TEST_DERBY, TESTDERBY]'",
-                    "Could not determine a table for type: net.sf.persism.TestDerby Guesses were: [TestDerby, TestDerbies, TestDerbys, Test Derby, Test_Derby, Test Derbies, Test_Derbies, Test Derbys, Test_Derbys] and we found multiple matching: [TEST_DERBY, TESTDERBY]",
+            // "Could not determine a table for type: net.sf.persism.TestDerby Guesses were: [TestDerby, TestDerbies, TestDerbys, Test Derby, Test_Derby, Test Derbies, Test_Derbies, Test Derbys, Test_Derbys] and we found multiple matching: [TEST_DERBY, TESTDERBY]",
+            List<String> guesses = List.of("TestDerby", "TestDerbies", "TestDerbys", "Test Derby", "Test_Derby", "Test Derbies", "Test_Derbies", "Test Derbys", "Test_Derbys");
+            assertEquals("Message s/b equal",
+                    Message.CouldNotDetermineTableOrViewForTypeMultipleMatches.message("table", TestDerby.class.getName(), guesses, List.of("TEST_DERBY", "TESTDERBY")),
                     e.getMessage());
         }
         assertTrue(failed);
@@ -99,6 +116,7 @@ public final class TestMetaData extends TestCase {
         assertEquals("s/b 'SELECT * FROM RecordTest2 -- what about this?'", "SELECT * FROM RecordTest2 -- what about this?", sql1.toString());
         log.info("-------");
     }
+
     public void testDeterminePropertyInfo() {
         Collection<PropertyInfo> propertyInfo = MetaData.getPropertyInfo(ByteData.class);
         log.warn(propertyInfo.size());
@@ -167,7 +185,6 @@ public final class TestMetaData extends TestCase {
                 }
             }
 
-            propertyInfo.readOnly = propertyInfo.setter == null;
             propertyNames.put(propertyName, propertyInfo);
         });
 

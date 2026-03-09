@@ -24,7 +24,7 @@ public final class TestFirebirdContainer extends TestFirebird {
     @Override
     public void setUp() throws Exception {
 
-        connectionType = ConnectionTypes.Firebird;
+        connectionType = ConnectionType.Firebird;
         super.setUp();
 
         Class.forName(DB_CONTAINER.getDriverClassName());

@@ -16,7 +16,7 @@ final class ColumnInfo implements Convertable {
 
     // SQLite - Date - comes back as StringType
     // H2 - BIT - comes back NULL
-    Types columnType;
+    JavaType columnType;
 
     // kept for possible future use
     int sqlColumnType;
@@ -29,6 +29,9 @@ final class ColumnInfo implements Convertable {
     boolean primary;
 
     boolean hasDefault;
+
+    // Only set by annotation
+    boolean readOnly;
 
     int length; // for string to varchar length checking
 
@@ -52,6 +55,7 @@ final class ColumnInfo implements Convertable {
                 ", autoIncrement=" + autoIncrement +
                 ", primary=" + primary +
                 ", hasDefault=" + hasDefault +
+               ", readOnly=" + readOnly +
                 ", length=" + length +
                 ", converterName=" + converterName +
                 '}';

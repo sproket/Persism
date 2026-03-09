@@ -4,16 +4,11 @@ import net.sf.persism.annotations.Join;
 import net.sf.persism.annotations.NotTable;
 import net.sf.persism.annotations.View;
 
-import java.beans.ConstructorProperties;
-import java.lang.reflect.Constructor;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Parameter;
 import java.math.BigDecimal;
 import java.sql.*;
 import java.util.*;
 import java.util.stream.Collectors;
 
-import static net.sf.persism.Parameters.params;
 import static net.sf.persism.SQL.where;
 
 // Non-public code Session uses.
@@ -22,6 +17,7 @@ final class SessionHelper {
     // leave this using the Session.class for logging
     private static final Log log = Log.getLogger(Session.class);
     private static final Log blog = Log.getLogger("net.sf.persism.Benchmarks");
+    private static final Log sqllog = Log.getLogger("net.sf.persism.SQL");
 
     private final Session session;
 
@@ -31,15 +27,13 @@ final class SessionHelper {
 
     JDBCResult executeQuery(Class<?> objectClass, SQL sql, Parameters parameters) throws SQLException {
 
-        JDBCResult result = new JDBCResult(objectClass.getSimpleName());
+        JDBCResult result = new JDBCResult();
         String sqlQuery = sql.sql;
-        sql.storedProc = !sql.whereOnly && isStoredProc(sqlQuery);
-
         if (parameters.areNamed) {
-            if (sql.storedProc) {
-                log.warn(Messages.NamedParametersUsedWithStoredProc.message());
+            if (sql.type == SQL.SQLType.StoredProc) {
+                //log.warnNoDuplicates(Message.NamedParametersUsedWithStoredProc.message(sql.sql));
+                throw new PersismException(Message.NamedParametersUsedWithStoredProc.message(sql.sql));
             }
-
             char delim = '@';
             Map<String, List<Integer>> paramMap = new HashMap<>();
             sqlQuery = parseParameters(delim, sqlQuery, paramMap);
@@ -61,31 +55,43 @@ final class SessionHelper {
             }
         }
 
-        if (sql.whereOnly) {
+        if (sql.type == SQL.SQLType.Where) {
             if (objectClass.getAnnotation(NotTable.class) != null) {
-                throw new PersismException(Messages.WhereNotSupportedForNotTableQueries.message());
+                throw new PersismException(Message.WhereNotSupportedForNotTableQueries.message());
             }
-            String select = session.metaData.getSelectStatement(objectClass, session.connection);
-            sqlQuery = select + " " + parsePropertyNames(sqlQuery, objectClass, session.connection);
+            sqlQuery = session.metaData.getSelectStatement(objectClass, session.connection) + parsePropertyNames(sqlQuery, objectClass, session.connection);
             sql.processedSQL = sqlQuery;
-        } else {
-            checkIfStoredProcOrSQL(objectClass, sql);
         }
 
-        exec(result, sqlQuery, parameters.toArray());
+        if (sql.limit > 0) {
+            sqlQuery = addLimitToSQL(sqlQuery, sql.limit, session.metaData.getConnectionType());
+            sql.processedSQL = sqlQuery;
+        }
+        executeSelect(result, sqlQuery, parameters.toArray());
         return result;
     }
 
-    void exec(JDBCResult result, String sql, Object... parameters) throws SQLException {
+    private static String addLimitToSQL(String sqlQuery, int limit, ConnectionType connectionType) {
+        switch (connectionType) {
+            // for other (unknown type we'll just guess at 2008 standard)
+            case Oracle, Derby, Other -> sqlQuery += " FETCH FIRST " + limit + " ROWS ONLY";
+            case MSSQL, JTDS, UCanAccess -> sqlQuery = "SELECT TOP " + limit + " " + sqlQuery.substring(7);
+            case MySQL, PostgreSQL, H2, SQLite, HSQLDB, Informix -> sqlQuery += " LIMIT " + limit;
+            case Firebird -> sqlQuery = "SELECT FIRST " + limit + " " + sqlQuery.substring(7);
+        }
+        return sqlQuery;
+    }
+
+    // this method should only be used by query or fetch
+    void executeSelect(JDBCResult result, String sql, Object... parameters) throws SQLException {
         long now = System.currentTimeMillis();
 
-        if (log.isDebugEnabled()) {
-            log.debug("exec: %s params: %s", sql, Arrays.asList(parameters));
+        if (sqllog.isDebugEnabled()) {
+            sqllog.debug("%s params: %s", sql, Arrays.asList(parameters));
         }
-
         try {
             if (isSelect(sql)) {
-                if (session.metaData.getConnectionType() == ConnectionTypes.Firebird) {
+                if (session.metaData.getConnectionType() == ConnectionType.Firebird) {
                     // https://stackoverflow.com/questions/935511/how-can-i-avoid-resultset-is-closed-exception-in-java
                     result.st = session.connection.prepareStatement(sql, ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY, ResultSet.HOLD_CURSORS_OVER_COMMIT);
                 } else {
@@ -111,7 +117,7 @@ final class SessionHelper {
             throw new SQLException(e.getMessage() + " SQL: " + sql + " params: " + Arrays.asList(parameters), e);
         } finally {
             if (blog.isDebugEnabled()) {
-                blog.debug("exec time for " + result.name + ": " + (System.currentTimeMillis() - now) + " " + sql + " params: " + Arrays.asList(parameters));
+                blog.debug("exec time: " + (System.currentTimeMillis() - now) + "ms " + sql + " params: " + Arrays.asList(parameters));
             }
         }
     }
@@ -145,6 +151,7 @@ final class SessionHelper {
     /**
      * Original from Adam Crume, JavaWorld.com, 04/03/07
      * https://www.infoworld.com/article/2077706/named-parameters-for-preparedstatement.html
+     * https://archive.ph/au5XM and https://archive.ph/4OOze
      *
      * @param sql      query to parse
      * @param paramMap map to hold parameter-index mappings
@@ -158,18 +165,19 @@ final class SessionHelper {
 
         Set<Character> startDelims = new HashSet<>(4);
         startDelims.add('"');
-        startDelims.add('\'');
 
-        if (Util.isNotEmpty(session.metaData.getConnectionType().getKeywordStartDelimiter())) {
-            startDelims.add(session.metaData.getConnectionType().getKeywordStartDelimiter().charAt(0));
+        String sd = session.metaData.getConnectionType().getKeywordStartDelimiter();
+        String ed = session.metaData.getConnectionType().getKeywordEndDelimiter();
+
+        if (Util.isNotEmpty(sd)) {
+            startDelims.add(sd.charAt(0));
         }
 
         Set<Character> endDelims = new HashSet<>(4);
         endDelims.add('"');
-        endDelims.add('\'');
 
-        if (Util.isNotEmpty(session.metaData.getConnectionType().getKeywordEndDelimiter())) {
-            endDelims.add(session.metaData.getConnectionType().getKeywordEndDelimiter().charAt(0));
+        if (Util.isNotEmpty(ed)) {
+            endDelims.add(ed.charAt(0));
         }
 
         boolean inDelimiter = false;
@@ -210,6 +218,19 @@ final class SessionHelper {
     String parsePropertyNames(String sql, Class<?> objectClass, Connection connection) {
         log.debug("parsePropertyNames using : with SQL: %s", sql);
 
+        if (session.metaData.whereClauses.containsKey(objectClass) && session.metaData.whereClauses.get(objectClass).containsKey(sql)) {
+            return session.metaData.whereClauses.get(objectClass).get(sql);
+        }
+
+        return determineWhereClause(sql, objectClass, connection);
+    }
+
+    private synchronized String determineWhereClause(String sql, Class<?> objectClass, Connection connection) {
+
+        if (session.metaData.whereClauses.containsKey(objectClass) && session.metaData.whereClauses.get(objectClass).containsKey(sql)) {
+            return session.metaData.whereClauses.get(objectClass).get(sql);
+        }
+
         int length = sql.length();
         StringBuilder parsedQuery = new StringBuilder(length);
 
@@ -220,7 +241,7 @@ final class SessionHelper {
         startDelims.add('"');
         startDelims.add('\'');
 
-        if (Util.isNotEmpty(session.metaData.getConnectionType().getKeywordStartDelimiter())) {
+        if (Util.isNotEmpty(sd)) {
             startDelims.add(sd.charAt(0));
         }
 
@@ -276,34 +297,34 @@ final class SessionHelper {
             }
         }
 
-        if (propertiesNotFound.size() > 0) {
-            throw new PersismException(Messages.QueryPropertyNamesMissingOrNotFound.message(propertiesNotFound, sql));
+        if (!propertiesNotFound.isEmpty()) {
+            throw new PersismException(Message.QueryPropertyNamesMissingOrNotFound.message(propertiesNotFound, sql));
         }
-        String parsedSql = parsedQuery.toString();
+        String parsedSql = " " + parsedQuery;
         log.debug("parsePropertyNames SQL: %s", parsedSql);
+        session.metaData.whereClauses.putIfAbsent(objectClass, new HashMap<>());
+        session.metaData.whereClauses.get(objectClass).put(sql, parsedSql);
         return parsedSql;
     }
 
-    void checkIfOkForWriteOperation(Object object, String operation) {
-        Class<?> objectClass = object.getClass();
+    void checkIfOkForWriteOperation(Class<?> objectClass, String operation) {
         if (objectClass.getAnnotation(View.class) != null) {
-            throw new PersismException(Messages.OperationNotSupportedForView.message(objectClass, operation));
+            throw new PersismException(Message.OperationNotSupportedForView.message(objectClass, operation));
         }
         if (objectClass.getAnnotation(NotTable.class) != null) {
-            throw new PersismException(Messages.OperationNotSupportedForNotTableQuery.message(objectClass, operation));
+            throw new PersismException(Message.OperationNotSupportedForNotTableQuery.message(objectClass, operation));
         }
-        if (Types.getType(objectClass) != null) {
-            throw new PersismException(Messages.OperationNotSupportedForJavaType.message(objectClass, operation));
+        if (JavaType.getType(objectClass) != null) {
+            throw new PersismException(Message.OperationNotSupportedForJavaType.message(objectClass, operation));
         }
     }
 
     Object getTypedValueReturnedFromGeneratedKeys(Class<?> objectClass, ResultSet rs) throws SQLException {
-
-        Object value = null;
-        Types type = Types.getType(objectClass);
+        Object value;
+        JavaType type = JavaType.getType(objectClass);
 
         if (type == null) {
-            log.warn(Messages.UnknownTypeForPrimaryGeneratedKey.message(objectClass));
+            log.warn(Message.UnknownTypeForPrimaryGeneratedKey.message(objectClass));
             return rs.getObject(1);
         }
 
@@ -314,49 +335,6 @@ final class SessionHelper {
         };
         return value;
     }
-
-    <T> Constructor<T> findConstructor(Class<T> objectClass, List<String> propertyNames) {
-        Constructor<?>[] constructors = objectClass.getConstructors();
-        Constructor<T> selectedConstructor = null;
-
-        for (Constructor<?> constructor : constructors) {
-            // Check with canonical or maybe -parameters
-            List<String> parameterNames = Arrays.stream(constructor.getParameters()).
-                    map(Parameter::getName).collect(Collectors.toList());
-
-            if (listEqualsIgnoreOrder(propertyNames, parameterNames)) {
-                // re-arrange the propertyNames to match parameterNames
-                propertyNames.clear();
-                propertyNames.addAll(parameterNames);
-                selectedConstructor = (Constructor<T>) constructor;
-                break;
-            }
-
-            // Check with ConstructorProperties
-            ConstructorProperties constructorProperties = constructor.getAnnotation(ConstructorProperties.class);
-            if (constructorProperties != null) {
-                parameterNames = Arrays.asList(constructorProperties.value());
-                if (listEqualsIgnoreOrder(propertyNames, parameterNames)) {
-                    // re-arrange the propertyNames to match parameterNames
-                    propertyNames.clear();
-                    propertyNames.addAll(parameterNames);
-                    selectedConstructor = (Constructor<T>) constructor;
-                    break;
-                }
-            }
-        }
-
-        if (selectedConstructor == null) {
-            throw new PersismException(Messages.CouldNotFindConstructorForRecord.message(objectClass, propertyNames));
-        }
-        return selectedConstructor;
-    }
-
-    // https://stackoverflow.com/questions/1075656/simple-way-to-find-if-two-different-lists-contain-exactly-the-same-elements
-    private static <T> boolean listEqualsIgnoreOrder(List<T> list1, List<T> list2) {
-        return new HashSet<>(list1).equals(new HashSet<>(list2));
-    }
-
 
     void setParameters(PreparedStatement st, Object[] parameters) throws SQLException {
         if (log.isDebugEnabled()) {
@@ -369,13 +347,13 @@ final class SessionHelper {
 
             if (param != null) {
 
-                Types type = Types.getType(param.getClass());
-                if (type == null) {
-                    log.warn(Messages.UnknownTypeInSetParameters.message(param.getClass()));
-                    type = Types.ObjectType;
+                JavaType paramType = JavaType.getType(param.getClass());
+                if (paramType == null) {
+                    log.warn(Message.UnknownTypeInSetParameters.message(param.getClass()));
+                    paramType = JavaType.ObjectType;
                 }
 
-                switch (type) {
+                switch (paramType) {
 
                     case booleanType:
                     case BooleanType:
@@ -426,8 +404,7 @@ final class SessionHelper {
 
                     case characterType:
                     case CharacterType:
-                        st.setObject(n, "" + param); // todo informix (or others) see character as numeric so toString will fail with chars like 'x' s/b setCharacter
-                        //st.setByte(n, (Byte) param);
+                        st.setObject(n, "" + param);
                         break;
 
                     case SQLDateType:
@@ -457,9 +434,8 @@ final class SessionHelper {
                     case OffsetDateTimeType:
                     case ZonedDateTimeType:
                     case InstantType:
-                        log.warn(Messages.UnSupportedTypeInSetParameters.message(type));
-                        st.setObject(n, param);
-                        // todo ZonedDateTime, OffsetDateTimeType and MAYBE Instant NAH
+                        log.warn(Message.UnSupportedTypeInSetParameters.message(paramType));
+                        st.setObject(n, "" + param);
                         break;
 
                     case byteArrayType:
@@ -473,24 +449,22 @@ final class SessionHelper {
                         // Clob is converted to String Blob is converted to byte array
                         // so this should not occur unless they were passed in by the user.
                         // We are most probably about to fail here.
-                        log.warn(Messages.ParametersDoNotUseClobOrBlob.message(), new Throwable());
+                        log.warn(Message.ParametersDoNotUseClobOrBlob.message(), new Throwable());
                         st.setObject(n, param);
                         break;
 
                     case EnumType:
-                        if (session.metaData.getConnectionType() == ConnectionTypes.PostgreSQL) {
-                            st.setObject(n, param.toString(), java.sql.Types.OTHER);
+                        if (session.metaData.getConnectionType() == ConnectionType.PostgreSQL) {
+                            st.setObject(n, param.toString(), Types.OTHER);
                         } else {
                             st.setString(n, param.toString());
                         }
                         break;
 
                     case UUIDType:
-                        if (session.metaData.getConnectionType() == ConnectionTypes.PostgreSQL) {
-                            // PostgreSQL does work with setObject but not setString unless you set the connection property stringtype=unspecified todo document this
+                        if (session.metaData.getConnectionType() == ConnectionType.PostgreSQL) {
                             st.setObject(n, param);
                         } else {
-                            // TODO mysql seems to set the byte array this way? But it won't match!
                             st.setString(n, param.toString());
                         }
                         break;
@@ -498,15 +472,14 @@ final class SessionHelper {
                     default:
                         // Usually SQLite with util.date - setObject works
                         // Also if it's a custom non-standard type.
-                        // todo add to Messages
                         log.info("setParameters using setObject on parameter: " + n + " for " + param.getClass());
                         st.setObject(n, param);
                 }
 
             } else {
                 // param is null
-                if (session.metaData.getConnectionType() == ConnectionTypes.UCanAccess) {
-                    st.setNull(n, java.sql.Types.OTHER);
+                if (session.metaData.getConnectionType() == ConnectionType.UCanAccess) {
+                    st.setNull(n, Types.OTHER);
                 } else {
                     st.setObject(n, null);
                 }
@@ -518,45 +491,70 @@ final class SessionHelper {
 
 
     // todo we really need a way to detect infinite loops and FAIL FAST
-    // todo cache these queries - maybe
     // parent is a POJO or a List of POJOs
-    void handleJoins(Object parent, Class<?> parentClass, String parentSql, Parameters parentParams) {
-        // maybe we could add a check for fetch after insert. In those cases there's no need to query for child lists - BUT we do need query for child SINGLES
+    void handleJoins(Object parent, Class<?> parentClass, SQL parentSql, Parameters parentParams, boolean isRoot) {
+        // maybe we could add a check for fetch after insert. In those cases there's no need to query for child lists
+        // BUT we do need query for child SINGLES AND IT'S POSSIBLE THAT CHILD RECORDS GET INSERTED 1st!
         // NOT really important. At most 1 extra query per type will be run (and no child queries after that)
+
+        log.debug("handleJoins: Root?" + isRoot + " " + parent.getClass() + " parentSql: " + parentSql);
 
         List<PropertyInfo> joinProperties = MetaData.getPropertyInfo(parentClass).stream().filter(PropertyInfo::isJoin).toList();
 
         for (PropertyInfo joinProperty : joinProperties) {
             Join joinAnnotation = (Join) joinProperty.getAnnotation(Join.class);
-            JoinInfo joinInfo = new JoinInfo(joinAnnotation, joinProperty, parent, parentClass);
+            JoinInfo joinInfo = JoinInfo.getInstance(joinAnnotation, joinProperty, parent, parentClass);
             if (joinInfo.parentIsAQuery()) {
                 // We expect this method not to be called if the result query has 0 rows.
-                assert ((Collection<?>) parent).size() > 0;
+                assert !((Collection<?>) parent).isEmpty();
             }
 
+            String sql = parentSql.toString();
             String parentWhere;
-            if (parentSql.toUpperCase().contains(" WHERE ")) {
-                parentWhere = parentSql.substring(parentSql.toUpperCase().indexOf(" WHERE ") + 7);
+            if (sql.toUpperCase().contains(" WHERE ")) {
+                parentWhere = sql.substring(sql.toUpperCase().indexOf(" WHERE ") + 7);
             } else {
                 parentWhere = "";
             }
-            String whereClause = getChildWhereClause(joinInfo, parentWhere);
-            List<Object> params = new ArrayList<>(parentParams.parameters);
 
-            if (params.size() > 0) {
-                // normalize params to ? since we may have repeated the SELECT IN query
-                long qmCount = whereClause.chars().filter(ch -> ch == '?').count();
-                int index = 0;
-                while (qmCount > params.size()) {
-                    params.add(params.get(index));
-                    index++;
+            // TODO what if root is a general query - not a table. Blowing up.... fail with no primary key
+            // todo limit > 0 with fetch? makes no sense
+            if (isRoot && (parentSql.limit > 0 || !joinInfo.parentIsAQuery())) {
+                // log.warn("original where: " + parentWhere + " " + parentParams);
+                // replace parent where with IN (ID, ID, ID) - replace parameters with keys
+                if (joinInfo.parentIsAQuery()) {
+                    Collection<?> list = (Collection<?>) parent;
+                    parentWhere = session.metaData.getPrimaryInClause(parentClass, list.size(), session.connection);
+                    List<String> keys = session.metaData.getPrimaryKeys(parentClass, session.connection);
+                    parentParams = new Parameters();
+                    for (String key : keys) {
+                        for (Object pojo : list) {
+                            PropertyInfo prop = session.getMetaData().getTableColumnsPropertyInfo(parentClass, session.connection).get(key);
+                            Object value = prop.getValue(pojo);
+                            parentParams.add(value);
+                        }
+                    }
+                } else {
+                    parentWhere = session.metaData.getWhereClause(parentClass, session.connection);
+                    List<String> keys = session.metaData.getPrimaryKeys(parentClass, session.connection);
+                    parentParams = new Parameters();
+                    for (String key : keys) {
+                        PropertyInfo prop = session.getMetaData().getTableColumnsPropertyInfo(parentClass, session.connection).get(key);
+                        Object value = prop.getValue(parent);
+                        parentParams.add(value);
+                    }
                 }
             }
 
+            String whereClause;
+            whereClause = getChildWhereClause(joinInfo, parentWhere);
+
+            log.debug("whereClause: " + whereClause);
+
             // join to a collection
             if (Collection.class.isAssignableFrom(joinProperty.field.getType())) {
-
-                List<?> childList = session.query(joinInfo.childClass(), where(whereClause), params(params.toArray()));
+                // query
+                List<?> childList = childQuery(joinInfo.childClass(), where(whereClause), parentParams);
 
                 if (joinInfo.parentIsAQuery()) {
                     // many to many
@@ -571,12 +569,11 @@ final class SessionHelper {
 
                 if (joinInfo.parentIsAQuery()) {
                     // many to one
-                    List<?> childList = session.query(joinInfo.childClass(), where(whereClause), params(params.toArray()));
+                    List<?> childList = childQuery(joinInfo.childClass(), where(whereClause), parentParams);
                     stitch(joinInfo.swapParentAndChild(), childList, (List<?>) parent);
-
                 } else {
                     // one to one
-                    Object child = session.fetch(joinInfo.childClass(), where(whereClause), params(params.toArray()));
+                    Object child = childFetch(joinInfo.childClass(), where(whereClause), parentParams);
                     if (child != null) {
                         joinProperty.setValue(parent, child);
                     }
@@ -585,9 +582,21 @@ final class SessionHelper {
         }
     }
 
+    // to distinguish our internal call vs public call
+    private Object childFetch(Class<?> aClass, SQL where, Parameters params) {
+        return session.fetch(aClass, where, params, false);
+    }
+
+    // to distinguish our internal call vs public call
+    private List<?> childQuery(Class<?> aClass, SQL where, Parameters params) {
+        return session.query(aClass, where, params, false);
+    }
+
+    // called with many to many or many to one
     private void stitch(JoinInfo joinInfo, List<?> parentList, List<?> childList) {
         blog.debug("STITCH " + joinInfo);
-        if (childList.size() == 0) {
+
+        if (childList.isEmpty()) {
             return;
         }
         long now = System.currentTimeMillis();
@@ -600,9 +609,8 @@ final class SessionHelper {
 
             // https://stackoverflow.com/questions/32312876/ignore-duplicates-when-producing-map-using-streams
             parentMap = parentList.stream().collect(Collectors.
-                    toMap(obj -> {
-                        // todo code coverage for not case sensitive strings for map
-                        Object value = parentPropertyInfo.getValue(obj);
+                    toMap(key -> {
+                        Object value = parentPropertyInfo.getValue(key);
                         if (!joinInfo.caseSensitive() && value instanceof String s) {
                             return s.toUpperCase();
                         }
@@ -610,21 +618,27 @@ final class SessionHelper {
                     }, o -> o, (o1, o2) -> o1));
 
             for (Object child : childList) {
-                Object parent = parentMap.get(childPropertyInfo.getValue(child));
-                setPropertyFromJoinInfo(joinInfo, parent, child);
+
+                Object childValue = childPropertyInfo.getValue(child);
+                if (childValue != null) {
+                    Object parent = parentMap.get(childValue);
+                    if (parent == null) {
+                        log.warnNoDuplicates("parent not found: " + childValue + " : " + joinInfo + "DAO: " + child); // Should not usually occur. Why would we not find a parent?
+                    } else {
+                        setPropertyFromJoinInfo(joinInfo, parent, child);
+                    }
+                }
             }
 
         } else {
-            // todo test with reverse
             parentMap = parentList.stream().collect(Collectors.
-                    toMap(obj -> {
+                    toMap(key -> {
                         List<Object> values = new ArrayList<>();
                         for (int j = 0; j < joinInfo.parentProperties().size(); j++) {
-                            values.add(joinInfo.parentProperties().get(j).getValue(obj));
+                            values.add(joinInfo.parentProperties().get(j).getValue(key));
                         }
                         return new KeyBox(joinInfo.caseSensitive(), values.toArray());
                     }, o -> o, (o1, o2) -> o1));
-
 
             for (Object child : childList) {
                 List<Object> values = new ArrayList<>();
@@ -633,11 +647,13 @@ final class SessionHelper {
                 }
 
                 KeyBox keyBox = new KeyBox(joinInfo.caseSensitive(), values.toArray());
-                Object parent = parentMap.get(keyBox);
-                if (parent == null) {
-                    log.warn("parent not found: " + keyBox); // todo add warn message
-                } else {
-                    setPropertyFromJoinInfo(joinInfo, parent, child);
+                if (!keyBox.isAllNull()) {
+                    Object parent = parentMap.get(keyBox);
+                    if (parent == null) {
+                        log.warnNoDuplicates("parent not found: " + keyBox + " : " + joinInfo + "DAO: " + child); // Should not usually occur. Why would we not find a parent?
+                    } else {
+                        setPropertyFromJoinInfo(joinInfo, parent, child);
+                    }
                 }
             }
         }
@@ -650,15 +666,12 @@ final class SessionHelper {
         if (Collection.class.isAssignableFrom(joinInfo.joinProperty().field.getType())) {
             var list = (Collection) joinInfo.joinProperty().getValue(parent);
             if (list == null) {
-                throw new PersismException(Messages.CannotNotJoinToNullProperty.message(joinInfo.joinProperty().propertyName));
+                throw new PersismException(Message.CannotNotJoinToNullProperty.message(joinInfo.joinProperty().propertyName));
             }
             list.add(child);
         } else {
-            if (joinInfo.reversed()) {
-                joinInfo.joinProperty().setValue(child, parent);
-            } else {
-                joinInfo.joinProperty().setValue(parent, child);
-            }
+            assert joinInfo.reversed(); // many to 1 which is reversed.
+            joinInfo.joinProperty().setValue(child, parent);
         }
     }
 
@@ -666,50 +679,67 @@ final class SessionHelper {
     private void assignJoinedList(PropertyInfo joinProperty, Object parentObject, List list) {
 
         // no null test - the object should have some List initialized.
-
-        List joinedList = (List) joinProperty.getValue(parentObject);
-        if (joinedList == null) {
-            throw new PersismException(Messages.CannotNotJoinToNullProperty.message(joinProperty.propertyName));
+        Collection joinTo = (Collection) joinProperty.getValue(parentObject);
+        if (joinTo == null) {
+            throw new PersismException(Message.CannotNotJoinToNullProperty.message(joinProperty.propertyName));
         }
-        joinedList.clear();
-        joinedList.addAll(list);
+        joinTo.addAll(list);
     }
 
     private String getChildWhereClause(JoinInfo joinInfo, String parentWhere) {
+        if (session.metaData.childWhereClauses.containsKey(joinInfo) && session.metaData.childWhereClauses.get(joinInfo).containsKey(parentWhere)) {
+            return session.metaData.childWhereClauses.get(joinInfo).get(parentWhere);
+        }
+        return determineChildWhereClause(joinInfo, parentWhere);
+    }
+
+    private synchronized String determineChildWhereClause(JoinInfo joinInfo, String parentWhere) {
+        if (session.metaData.childWhereClauses.containsKey(joinInfo) && session.metaData.childWhereClauses.get(joinInfo).containsKey(parentWhere)) {
+            return session.metaData.childWhereClauses.get(joinInfo).get(parentWhere);
+        }
 
         StringBuilder where = new StringBuilder();
         String sd = session.metaData.getConnectionType().getKeywordStartDelimiter();
         String ed = session.metaData.getConnectionType().getKeywordEndDelimiter();
-        String parentTableName = session.metaData.getFullTableName(joinInfo.parentClass());
-        String childTableName = session.metaData.getFullTableName(joinInfo.childClass());
 
-        String parentAlias = "";
-        if (parentTableName.equals(childTableName)) {
-            // for self join we need an alias
-            parentAlias = session.metaData.getTableName(joinInfo.parentClass()).substring(0, 1).toUpperCase();
-        }
+        TableInfo parentTable = session.metaData.getTableInfo(joinInfo.parentClass());
+        TableInfo childTable = session.metaData.getTableInfo(joinInfo.childClass());
+
+        Map<String, PropertyInfo> parentProperties = session.metaData.getTableColumnsPropertyInfo(joinInfo.parentClass(), session.connection);
+        Map<String, PropertyInfo> childProperties = session.metaData.getTableColumnsPropertyInfo(joinInfo.childClass(), session.connection);
+        String sep = "";
 
         int n = parentWhere.toUpperCase().indexOf("ORDER BY");
         if (n > -1) {
             parentWhere = parentWhere.substring(0, n);
         }
+        // Issue #45
+        // ensure parentWhere has () to prevent bad results if it has OR or similar because this gets appended with AND parentId = childId in the sub selects
+        if (!parentWhere.trim().isEmpty()) {
+            parentWhere = "(" + parentWhere + ")";
+        }
 
-        Map<String, PropertyInfo> parentProperties = session.metaData.getTableColumnsPropertyInfo(joinInfo.parentClass(), session.connection);
-        Map<String, PropertyInfo> childProperties = session.metaData.getTableColumnsPropertyInfo(joinInfo.childClass(), session.connection);
+        String parentAlias = "";
+        if (parentTable.equals(childTable)) {
+            // for self join we need an alias todo verify if we can get duplicate aliases!
+            parentAlias = parentTable.name().substring(0, 1).toUpperCase();
+        }
+
         where.append("EXISTS (SELECT ");
-        String sep = "";
         for (int j = 0; j < joinInfo.parentPropertyNames().length; j++) {
             String parentColumnName = sd + getColumnName(joinInfo.parentPropertyNames()[j], parentProperties) + ed;
             where.append(sep).append(parentColumnName);
             sep = ",";
         }
 
-        //where.append(" FROM ").append(parentTableName).append(" ").append(parentAlias).append(" WHERE ").append(parentWhere).append(" ");
-        where.append(" FROM ").append(parentTableName);
+        where.append(" FROM ");
+        where.append(parentTable);
+
         if (Util.isNotEmpty(parentAlias)) {
             where.append(" ").append(parentAlias);
         }
         where.append(" WHERE ").append(parentWhere).append(" ");
+
         sep = Util.isEmpty(parentWhere) ? "" : " AND ";
         for (int j = 0; j < joinInfo.parentPropertyNames().length; j++) {
             String parentColumnName = sd + getColumnName(joinInfo.parentPropertyNames()[j], parentProperties) + ed;
@@ -718,16 +748,23 @@ final class SessionHelper {
             if (Util.isNotEmpty(parentAlias)) {
                 where.append(sep).append(parentAlias);
             } else {
-                where.append(sep).append(parentTableName);
+                where.append(sep).append(parentTable);
             }
 
             where.append(".").append(parentColumnName).append(" = ").
-                    append(childTableName).append(".").append(childColumnName);
+                    append(childTable).append(".").append(childColumnName);
             sep = " AND ";
         }
         where.append(") ");
 
-        return where.toString();
+        String sql = where.toString();
+        session.metaData.childWhereClauses.putIfAbsent(joinInfo, new HashMap<>());
+        session.metaData.childWhereClauses.get(joinInfo).put(parentWhere, sql);
+
+        if (log.isDebugEnabled()) {
+            log.debug("determineChildWhereClause: %s", sql);
+        }
+        return sql;
     }
 
     private String getColumnName(String propertyName, Map<String, PropertyInfo> properties) {
@@ -741,24 +778,61 @@ final class SessionHelper {
 
     boolean isSelect(String sql) {
         assert sql != null;
-        return sql.trim().substring(0, 7).trim().equalsIgnoreCase("select");
+        return sql.trim().substring(0, 6).equalsIgnoreCase("select");
     }
 
-    boolean isStoredProc(String sql) {
-        return !isSelect(sql);
-    }
-
-    private <T> void checkIfStoredProcOrSQL(Class<T> objectClass, SQL sql) {
+    <T> void checkIfStoredProcOrSQL(Class<T> objectClass, SQL sql) {
         boolean startsWithSelect = isSelect(sql.sql);
-        if (sql.storedProc) {
-            if (startsWithSelect) {
-                log.warnNoDuplicates(Messages.InappropriateMethodUsedForSQLTypeInstance.message(objectClass, "sql()", "a stored proc", "proc()"));
+        if (sql.type == SQL.SQLType.Select) {
+            if (!startsWithSelect) {
+                log.warnNoDuplicates(Message.InappropriateMethodUsedForSQLTypeInstance.message(objectClass, "proc()", "an SQL query", "sql()"));
             }
         } else {
-            if (!startsWithSelect) {
-                log.warnNoDuplicates(Messages.InappropriateMethodUsedForSQLTypeInstance.message(objectClass, "proc()", "an SQL query", "sql()"));
+            if (startsWithSelect) {
+                log.warnNoDuplicates(Message.InappropriateMethodUsedForSQLTypeInstance.message(objectClass, "sql()", "a stored proc", "proc()"));
             }
         }
     }
 
+    /**
+     * Returns a primitive default for the specified type or null
+     *
+     * @param type java type
+     * @return primitive default or null
+     */
+    Object defaultForType(Class<?> type) {
+
+        JavaType jtype = JavaType.getType(type);
+        assert jtype != null;
+
+        switch (jtype) {
+            case BooleanType, booleanType -> {
+                return false;
+            }
+            case ByteType, byteType -> {
+                return (byte) 0;
+            }
+            case ShortType, shortType -> {
+                return (short) 0;
+            }
+            case IntegerType, integerType -> {
+                return 0;
+            }
+            case LongType, longType -> {
+                return 0L;
+            }
+            case FloatType, floatType -> {
+                return 0F;
+            }
+            case DoubleType, doubleType -> {
+                return 0D;
+            }
+            case CharacterType, characterType -> {
+                return '\u0000';
+            }
+            default -> {
+                return null;
+            }
+        }
+    }
 }

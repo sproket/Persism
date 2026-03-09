@@ -14,11 +14,12 @@ import java.util.Date;
  */
 public final class SavedGame extends PersistableObject<SavedGame> {
 
-    // Changed to String to see if this fails as an autoinc. In H2 it still works. Other DBs it fails (as it should).
+    // Changed to String to see if this fails as an autoinc. In H2 it still works. Other DBs it fails (as it should). IT DOES FAIL IN H2 NOW!
     private String id;
     private String name;
     private Date someDateAndTime;
     private String data;
+    private double platinum;
     private float gold;
     private int silver;
     private long copper;
@@ -69,6 +70,14 @@ public final class SavedGame extends PersistableObject<SavedGame> {
         this.data = data;
     }
 
+    public double platinum() {
+        return platinum;
+    }
+
+    public void setPlatinum(double platinum) {
+        this.platinum = platinum;
+    }
+
     public float getGold() {
         return gold;
     }
@@ -104,15 +113,15 @@ public final class SavedGame extends PersistableObject<SavedGame> {
     @Override
     public String toString() {
         return "\nSavedGame{" +
-                "id='" + id + '\'' +
-                ", name='" + name + '\'' +
-                ", someDateAndTime=" + someDateAndTime +
-                ", data='" + data + '\'' +
-                ", gold=" + gold +
-                ", silver=" + silver +
-                ", copper=" + copper +
-                ", somethingBig=" + Arrays.toString(somethingBig) +
-                ", whatTimeIsIt=" + whatTimeIsIt +
-                '}';
+               "id='" + id + '\'' +
+               ", name='" + name + '\'' +
+               ", someDateAndTime=" + someDateAndTime +
+               ", data='" + data + '\'' +
+               ", gold=" + gold +
+               ", silver=" + silver +
+               ", copper=" + copper +
+               ", somethingBig=" + Arrays.toString(somethingBig) +
+               ", whatTimeIsIt=" + whatTimeIsIt +
+               '}';
     }
 }

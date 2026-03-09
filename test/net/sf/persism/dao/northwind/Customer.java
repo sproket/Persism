@@ -1,10 +1,13 @@
 package net.sf.persism.dao.northwind;
 
+import net.sf.persism.annotations.Join;
 import net.sf.persism.annotations.NotColumn;
 import net.sf.persism.annotations.Table;
 
 import java.sql.Date;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * NORTHWIND CUSTOMER OBJECT
@@ -27,6 +30,10 @@ public final class Customer {
     private String fax;
     private java.util.Date dateOfLastResort;
     private Date dateOfDoom;
+
+    @Join(to = Order.class, onProperties = "customerId", toProperties = "customerId")
+    private final List<Order> orders = new ArrayList<>();
+
     @NotColumn
     private LocalDateTime dateOfOffset; // this is a DateTimeOffset in the DB - KEEP to test for normal DateTime or double check because we use this with DB retuning the type as VARCHAR
 
@@ -170,6 +177,10 @@ public final class Customer {
 
     public void setTestLocalDateTime(LocalDateTime testLocalDateTime) {
         this.testLocalDateTime = testLocalDateTime;
+    }
+
+    public List<Order> getOrders() {
+        return orders;
     }
 
     @Override

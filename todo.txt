@@ -110,4 +110,176 @@ https://michael-simons.github.io/neo4j-migrations/maintaining-a-medium-sized-jav
 
 https://www.willmcgugan.com/blog/tech/post/promoting-your-open-source-project-or-how-to-get-your-first-1k-github-stars/
 
-todo what does a Persism POJO look like in JSON ?
+What does a Persism POJO look like in JSON ? - looks fine.
+
+todo post articles on linkedin
+
+follow up on https://www.reddit.com/r/java/comments/tpqkix/persism_release_v210_with_support_for_table_joins/
+
+todo document fluent POJO changes.
+
+
+Quote from Jooq
+https://www.reddit.com/r/java/comments/1hxgrc/jooqs_reason_for_being_compared_to_jpa_linq_jdbc/cb1hgnw/
+
+
+// todo should we have a clear cache in MetaData so in dev when devs reload a web instance this metadata goes away?
+
+
+https://stackoverflow.com/questions/42729444/how-can-i-populate-what-is-indexed-under-the-tags-metadata-field-in-maven-centra
+https://stackoverflow.com/questions/16375204/how-can-i-add-meta-data-to-a-maven-pom
+https://help.sonatype.com/repomanager3/nexus-repository-administration/tagging
+https://s01.oss.sonatype.org/index.html#central-stat to get stats.
+
+
+Try Persism with dropwizard web framework.  https://www.dropwizard.io/en/stable/getting-started.html
+
+
+todo What do to with read-only (getter only) in POJO (not records) with insert and update (it works but we should document better)
+
+todo test out what happens if I make PersistableObject.originalvalue transient
+
+todo add a join to table with spaces in the name and use OLD toString in TableInfo to see the error
+
+todo how to test caseSensitive where clause values JoinInfo
+
+PostgreSQL generating UUID https://stackoverflow.com/questions/12505158/generating-a-uuid-in-postgres-for-insert-statement
+We use 9.1 which is the minimum for this. Should document all minimums.
+SELECT uuid_in(md5(random()::text || random()::text)::cstring);
+SELECT uuid_in(overlay(overlay(md5(random()::text || ':' || random()::text) placing '4' from 13) placing to_hex(floor(random()*(11-8+1) + 8)::int)::text from 17)::cstring);
+SELECT * FROM pg_available_extensions;
+
+todo https://www.postgresqltutorial.com/postgresql-tutorial/postgresql-sequences/
+
+https://stackoverflow.com/questions/46613214/java-9-maven-junit-does-test-code-need-module-info-java-of-its-own-and-wher
+
+
+todo add a set of performance tests comparing Persism to the Entity framework
+
+TODO PropertyInfo should have some extra info (maybe class it belongs to)
+We should always call from PropertyInfo with extra information otherwise you just get ' argument type mismatch' which is not helpful to the end user.
+for setter
+ todo IllegalArgumentException is a different type from the field type
+ todo IllegalAccessException or module related or setting on a final field in a record
+ todo InvocationTargetException the setter call where there's an exception in the setter method
+todo for getter should we have a field get if there's no Getter?
+
+DONE h2 back test with 1.x (worked)
+
+Convertor what about varchar under UUID case??
+
+todo CREATE USERS table for all DBs.
+
+Changed synchronized to ReentrantLock
+
+https://blog.fastthread.io/2023/02/28/pitfalls-to-avoid-when-switching-to-virtual-threads/
+https://stackoverflow.com/questions/76390758/reentrantlock-to-replace-multiple-synchronized-methods
+Maybe change concurrent maps to https://stackoverflow.com/questions/1904439/when-is-a-concurrentskiplistset-useful
+
+
+
+other places to post persism
+https://lemmy.world/c/java
+
+TODO TEST VALUE TYPES https://www.youtube.com/watch?v=a3VRwz4zbdw
+
+FIXED #44 BUG with fetch when you reuse an object we DON'T CALL SETTERS FOR NULL so prior values will be on the reused data object
+
+todo Add AdventureWorks DB to tests
+
+
+
+Caused when you have many-to-one where the join to single is null. Where you might have optional join (we reverse the query and try using null for the join)
+https://groups.google.com/g/h2-database/c/WSMaw-IrTRY/m/LADcYCiBAgAJ?utm_medium=email&utm_source=footer
+
+ think I caused this by running a query repeatedly too often/quickly.
+
+H2 2.2.224
+
+Caused by: org.h2.mvstore.MVStoreException: java.lang.AssertionError: 38662144 != 26615808 [2.2.224/3]
+	at com.h2database@2.2.224/org.h2.mvstore.DataUtils.newMVStoreException(DataUtils.java:996)
+	at com.h2database@2.2.224/org.h2.mvstore.FileStore.storeBuffer(FileStore.java:1529)
+	at com.h2database@2.2.224/org.h2.mvstore.FileStore.lambda$serializeAndStore$3(FileStore.java:1432)
+	at java.base/java.util.concurrent.Executors$RunnableAdapter.call(Executors.java:572)
+	at java.base/java.util.concurrent.FutureTask.run(FutureTask.java:317)
+	at java.base/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1144)
+	at java.base/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:642)
+	... 1 common frames omitted
+Caused by: java.lang.AssertionError: 38662144 != 26615808
+	at com.h2database@2.2.224/org.h2.mvstore.RandomAccessStore.shrinkStoreIfPossible(RandomAccessStore.java:679)
+	at com.h2database@2.2.224/org.h2.mvstore.RandomAccessStore.writeChunk(RandomAccessStore.java:377)
+	at com.h2database@2.2.224/org.h2.mvstore.RandomAccessStore.writeChunk(RandomAccessStore.java:28)
+	at com.h2database@2.2.224/org.h2.mvstore.FileStore.storeBuffer(FileStore.java:1524)
+	... 6 common frames omitted
+
+************
+Not a great error message with Record findConstructor:
+
+public record Unit(int identity, String name, String code, double diviser, boolean appDensity) {
+}
+
+"appDensity" should be ApplyDensity (mistyped in the record)
+
+table looks like:
+CREATE TABLE [dbo].[Units](
+	[identity] [int] IDENTITY(1,1) NOT NULL,
+	[Name] [nvarchar](20) NOT NULL,
+	[Code] [char](2) NOT NULL,
+	[Diviser] [float] NOT NULL,
+	[ApplyDensity] [bit] NOT NULL)
+
+error message is
+
+findConstructor: Could not find a constructor for class: blah.models.Unit properties: [identity, name, code, diviser]
+
+It's showing the FOUND but it should show the NOT FOUND one....
+*********************
+
+Tutorial on how to generate java classes for ORM
+
+https://stackoverflow.com/questions/34377496/where-is-the-persistence-tool-window-in-intellij-idea-15
+
+todo target type is blah and value type is blah - s/b property type is blah IN CLASS Someclass and column type is blah in TABLE "BLAH"
+
+
+todo Convertor should probably be instantiated when needed passing some kind of context string to include in any warnings or errors
+
+todo check how we handle multiple primary keys and call query or fetch with just class and params (which means select where in primary keys) find usages Params.areKeys
+
+WORKS JOIN to View (currently I think we fail with no primary key???) DOES WORK: see [ProductsFromPackaging] in Revision
+
+todo insert into pojo with joins child data gets cleared on fetch where there are defaults to read back?
+
+todo PersistableObject does this clone child records? How would we handle update with joins? Right now we do nothing special i think.
+
+todo Add Session parameter which tell Persism to auto-check all relations via primary/foreign keys defined in the DB to decide on how/whether to join tables for a query
+
+
+todo This occurs on MSSQL when you have a varbinary(max) type and  private byte[] property that is NULL.
+the "fix" was setParameters in SessionHelper using the same logic as UCanAccess connection type. NEEDS FULL TEST null/not null and other types...
+2025-04-28 | 06:54:35.936 | http-nio-8083-exec-3 | ERROR | com.thermallube.revision.LoginListener | Implicit conversion from data type nvarchar to varbinary(max) is not allowed. Use the CONVERT function to run this query.
+net.sf.persism.PersismException: Implicit conversion from data type nvarchar to varbinary(max) is not allowed. Use the CONVERT function to run this query.
+	at net.sf.persism.Session.insert(Session.java:777)
+	at com.thermallube.revision.features.common.CommonService.logTransaction(CommonService.java:40)
+	at com.thermallube.revision.LoginListener.onApplicationEvent(LoginListener.java:29)
+	at com.thermallube.revision.LoginListener.onApplicationEvent(LoginListener.java:11)
+
+Caused by: com.microsoft.sqlserver.jdbc.SQLServerException: Implicit conversion from data type nvarchar to varbinary(max) is not allowed. Use the CONVERT function to run this query.
+	at com.microsoft.sqlserver.jdbc.SQLServerException.makeFromDatabaseError(SQLServerException.java:265)
+	at com.microsoft.sqlserver.jdbc.SQLServerStatement.getNextResult(SQLServerStatement.java:1662)
+	at com.microsoft.sqlserver.jdbc.SQLServerPreparedStatement.doExecutePreparedStatement(SQLServerPreparedStatement.java:615)
+	at com.microsoft.sqlserver.jdbc.SQLServerPreparedStatement$PrepStmtExecCmd.doExecute(SQLServerPreparedStatement.java:537)
+	at com.microsoft.sqlserver.jdbc.TDSCommand.execute(IOBuffer.java:7417)
+	at com.microsoft.sqlserver.jdbc.SQLServerConnection.executeCommand(SQLServerConnection.java:3488)
+	at com.microsoft.sqlserver.jdbc.SQLServerStatement.executeCommand(SQLServerStatement.java:262)
+	at com.microsoft.sqlserver.jdbc.SQLServerStatement.executeStatement(SQLServerStatement.java:237)
+	at com.microsoft.sqlserver.jdbc.SQLServerPreparedStatement.execute(SQLServerPreparedStatement.java:515)
+	at com.zaxxer.hikari.pool.ProxyPreparedStatement.execute(ProxyPreparedStatement.java:44)
+	at com.zaxxer.hikari.pool.HikariProxyPreparedStatement.execute(HikariProxyPreparedStatement.java)
+	at net.sf.persism.Session.insert(Session.java:702)
+
+
+todo executeQuery doesn't cover case of passing several params and one or more is null (should be supported and work)
+
+SQL could have a static select() method and then add an instance orderBy method and avoid the static version. this would just equal SELECT *
+Where could extend SQL -

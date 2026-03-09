@@ -19,12 +19,12 @@ public class AllTests {
 
     private AllTests() {
     }
-// check commit
+
+    // check commit
     public static Test suite() throws Exception {
 
         TestSuite theTestSuite = new TestSuite();
 
-        // Order is important TestMSSQL is listed twice and TestOracle switches modes from mssql to jtds for the 2nd instance
         theTestSuite.addTestSuite(TestH2.class);
         theTestSuite.addTestSuite(TestHSQLDB.class);
         theTestSuite.addTestSuite(TestDerby.class);
@@ -34,7 +34,6 @@ public class AllTests {
         theTestSuite.addTestSuite(TestInformix.class);
         theTestSuite.addTestSuite(TestMSSQL.class);
         theTestSuite.addTestSuite(TestOracle.class);
-//        theTestSuite.addTestSuite(TestMSSQL.class);
         theTestSuite.addTestSuite(TestMySQL.class);
         theTestSuite.addTestSuite(TestPostgreSQL.class);
         theTestSuite.addTestSuite(TestFirebird.class);
@@ -42,6 +41,8 @@ public class AllTests {
         theTestSuite.addTestSuite(TestMetaData.class);
         theTestSuite.addTestSuite(TestNorthwind.class);
         theTestSuite.addTestSuite(TestPubs.class);
+        theTestSuite.addTestSuite(TestStackOverflow.class);
+        theTestSuite.addTestSuite(TestWideWorldImporters.class);
 
         return theTestSuite;
     }

@@ -17,26 +17,19 @@ final class Reader {
     private static final Log log = Log.getLogger(Reader.class);
     private static final Log blog = Log.getLogger("net.sf.persism.Benchmarks");
 
-    private final Connection connection;
     private final MetaData metaData;
     private final Converter converter;
-    private final Session session;
 
     Reader(Session session) {
-        this.session = session;
-        this.connection = session.getConnection();
         this.metaData = session.getMetaData();
         this.converter = session.getConverter();
     }
 
     <T> T readObject(T object, Map<String, PropertyInfo> properties, ResultSet rs) throws SQLException, IOException {
-
-        long now = System.nanoTime();
-
         Class<?> objectClass = object.getClass();
 
         // We should never call this method with a primitive type.
-        assert Types.getType(objectClass) == null;
+        assert JavaType.getType(objectClass) == null;
 
         ResultSetMetaData rsmd = rs.getMetaData();
         int columnCount = rsmd.getColumnCount();
@@ -48,6 +41,11 @@ final class Reader {
             PropertyInfo columnProperty = getPropertyInfo(columnName, properties);
 
             if (columnProperty != null) {
+
+                if (columnProperty.getter == null) {
+                    throw new PersismException(Message.ClassHasNoGetterForProperty.message(object.getClass(), columnProperty.propertyName));
+                }
+
                 Class<?> returnType = columnProperty.getter.getReturnType();
 
                 Object value = readColumn(rs, j, rsmd.getColumnType(j), columnName, returnType);
@@ -57,7 +55,7 @@ final class Reader {
                         columnProperty.setValue(object, value);
                     } catch (IllegalArgumentException e) {
                         // A IllegalArgumentException (which is a RuntimeException) occurs if we're setting an unmatched ENUM
-                        throw new PersismException(Messages.IllegalArgumentReadingColumn.message(columnProperty.propertyName, objectClass, columnName, returnType, value.getClass(), value), e);
+                        throw new PersismException(Message.IllegalArgumentReadingColumn.message(columnProperty.propertyName, objectClass, columnName, returnType, value.getClass(), value), e);
                     }
                 }
             }
@@ -67,44 +65,36 @@ final class Reader {
             // Save this object initial state to later detect changed properties
             pojo.saveReadState();
         }
-
-        // blog.debug("OBJECT: time to read all columns: %s", (System.nanoTime() - now));
-        //System.out.println("time to readObject: " + (System.nanoTime() - now));
-
         return (T) object;
     }
 
-    <T> T readRecord(RecordInfo<T> recordInfo, ResultSet rs) throws SQLException, IOException, InvocationTargetException, InstantiationException, IllegalAccessException {
+    <T> T readRecord(RecordInfo<T> recordInfo, ResultSet rs) throws SQLException, IOException, InvocationTargetException, InstantiationException, IllegalAccessException, IllegalArgumentException {
 
         long now;
         now = System.nanoTime();
 
         ResultSetMetaData rsmd = rs.getMetaData();
-        List<Object> constructorParams = new ArrayList<>(recordInfo.propertyInfoByConstructorOrder.keySet().size());
+        List<Object> constructorParams = new ArrayList<>(recordInfo.propertyInfoByConstructorOrder().keySet().size());
 
-        for (String col : recordInfo.propertyInfoByConstructorOrder.keySet()) {
-            Class<?> returnType = recordInfo.propertyInfoByConstructorOrder.get(col).field.getType();
+        for (String col : recordInfo.propertyInfoByConstructorOrder().keySet()) {
+            Class<?> returnType = recordInfo.propertyInfoByConstructorOrder().get(col).field.getType();
 
-            int ncol = recordInfo.ordinals.get(col);
+            int ncol = recordInfo.ordinals().get(col);
             Object value = readColumn(rs, ncol, rsmd.getColumnType(ncol), rsmd.getColumnLabel(ncol), returnType);
             if (value == null && returnType.isPrimitive()) {
                 // Set null primitives to their default, otherwise the constructor will not be found
-                value = Types.getDefaultValue(returnType);
+                value = JavaType.getDefaultValue(returnType);
             }
 
             constructorParams.add(value);
         }
 
-        // blog.debug("RECORD: time to read all columns: %s", (System.nanoTime() - now));
-
-        //      now = System.nanoTime();
 
         try {
             //noinspection
-            return recordInfo.constructor.newInstance(constructorParams.toArray());
+            return recordInfo.constructor().newInstance(constructorParams.toArray());
         } finally {
             blog.debug("time to get readRecord: %s", (System.nanoTime() - now));
-            // System.out.println("time to readRecord: " + (System.nanoTime() - now));
         }
     }
 
@@ -114,10 +104,10 @@ final class Reader {
 
         if (returnType.isEnum()) {
             // Some DBs may read an enum type as other 1111 - we can tell it here to read it as a string.
-            sqlColumnType = java.sql.Types.CHAR;
+            sqlColumnType = Types.CHAR;
         }
 
-        Types columnType = Types.convert(sqlColumnType); // note this could be null if we can't match a type
+        JavaType columnType = JavaType.convert(sqlColumnType, columnName); // note this could be null if we can't match a type
 
         Object value = null;
 
@@ -149,9 +139,22 @@ final class Reader {
                     break;
 
                 case ClobType:
-                    Clob clob = rs.getClob(column);
-                    if (clob != null) {
-                        try (InputStream in = clob.getAsciiStream()) {
+                    if (metaData.getConnectionType().supportsReadingFromClobType()) {
+                        Clob clob = rs.getClob(column);
+                        if (clob != null) {
+                            try (InputStream in = clob.getAsciiStream()) {
+                                StringWriter writer = new StringWriter();
+
+                                int c = -1;
+                                while ((c = in.read()) != -1) {
+                                    writer.write(c);
+                                }
+                                writer.flush();
+                                value = writer.toString();
+                            }
+                        }
+                    } else {
+                        try (InputStream in = rs.getAsciiStream(column)) {
                             StringWriter writer = new StringWriter();
 
                             int c = -1;
@@ -166,10 +169,20 @@ final class Reader {
 
                 case BlobType:
                     byte[] buffer = new byte[1024];
-                    Blob blob = rs.getBlob(column);
-                    if (blob != null) {
-                        try (InputStream in = blob.getBinaryStream()) {
-                            ByteArrayOutputStream bos = new ByteArrayOutputStream((int) blob.length());
+                    if (metaData.getConnectionType().supportsReadingFromBlobType()) {
+                        Blob blob = rs.getBlob(column);
+                        if (blob != null) {
+                            try (InputStream in = blob.getBinaryStream()) {
+                                ByteArrayOutputStream bos = new ByteArrayOutputStream();
+                                for (int len; (len = in.read(buffer)) != -1; ) {
+                                    bos.write(buffer, 0, len);
+                                }
+                                value = bos.toByteArray();
+                            }
+                        }
+                    } else {
+                        try (InputStream in = rs.getBinaryStream(column)) {
+                            ByteArrayOutputStream bos = new ByteArrayOutputStream();
                             for (int len; (len = in.read(buffer)) != -1; ) {
                                 bos.write(buffer, 0, len);
                             }
@@ -179,8 +192,9 @@ final class Reader {
                     break;
 
                 case IntegerType:
-                    // stupid SQLite reports LONGS as Integers for date types which WRAPS past Integer.MAX - Clowns.
-                    if (metaData.getConnectionType() == ConnectionTypes.SQLite) {
+                    // https://github.com/xerial/sqlite-jdbc/issues/604
+                    // SQLite jdbc reports INT but the value is LONG for date types which can WRAP past Integer.MAX - Fixed in 3.39.3.0! Thanks!
+                    if (metaData.getConnectionType() == ConnectionType.SQLite) {
                         value = rs.getObject(column);
                         if (value != null) {
                             if (value instanceof Long) {
@@ -246,8 +260,12 @@ final class Reader {
             }
 
         } else {
-            log.warnNoDuplicates(Messages.ColumnTypeNotKnownForSQLType.message(sqlColumnType, columnName));
             value = rs.getObject(column);
+            String objType = "Unknown";
+            if (value != null) {
+                objType = value.getClass().getName();
+            }
+            log.warnNoDuplicates(Message.ColumnTypeNotKnownForSQLType.message(sqlColumnType, columnName, objType));
         }
 
         // If value is null or column type is unknown - no need to try to convert anything.

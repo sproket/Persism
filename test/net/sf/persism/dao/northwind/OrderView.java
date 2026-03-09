@@ -22,7 +22,7 @@ public record OrderView(
         int productId,
         float unitPrice,
         int quantity,
-        BigDecimal discount,
+        double discount,
         String customerName,
         String employeeName,
         String productName

@@ -1,27 +1,92 @@
 ## Release Notes
 
-todo add schema names to SQL.
-* Added support for transient keyword (works like @NotColumn)
-* added support for record style pojos (no set or get needed)
-* added support for builder style pojos (setter returns "this")
-* TODO ADD SUPPORT FOR POJO constructors
-* TODO ADD SUPPORT FOR OTHER SHIT
+### 2.3.0 
+* Added support for limit 
+* Added null checks for multi-column joins
+* Fixed case of a cleared list on a join if there was user added data
+* Baseline mysql 8.0.28
+* Baseline mariadb 3.1.2
+* Baseline H2 2.1.214
+* Baseline hsqldb 2.5.1 (tested with 2.7.1 as well)
+* Baseline posgresql 42.2.27
+* Baseline sqlite 3.42.0.0
 
-### merge with 1.2.....
-* REVIEW ALL CHANGES
-* Fixed Tax -> Taxes (update web page)
+### 2.2.0
+* Implemented module-info rather than using automatic module name (TODO LINK)
+* Added support for multiple schema names (TODO LINK)
+* Added delete with query methods to Session (TODO LINK)
+* Added "es" to table name guesser for tables like "Tax" or "Mailbox"
+* Added readOnly to Column annotation to allow for columns to not be included in insert or update statements
+* Added Support for sequence type with MSSQL 
+* Performance: Additional MetaData caching to reduce GC stress
+* Removed deprecated String, Object... methods (fetch, query)
+* Fixed SQLite misreported LONG as INT which was fixed and confirmed by version 3.39.3.0
 
-### 1.1.0 (pending)
+### 2.1.0
+* Implemented table joins!
+* Update log4j2 reference in POM to 2.17.1
+* Added warning if using a primary key on a View
+* Added support for fluent styled POJOs
+* Added support for transient keyword on fields (same behaviour as @NotColumn)
+* Performance: Converter Moved DateFormatters to ThreadLocal 
+* Performance: Converter optimized switch statement
+* Performance: Improvements to Reader for class and record from DB
+* Updated baseline version for Derby to 10.15.2.0
+* Updated baseline version for SQLite to 3.36.0.2
+* Fixed some cases where property names were case-sensitive
 
-* Added support for MSAccess with UCanAccess jdbc driver
-* Added new method withTransaction() to Session - simplifying multiple operations in a single database transaction 
+### 2.0.1
+* Update log4j2 reference in POM to 2.15.0
+
+### 2.0.0
+ 
+* Set baseline to be Java 17 (see the 1.x branch for Java 8+)
+* Added SQL type wrapper for String 
+* Added Parameters type wrapper for parameters array
+* Added better type safe query and fetch methods
+* Added SQL where method (shorthand where Persism knows the columns) which supports property names as well as column names 
+* Added SQL proc method to indicate the query is a call to a stored proc rather than a SELECT statement
+* Added support for named parameters
+
+### 1.2.0
+
+* Added support for Views
+* Added query 'select *' method to session
+* Finalized support for Informix (Tests added)
+* Changed query statements to make explicit forward only and read only
+* Improve readRecord performance
+* Added BIT column to byte property conversion
+
+### Breaking changes
+
+* Update/Delete now also return a typed Result object containing the rows changed and modified data object.
+
+### 1.1.0
+
+* Added support for Records! (Java 16)
+* Added preliminary support for Informix (looking for help to set up a vbox vm)
+* Fixed UPDATE statement using columns in alphabetical order (All Persism generated SQL should be in column order)
+* Fixed support for MSAccess with UCanAccess jdbc driver in Java 16
+* Fixed issue with Queries cached with missing columns
+* Fixed @Table name case sensitivity
+* Added warnings if Persism doesn't have results when querying for DatabaseMetaData
+* Added new constructor for Session to supply a fake URL for situations where the Connection metadata url returns null
+
+### Breaking changes
+
+* Insert now returns a typed Result object containing the rows changed and modified data object for cases when you insert a Record and there are defaults or autoincs to assign.
+
+### 1.0.3
+
+* Added support for MSAccess with UCanAccess jdbc driver (seems to be broken under Java 16 right now #13)
+* Added new method withTransaction() to Session - simplifying multiple operations in a single database transaction
 * Added automatic module name sproket.github.io.persism for 9+ support
 * Added support for Log4j 2
 
 ### Breaking changes
 
 * Property discovery now sees properties with getters only as possible columns (considered read-only columns). You will need to use the @NotColumn annotation to avoid the "<table/query> was not properly initialized." Runtime exception. (this was done for future support for Records)
-* Persistable interface was changed. Renamed getOriginalValue method to readOriginalValue to avoid possible collision with read-only properties. 
+* Persistable interface was changed. Renamed getOriginalValue method to readOriginalValue to avoid possible collision with read-only properties.
 
 
 ### 1.0.2
@@ -51,7 +116,7 @@ todo add schema names to SQL.
 * Fixed issue where objects using Persistable interface would have all columns updated in some cases
 
 
-### 1.0.0 
+### 1.0.0
 
 Initial release
 

@@ -1,6 +1,5 @@
 package net.sf.persism.dao.records;
 
-// TODO import net.sf.persism.annotations.NotColumn;
 import net.sf.persism.ConstructorTag;
 import net.sf.persism.annotations.NotColumn;
 import net.sf.persism.annotations.NotTable;
@@ -19,8 +18,6 @@ public record CustomerOrderGarbage(String customerId,
                                     @NotColumn String junk, // java: annotation type not applicable to this kind of declaration - no fail in Java 16.
                                     @NotColumn int missing,
                                     @NotColumn Time whatTimeIsIt) {
-
-    // todo test @Column as well.
 
     private static int extraFieldShouldBeIgnoredBecauseStatic;
 

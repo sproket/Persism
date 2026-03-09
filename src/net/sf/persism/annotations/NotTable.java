@@ -1,9 +1,6 @@
 package net.sf.persism.annotations;
 
 /*
- * $RCSfile: $
- * $Revision: $
- * $Date: $
  * Created by IntelliJ IDEA.
  * User: DHoward
  * Date: 9/14/11

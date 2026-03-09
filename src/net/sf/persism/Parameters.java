@@ -13,7 +13,6 @@ public final class Parameters {
     Map<String, Object> namedParameters;
     Map<String, List<Integer>> parameterMap;
 
-    boolean okToVerify = false; // todo ? what for?
     boolean areKeys = false;
     boolean areNamed = false;
 
@@ -123,8 +122,8 @@ public final class Parameters {
         Set<String> mistypeSet = new TreeSet<>(namedParameters.keySet());
         mistypeSet.removeAll(parameterMap.keySet());
 
-        if (paramsNotFound.size() > 0) {
-            throw new PersismException(Messages.QueryParameterNamesMissingOrNotFound.message(paramsNotFound, mistypeSet));
+        if (!paramsNotFound.isEmpty()) {
+            throw new PersismException(Message.QueryParameterNamesMissingOrNotFound.message(paramsNotFound, mistypeSet));
         }
         parameters.clear();
         parameters.addAll(Arrays.asList(arr));

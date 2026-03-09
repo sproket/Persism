@@ -7,8 +7,8 @@ import net.sf.persism.annotations.NotColumn;
 import java.sql.Timestamp;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  * General customer class for database types.
@@ -16,7 +16,7 @@ import java.util.List;
  * @author Dan Howard
  * @since 5/23/12 10:40 AM
  */
-public final class Customer {
+public class Customer {
     private String customerId;
     private int groupId;
     private String companyName;
@@ -24,7 +24,7 @@ public final class Customer {
     private String contactTitle;
     private String address;
     private String city;
-    private Regions region;
+    private Region region;
     private String postalCode;
     private String country;
     private String phone;
@@ -36,12 +36,13 @@ public final class Customer {
 
     private LocalDateTime dateOfLastOrder;
 
-    // TODO DOCUMENT: Joins must be a modifiable list and must be instantiated. We use the
-    // TODO properties are case sensitive - make a FailCustomer class or something to test that
-    @Join(to = Invoice.class, onProperties = " customerId , status ", toProperties = "customerId , status ")
-    private List<Invoice> invoices = new ArrayList<>();
+    // properties are case Insensitive
+    @Join(to = Invoice.class, onProperties = " CustomerId , sTatuS ", toProperties = "cusTomerId , status ")
+    private Set<Invoice> invoices = new HashSet<>();
 
-    //@Join(to=Contact.class, onProperties = "contactName", toProperties = "contactName")
+    @Join(to = Invoice.class, onProperties = " CustomerId , sTatuS ", toProperties = "cusTomerId , status ")
+    private Invoice whatever;
+
     @NotColumn
     private Contact contact;
 
@@ -96,11 +97,11 @@ public final class Customer {
         this.city = city;
     }
 
-    public Regions getRegion() {
+    public Region getRegion() {
         return region;
     }
 
-    public void setRegion(Regions region) {
+    public void setRegion(Region region) {
         this.region = region;
     }
 
@@ -192,32 +193,40 @@ public final class Customer {
         this.groupId = groupId;
     }
 
-    public List<Invoice> getInvoices() {
+    public Set<Invoice> getInvoices() {
         return invoices;
     }
 
-    public void setInvoices(List<Invoice> invoices) {
+    public void setInvoices(Set<Invoice> invoices) {
         this.invoices = invoices;
+    }
+
+    public Invoice getWhatever() {
+        return whatever;
+    }
+
+    public void setWhatever(Invoice whatever) {
+        this.whatever = whatever;
     }
 
     @Override
     public String toString() {
         return "Customer{" +
-                "customerId='" + customerId + '\'' +
-                ", companyName='" + companyName + '\'' +
-                ", contactName='" + contactName + '\'' +
-                ", contactTitle='" + contactTitle + '\'' +
-                ", address='" + address + '\'' +
-                ", city='" + city + '\'' +
-                ", region=" + region +
-                ", postalCode='" + postalCode + '\'' +
-                ", country='" + country + '\'' +
-                ", phone='" + phone + '\'' +
-                ", fax='" + fax + '\'' +
-                ", dateRegistered=" + dateRegistered +
-                ", dateOfLastOrder=" + dateOfLastOrder +
-                ", status=" + status +
-                ", group=" + groupId +
-                '}';
+               "customerId='" + customerId + '\'' +
+               ", companyName='" + companyName + '\'' +
+               ", contactName='" + contactName + '\'' +
+               ", contactTitle='" + contactTitle + '\'' +
+               ", address='" + address + '\'' +
+               ", city='" + city + '\'' +
+               ", region=" + region +
+               ", postalCode='" + postalCode + '\'' +
+               ", country='" + country + '\'' +
+               ", phone='" + phone + '\'' +
+               ", fax='" + fax + '\'' +
+               ", dateRegistered=" + dateRegistered +
+               ", dateOfLastOrder=" + dateOfLastOrder +
+               ", status=" + status +
+               ", group=" + groupId +
+               '}';
     }
 }

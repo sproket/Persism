@@ -16,7 +16,7 @@ import java.util.UUID;
  * @author Dan Howard
  * @since 10/8/11 5:36 PM
  */
-enum Types {
+enum JavaType {
 
     booleanType(boolean.class),
     BooleanType(Boolean.class),
@@ -55,11 +55,11 @@ enum Types {
     UUIDType(UUID.class),
     ObjectType(Object.class);
 
-    private static final Log log = Log.getLogger(Types.class);
+    private static final Log log = Log.getLogger(JavaType.class);
 
     private Class<?> type;
 
-    <T> Types(Class<T> type) {
+    <T> JavaType(Class<T> type) {
         init(type);
     }
 
@@ -67,12 +67,12 @@ enum Types {
         this.type = type;
     }
 
-    public static <T> Types getType(Class<T> type) {
+    public static <T> JavaType getType(Class<T> type) {
         if (type.isEnum()) {
             return EnumType;
         }
 
-        for (Types t : values()) {
+        for (JavaType t : values()) {
             if (t.type.equals(type)) {
                 return t;
             }
@@ -80,8 +80,8 @@ enum Types {
         return null;
     }
 
-    public static Types convert(int sqlType) {
-        Types result = null;
+    public static JavaType convert(int sqlType, String columnName) {
+        JavaType result = null;
 
         switch (sqlType) {
             case java.sql.Types.CHAR:
@@ -160,7 +160,7 @@ enum Types {
         }
 
         if (result == null) {
-            log.warnNoDuplicates(Messages.UnknownSQLType.message(sqlType));
+            log.warnNoDuplicates(Message.UnknownSQLType.message(sqlType, columnName));
         }
 
         return result;
@@ -174,7 +174,7 @@ enum Types {
         // Oracle returns BigDecimalType for INT
         // PUBS has SmallInt -> short
         return this == IntegerType || this == integerType || this == LongType || this == longType
-                || this == ShortType || this == shortType || this == BigDecimalType || this == BigIntegerType;
+               || this == ShortType || this == shortType || this == BigDecimalType || this == BigIntegerType;
     }
 
     // https://stackoverflow.com/questions/2891970/getting-default-value-for-primitive-types

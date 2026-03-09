@@ -11,7 +11,7 @@ import java.util.Date;
 @View()
 public final class CustomerInvoice {
 
-    @Column(primary = true) // wtf does this mean? Nothing. We can't do anything about primaries in a View or NotTable todo ignore or warn?
+    @Column(primary = true) // wtf does this mean? Nothing. We can't do anything about primaries in a View or NotTable - added warning
     private String customerId;
 
     private String companyName;

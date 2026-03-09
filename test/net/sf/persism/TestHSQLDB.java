@@ -27,7 +27,7 @@ public final class TestHSQLDB extends BaseTest {
 
     @Override
     public void setUp() throws Exception {
-        connectionType = ConnectionTypes.HSQLDB;
+        connectionType = ConnectionType.HSQLDB;
         super.setUp();
 
         Properties props = new Properties();
@@ -36,10 +36,10 @@ public final class TestHSQLDB extends BaseTest {
 
         String home = createHomeFolder("pinfhsqldb");
         String url = replace(props.getProperty("database.url"), "{$home}", home);
-        log.info(url);
+        log.warn(url);
 
         con = DriverManager.getConnection(url, props);
-
+        log.warn("DRIVER: " + con.getMetaData().getDatabaseProductName() + " | " + con.getMetaData().getDatabaseProductVersion());
         createTables();
 
         session = new Session(con);
@@ -53,6 +53,7 @@ public final class TestHSQLDB extends BaseTest {
 
     @Override
     protected void createTables() throws SQLException {
+        super.createTables();
         String sql;
 
         if (isTableInDatabase("TestSpaces", con)) {
@@ -216,6 +217,7 @@ public final class TestHSQLDB extends BaseTest {
                    BigInt DECIMAL(20) NULL,\s
                    TestInstant DateTime NULL,\s
                    SomeDate DateTime NULL,\s
+                   SomeTime Time NULL,\s
                    TestInstant2 DateTime NULL,\s
                    WhatMiteIsIt TIME NULL,\s
                    WhatTimeIsIt TIME NULL)\s                
@@ -319,10 +321,64 @@ public final class TestHSQLDB extends BaseTest {
                 CREATE TABLE Products (
                     ID int,
                     Description VARCHAR(50),
+                    BadNumber VARCHAR(30),
+                    BadDate VARCHAR(30),
+                    BadTimeStamp VARCHAR(30),
                     COST NUMERIC(10,3)
                     )
                 """;
         executeCommand(sql, con);
+
+        if (isTableInDatabase("SavedGames", con)) {
+            executeCommand("DROP TABLE SavedGames", con);
+        }
+
+        executeCommand("CREATE TABLE SavedGames ( " +
+                " ID VARCHAR(20) PRIMARY KEY, " +
+                " Name VARCHAR(100), " +
+                " Some_Date_And_Time DATETIME NULL, " +
+                " Platinum REAL NULL, " +
+                " Gold REAL NULL, " +
+                " Silver REAL NULL, " +
+                " Copper REAL NULL, " +
+                " Data varchar(1000) NULL, " +
+                " WhatTimeIsIt TIME NULL, " +
+                " SomethingBig BLOB NULL) ", con);
+
+
+        if (isTableInDatabase("Postman", con)) {
+            executeCommand("DROP TABLE Postman", con);
+        }
+        sql = """
+                CREATE TABLE Postman (
+                    AUTO VARCHAR(50),
+                    Host VARCHAR(50),
+                    Port NUMERIC(8),
+                    User VARCHAR(50),
+                    Password VARCHAR(50),
+                    missingGetter NUMERIC(10,3)
+                    )
+                """;
+        executeCommand(sql, con);
+
+        // Test for Y ending table who's plural isn't ies....
+        if (isTableInDatabase("CorporateHolidays", con)) {
+            executeCommand("DROP TABLE CorporateHolidays", con);
+        }
+        sql = """
+                CREATE TABLE CorporateHolidays (
+                    ID varchar(10),
+                    NAME varchar(40),
+                    DATE date
+                    )
+                """;
+        executeCommand(sql, con);
+
+        if (isTableInDatabase("TABLENOPRIMARY", con)) {
+            executeCommand("DROP TABLE TABLENOPRIMARY", con);
+        }
+
+        executeCommand("CREATE TABLE TABLENOPRIMARY (  ID INT,  Name VARCHAR(30),  Field4 VARCHAR(30),  Field5 DATETIME,  Field6 INT,  Field7 INT,  Field8 INT )", con);
 
 
     }
@@ -343,7 +399,10 @@ public final class TestHSQLDB extends BaseTest {
         } catch (PersismException e) {
             fail = true;
             log.info(e.getMessage());
+
+            // message changed from 2.5.1 to 2.7.1
             assertEquals("s/b data truncation", "data exception: string data, right truncation;  table: CONTACTS column: ZIPPOSTALCODE", e.getMessage());
+            //assertEquals("s/b data truncation", "data exception: string data, right truncation ; size limit: 10 table: CONTACTS column: ZIPPOSTALCODE", e.getMessage());
         }
         assertTrue(fail);
 

@@ -20,6 +20,8 @@ public class OracleDataSource {
 
     private OracleDataSource() throws Exception {
 
+        // fix expired user https://www.mirsayeedhassan.com/1578-2/
+
         Properties props = new Properties();
         props.load(getClass().getResourceAsStream("/oracle.properties"));
 
@@ -45,6 +47,8 @@ public class OracleDataSource {
         if (username != null) {
             poolProps.setProperty("user", username);
             poolProps.setProperty("password", password);
+            poolProps.setProperty("defaultRowPrefetch", "20");
+            poolProps.setProperty("defaultBatchValue", "20");
         }
 
         ConnectionFactory connectionFactory = new DriverManagerConnectionFactory(url, poolProps);
