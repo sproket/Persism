@@ -1,5 +1,6 @@
 package net.sf.persism.dao;
 
+import net.sf.persism.InitializeEvent;
 import net.sf.persism.PersismException;
 import net.sf.persism.Persistable;
 import net.sf.persism.annotations.NotColumn;
@@ -14,7 +15,7 @@ import java.util.UUID;
 /**
  * Example of self implementing Persistable
  */
-public final class Contact implements Persistable<Contact> {
+public final class Contact implements Persistable<Contact>, InitializeEvent {
 
     private UUID identity; // primary
     @NotColumn // for now

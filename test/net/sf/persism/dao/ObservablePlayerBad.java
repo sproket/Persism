@@ -4,6 +4,7 @@ import javafx.beans.property.IntegerProperty;
 import javafx.beans.property.SimpleIntegerProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
+import net.sf.persism.InitializeEvent;
 import net.sf.persism.PersistableObject;
 import net.sf.persism.annotations.Table;
 
@@ -13,12 +14,11 @@ import net.sf.persism.annotations.Table;
     @See ObservablePlayer for proper implementation for observable type classes.
  */
 @Table("Players")
-public final class ObservablePlayerBad extends PersistableObject<ObservablePlayerBad> {
+public final class ObservablePlayerBad extends PersistableObject<ObservablePlayerBad> implements InitializeEvent {
 
     private final IntegerProperty playerId = new SimpleIntegerProperty(this, "playerId");
     private final StringProperty name = new SimpleStringProperty(this, "name");
     private final IntegerProperty hitPoints = new SimpleIntegerProperty(this, "hitPoints");
-
 
     public ObservablePlayerBad() {
     }

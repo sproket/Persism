@@ -16,6 +16,7 @@ import java.util.Properties;
 import static net.sf.persism.Parameters.none;
 import static net.sf.persism.Parameters.params;
 import static net.sf.persism.SQL.sql;
+import static net.sf.persism.SQL.where;
 import static net.sf.persism.UtilsForTests.isTableInDatabase;
 import static net.sf.persism.UtilsForTests.isViewInDatabase;
 
@@ -488,6 +489,8 @@ to the database URL (example: jdbc:h2:~/test;IGNORECASE=TRUE).
         player2 = session.fetch(ObservablePlayer.class, params(2));
         assertNotNull(player2);
         assertEquals(11, player2.getHitPoints()); // Should be changed to 11!
+
+        session.delete(ObservablePlayerBad.class, where("1=1"));
 
     }
 

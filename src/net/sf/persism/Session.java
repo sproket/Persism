@@ -105,7 +105,7 @@ public final class Session implements AutoCloseable {
      * @throws PersismException if something goes wrong.
      */
     public boolean fetch(Object object) throws PersismException {
-         return fetch(object, true);
+        return fetch(object, true);
     }
 
     boolean fetch(Object object, boolean handleJoins) {
@@ -143,7 +143,7 @@ public final class Session implements AutoCloseable {
             if (!propertyInfo.isJoin) {
                 ColumnInfo columnInfo = columns.get(key);
                 if (!columnInfo.primary) {
-                    propertyInfo.setValue(object, defaultForPrimitive(propertyInfo.field.getType()));
+                    propertyInfo.setValue(object, helper.defaultForType(propertyInfo.field.getType()));
                 }
             }
         }
@@ -176,6 +176,9 @@ public final class Session implements AutoCloseable {
                 if (handleJoins) {
                     helper.handleJoins(object, objectClass, SQL.sql(sql), params, true);
                 }
+                if (object instanceof InitializeEvent initializeEvent) {
+                    initializeEvent.onInitialized();
+                }
                 return true;
             }
             return false;
@@ -184,43 +187,6 @@ public final class Session implements AutoCloseable {
             throw new PersismException(e.getMessage(), e);
         } finally {
             Util.cleanup(result.st, result.rs);
-        }
-    }
-
-    // todo move to sessionhelper - what about other non public methods here...?
-    private Object defaultForPrimitive(Class<?> type) {
-
-        JavaType jtype = JavaType.getType(type);
-        assert jtype != null;
-
-        switch (jtype) {
-            case booleanType -> {
-                return false;
-            }
-            case byteType -> {
-                return (byte) 0;
-            }
-            case shortType -> {
-                return (short) 0;
-            }
-            case integerType -> {
-                return 0;
-            }
-            case longType -> {
-                return 0L;
-            }
-            case floatType -> {
-                return 0F;
-            }
-            case doubleType -> {
-                return 0D;
-            }
-            case characterType -> {
-                return '\u0000';
-            }
-            default -> {
-                return null;
-            }
         }
     }
 
@@ -303,18 +269,26 @@ public final class Session implements AutoCloseable {
             if (result.rs.next()) {
                 if (isRecord) {
                     RecordInfo<T> recordInfo = new RecordInfo<>(objectClass, properties, result.rs);
-                    var ret = reader.readRecord(recordInfo, result.rs);
-                    helper.handleJoins(ret, objectClass, sql, parameters, isRoot);
-                    return ret;
+                    var record = reader.readRecord(recordInfo, result.rs);
+                    helper.handleJoins(record, objectClass, sql, parameters, isRoot);
+                    if (record instanceof InitializeEvent initializeEvent) {
+                        initializeEvent.onInitialized();
+                    }
+
+                    return record;
 
                 } else if (isPOJO) {
                     var pojo = objectClass.getDeclaredConstructor().newInstance();
                     verifyPropertyInfoForQuery(objectClass, properties, result.rs);
-                    var ret = reader.readObject(pojo, properties, result.rs);
-                    helper.handleJoins(ret, objectClass, sql, parameters, isRoot);
-                    return ret;
+                    var object = reader.readObject(pojo, properties, result.rs);
+                    helper.handleJoins(object, objectClass, sql, parameters, isRoot);
+                    if (object instanceof InitializeEvent initializeEvent) {
+                        initializeEvent.onInitialized();
+                    }
+                    return object;
 
                 } else {
+                    // Single column into a value
                     ResultSetMetaData rsmd = result.rs.getMetaData();
                     //noinspection unchecked
                     return (T) reader.readColumn(result.rs, 1, rsmd.getColumnType(1), rsmd.getColumnLabel(1), objectClass);
@@ -491,6 +465,14 @@ public final class Session implements AutoCloseable {
             Util.cleanup(result.st, result.rs);
         }
 
+        if (!list.isEmpty()) {
+            Object first = list.get(0);
+            if (first instanceof InitializeEvent) {
+                for (var obj : list) {
+                    ((InitializeEvent)obj).onInitialized();
+                }
+            }
+        }
         return list;
     }
 
@@ -755,7 +737,7 @@ public final class Session implements AutoCloseable {
                 returnObject = object;
             }
 
-            if (object instanceof Persistable<?> pojo) {
+            if (returnObject instanceof Persistable<?> pojo) {
                 // Save this pojo's new state to later detect changed properties
                 pojo.saveReadState();
             }
@@ -858,7 +840,7 @@ public final class Session implements AutoCloseable {
         helper.checkIfOkForWriteOperation(objectClass, "DELETE");
 
         List<String> primaryKeys = metaData.getPrimaryKeys(objectClass, connection);
-        if (primaryKeys.size() == 0) {
+        if (primaryKeys.isEmpty()) {
             throw new PersismException(Message.TableHasNoPrimaryKeys.message("DELETE", metaData.getTableInfo(objectClass).name()));
         }
 
@@ -912,6 +894,10 @@ public final class Session implements AutoCloseable {
      */
     public int delete(Class<?> objectClass, SQL whereClause) {
         helper.checkIfOkForWriteOperation(objectClass, "DELETE");
+
+        // todo to handle delete in this form and support onDeleted event we need to get the list ob objects (NOT calling onInitialized) and then call onDeleted AFTER deleting.
+        var opt = Arrays.stream(objectClass.getInterfaces()).filter(interfaceClass -> interfaceClass.equals(InitializeEvent.class)).findFirst();
+        log.error("PersismEvents.delete? " + opt.isPresent());
         return delete(objectClass, whereClause, none());
     }
 
@@ -933,7 +919,7 @@ public final class Session implements AutoCloseable {
         }
 
         List<String> primaryKeys = metaData.getPrimaryKeys(objectClass, connection);
-        if (primaryKeys.size() == 0) {
+        if (primaryKeys.isEmpty()) {
             throw new PersismException(Message.TableHasNoPrimaryKeys.message("DELETE", metaData.getTableInfo(objectClass)));
         }
 
@@ -1019,7 +1005,7 @@ public final class Session implements AutoCloseable {
         }
     }
 
-// do we need these getters? we have them in case we ever need expose these for some feature...
+    // do we need these getters? we have them in case we ever need expose these for some feature...
     MetaData getMetaData() {
         return metaData;
     }

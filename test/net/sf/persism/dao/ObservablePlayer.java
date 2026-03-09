@@ -4,12 +4,13 @@ import javafx.beans.property.IntegerProperty;
 import javafx.beans.property.SimpleIntegerProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
+import net.sf.persism.InitializeEvent;
 import net.sf.persism.PersismException;
 import net.sf.persism.Persistable;
 import net.sf.persism.annotations.Table;
 
 @Table("Players")
-public final class ObservablePlayer implements Persistable<ObservablePlayer> {
+public final class ObservablePlayer implements Persistable<ObservablePlayer>, InitializeEvent {
 
     private final IntegerProperty playerId = new SimpleIntegerProperty(this, "playerId");
     private final StringProperty name = new SimpleStringProperty(this, "name");

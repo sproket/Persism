@@ -794,5 +794,45 @@ final class SessionHelper {
         }
     }
 
+    /**
+     * Returns a primitive default for the specified type or null
+     *
+     * @param type java type
+     * @return primitive default or null
+     */
+    Object defaultForType(Class<?> type) {
 
+        JavaType jtype = JavaType.getType(type);
+        assert jtype != null;
+
+        switch (jtype) {
+            case BooleanType, booleanType -> {
+                return false;
+            }
+            case ByteType, byteType -> {
+                return (byte) 0;
+            }
+            case ShortType, shortType -> {
+                return (short) 0;
+            }
+            case IntegerType, integerType -> {
+                return 0;
+            }
+            case LongType, longType -> {
+                return 0L;
+            }
+            case FloatType, floatType -> {
+                return 0F;
+            }
+            case DoubleType, doubleType -> {
+                return 0D;
+            }
+            case CharacterType, characterType -> {
+                return '\u0000';
+            }
+            default -> {
+                return null;
+            }
+        }
+    }
 }
