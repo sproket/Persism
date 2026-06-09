@@ -255,7 +255,9 @@ todo PersistableObject does this clone child records? How would we handle update
 todo Add Session parameter which tell Persism to auto-check all relations via primary/foreign keys defined in the DB to decide on how/whether to join tables for a query
 
 
-todo This occurs on MSSQL when you have a varbinary(max) type and  private byte[] property that is NULL.
+DONE This occurs on MSSQL when you have a varbinary(max) type and  private byte[] property that is NULL.
+SEE SessionHelper setParameters
+
 the "fix" was setParameters in SessionHelper using the same logic as UCanAccess connection type. NEEDS FULL TEST null/not null and other types...
 2025-04-28 | 06:54:35.936 | http-nio-8083-exec-3 | ERROR | com.thermallube.revision.LoginListener | Implicit conversion from data type nvarchar to varbinary(max) is not allowed. Use the CONVERT function to run this query.
 net.sf.persism.PersismException: Implicit conversion from data type nvarchar to varbinary(max) is not allowed. Use the CONVERT function to run this query.
@@ -283,3 +285,5 @@ todo executeQuery doesn't cover case of passing several params and one or more i
 
 SQL could have a static select() method and then add an instance orderBy method and avoid the static version. this would just equal SELECT *
 Where could extend SQL -
+
+todo support Blob to BufferedImage or WritableImage

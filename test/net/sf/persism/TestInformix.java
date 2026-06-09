@@ -3,6 +3,7 @@ package net.sf.persism;
 import net.sf.persism.categories.ExternalDB;
 import org.junit.experimental.categories.Category;
 
+import java.io.IOException;
 import java.sql.*;
 import java.util.Properties;
 
@@ -361,6 +362,21 @@ public class TestInformix extends BaseTest {
         }
 
         executeCommand("CREATE TABLE TABLENOPRIMARY (  ID INT,  Name VARCHAR(30),  Field4 VARCHAR(30),  Field5 DATE,  Field6 INT,  Field7 INT,  Field8 INT )", con);
+
+        if (isTableInDatabase("SavedMaps", con)) {
+            executeCommand("DROP TABLE SavedMaps", con);
+        }
+
+        sql = """
+                CREATE TABLE SavedMaps (
+                 ID SERIAL PRIMARY KEY,
+                 GAME_ID INT NOT NULL,
+                 MapName VARCHAR(100),
+                 BackgroundResource VARCHAR(100),
+                 ImageData BLOB NULL
+                 )
+                """;
+        executeCommand(sql, con);
     }
 
     public void testSomething() throws Exception {

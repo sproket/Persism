@@ -478,7 +478,7 @@ final class SessionHelper {
 
             } else {
                 // param is null
-                if (session.metaData.getConnectionType() == ConnectionType.UCanAccess) {
+                if (session.metaData.getConnectionType() == ConnectionType.UCanAccess || session.metaData.getConnectionType() == ConnectionType.MSSQL) {
                     st.setNull(n, Types.OTHER);
                 } else {
                     st.setObject(n, null);

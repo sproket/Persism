@@ -691,6 +691,22 @@ public class TestMSSQL extends BaseTest {
                     )
                 """;
         executeCommand(sql, con);
+
+
+        if (isTableInDatabase("SavedMaps", con)) {
+            executeCommand("DROP TABLE SavedMaps", con);
+        }
+
+        sql = """
+                CREATE TABLE SavedMaps (
+                 ID [Int] IDENTITY(1,1) NOT NULL,
+                 GAME_ID INT NOT NULL,
+                 MapName VARCHAR(100),
+                 BackgroundResource VARCHAR(100),
+                 ImageData varbinary(MAX),
+                )
+                """;
+        executeCommand(sql, con);
     }
 
     public void testNullParams() {

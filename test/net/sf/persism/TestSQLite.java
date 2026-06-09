@@ -367,6 +367,20 @@ public final class TestSQLite extends BaseTest {
                 """;
         executeCommand(sql, con);
 
+        if (isTableInDatabase("SavedMaps", con)) {
+            executeCommand("DROP TABLE SavedMaps", con);
+        }
+
+        sql = """
+                CREATE TABLE SavedMaps (
+                 ID INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT UNIQUE,
+                 GAME_ID INT NOT NULL,
+                 MapName VARCHAR(100),
+                 BackgroundResource VARCHAR(100),
+                 ImageData BLOB
+                 )
+                """;
+        executeCommand(sql, con);
     }
 
     @Override

@@ -5,7 +5,11 @@ import net.jodah.typetools.TypeResolver;
 import net.sf.persism.dao.*;
 import net.sf.persism.dao.records.*;
 
+import javax.imageio.ImageIO;
+import java.awt.image.BufferedImage;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.IOException;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Parameter;
@@ -853,9 +857,9 @@ public abstract class BaseTest extends TestCase {
             executeCommand("DROP TABLE " + sd + tableName + ed, con);
         }
         sql = "CREATE TABLE " + sd + tableName + ed + "(\n" +
-              "    ID int ,\n" +
-              "    Name VARCHAR(10) \n" +
-              "    )\n";
+                "    ID int ,\n" +
+                "    Name VARCHAR(10) \n" +
+                "    )\n";
         executeCommand(sql, con);
     }
 
@@ -1522,9 +1526,9 @@ public abstract class BaseTest extends TestCase {
         // As long as they use the query/fetch without the SQL param.
         String columnName = session.getMetaData().getPrimaryKeys(Contact.class, con).get(0);
         String where = session.getMetaData().getConnectionType().getKeywordStartDelimiter() +
-                       columnName +
-                       session.getMetaData().getConnectionType().getKeywordEndDelimiter() +
-                       "=?";
+                columnName +
+                session.getMetaData().getConnectionType().getKeywordEndDelimiter() +
+                "=?";
         log.info("testContactTable " + where);
         // testing that this should not fail.
         List<Contact> results = session.query(Contact.class, params(identity));
@@ -2050,8 +2054,8 @@ public abstract class BaseTest extends TestCase {
         invoice.setPaid(true);
         invoice.setActualPrice(new BigDecimal("10.23"));
 
-        assertEquals("s/b 1", 1, session.insert(invoice).rows());
-
+        int rows = session.insert(invoice).rows();
+        assertEquals("s/b 1", 1, rows);
 
         assertTrue("Invoice ID > 0", invoice.getInvoiceId() > 0);
         assertNotNull("Created s/b not null", invoice.getCreated()); // note no setter
@@ -2411,6 +2415,42 @@ public abstract class BaseTest extends TestCase {
 
         }
 
+    }
+
+
+    public void testNullBlob() throws IOException {
+
+        if (connectionType == ConnectionType.Informix) {
+            // see other Invalid default sbspace name (sbspace). needs to be added to docker image
+            return;
+        }
+
+        if (connectionType == ConnectionType.Derby) {
+            return;
+        }
+
+        SavedMap savedMap = new SavedMap();
+        savedMap.setMapName("test1");
+        savedMap.setGameId(1);
+        savedMap.setBackgroundResource("/logo1.png");
+
+        // insert with a null image - should be able to insert and query back
+        session.insert(savedMap);
+
+        assertEquals("id s/b 1", Integer.valueOf(1), savedMap.getId());
+
+        savedMap = session.fetch(SavedMap.class, params(savedMap.getId()));
+        log.warn(savedMap);
+
+        BufferedImage savedMapImage = ImageIO.read(Objects.requireNonNull(getClass().getResource(savedMap.getBackgroundResource())));
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        ImageIO.write(savedMapImage, "png", baos);
+        byte[] imageBytes = baos.toByteArray();
+        savedMap.setImageData(imageBytes);
+
+        session.update(savedMap);
+        savedMap = session.fetch(SavedMap.class, params(savedMap.getId()));
+        log.warn(savedMap);
     }
 
     static void executeCommands(List<String> commands, Connection con) throws SQLException {

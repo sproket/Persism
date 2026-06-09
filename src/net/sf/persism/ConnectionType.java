@@ -8,6 +8,7 @@ enum ConnectionType {
     @Deprecated
     JTDS(null, "[", "]"),
 
+    @Deprecated
     Derby(null, "\"", "\""),
 
     H2("PUBLIC", "\"", "\""),

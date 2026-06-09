@@ -182,11 +182,13 @@ final class Reader {
                         }
                     } else {
                         try (InputStream in = rs.getBinaryStream(column)) {
-                            ByteArrayOutputStream bos = new ByteArrayOutputStream();
-                            for (int len; (len = in.read(buffer)) != -1; ) {
-                                bos.write(buffer, 0, len);
+                            if (in != null) {
+                                ByteArrayOutputStream bos = new ByteArrayOutputStream();
+                                for (int len; (len = in.read(buffer)) != -1; ) {
+                                    bos.write(buffer, 0, len);
+                                }
+                                value = bos.toByteArray();
                             }
-                            value = bos.toByteArray();
                         }
                     }
                     break;

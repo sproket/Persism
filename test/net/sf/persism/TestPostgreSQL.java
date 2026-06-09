@@ -326,6 +326,21 @@ public class TestPostgreSQL extends BaseTest {
         }
 
         executeCommand("CREATE TABLE TABLENOPRIMARY (  ID INT,  Name VARCHAR(30),  Field4 VARCHAR(30),  Field5 DATE,  Field6 INT,  Field7 INT,  Field8 INT )", con);
+
+        if (isTableInDatabase("SavedMaps", con)) {
+            executeCommand("DROP TABLE SavedMaps", con);
+        }
+
+        sql = """
+                CREATE TABLE SavedMaps (
+                 ID SERIAL PRIMARY KEY,
+                 GAME_ID INT NOT NULL,
+                 MapName VARCHAR(100),
+                 BackgroundResource VARCHAR(100),
+                 ImageData BYTEA
+                 )
+                """;
+        executeCommand(sql, con);
     }
 
     @Override

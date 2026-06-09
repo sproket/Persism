@@ -437,6 +437,20 @@ to the database URL (example: jdbc:h2:~/test;IGNORECASE=TRUE).
         executeCommand(sql, con);
 
 
+        if (isTableInDatabase("SavedMaps", con)) {
+            executeCommand("DROP TABLE SavedMaps", con);
+        }
+
+        sql = """
+                CREATE TABLE SavedMaps (
+                 ID INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+                 GAME_ID INT NOT NULL,
+                 MapName VARCHAR(100),
+                 BackgroundResource VARCHAR(100),
+                 ImageData BLOB
+                 )
+                """;
+        executeCommand(sql, con);
     }
 
     public void testPeople() {
