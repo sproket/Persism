@@ -377,7 +377,8 @@ public final class TestSQLite extends BaseTest {
                  GAME_ID INT NOT NULL,
                  MapName VARCHAR(100),
                  BackgroundResource VARCHAR(100),
-                 ImageData BLOB
+                 ImageData BLOB,
+                 LongText CLOB
                  )
                 """;
         executeCommand(sql, con);

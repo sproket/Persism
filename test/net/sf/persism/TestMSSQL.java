@@ -704,6 +704,7 @@ public class TestMSSQL extends BaseTest {
                  MapName VARCHAR(100),
                  BackgroundResource VARCHAR(100),
                  ImageData varbinary(MAX),
+                 LongText varchar(MAX)
                 )
                 """;
         executeCommand(sql, con);

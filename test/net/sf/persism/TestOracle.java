@@ -367,6 +367,7 @@ grant create trigger, create sequence to pinf;
                  MapName VARCHAR(100),
                  BackgroundResource VARCHAR(100),
                  ImageData BLOB,
+                 LongText CLOB,
                  CONSTRAINT "SavedNaos_PK" PRIMARY KEY ("ID") ENABLE
                  )
                 """;
@@ -523,7 +524,8 @@ grant create trigger, create sequence to pinf;
 
         session.insert(test);
 
-        assertTrue(session.fetch(test));
+        boolean result = session.fetch(test);
+        assertTrue(result);
         log.info(test);
         assertNull(test.isPaid());
         assertNull(test.isGarbage());

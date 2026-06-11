@@ -447,7 +447,8 @@ to the database URL (example: jdbc:h2:~/test;IGNORECASE=TRUE).
                  GAME_ID INT NOT NULL,
                  MapName VARCHAR(100),
                  BackgroundResource VARCHAR(100),
-                 ImageData BLOB
+                 ImageData BLOB,
+                 LongText CLOB
                  )
                 """;
         executeCommand(sql, con);

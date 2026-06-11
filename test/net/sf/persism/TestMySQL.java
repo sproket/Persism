@@ -310,7 +310,8 @@ public class TestMySQL extends BaseTest {
                  GAME_ID INT NOT NULL,
                  MapName VARCHAR(100),
                  BackgroundResource VARCHAR(100),
-                 ImageData BLOB
+                 ImageData BLOB,
+                 `LongText` TEXT
                  )
                 """;
         executeCommand(sql, con);

@@ -14,6 +14,7 @@ public final class SavedMap {
     private String mapName;
     private String backgroundResource;
     private byte[] imageData;
+    private String longText;
 
     @NotColumn
     private BufferedImage image = null;
@@ -56,6 +57,14 @@ public final class SavedMap {
 
     public void setImageData(byte[] imageData) {
         this.imageData = imageData;
+    }
+
+    public String getLongText() {
+        return longText;
+    }
+
+    public void setLongText(String longText) {
+        this.longText = longText;
     }
 
     public BufferedImage getImage() {

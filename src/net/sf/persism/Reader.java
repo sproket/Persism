@@ -139,58 +139,11 @@ final class Reader {
                     break;
 
                 case ClobType:
-                    if (metaData.getConnectionType().supportsReadingFromClobType()) {
-                        Clob clob = rs.getClob(column);
-                        if (clob != null) {
-                            try (InputStream in = clob.getAsciiStream()) {
-                                StringWriter writer = new StringWriter();
-
-                                int c = -1;
-                                while ((c = in.read()) != -1) {
-                                    writer.write(c);
-                                }
-                                writer.flush();
-                                value = writer.toString();
-                            }
-                        }
-                    } else {
-                        try (InputStream in = rs.getAsciiStream(column)) {
-                            StringWriter writer = new StringWriter();
-
-                            int c = -1;
-                            while ((c = in.read()) != -1) {
-                                writer.write(c);
-                            }
-                            writer.flush();
-                            value = writer.toString();
-                        }
-                    }
+                    value = readClob(rs, column);
                     break;
 
                 case BlobType:
-                    byte[] buffer = new byte[1024];
-                    if (metaData.getConnectionType().supportsReadingFromBlobType()) {
-                        Blob blob = rs.getBlob(column);
-                        if (blob != null) {
-                            try (InputStream in = blob.getBinaryStream()) {
-                                ByteArrayOutputStream bos = new ByteArrayOutputStream();
-                                for (int len; (len = in.read(buffer)) != -1; ) {
-                                    bos.write(buffer, 0, len);
-                                }
-                                value = bos.toByteArray();
-                            }
-                        }
-                    } else {
-                        try (InputStream in = rs.getBinaryStream(column)) {
-                            if (in != null) {
-                                ByteArrayOutputStream bos = new ByteArrayOutputStream();
-                                for (int len; (len = in.read(buffer)) != -1; ) {
-                                    bos.write(buffer, 0, len);
-                                }
-                                value = bos.toByteArray();
-                            }
-                        }
-                    }
+                    value = readBlob(rs, column);
                     break;
 
                 case IntegerType:
@@ -288,6 +241,68 @@ final class Reader {
             }
         }
         return null;
+    }
+
+    private byte[] readBlob(ResultSet rs, int column) throws SQLException, IOException {
+        byte[] buffer = new byte[1024];
+        byte[] byteData = null;
+        if (metaData.getConnectionType().supportsReadingFromBlobType()) {
+            Blob blob = rs.getBlob(column);
+            if (blob != null) {
+                try (InputStream in = blob.getBinaryStream()) {
+                    ByteArrayOutputStream bos = new ByteArrayOutputStream();
+                    for (int len; (len = in.read(buffer)) != -1; ) {
+                        bos.write(buffer, 0, len);
+                    }
+                    byteData = bos.toByteArray();
+                }
+            }
+        } else {
+            try (InputStream in = rs.getBinaryStream(column)) {
+                if (in != null) {
+                    ByteArrayOutputStream bos = new ByteArrayOutputStream();
+                    for (int len; (len = in.read(buffer)) != -1; ) {
+                        bos.write(buffer, 0, len);
+                    }
+                    byteData = bos.toByteArray();
+                }
+            }
+        }
+        return byteData;
+    }
+
+    private String readClob(ResultSet rs, int column) throws SQLException, IOException {
+        String text = null;
+
+        if (metaData.getConnectionType().supportsReadingFromClobType()) {
+            Clob clob = rs.getClob(column);
+            if (clob != null) {
+                try (InputStream in = clob.getAsciiStream()) {
+                    StringWriter writer = new StringWriter();
+
+                    int c = -1;
+                    while ((c = in.read()) != -1) {
+                        writer.write(c);
+                    }
+                    writer.flush();
+                    text = writer.toString();
+                }
+            }
+        } else {
+            try (InputStream in = rs.getAsciiStream(column)) {
+                if (in != null) {
+                    StringWriter writer = new StringWriter();
+
+                    int c = -1;
+                    while ((c = in.read()) != -1) {
+                        writer.write(c);
+                    }
+                    writer.flush();
+                    text = writer.toString();
+                }
+            }
+        }
+        return text;
     }
 
 }

@@ -345,7 +345,8 @@ public class TestFirebird extends BaseTest {
                  GAME_ID INT NOT NULL,
                  MapName VARCHAR(100),
                  BackgroundResource VARCHAR(100),
-                 ImageData BLOB SUB_TYPE BINARY
+                 ImageData BLOB SUB_TYPE BINARY,
+                 LongText BLOB SUB_TYPE TEXT
                  )
                 """;
         executeCommand(sql, con);

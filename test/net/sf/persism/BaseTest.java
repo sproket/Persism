@@ -1928,7 +1928,7 @@ public abstract class BaseTest extends TestCase {
 
             // METHOD TWO: call setParameters which does some checking
             // Fails the local DBs H2, HSQLDB, Derby and also Firebird
-            session.helper.setParameters(st, params.toArray());
+            session.helper.setParameters(st, params.toArray(), Collections.emptyMap());
 
             // METHOD THREE: What I do normally which is to pass through convert and then use setParameters
             // I guess if we ever support a general execute method we could either leave this up to the user
@@ -2418,7 +2418,7 @@ public abstract class BaseTest extends TestCase {
     }
 
 
-    public void testNullBlob() throws IOException {
+    public void testNullBlobAndClob() throws IOException {
 
         if (connectionType == ConnectionType.Informix) {
             // see other Invalid default sbspace name (sbspace). needs to be added to docker image
@@ -2446,7 +2446,9 @@ public abstract class BaseTest extends TestCase {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         ImageIO.write(savedMapImage, "png", baos);
         byte[] imageBytes = baos.toByteArray();
+
         savedMap.setImageData(imageBytes);
+        savedMap.setLongText("test long text");
 
         session.update(savedMap);
         savedMap = session.fetch(SavedMap.class, params(savedMap.getId()));

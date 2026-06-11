@@ -373,7 +373,8 @@ public class TestInformix extends BaseTest {
                  GAME_ID INT NOT NULL,
                  MapName VARCHAR(100),
                  BackgroundResource VARCHAR(100),
-                 ImageData BLOB NULL
+                 ImageData BLOB NULL,
+                 LongText CLOB NULL
                  )
                 """;
         executeCommand(sql, con);

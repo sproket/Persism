@@ -337,7 +337,8 @@ public class TestPostgreSQL extends BaseTest {
                  GAME_ID INT NOT NULL,
                  MapName VARCHAR(100),
                  BackgroundResource VARCHAR(100),
-                 ImageData BYTEA
+                 ImageData BYTEA,
+                 LongText TEXT
                  )
                 """;
         executeCommand(sql, con);

@@ -287,3 +287,4 @@ SQL could have a static select() method and then add an instance orderBy method 
 Where could extend SQL -
 
 todo support Blob to BufferedImage or WritableImage
+todo store an instances of classes (not records) for use with fetch to get clean data to copy to a re-read instance rather than trying to guess defaults

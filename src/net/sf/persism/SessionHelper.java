@@ -99,7 +99,7 @@ final class SessionHelper {
                 }
 
                 PreparedStatement pst = (PreparedStatement) result.st;
-                setParameters(pst, parameters);
+                setParameters(pst, parameters, Collections.emptyMap());
                 result.rs = pst.executeQuery();
             } else {
                 if (!sql.trim().toLowerCase().startsWith("{call")) {
@@ -109,7 +109,7 @@ final class SessionHelper {
                 result.st = session.connection.prepareCall(sql, ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY, ResultSet.HOLD_CURSORS_OVER_COMMIT);
 
                 CallableStatement cst = (CallableStatement) result.st;
-                setParameters(cst, parameters);
+                setParameters(cst, parameters, Collections.emptyMap());
                 result.rs = cst.executeQuery();
             }
 
@@ -136,7 +136,7 @@ final class SessionHelper {
             } else {
                 st = session.connection.prepareStatement(sql);
                 PreparedStatement pst = (PreparedStatement) st;
-                setParameters(pst, parameters);
+                setParameters(pst, parameters, Collections.emptyMap());
                 pst.execute();
             }
 
@@ -336,7 +336,14 @@ final class SessionHelper {
         return value;
     }
 
-    void setParameters(PreparedStatement st, Object[] parameters) throws SQLException {
+    /**
+     *
+     * @param st
+     * @param parameters array of object params
+     * @param nullTypes  map of param index and java.sql.Types int (needed for specifying the correct setNull jdbc method)
+     * @throws SQLException
+     */
+    void setParameters(PreparedStatement st, Object[] parameters, Map<Integer, Integer> nullTypes) throws SQLException {
         if (log.isDebugEnabled()) {
             log.debug("setParameters PARAMS: %s", Arrays.asList(parameters));
         }
@@ -477,9 +484,16 @@ final class SessionHelper {
                 }
 
             } else {
-                // param is null
-                if (session.metaData.getConnectionType() == ConnectionType.UCanAccess || session.metaData.getConnectionType() == ConnectionType.MSSQL) {
-                    st.setNull(n, Types.OTHER);
+                // value is null
+
+                if (nullTypes.containsKey(n-1)) { // params are 1 based
+                    var ct = session.metaData.getConnectionType();
+                    if (ct == ConnectionType.PostgreSQL) {
+                        st.setObject(n, null);
+                    } else {
+                        int sqlType = nullTypes.get(n-1);
+                        st.setNull(n, sqlType);
+                    }
                 } else {
                     st.setObject(n, null);
                 }

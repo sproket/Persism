@@ -97,7 +97,7 @@ public final class Session implements AutoCloseable {
 
 
     /**
-     * Fetch an object from the database by it's primary key(s).
+     * Fetch an object from the database by its primary key(s).
      * You should instantiate the object and set the primary key properties before calling this method.
      *
      * @param object Data object to read from the database.
@@ -143,7 +143,9 @@ public final class Session implements AutoCloseable {
             if (!propertyInfo.isJoin) {
                 ColumnInfo columnInfo = columns.get(key);
                 if (!columnInfo.primary) {
-                    propertyInfo.setValue(object, helper.defaultForType(propertyInfo.field.getType()));
+                    if (propertyInfo.getValue(object) != null) {
+                        propertyInfo.setValue(object, helper.defaultForType(propertyInfo.field.getType()));
+                    }
                 }
             }
         }
@@ -567,6 +569,7 @@ public final class Session implements AutoCloseable {
                 changedProperties = allProperties;
             }
 
+            Map<Integer, Integer> nullTypes = new HashMap<>();
             List<Object> params = new ArrayList<>(primaryKeys.size());
             List<ColumnInfo> columnInfos = new ArrayList<>(changedProperties.size());
 
@@ -581,23 +584,36 @@ public final class Session implements AutoCloseable {
                     Object value = allProperties.get(column).getValue(object);
                     params.add(value);
                     columnInfos.add(columnInfo);
+
+                    if (value == null) {
+                        nullTypes.put(params.size()-1, columnInfo.sqlColumnType);
+                    }
                 }
             }
 
             for (String column : primaryKeys) {
-                params.add(allProperties.get(column).getValue(object));
+                PropertyInfo propertyInfo = allProperties.get(column);
+                ColumnInfo columnInfo =  columns.get(column);
+                Object value = propertyInfo.getValue(object);
+                params.add(value);
                 columnInfos.add(metaData.getColumns(objectClass, connection).get(column));
+
+                if (value == null) {
+                    nullTypes.put(params.size()-1, columnInfo.sqlColumnType);
+                }
+
             }
             assert params.size() == columnInfos.size();
             for (int j = 0; j < params.size(); j++) {
                 if (params.get(j) != null) {
-                    params.set(j, converter.convert(params.get(j), columnInfos.get(j).columnType.getJavaType(), columnInfos.get(j).columnName));
+                    Object value = converter.convert(params.get(j), columnInfos.get(j).columnType.getJavaType(), columnInfos.get(j).columnName);
+                    params.set(j, value);
                 }
             }
             if (sqllog.isDebugEnabled()) {
                 sqllog.debug("%s params: %s", updateStatement, params);
             }
-            helper.setParameters(st, params.toArray());
+            helper.setParameters(st, params.toArray(), nullTypes);
             int ret = st.executeUpdate();
 
             if (object instanceof Persistable<?> pojo) {
@@ -669,7 +685,14 @@ public final class Session implements AutoCloseable {
                 sqllog.debug("%s params: %s", insertStatement, params);
             }
 
-            helper.setParameters(st, params.toArray());
+            Map<Integer, Integer> nullTypes = new HashMap<>();
+            for (int j = 0; j < params.size(); j++) {
+                if (params.get(j) == null) {
+                    nullTypes.put(j, columnInfos.get(j).sqlColumnType);
+                }
+            }
+
+            helper.setParameters(st, params.toArray(), nullTypes);
 
             boolean insertReturnedResults = st.execute();
             int rowCount;
@@ -861,6 +884,7 @@ public final class Session implements AutoCloseable {
                 columnInfos.add(metaData.getColumns(objectClass, connection).get(column));
             }
 
+            // todo under what circumstance would a param here be null?
             for (int j = 0; j < params.size(); j++) {
                 if (params.get(j) != null) {
                     params.set(j, converter.convert(params.get(j), columnInfos.get(j).columnType.getJavaType(), columnInfos.get(j).columnName));
@@ -871,7 +895,7 @@ public final class Session implements AutoCloseable {
                 sqllog.debug("%s params: %s", deleteStatement, params);
             }
 
-            helper.setParameters(st, params.toArray());
+            helper.setParameters(st, params.toArray(), Collections.emptyMap());
             int rows = st.executeUpdate();
             return new Result<>(rows, object);
 
@@ -930,7 +954,7 @@ public final class Session implements AutoCloseable {
             sqllog.debug("%s params: %s", deleteStatement, primaryKeyValues);
         }
         try (PreparedStatement st = connection.prepareStatement(deleteStatement)) {
-            helper.setParameters(st, primaryKeyValues.toArray());
+            helper.setParameters(st, primaryKeyValues.toArray(), Collections.emptyMap());
             return st.executeUpdate();
         } catch (SQLException e) {
             Util.rollback(connection);
@@ -960,7 +984,7 @@ public final class Session implements AutoCloseable {
         }
 
         try (PreparedStatement st = connection.prepareStatement(deleteStatement)) {
-            helper.setParameters(st, parameters.toArray());
+            helper.setParameters(st, parameters.toArray(), Collections.emptyMap());
             return st.executeUpdate();
         } catch (SQLException e) {
             Util.rollback(connection);
