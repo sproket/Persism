@@ -138,17 +138,21 @@ public final class Session implements AutoCloseable {
         Map<String, ColumnInfo> columns = metaData.getColumns(objectClass, connection);
 
         // reset object fields before refreshing from DB
-        for (String key : properties.keySet()) {
-            PropertyInfo propertyInfo = properties.get(key);
-            if (!propertyInfo.isJoin) {
-                ColumnInfo columnInfo = columns.get(key);
-                if (!columnInfo.primary) {
-                    if (propertyInfo.getValue(object) != null) {
-                        propertyInfo.setValue(object, helper.defaultForType(propertyInfo.field.getType()));
+        Object cleanPojo = metaData.cleanInstances.get(objectClass);
+        if (cleanPojo != null) {
+            for (String key : properties.keySet()) {
+                PropertyInfo propertyInfo = properties.get(key);
+                if (!propertyInfo.isJoin) {
+                    ColumnInfo columnInfo = columns.get(key);
+                    if (!columnInfo.primary) {
+                        propertyInfo.setValue(object, propertyInfo.getValue(cleanPojo));
                     }
                 }
             }
+        } else {
+            log.warn("NO clean instance of: " + objectClass.getName(), new Throwable(""));
         }
+
 
         Parameters params = new Parameters();
         List<ColumnInfo> columnInfos = new ArrayList<>(properties.size());
@@ -471,7 +475,7 @@ public final class Session implements AutoCloseable {
             Object first = list.get(0);
             if (first instanceof InitializeEvent) {
                 for (var obj : list) {
-                    ((InitializeEvent)obj).onInitialized();
+                    ((InitializeEvent) obj).onInitialized();
                 }
             }
         }
@@ -586,20 +590,20 @@ public final class Session implements AutoCloseable {
                     columnInfos.add(columnInfo);
 
                     if (value == null) {
-                        nullTypes.put(params.size()-1, columnInfo.sqlColumnType);
+                        nullTypes.put(params.size() - 1, columnInfo.sqlColumnType);
                     }
                 }
             }
 
             for (String column : primaryKeys) {
                 PropertyInfo propertyInfo = allProperties.get(column);
-                ColumnInfo columnInfo =  columns.get(column);
+                ColumnInfo columnInfo = columns.get(column);
                 Object value = propertyInfo.getValue(object);
                 params.add(value);
                 columnInfos.add(metaData.getColumns(objectClass, connection).get(column));
 
                 if (value == null) {
-                    nullTypes.put(params.size()-1, columnInfo.sqlColumnType);
+                    nullTypes.put(params.size() - 1, columnInfo.sqlColumnType);
                 }
 
             }

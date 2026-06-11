@@ -4,6 +4,7 @@ import net.sf.persism.annotations.*;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.sql.*;
@@ -29,6 +30,7 @@ final class MetaData {
     // column to property map for each class
     private final Map<Class<?>, Map<String, PropertyInfo>> propertyInfoMap = new ConcurrentHashMap<>(32);
     private final Map<Class<?>, Map<String, ColumnInfo>> columnInfoMap = new ConcurrentHashMap<>(32);
+    final Map<Class<?>, Object> cleanInstances = new ConcurrentHashMap<>(32);
 
     // SQL for updates/inserts/deletes/selects for each class
     private final Map<Class<?>, String> updateStatementsMap = new ConcurrentHashMap<>(32);
@@ -110,6 +112,16 @@ final class MetaData {
 
         // Not for @NotTable classes
         assert objectClass.getAnnotation(NotTable.class) == null;
+
+        if (!objectClass.isRecord()) {
+            try {
+                Object instance = objectClass.getDeclaredConstructor().newInstance();
+                cleanInstances.put(objectClass, instance);
+            } catch (InstantiationException | IllegalAccessException | InvocationTargetException |
+                     NoSuchMethodException e) {
+                throw new PersismException(e.getMessage(), e);
+            }
+        }
 
         String sd = connectionType.getKeywordStartDelimiter();
         String ed = connectionType.getKeywordEndDelimiter();
