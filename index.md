@@ -58,7 +58,13 @@ Persism will do the correct thing by default. Persism understands that your clas
 "Customer" and your table is called "CUSTOMERS". It understands that your table column is
 "CUSTOMER_ID" and your property is "customerId". Persism works fine even
 when your class is called Category and your table is called CATEGORIES. No problem.
-Persism uses annotations as a fall back – annotate only when something is outside the conventions.
+Persism uses annotations as a fallback – annotate only when something is outside the conventions.
+
+## NO SELECT N+1 Problems
+
+Persism handles joins with sub selects to read child records. Each join annotation results in 
+only 1 additional query to the database. No more performance drop-offs as your
+database grows in size. [Details](n+1.md)
 
 ## Tiny
 Persism is about 100k and has *zero* dependencies however it will utilize logging based on whatever is available
