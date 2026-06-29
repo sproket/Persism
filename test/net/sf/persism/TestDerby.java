@@ -322,6 +322,14 @@ public final class TestDerby extends BaseTest {
 
         executeCommand("CREATE TABLE TABLENOPRIMARY (  ID INT,  Name VARCHAR(30),  Field4 VARCHAR(30),  Field5 DATE,  Field6 INT,  Field7 INT,  Field8 INT )", con);
 
+        // For TestMetaData
+        if (!isTableInDatabase("TEST_DERBY", con)) {
+            executeCommand("CREATE TABLE TEST_DERBY (  ID INT )", con);
+        }
+        if (!isTableInDatabase("TESTDERBY", con)) {
+            executeCommand("CREATE TABLE TESTDERBY (  ID INT )", con);
+        }
+
     }
 
     public void testTypes() {

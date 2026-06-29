@@ -68,6 +68,9 @@ public final class Contact implements Persistable<Contact>, InitializeEvent {
     @NotColumn
     private Contact originalContactObject;
 
+    @NotColumn
+    private boolean initialized;
+
     public UUID getIdentity() {
         return identity;
     }
@@ -282,6 +285,20 @@ public final class Contact implements Persistable<Contact>, InitializeEvent {
 
     public void setStatus(short status) {
         this.status = status;
+    }
+
+    public boolean isInitialized() {
+        return initialized;
+    }
+
+    public void setInitialized(boolean initialized) {
+        this.initialized = initialized;
+    }
+
+    @Override
+    public void onInitialized() {
+        System.out.println("onInitialized " + this);
+        setInitialized(true);
     }
 
     @Override

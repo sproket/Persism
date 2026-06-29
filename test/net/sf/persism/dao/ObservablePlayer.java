@@ -35,6 +35,11 @@ public final class ObservablePlayer implements Persistable<ObservablePlayer>, In
     }
 
     @Override
+    public void onInitialized() {
+        System.out.println("onInitialized " + this);
+    }
+
+    @Override
     public void saveReadState() throws PersismException {
         original = new ObservablePlayer(this);
     }

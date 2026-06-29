@@ -1515,8 +1515,10 @@ public abstract class BaseTest extends TestCase {
         contact.setCompany("Y");
         contact.setContactName("X");
 
+        assertFalse(contact.isInitialized());
         session.insert(contact);
         session.fetch(contact);
+        assertTrue(contact.isInitialized());
 
         boolean failed = false;
 

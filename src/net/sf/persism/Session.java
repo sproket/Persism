@@ -922,10 +922,6 @@ public final class Session implements AutoCloseable {
      */
     public int delete(Class<?> objectClass, SQL whereClause) {
         helper.checkIfOkForWriteOperation(objectClass, "DELETE");
-
-        // todo to handle delete in this form and support onDeleted event we need to get the list ob objects (NOT calling onInitialized) and then call onDeleted AFTER deleting.
-        var opt = Arrays.stream(objectClass.getInterfaces()).filter(interfaceClass -> interfaceClass.equals(InitializeEvent.class)).findFirst();
-        log.error("PersismEvents.delete? " + opt.isPresent());
         return delete(objectClass, whereClause, none());
     }
 

@@ -35,6 +35,11 @@ public final class ObservablePlayerBad extends PersistableObject<ObservablePlaye
         this.hitPoints.set(other.hitPoints.get());
     }
 
+    @Override
+    public void onInitialized() {
+        System.out.println("onInitialized " + this);
+    }
+
     public int getPlayerId() {
         return playerId.get();
     }
