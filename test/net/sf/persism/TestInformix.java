@@ -375,7 +375,7 @@ public class TestInformix extends BaseTest {
                  BackgroundResource VARCHAR(100),
                  ImageData BLOB NULL,
                  LongText CLOB NULL
-                 )
+                 ) PUT ImageData IN (my_sbspace), LongText IN (my_sbspace)
                 """;
         executeCommand(sql, con);
     }

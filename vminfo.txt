@@ -22,5 +22,24 @@ check disk space df --total
 
 Helpful with KVM switch ? is it really,,,,,,?
 
-VBoxManage setextradata "VM name" GUI/HidLedsSync "1" 
+VBoxManage setextradata "VM name" GUI/HidLedsSync "1"
+
+informix
+docker run -d --name ifx --privileged -p 9088:9088 -e LICENSE=accept -e DB_SBSPACE=1 ibmcom/informix-developer-database:latest
+
+to access with sysadmin
+docker exec -it -u informix ifx bash -lc "dbaccess sysmaster -"
+
+to get to a shell
+docker exec -it ifx bash
+
+to create sbspaces
+
+touch /opt/ibm/data/sbspace01.chunk
+chmod 660 /opt/ibm/data/sbspace01.chunk
+
+onspaces -c -S my_sbspace -p /opt/ibm/data/sbspace01.chunk -o 0 -s 20000
+
+
+
 

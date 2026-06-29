@@ -2422,11 +2422,6 @@ public abstract class BaseTest extends TestCase {
 
     public void testNullBlobAndClob() throws IOException {
 
-        if (connectionType == ConnectionType.Informix) {
-            // see other Invalid default sbspace name (sbspace). needs to be added to docker image
-            return;
-        }
-
         if (connectionType == ConnectionType.Derby) {
             return;
         }
