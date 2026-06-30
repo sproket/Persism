@@ -414,9 +414,9 @@ public final class TestHSQLDB extends BaseTest {
             fail = true;
             log.info(e.getMessage());
 
-            // message changed from 2.5.1 to 2.7.1
-            assertEquals("s/b data truncation", "data exception: string data, right truncation;  table: CONTACTS column: ZIPPOSTALCODE", e.getMessage());
-            //assertEquals("s/b data truncation", "data exception: string data, right truncation ; size limit: 10 table: CONTACTS column: ZIPPOSTALCODE", e.getMessage());
+            // message changed from 2.5.1 to 2.7.1 and 2.7.4
+            //assertEquals("s/b data truncation", "data exception: string data, right truncation;  table: CONTACTS column: ZIPPOSTALCODE", e.getMessage());
+            assertEquals("s/b data truncation", "data exception: string data, right truncation ; size limit: 10 table: CONTACTS column: ZIPPOSTALCODE", e.getMessage());
         }
         assertTrue(fail);
 
