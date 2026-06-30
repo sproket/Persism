@@ -1210,6 +1210,7 @@ public abstract class BaseTest extends TestCase {
 
         CustomerInvoiceRec customerInvoiceRec = session.fetch(CustomerInvoiceRec.class, sql("SELECT * FROM CustomerInvoice WHERE Company_Name = ?"), params("ABC Inc"));
         assertNotNull(customerInvoiceRec);
+        assertTrue(customerInvoiceRec.isInitialized());
 
         CustomerInvoiceTestView customerInvoiceTestView = session.fetch(CustomerInvoiceTestView.class, sql("SELECT * FROM CustomerInvoice WHERE Company_Name = ?"), params("ABC Inc"));
         List<CustomerInvoiceTestView> list2 = session.query(CustomerInvoiceTestView.class);
