@@ -1,1 +1,1 @@
-packageSearchIndex = [{"l":"All Packages","u":"allpackages-index.html"},{"m":"sproket.github.io.persism","l":"net.sf.persism"},{"m":"sproket.github.io.persism","l":"net.sf.persism.annotations"}];updateSearchResults();
+packageSearchIndex = [{"l":"All Packages","u":"allpackages-index.html"},{"m":"sproket.github.io.persism","l":"net.sf.persism"},{"m":"sproket.github.io.persism","l":"net.sf.persism.annotations"},{"m":"sproket.github.io.persism","l":"net.sf.persism.logging"}];updateSearchResults();
