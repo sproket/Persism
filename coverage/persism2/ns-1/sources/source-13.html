@@ -53,10 +53,10 @@ Current scope:     <a href="../../index.html">all classes</a>
 </td>
 <td class="coverageStat">
   <span class="percent">
-    90%
+    100%
   </span>
   <span class="absValue">
-    (9/10)
+    (10/10)
   </span>
 </td>
 <td class="coverageStat">
@@ -99,10 +99,10 @@ Current scope:     <a href="../../index.html">all classes</a>
 </td>
 <td class="coverageStat">
   <span class="percent">
-    90%
+    100%
   </span>
   <span class="absValue">
-    (9/10)
+    (10/10)
   </span>
 </td>
 <td class="coverageStat">
@@ -148,7 +148,7 @@ Current scope:     <a href="../../index.html">all classes</a>
 <b class="fc">&nbsp;    SQL(String sql) {</b>
 <b class="fc">&nbsp;        sql = sql.trim();</b>
 &nbsp;
-<b class="pc">&nbsp;        if (sql.startsWith(&quot;--&quot;) || sql.startsWith(&quot;/*&quot;)) {</b>
+<b class="fc">&nbsp;        if (sql.startsWith(&quot;--&quot;) || sql.startsWith(&quot;/*&quot;)) {</b>
 &nbsp;            // trim comments
 &nbsp;
 &nbsp;            // line comments
@@ -225,6 +225,16 @@ Current scope:     <a href="../../index.html">all classes</a>
 <b class="fc">&nbsp;        return new SQL(storedProc, SQLType.StoredProc);</b>
 &nbsp;    }
 &nbsp;
+&nbsp;    /**
+&nbsp;     * Specifies a limit to the query result which will translate to the specific SQL syntax when executed.
+&nbsp;     * &lt;pre&gt;{@code
+&nbsp;     *      List&lt;PublisherTitle&gt; publisherTitles = session.query(PublisherTitle.class, where(&quot;1=1&quot;).limit(4));
+&nbsp;     * }&lt;/pre&gt;
+&nbsp;     *
+&nbsp;     * @param limit positive integer number
+&nbsp;     * @return current SQL object
+&nbsp;     * @since 2.3
+&nbsp;     */
 &nbsp;    public SQL limit(int limit) {
 <b class="fc">&nbsp;        this.limit = limit;</b>
 <b class="fc">&nbsp;        return this;</b>
@@ -264,7 +274,7 @@ Current scope:     <a href="../../index.html">all classes</a>
 
 <div class="footer">
     
-    <div style="float:right;">generated on 2026-02-19 07:36</div>
+    <div style="float:right;">generated on 2026-07-02 15:11</div>
 </div>
 </body>
 </html>

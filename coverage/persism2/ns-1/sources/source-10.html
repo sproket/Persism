@@ -48,23 +48,23 @@ Current scope:     <a href="../../index.html">all classes</a>
     100%
   </span>
   <span class="absValue">
-    (6/6)
+    (8/8)
   </span>
 </td>
 <td class="coverageStat">
   <span class="percent">
-    92.6%
+    92.9%
   </span>
   <span class="absValue">
-    (88/95)
+    (92/99)
   </span>
 </td>
 <td class="coverageStat">
   <span class="percent">
-    99.1%
+    99.2%
   </span>
   <span class="absValue">
-    (115/116)
+    (123/124)
   </span>
 </td>
 </tr>
@@ -94,23 +94,23 @@ Current scope:     <a href="../../index.html">all classes</a>
     100%
   </span>
   <span class="absValue">
-    (7/7)
+    (9/9)
   </span>
 </td>
 <td class="coverageStat">
   <span class="percent">
-    92.6%
+    92.9%
   </span>
   <span class="absValue">
-    (88/95)
+    (92/99)
   </span>
 </td>
 <td class="coverageStat">
   <span class="percent">
-    99.1%
+    99.2%
   </span>
   <span class="absValue">
-    (116/117)
+    (124/125)
   </span>
 </td>
 </tr>
@@ -230,7 +230,7 @@ Current scope:     <a href="../../index.html">all classes</a>
 <b class="fc">&nbsp;            sqlColumnType = Types.CHAR;</b>
 &nbsp;        }
 &nbsp;
-<b class="fc">&nbsp;        JavaType columnType = JavaType.convert(sqlColumnType); // note this could be null if we can&#39;t match a type</b>
+<b class="fc">&nbsp;        JavaType columnType = JavaType.convert(sqlColumnType, columnName); // note this could be null if we can&#39;t match a type</b>
 &nbsp;
 <b class="fc">&nbsp;        Object value = null;</b>
 &nbsp;
@@ -262,56 +262,11 @@ Current scope:     <a href="../../index.html">all classes</a>
 &nbsp;                    break;
 &nbsp;
 &nbsp;                case ClobType:
-<b class="fc">&nbsp;                    if (metaData.getConnectionType().supportsReadingFromClobType()) {</b>
-<b class="fc">&nbsp;                        Clob clob = rs.getClob(column);</b>
-<b class="fc">&nbsp;                        if (clob != null) {</b>
-<b class="fc">&nbsp;                            try (InputStream in = clob.getAsciiStream()) {</b>
-<b class="fc">&nbsp;                                StringWriter writer = new StringWriter();</b>
-&nbsp;
-<b class="fc">&nbsp;                                int c = -1;</b>
-<b class="fc">&nbsp;                                while ((c = in.read()) != -1) {</b>
-<b class="fc">&nbsp;                                    writer.write(c);</b>
-&nbsp;                                }
-<b class="fc">&nbsp;                                writer.flush();</b>
-<b class="fc">&nbsp;                                value = writer.toString();</b>
-&nbsp;                            }
-&nbsp;                        }
-&nbsp;                    } else {
-<b class="fc">&nbsp;                        try (InputStream in = rs.getAsciiStream(column)) {</b>
-<b class="fc">&nbsp;                            StringWriter writer = new StringWriter();</b>
-&nbsp;
-<b class="fc">&nbsp;                            int c = -1;</b>
-<b class="fc">&nbsp;                            while ((c = in.read()) != -1) {</b>
-<b class="fc">&nbsp;                                writer.write(c);</b>
-&nbsp;                            }
-<b class="fc">&nbsp;                            writer.flush();</b>
-<b class="fc">&nbsp;                            value = writer.toString();</b>
-&nbsp;                        }
-&nbsp;                    }
+<b class="fc">&nbsp;                    value = readClob(rs, column);</b>
 &nbsp;                    break;
 &nbsp;
 &nbsp;                case BlobType:
-<b class="fc">&nbsp;                    byte[] buffer = new byte[1024];</b>
-<b class="fc">&nbsp;                    if (metaData.getConnectionType().supportsReadingFromBlobType()) {</b>
-<b class="fc">&nbsp;                        Blob blob = rs.getBlob(column);</b>
-<b class="fc">&nbsp;                        if (blob != null) {</b>
-<b class="fc">&nbsp;                            try (InputStream in = blob.getBinaryStream()) {</b>
-<b class="fc">&nbsp;                                ByteArrayOutputStream bos = new ByteArrayOutputStream();</b>
-<b class="fc">&nbsp;                                for (int len; (len = in.read(buffer)) != -1; ) {</b>
-<b class="fc">&nbsp;                                    bos.write(buffer, 0, len);</b>
-&nbsp;                                }
-<b class="fc">&nbsp;                                value = bos.toByteArray();</b>
-&nbsp;                            }
-&nbsp;                        }
-&nbsp;                    } else {
-<b class="fc">&nbsp;                        try (InputStream in = rs.getBinaryStream(column)) {</b>
-<b class="fc">&nbsp;                            ByteArrayOutputStream bos = new ByteArrayOutputStream();</b>
-<b class="fc">&nbsp;                            for (int len; (len = in.read(buffer)) != -1; ) {</b>
-<b class="fc">&nbsp;                                bos.write(buffer, 0, len);</b>
-&nbsp;                            }
-<b class="fc">&nbsp;                            value = bos.toByteArray();</b>
-&nbsp;                        }
-&nbsp;                    }
+<b class="fc">&nbsp;                    value = readBlob(rs, column);</b>
 &nbsp;                    break;
 &nbsp;
 &nbsp;                case IntegerType:
@@ -411,6 +366,68 @@ Current scope:     <a href="../../index.html">all classes</a>
 <b class="fc">&nbsp;        return null;</b>
 &nbsp;    }
 &nbsp;
+&nbsp;    private byte[] readBlob(ResultSet rs, int column) throws SQLException, IOException {
+<b class="fc">&nbsp;        byte[] buffer = new byte[1024];</b>
+<b class="fc">&nbsp;        byte[] byteData = null;</b>
+<b class="fc">&nbsp;        if (metaData.getConnectionType().supportsReadingFromBlobType()) {</b>
+<b class="fc">&nbsp;            Blob blob = rs.getBlob(column);</b>
+<b class="fc">&nbsp;            if (blob != null) {</b>
+<b class="fc">&nbsp;                try (InputStream in = blob.getBinaryStream()) {</b>
+<b class="fc">&nbsp;                    ByteArrayOutputStream bos = new ByteArrayOutputStream();</b>
+<b class="fc">&nbsp;                    for (int len; (len = in.read(buffer)) != -1; ) {</b>
+<b class="fc">&nbsp;                        bos.write(buffer, 0, len);</b>
+&nbsp;                    }
+<b class="fc">&nbsp;                    byteData = bos.toByteArray();</b>
+&nbsp;                }
+&nbsp;            }
+&nbsp;        } else {
+<b class="fc">&nbsp;            try (InputStream in = rs.getBinaryStream(column)) {</b>
+<b class="fc">&nbsp;                if (in != null) {</b>
+<b class="fc">&nbsp;                    ByteArrayOutputStream bos = new ByteArrayOutputStream();</b>
+<b class="fc">&nbsp;                    for (int len; (len = in.read(buffer)) != -1; ) {</b>
+<b class="fc">&nbsp;                        bos.write(buffer, 0, len);</b>
+&nbsp;                    }
+<b class="fc">&nbsp;                    byteData = bos.toByteArray();</b>
+&nbsp;                }
+&nbsp;            }
+&nbsp;        }
+<b class="fc">&nbsp;        return byteData;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    private String readClob(ResultSet rs, int column) throws SQLException, IOException {
+<b class="fc">&nbsp;        String text = null;</b>
+&nbsp;
+<b class="fc">&nbsp;        if (metaData.getConnectionType().supportsReadingFromClobType()) {</b>
+<b class="fc">&nbsp;            Clob clob = rs.getClob(column);</b>
+<b class="fc">&nbsp;            if (clob != null) {</b>
+<b class="fc">&nbsp;                try (InputStream in = clob.getAsciiStream()) {</b>
+<b class="fc">&nbsp;                    StringWriter writer = new StringWriter();</b>
+&nbsp;
+<b class="fc">&nbsp;                    int c = -1;</b>
+<b class="fc">&nbsp;                    while ((c = in.read()) != -1) {</b>
+<b class="fc">&nbsp;                        writer.write(c);</b>
+&nbsp;                    }
+<b class="fc">&nbsp;                    writer.flush();</b>
+<b class="fc">&nbsp;                    text = writer.toString();</b>
+&nbsp;                }
+&nbsp;            }
+&nbsp;        } else {
+<b class="fc">&nbsp;            try (InputStream in = rs.getAsciiStream(column)) {</b>
+<b class="fc">&nbsp;                if (in != null) {</b>
+<b class="fc">&nbsp;                    StringWriter writer = new StringWriter();</b>
+&nbsp;
+<b class="fc">&nbsp;                    int c = -1;</b>
+<b class="fc">&nbsp;                    while ((c = in.read()) != -1) {</b>
+<b class="fc">&nbsp;                        writer.write(c);</b>
+&nbsp;                    }
+<b class="fc">&nbsp;                    writer.flush();</b>
+<b class="fc">&nbsp;                    text = writer.toString();</b>
+&nbsp;                }
+&nbsp;            }
+&nbsp;        }
+<b class="fc">&nbsp;        return text;</b>
+&nbsp;    }
+&nbsp;
 &nbsp;}
 </code>
 </pre>
@@ -435,7 +452,7 @@ Current scope:     <a href="../../index.html">all classes</a>
 
 <div class="footer">
     
-    <div style="float:right;">generated on 2026-02-19 07:36</div>
+    <div style="float:right;">generated on 2026-07-02 15:11</div>
 </div>
 </body>
 </html>

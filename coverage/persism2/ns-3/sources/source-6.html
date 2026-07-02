@@ -5,7 +5,7 @@
 <html id="htmlId">
 <head>
   <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"> 
-  <title>Coverage Report > Join</title>
+  <title>Coverage Report > Table</title>
   <style type="text/css">
     @import "../../css/coverage.css";
     @import "../../css/idea.min.css";
@@ -22,14 +22,14 @@ Current scope:     <a href="../../index.html">all classes</a>
     <a href="../index.html">net.sf.persism.annotations</a>
 </div>
 
-<h1>Coverage Summary for Class: Join (net.sf.persism.annotations)</h1>
+<h1>Coverage Summary for Class: Table (net.sf.persism.annotations)</h1>
 
 <table class="coverageStats">
 <tr>
   <th class="name">Class</th>
 </tr>
 <tr>
-  <td class="name">Join</td>
+  <td class="name">Table</td>
 </tr>
 
 </table>
@@ -41,50 +41,33 @@ Current scope:     <a href="../../index.html">all classes</a>
 <pre>
 <code class="sourceCode" id="sourceCode">&nbsp;package net.sf.persism.annotations;
 &nbsp;
-&nbsp;import java.lang.annotation.*;
+&nbsp;/*
+&nbsp; * Created by IntelliJ IDEA.
+&nbsp; * User: DHoward
+&nbsp; * Date: 9/8/11
+&nbsp; * Time: 6:17 AM
+&nbsp; */
+&nbsp;
+&nbsp;import java.lang.annotation.ElementType;
+&nbsp;import java.lang.annotation.Retention;
+&nbsp;import java.lang.annotation.RetentionPolicy;
+&nbsp;import java.lang.annotation.Target;
 &nbsp;
 &nbsp;/**
-&nbsp; * Indicates that the property value is set by joining from another table (pojo class). You may use this on a
-&nbsp; * single object (one to one, many to one), or on a collection (one to many, many to many). If joining to a
-&nbsp; * collection, make sure that you instantiate it as a modifiable collection. Persism will not do that fo you.
-&nbsp; *
-&nbsp; * @see &lt;a href=&quot;https://sproket.github.io/Persism/join.html&quot;&gt;How to use the new @Join Annotation&lt;/a&gt;
+&nbsp; * Defines the table name for a given class. This annotation is optional since Persism can detect the table name
+&nbsp; * from the class in most situations.
 &nbsp; */
-&nbsp;@Retention(RetentionPolicy.RUNTIME)
-&nbsp;@Target({ElementType.METHOD, ElementType.FIELD})
-&nbsp;public @interface Join {
-&nbsp;
-&nbsp;    Class&lt;?&gt; from() default void.class;
+&nbsp;@Retention(value = RetentionPolicy.RUNTIME)
+&nbsp;@Target(ElementType.TYPE)
+&nbsp;public @interface Table {
 &nbsp;
 &nbsp;    /**
-&nbsp;     * Class of the POJO that this class joins to.
-&nbsp;     *
-&nbsp;     * @return target POJO Class
+&nbsp;     * Table Name
+&nbsp;     * @return Table Name
 &nbsp;     */
-&nbsp;    Class&lt;?&gt; to();
+&nbsp;    String value();
 &nbsp;
-&nbsp;    /**
-&nbsp;     * Comma seperated property names whose values are used to join to the target table.
-&nbsp;     *
-&nbsp;     * @return property names
-&nbsp;     */
-&nbsp;    String onProperties();
-&nbsp;
-&nbsp;    /**
-&nbsp;     * Comma seperated property names whose values are used to join to the parent table.
-&nbsp;     *
-&nbsp;     * @return property names
-&nbsp;     */
-&nbsp;    String toProperties();
-&nbsp;
-&nbsp;    /**
-&nbsp;     * Indicates that you use String primary/foreign key values in your DB which are case-sensitive. Default false.
-&nbsp;     *
-&nbsp;     * @return case-sensitive
-&nbsp;     */
-&nbsp;    boolean caseSensitive() default false;
 &nbsp;}
-&nbsp;
 </code>
 </pre>
 </div>
@@ -108,7 +91,7 @@ Current scope:     <a href="../../index.html">all classes</a>
 
 <div class="footer">
     
-    <div style="float:right;">generated on 2026-02-19 07:36</div>
+    <div style="float:right;">generated on 2026-07-02 15:11</div>
 </div>
 </body>
 </html>

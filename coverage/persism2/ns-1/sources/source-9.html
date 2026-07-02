@@ -75,7 +75,7 @@ Current scope:     <a href="../../index.html">all classes</a>
     100%
   </span>
   <span class="absValue">
-    (59/59)
+    (60/60)
   </span>
 </td>
 </tr>
@@ -98,7 +98,7 @@ Current scope:     <a href="../../index.html">all classes</a>
 <b class="fc">&nbsp;    DateFormatException(&quot;%s. Column: %s Target Conversion: %s - Type read: %s VALUE: %s&quot;),</b>
 <b class="fc">&nbsp;    ReadRecordColumnNotFound(&quot;readRecord: Could not find column in the SQL query for class: %s. Missing column: %s&quot;),</b>
 <b class="fc">&nbsp;    ReadRecordCouldNotInstantiate(&quot;readRecord: Could not instantiate the constructor for: %s (%s)&quot;),</b>
-<b class="fc">&nbsp;    TableHasNoPrimaryKeys(&quot;Cannot perform %s - %s has no primary keys&quot;),</b>
+<b class="fc">&nbsp;    TableHasNoPrimaryKeys(&quot;Cannot perform %s - table %s has no primary keys - class %s&quot;),</b>
 <b class="fc">&nbsp;    TableHasNoPrimaryKeysForWhere(&quot;Could not determine WHERE IN clause for TABLE: %s. No primary keys detected&quot;),</b>
 <b class="fc">&nbsp;    ClassHasNoGetterForProperty(&quot;%s has no getter for property %s&quot;),</b>
 <b class="fc">&nbsp;    NonAutoIncGeneratedNotSupported(&quot;Non-auto inc generated primary keys are not supported. Please assign your primary key value before performing an insert&quot;),</b>
@@ -127,7 +127,7 @@ Current scope:     <a href="../../index.html">all classes</a>
 &nbsp;    // WARNINGS
 <b class="fc">&nbsp;    UnknownConnectionType(&quot;Unknown connection type. Please contact Persism to add support for %s&quot;),</b>
 <b class="fc">&nbsp;    NoPropertyFoundForColumn(&quot;No property found for column: %s class: %s&quot;),</b>
-<b class="fc">&nbsp;    ColumnAnnotatedAsAutoIncButNAN(&quot;Column %s is annotated as auto-increment but it is not a number type (%s)&quot;),</b>
+<b class="fc">&nbsp;    ColumnAnnotatedAsAutoIncButNAN(&quot;Column %s is annotated as auto-increment but it is not a number type (%s) - Class: %s&quot;),</b>
 <b class="fc">&nbsp;    DatabaseMetaDataCouldNotFindPrimaryKeys(&quot;DatabaseMetaData could not find primary keys for table %s&quot;),</b>
 <b class="fc">&nbsp;    DatabaseMetaDataCouldNotFindColumns(&quot;DatabaseMetaData could not find columns for table %s! Your database account may not have that permission.&quot;),</b>
 <b class="fc">&nbsp;    NoPrimaryKeyFoundForTable(&quot;No primary key found for table %s. Do not use with insert/update/delete/fetch or add a primary key&quot;),</b>
@@ -136,7 +136,7 @@ Current scope:     <a href="../../index.html">all classes</a>
 <b class="fc">&nbsp;    PossibleOverflow(&quot;Possible overflow column %s - Target type is %s and Value type is %s&quot;),</b>
 <b class="fc">&nbsp;    PropertyShouldBeAnObjectType(&quot;Property %s for column %s for %s should be an Object type to properly detect NULL for defaults (change it from the primitive type to its Boxed version)&quot;),</b>
 <b class="fc">&nbsp;    SettersFoundInReadOnlyObject(&quot;Setters found in read only object %s %s&quot;),</b>
-<b class="fc">&nbsp;    UnknownSQLType(&quot;Convert: Unknown SQL TYPE: %s&quot;),</b>
+<b class="fc">&nbsp;    UnknownSQLType(&quot;Convert: Unknown SQL TYPE: %s COLUMN: %s&quot;),</b>
 <b class="fc">&nbsp;    ConverterValueTypeNotYetSupported(&quot;%s not yet supported&quot;),</b>
 <b class="fc">&nbsp;    ConverterDoNotUseClobOrBlobAsAPropertyType(&quot;Usually you should not use blob or clob as a property type on a POJO. Blob maps to byteArray, Clob maps to String&quot;),</b>
 <b class="fc">&nbsp;    ColumnTypeNotKnownForSQLType(&quot;Column type not known for SQL type %s. Reading column: %s as Object. Actual type: %s&quot;),</b>
@@ -146,6 +146,7 @@ Current scope:     <a href="../../index.html">all classes</a>
 <b class="fc">&nbsp;    UnSupportedTypeInSetParameters(&quot;setParameters: %s type not supported yet. We&#39;re probably about to fail.....&quot;),</b>
 <b class="fc">&nbsp;    ParametersDoNotUseClobOrBlob(&quot;Usually you should not use blob or clob as an SQL parameter type. Blob maps to byteArray, Clob maps to String&quot;),</b>
 <b class="fc">&nbsp;    PrimaryAnnotationOnViewOrQueryMakesNoSense(&quot;Primary annotation on %s:%s is only useful on POJOs for tables. Not for queries or views.&quot;),</b>
+<b class="fc">&nbsp;    LimitNotSupportedOnStoredProcedures(&quot;Limit not supported on stored procedures proc: %s class: %s&quot;),</b>
 &nbsp;    ;
 &nbsp;
 &nbsp;    private final String message;
@@ -184,7 +185,7 @@ Current scope:     <a href="../../index.html">all classes</a>
 
 <div class="footer">
     
-    <div style="float:right;">generated on 2026-02-19 07:36</div>
+    <div style="float:right;">generated on 2026-07-02 15:11</div>
 </div>
 </body>
 </html>

@@ -1,14 +1,28 @@
 ## ![](img/logo2.png) Release Notes
 
+### 2.4
+* Added InitializeEvent interface to provide an onInitialized method when objects are read and initialized (TODO LINK) #39
+* Fixed issues with some jdbc drivers not properly setting null on BLOB/CLOB types #52
+* Marked Derby connection type deprecated (tests kept)
+* Warn on using limit with stored proc
+* Clarified warning messages
+* Baseline Oracle ojdbc8 21.19.0.0
+* Baseline Derby 10.16.1.1 (latest for Java 17)
+* Baseline hsqldb 2.7.4
+* Baseline ucanaccess 5.1.5
+* Baseline mssql 13.2.1.jre11
+* Baseline postgresql 42.7.7
+
+
 ### 2.3
 * Added support for [limit](manual2.md#limit)
 * Added null checks for multi-column joins
-* Fixed case of a cleared list on a join if there was user added data
+* Fixed case of a cleared list on a join if there was user added data #37
 * Baseline mysql 8.0.28
 * Baseline mariadb 3.1.2
 * Baseline H2 2.1.214
 * Baseline hsqldb 2.5.1 (tested with 2.7.1 as well)
-* Baseline posgresql 42.2.27
+* Baseline postgresql 42.2.27
 * Baseline sqlite 3.42.0.0
 
 ### 2.2.0

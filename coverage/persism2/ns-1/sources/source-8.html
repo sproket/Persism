@@ -48,23 +48,23 @@ Current scope:     <a href="../../index.html">all classes</a>
     100%
   </span>
   <span class="absValue">
-    (19/19)
+    (21/21)
   </span>
 </td>
 <td class="coverageStat">
   <span class="percent">
-    66.7%
+    71.4%
   </span>
   <span class="absValue">
-    (8/12)
+    (10/14)
   </span>
 </td>
 <td class="coverageStat">
   <span class="percent">
-    83.7%
+    85.5%
   </span>
   <span class="absValue">
-    (41/49)
+    (47/55)
   </span>
 </td>
 </tr>
@@ -94,23 +94,23 @@ Current scope:     <a href="../../index.html">all classes</a>
     100%
   </span>
   <span class="absValue">
-    (20/20)
+    (22/22)
   </span>
 </td>
 <td class="coverageStat">
   <span class="percent">
-    66.7%
+    71.4%
   </span>
   <span class="absValue">
-    (8/12)
+    (10/14)
   </span>
 </td>
 <td class="coverageStat">
   <span class="percent">
-    84%
+    85.7%
   </span>
   <span class="absValue">
-    (42/50)
+    (48/56)
   </span>
 </td>
 </tr>
@@ -159,7 +159,7 @@ Current scope:     <a href="../../index.html">all classes</a>
 <b class="nc">&nbsp;                logger = new Slf4jLogger(logName);</b>
 &nbsp;            }
 &nbsp;            case LOG4J2 -&gt; {
-<b class="nc">&nbsp;                logger = new Log4j2Logger(logName);</b>
+<b class="fc">&nbsp;                logger = new Log4j2Logger(logName);</b>
 &nbsp;            }
 &nbsp;            case LOG4J -&gt; {
 <b class="fc">&nbsp;                logger = new Log4jLogger(logName);</b>
@@ -222,6 +222,15 @@ Current scope:     <a href="../../index.html">all classes</a>
 <b class="fc">&nbsp;        return log;</b>
 &nbsp;    }
 &nbsp;
+&nbsp;    static Log getLogger(String logName, LogMode logMode) {
+<b class="pc">&nbsp;        if (loggers.containsKey(logName)) {</b>
+<b class="nc">&nbsp;            return loggers.get(logName);</b>
+&nbsp;        }
+<b class="fc">&nbsp;        Log log = new Log(logName, logMode);</b>
+<b class="fc">&nbsp;        loggers.put(logName, log);</b>
+<b class="fc">&nbsp;        return log;</b>
+&nbsp;    }
+&nbsp;
 &nbsp;    public static Log getLogger(String logName) {
 <b class="fc">&nbsp;        if (loggers.containsKey(logName)) {</b>
 <b class="fc">&nbsp;            return loggers.get(logName);</b>
@@ -279,6 +288,10 @@ Current scope:     <a href="../../index.html">all classes</a>
 &nbsp;    public String getLogName() {
 <b class="fc">&nbsp;        return logger.getLogName();</b>
 &nbsp;    }
+&nbsp;
+&nbsp;    public AbstractLogger getLogger() {
+<b class="fc">&nbsp;        return logger;</b>
+&nbsp;    }
 &nbsp;}
 </code>
 </pre>
@@ -303,7 +316,7 @@ Current scope:     <a href="../../index.html">all classes</a>
 
 <div class="footer">
     
-    <div style="float:right;">generated on 2026-02-19 07:36</div>
+    <div style="float:right;">generated on 2026-07-02 15:11</div>
 </div>
 </body>
 </html>

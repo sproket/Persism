@@ -64,10 +64,10 @@ Current scope:     <a href="../../index.html">all classes</a>
 </td>
 <td class="coverageStat">
   <span class="percent">
-    92.5%
+    95%
   </span>
   <span class="absValue">
-    (37/40)
+    (38/40)
   </span>
 </td>
 <td class="coverageStat">
@@ -97,7 +97,8 @@ Current scope:     <a href="../../index.html">all classes</a>
 <b class="fc">&nbsp;    @Deprecated</b>
 &nbsp;    JTDS(null, &quot;[&quot;, &quot;]&quot;),
 &nbsp;
-<b class="fc">&nbsp;    Derby(null, &quot;\&quot;&quot;, &quot;\&quot;&quot;),</b>
+<b class="fc">&nbsp;    @Deprecated</b>
+&nbsp;    Derby(null, &quot;\&quot;&quot;, &quot;\&quot;&quot;),
 &nbsp;
 <b class="fc">&nbsp;    H2(&quot;PUBLIC&quot;, &quot;\&quot;&quot;, &quot;\&quot;&quot;),</b>
 &nbsp;
@@ -197,7 +198,7 @@ Current scope:     <a href="../../index.html">all classes</a>
 &nbsp;    }
 &nbsp;
 &nbsp;    public boolean supportsReadingFromClobType() {
-<b class="pc">&nbsp;        return ConnectionType.H2 == this || ConnectionType.Oracle == this || ConnectionType.HSQLDB == this || ConnectionType.Derby == this;</b>
+<b class="fc">&nbsp;        return ConnectionType.H2 == this || ConnectionType.Oracle == this || ConnectionType.HSQLDB == this || ConnectionType.Derby == this;</b>
 &nbsp;    }
 &nbsp;
 &nbsp;    public boolean supportsReadingFromBlobType() {
@@ -235,7 +236,7 @@ Current scope:     <a href="../../index.html">all classes</a>
 
 <div class="footer">
     
-    <div style="float:right;">generated on 2026-02-19 07:36</div>
+    <div style="float:right;">generated on 2026-07-02 15:11</div>
 </div>
 </body>
 </html>

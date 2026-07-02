@@ -5,7 +5,7 @@
 <html id="htmlId">
 <head>
   <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"> 
-  <title>Coverage Report > Table</title>
+  <title>Coverage Report > NotTable</title>
   <style type="text/css">
     @import "../../css/coverage.css";
     @import "../../css/idea.min.css";
@@ -22,14 +22,14 @@ Current scope:     <a href="../../index.html">all classes</a>
     <a href="../index.html">net.sf.persism.annotations</a>
 </div>
 
-<h1>Coverage Summary for Class: Table (net.sf.persism.annotations)</h1>
+<h1>Coverage Summary for Class: NotTable (net.sf.persism.annotations)</h1>
 
 <table class="coverageStats">
 <tr>
   <th class="name">Class</th>
 </tr>
 <tr>
-  <td class="name">Table</td>
+  <td class="name">NotTable</td>
 </tr>
 
 </table>
@@ -44,8 +44,8 @@ Current scope:     <a href="../../index.html">all classes</a>
 &nbsp;/*
 &nbsp; * Created by IntelliJ IDEA.
 &nbsp; * User: DHoward
-&nbsp; * Date: 9/8/11
-&nbsp; * Time: 6:17 AM
+&nbsp; * Date: 9/14/11
+&nbsp; * Time: 7:38 AM
 &nbsp; */
 &nbsp;
 &nbsp;import java.lang.annotation.ElementType;
@@ -54,18 +54,11 @@ Current scope:     <a href="../../index.html">all classes</a>
 &nbsp;import java.lang.annotation.Target;
 &nbsp;
 &nbsp;/**
-&nbsp; * Defines the table name for a given class. This annotation is optional since Persism can detect the table name
-&nbsp; * from the class in most situations.
+&nbsp; * Indicates that the class represents the result of query instead of a table.
 &nbsp; */
 &nbsp;@Retention(value = RetentionPolicy.RUNTIME)
 &nbsp;@Target(ElementType.TYPE)
-&nbsp;public @interface Table {
-&nbsp;
-&nbsp;    /**
-&nbsp;     * Table Name
-&nbsp;     * @return Table Name
-&nbsp;     */
-&nbsp;    String value();
+&nbsp;public @interface NotTable {
 &nbsp;
 &nbsp;}
 </code>
@@ -91,7 +84,7 @@ Current scope:     <a href="../../index.html">all classes</a>
 
 <div class="footer">
     
-    <div style="float:right;">generated on 2026-02-19 07:36</div>
+    <div style="float:right;">generated on 2026-07-02 15:11</div>
 </div>
 </body>
 </html>

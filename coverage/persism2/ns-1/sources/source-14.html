@@ -25,9 +25,12 @@ Current scope:     <a href="../../index.html">all classes</a>
 <h1>Coverage Summary for Class: Session (net.sf.persism)</h1>
 
 <table class="coverageStats">
-
 <tr>
   <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
 <th class="coverageStat 
 ">
   Method, %
@@ -48,33 +51,6 @@ Current scope:     <a href="../../index.html">all classes</a>
     100%
   </span>
   <span class="absValue">
-    (29/29)
-  </span>
-</td>
-<td class="coverageStat">
-  <span class="percent">
-    93.6%
-  </span>
-  <span class="absValue">
-    (206/220)
-  </span>
-</td>
-<td class="coverageStat">
-  <span class="percent">
-    97.8%
-  </span>
-  <span class="absValue">
-    (394/403)
-  </span>
-</td>
-</tr>
-  <tr>
-    <td class="name">Session$1</td>
-<td class="coverageStat">
-  <span class="percent">
-    100%
-  </span>
-  <span class="absValue">
     (1/1)
   </span>
 </td>
@@ -83,37 +59,27 @@ Current scope:     <a href="../../index.html">all classes</a>
     100%
   </span>
   <span class="absValue">
-    (1/1)
-  </span>
-</td>
-  </tr>
-<tr>
-  <td class="name"><strong>Total</strong></td>
-<td class="coverageStat">
-  <span class="percent">
-    100%
-  </span>
-  <span class="absValue">
-    (30/30)
+    (28/28)
   </span>
 </td>
 <td class="coverageStat">
   <span class="percent">
-    93.6%
+    93.9%
   </span>
   <span class="absValue">
-    (206/220)
+    (216/230)
   </span>
 </td>
 <td class="coverageStat">
   <span class="percent">
-    97.8%
+    97.1%
   </span>
   <span class="absValue">
-    (395/404)
+    (406/418)
   </span>
 </td>
 </tr>
+
 </table>
 
 <br/>
@@ -220,7 +186,7 @@ Current scope:     <a href="../../index.html">all classes</a>
 &nbsp;
 &nbsp;
 &nbsp;    /**
-&nbsp;     * Fetch an object from the database by it&#39;s primary key(s).
+&nbsp;     * Fetch an object from the database by its primary key(s).
 &nbsp;     * You should instantiate the object and set the primary key properties before calling this method.
 &nbsp;     *
 &nbsp;     * @param object Data object to read from the database.
@@ -228,7 +194,7 @@ Current scope:     <a href="../../index.html">all classes</a>
 &nbsp;     * @throws PersismException if something goes wrong.
 &nbsp;     */
 &nbsp;    public boolean fetch(Object object) throws PersismException {
-<b class="fc">&nbsp;         return fetch(object, true);</b>
+<b class="fc">&nbsp;        return fetch(object, true);</b>
 &nbsp;    }
 &nbsp;
 &nbsp;    boolean fetch(Object object, boolean handleJoins) {
@@ -254,22 +220,28 @@ Current scope:     <a href="../../index.html">all classes</a>
 &nbsp;
 <b class="fc">&nbsp;        List&lt;String&gt; primaryKeys = metaData.getPrimaryKeys(objectClass, connection);</b>
 <b class="fc">&nbsp;        if (primaryKeys.isEmpty()) {</b>
-<b class="fc">&nbsp;            throw new PersismException(Message.TableHasNoPrimaryKeys.message(&quot;FETCH&quot;, metaData.getTableInfo(objectClass).name()));</b>
+<b class="fc">&nbsp;            throw new PersismException(Message.TableHasNoPrimaryKeys.message(&quot;FETCH&quot;, metaData.getTableInfo(objectClass).name(), objectClass.getName()));</b>
 &nbsp;        }
 &nbsp;
 <b class="fc">&nbsp;        Map&lt;String, PropertyInfo&gt; properties = metaData.getTableColumnsPropertyInfo(objectClass, connection);</b>
 <b class="fc">&nbsp;        Map&lt;String, ColumnInfo&gt; columns = metaData.getColumns(objectClass, connection);</b>
 &nbsp;
 &nbsp;        // reset object fields before refreshing from DB
-<b class="fc">&nbsp;        for (String key : properties.keySet()) {</b>
-<b class="fc">&nbsp;            PropertyInfo propertyInfo = properties.get(key);</b>
-<b class="pc">&nbsp;            if (!propertyInfo.isJoin) {</b>
-<b class="fc">&nbsp;                ColumnInfo columnInfo = columns.get(key);</b>
-<b class="fc">&nbsp;                if (!columnInfo.primary) {</b>
-<b class="fc">&nbsp;                    propertyInfo.setValue(object, defaultForPrimitive(propertyInfo.field.getType()));</b>
+<b class="fc">&nbsp;        Object cleanPojo = metaData.cleanInstances.get(objectClass);</b>
+<b class="pc">&nbsp;        if (cleanPojo != null) {</b>
+<b class="fc">&nbsp;            for (String key : properties.keySet()) {</b>
+<b class="fc">&nbsp;                PropertyInfo propertyInfo = properties.get(key);</b>
+<b class="pc">&nbsp;                if (!propertyInfo.isJoin) {</b>
+<b class="fc">&nbsp;                    ColumnInfo columnInfo = columns.get(key);</b>
+<b class="fc">&nbsp;                    if (!columnInfo.primary) {</b>
+<b class="fc">&nbsp;                        propertyInfo.setValue(object, propertyInfo.getValue(cleanPojo));</b>
+&nbsp;                    }
 &nbsp;                }
 &nbsp;            }
+&nbsp;        } else {
+<b class="nc">&nbsp;            log.warn(&quot;NO clean instance of: &quot; + objectClass.getName(), new Throwable(&quot;&quot;));</b>
 &nbsp;        }
+&nbsp;
 &nbsp;
 <b class="fc">&nbsp;        Parameters params = new Parameters();</b>
 <b class="fc">&nbsp;        List&lt;ColumnInfo&gt; columnInfos = new ArrayList&lt;&gt;(properties.size());</b>
@@ -299,6 +271,9 @@ Current scope:     <a href="../../index.html">all classes</a>
 <b class="fc">&nbsp;                if (handleJoins) {</b>
 <b class="fc">&nbsp;                    helper.handleJoins(object, objectClass, SQL.sql(sql), params, true);</b>
 &nbsp;                }
+<b class="fc">&nbsp;                if (object instanceof InitializeEvent initializeEvent) {</b>
+<b class="fc">&nbsp;                    initializeEvent.onInitialized();</b>
+&nbsp;                }
 <b class="fc">&nbsp;                return true;</b>
 &nbsp;            }
 <b class="fc">&nbsp;            return false;</b>
@@ -307,43 +282,6 @@ Current scope:     <a href="../../index.html">all classes</a>
 <b class="fc">&nbsp;            throw new PersismException(e.getMessage(), e);</b>
 &nbsp;        } finally {
 <b class="fc">&nbsp;            Util.cleanup(result.st, result.rs);</b>
-&nbsp;        }
-&nbsp;    }
-&nbsp;
-&nbsp;    // todo move to sessionhelper - what about other non public methods here...?
-&nbsp;    private Object defaultForPrimitive(Class&lt;?&gt; type) {
-&nbsp;
-<b class="fc">&nbsp;        JavaType jtype = JavaType.getType(type);</b>
-<b class="pc">&nbsp;        assert jtype != null;</b>
-&nbsp;
-<b class="fc">&nbsp;        switch (jtype) {</b>
-&nbsp;            case booleanType -&gt; {
-<b class="fc">&nbsp;                return false;</b>
-&nbsp;            }
-&nbsp;            case byteType -&gt; {
-<b class="fc">&nbsp;                return (byte) 0;</b>
-&nbsp;            }
-&nbsp;            case shortType -&gt; {
-<b class="fc">&nbsp;                return (short) 0;</b>
-&nbsp;            }
-&nbsp;            case integerType -&gt; {
-<b class="fc">&nbsp;                return 0;</b>
-&nbsp;            }
-&nbsp;            case longType -&gt; {
-<b class="fc">&nbsp;                return 0L;</b>
-&nbsp;            }
-&nbsp;            case floatType -&gt; {
-<b class="fc">&nbsp;                return 0F;</b>
-&nbsp;            }
-&nbsp;            case doubleType -&gt; {
-<b class="fc">&nbsp;                return 0D;</b>
-&nbsp;            }
-&nbsp;            case characterType -&gt; {
-<b class="fc">&nbsp;                return &#39;\u0000&#39;;</b>
-&nbsp;            }
-&nbsp;            default -&gt; {
-<b class="fc">&nbsp;                return null;</b>
-&nbsp;            }
 &nbsp;        }
 &nbsp;    }
 &nbsp;
@@ -426,18 +364,26 @@ Current scope:     <a href="../../index.html">all classes</a>
 <b class="fc">&nbsp;            if (result.rs.next()) {</b>
 <b class="fc">&nbsp;                if (isRecord) {</b>
 <b class="fc">&nbsp;                    RecordInfo&lt;T&gt; recordInfo = new RecordInfo&lt;&gt;(objectClass, properties, result.rs);</b>
-<b class="fc">&nbsp;                    var ret = reader.readRecord(recordInfo, result.rs);</b>
-<b class="fc">&nbsp;                    helper.handleJoins(ret, objectClass, sql, parameters, isRoot);</b>
-<b class="fc">&nbsp;                    return ret;</b>
+<b class="fc">&nbsp;                    var record = reader.readRecord(recordInfo, result.rs);</b>
+<b class="fc">&nbsp;                    helper.handleJoins(record, objectClass, sql, parameters, isRoot);</b>
+<b class="fc">&nbsp;                    if (record instanceof InitializeEvent initializeEvent) {</b>
+<b class="fc">&nbsp;                        initializeEvent.onInitialized();</b>
+&nbsp;                    }
+&nbsp;
+<b class="fc">&nbsp;                    return record;</b>
 &nbsp;
 <b class="fc">&nbsp;                } else if (isPOJO) {</b>
 <b class="fc">&nbsp;                    var pojo = objectClass.getDeclaredConstructor().newInstance();</b>
 <b class="fc">&nbsp;                    verifyPropertyInfoForQuery(objectClass, properties, result.rs);</b>
-<b class="fc">&nbsp;                    var ret = reader.readObject(pojo, properties, result.rs);</b>
-<b class="fc">&nbsp;                    helper.handleJoins(ret, objectClass, sql, parameters, isRoot);</b>
-<b class="fc">&nbsp;                    return ret;</b>
+<b class="fc">&nbsp;                    var object = reader.readObject(pojo, properties, result.rs);</b>
+<b class="fc">&nbsp;                    helper.handleJoins(object, objectClass, sql, parameters, isRoot);</b>
+<b class="fc">&nbsp;                    if (object instanceof InitializeEvent initializeEvent) {</b>
+<b class="fc">&nbsp;                        initializeEvent.onInitialized();</b>
+&nbsp;                    }
+<b class="fc">&nbsp;                    return object;</b>
 &nbsp;
 &nbsp;                } else {
+&nbsp;                    // Single column into a value
 <b class="fc">&nbsp;                    ResultSetMetaData rsmd = result.rs.getMetaData();</b>
 &nbsp;                    //noinspection unchecked
 <b class="fc">&nbsp;                    return (T) reader.readColumn(result.rs, 1, rsmd.getColumnType(1), rsmd.getColumnLabel(1), objectClass);</b>
@@ -519,7 +465,7 @@ Current scope:     <a href="../../index.html">all classes</a>
 &nbsp;
 <b class="fc">&nbsp;        List&lt;String&gt; primaryKeys = metaData.getPrimaryKeys(objectClass, connection);</b>
 <b class="fc">&nbsp;        if (primaryKeys.size() == 0) {</b>
-<b class="fc">&nbsp;            throw new PersismException(Message.TableHasNoPrimaryKeys.message(&quot;QUERY&quot;, metaData.getTableInfo(objectClass)));</b>
+<b class="fc">&nbsp;            throw new PersismException(Message.TableHasNoPrimaryKeys.message(&quot;QUERY&quot;, metaData.getTableInfo(objectClass), objectClass.getName()));</b>
 &nbsp;        }
 &nbsp;
 <b class="fc">&nbsp;        primaryKeyValues.areKeys = true;</b>
@@ -604,7 +550,7 @@ Current scope:     <a href="../../index.html">all classes</a>
 &nbsp;            }
 &nbsp;
 <b class="pc">&nbsp;            if (blog.isDebugEnabled()) {</b>
-<b class="fc">&nbsp;                blog.debug(&quot;handleJoins TIME:  &quot; + (System.currentTimeMillis() - now) + &quot; &quot; + objectClass, new Throwable());</b>
+<b class="nc">&nbsp;                blog.debug(&quot;handleJoins TIME:  &quot; + (System.currentTimeMillis() - now) + &quot; &quot; + objectClass, new Throwable());</b>
 &nbsp;            }
 &nbsp;
 &nbsp;        } catch (Exception e) {
@@ -614,6 +560,14 @@ Current scope:     <a href="../../index.html">all classes</a>
 <b class="fc">&nbsp;            Util.cleanup(result.st, result.rs);</b>
 &nbsp;        }
 &nbsp;
+<b class="fc">&nbsp;        if (!list.isEmpty()) {</b>
+<b class="fc">&nbsp;            Object first = list.get(0);</b>
+<b class="fc">&nbsp;            if (first instanceof InitializeEvent) {</b>
+<b class="fc">&nbsp;                for (var obj : list) {</b>
+<b class="fc">&nbsp;                    ((InitializeEvent) obj).onInitialized();</b>
+&nbsp;                }
+&nbsp;            }
+&nbsp;        }
 <b class="fc">&nbsp;        return list;</b>
 &nbsp;    }
 &nbsp;
@@ -682,7 +636,7 @@ Current scope:     <a href="../../index.html">all classes</a>
 &nbsp;
 <b class="fc">&nbsp;        List&lt;String&gt; primaryKeys = metaData.getPrimaryKeys(objectClass, connection);</b>
 <b class="fc">&nbsp;        if (primaryKeys.size() == 0) {</b>
-<b class="fc">&nbsp;            throw new PersismException(Message.TableHasNoPrimaryKeys.message(&quot;UPDATE&quot;, metaData.getTableInfo(objectClass).name()));</b>
+<b class="fc">&nbsp;            throw new PersismException(Message.TableHasNoPrimaryKeys.message(&quot;UPDATE&quot;, metaData.getTableInfo(objectClass).name(), objectClass.getName()));</b>
 &nbsp;        }
 &nbsp;
 <b class="fc">&nbsp;        PreparedStatement st = null;</b>
@@ -708,6 +662,7 @@ Current scope:     <a href="../../index.html">all classes</a>
 <b class="fc">&nbsp;                changedProperties = allProperties;</b>
 &nbsp;            }
 &nbsp;
+<b class="fc">&nbsp;            Map&lt;Integer, Integer&gt; nullTypes = new HashMap&lt;&gt;();</b>
 <b class="fc">&nbsp;            List&lt;Object&gt; params = new ArrayList&lt;&gt;(primaryKeys.size());</b>
 <b class="fc">&nbsp;            List&lt;ColumnInfo&gt; columnInfos = new ArrayList&lt;&gt;(changedProperties.size());</b>
 &nbsp;
@@ -722,23 +677,36 @@ Current scope:     <a href="../../index.html">all classes</a>
 <b class="fc">&nbsp;                    Object value = allProperties.get(column).getValue(object);</b>
 <b class="fc">&nbsp;                    params.add(value);</b>
 <b class="fc">&nbsp;                    columnInfos.add(columnInfo);</b>
+&nbsp;
+<b class="fc">&nbsp;                    if (value == null) {</b>
+<b class="fc">&nbsp;                        nullTypes.put(params.size() - 1, columnInfo.sqlColumnType);</b>
+&nbsp;                    }
 &nbsp;                }
 &nbsp;            }
 &nbsp;
 <b class="fc">&nbsp;            for (String column : primaryKeys) {</b>
-<b class="fc">&nbsp;                params.add(allProperties.get(column).getValue(object));</b>
+<b class="fc">&nbsp;                PropertyInfo propertyInfo = allProperties.get(column);</b>
+<b class="fc">&nbsp;                ColumnInfo columnInfo = columns.get(column);</b>
+<b class="fc">&nbsp;                Object value = propertyInfo.getValue(object);</b>
+<b class="fc">&nbsp;                params.add(value);</b>
 <b class="fc">&nbsp;                columnInfos.add(metaData.getColumns(objectClass, connection).get(column));</b>
+&nbsp;
+<b class="pc">&nbsp;                if (value == null) {</b>
+<b class="nc">&nbsp;                    nullTypes.put(params.size() - 1, columnInfo.sqlColumnType);</b>
+&nbsp;                }
+&nbsp;
 &nbsp;            }
 <b class="pc">&nbsp;            assert params.size() == columnInfos.size();</b>
 <b class="fc">&nbsp;            for (int j = 0; j &lt; params.size(); j++) {</b>
 <b class="fc">&nbsp;                if (params.get(j) != null) {</b>
-<b class="fc">&nbsp;                    params.set(j, converter.convert(params.get(j), columnInfos.get(j).columnType.getJavaType(), columnInfos.get(j).columnName));</b>
+<b class="fc">&nbsp;                    Object value = converter.convert(params.get(j), columnInfos.get(j).columnType.getJavaType(), columnInfos.get(j).columnName);</b>
+<b class="fc">&nbsp;                    params.set(j, value);</b>
 &nbsp;                }
 &nbsp;            }
 <b class="pc">&nbsp;            if (sqllog.isDebugEnabled()) {</b>
 <b class="fc">&nbsp;                sqllog.debug(&quot;%s params: %s&quot;, updateStatement, params);</b>
 &nbsp;            }
-<b class="fc">&nbsp;            helper.setParameters(st, params.toArray());</b>
+<b class="fc">&nbsp;            helper.setParameters(st, params.toArray(), nullTypes);</b>
 <b class="fc">&nbsp;            int ret = st.executeUpdate();</b>
 &nbsp;
 <b class="fc">&nbsp;            if (object instanceof Persistable&lt;?&gt; pojo) {</b>
@@ -810,7 +778,14 @@ Current scope:     <a href="../../index.html">all classes</a>
 <b class="fc">&nbsp;                sqllog.debug(&quot;%s params: %s&quot;, insertStatement, params);</b>
 &nbsp;            }
 &nbsp;
-<b class="fc">&nbsp;            helper.setParameters(st, params.toArray());</b>
+<b class="fc">&nbsp;            Map&lt;Integer, Integer&gt; nullTypes = new HashMap&lt;&gt;();</b>
+<b class="fc">&nbsp;            for (int j = 0; j &lt; params.size(); j++) {</b>
+<b class="fc">&nbsp;                if (params.get(j) == null) {</b>
+<b class="fc">&nbsp;                    nullTypes.put(j, columnInfos.get(j).sqlColumnType);</b>
+&nbsp;                }
+&nbsp;            }
+&nbsp;
+<b class="fc">&nbsp;            helper.setParameters(st, params.toArray(), nullTypes);</b>
 &nbsp;
 <b class="fc">&nbsp;            boolean insertReturnedResults = st.execute();</b>
 &nbsp;            int rowCount;
@@ -831,27 +806,26 @@ Current scope:     <a href="../../index.html">all classes</a>
 <b class="fc">&nbsp;                log.debug(&quot;insert return count after insert: %s&quot;, rowCount);</b>
 &nbsp;                PropertyInfo propertyInfo;
 <b class="fc">&nbsp;                for (String column : generatedKeys) {</b>
-<b class="pc">&nbsp;                    if (rs.next()) {</b>
-<b class="fc">&nbsp;                        propertyInfo = properties.get(column);</b>
-<b class="fc">&nbsp;                        Method setter = propertyInfo.setter;</b>
-&nbsp;                        Object value;
-&nbsp;                        Class&lt;?&gt; valueType;
-<b class="fc">&nbsp;                        if (setter != null) {</b>
-<b class="fc">&nbsp;                            valueType = setter.getParameterTypes()[0];</b>
-&nbsp;                        } else {
-<b class="fc">&nbsp;                            valueType = propertyInfo.field.getType();</b>
-&nbsp;                        }
-<b class="fc">&nbsp;                        value = helper.getTypedValueReturnedFromGeneratedKeys(valueType, rs);</b>
-<b class="fc">&nbsp;                        if (value == null) {</b>
-<b class="fc">&nbsp;                            throw new PersismException(&quot;Could not retrieve value from column &quot; + column + &quot; for table &quot; + metaData.getTableInfo(objectClass));</b>
-&nbsp;                        }
-<b class="fc">&nbsp;                        value = converter.convert(value, valueType, column);</b>
-&nbsp;                        // Set property ONLY FOR NON-RECORDS.
-<b class="fc">&nbsp;                        if (!isRecord(objectClass)) {</b>
-<b class="fc">&nbsp;                            propertyInfo.setValue(object, value);</b>
-&nbsp;                        }
-<b class="fc">&nbsp;                        primaryKeyValues.add(value);</b>
+<b class="fc">&nbsp;                    rs.next();</b>
+<b class="fc">&nbsp;                    propertyInfo = properties.get(column);</b>
+<b class="fc">&nbsp;                    Method setter = propertyInfo.setter;</b>
+&nbsp;                    Object value;
+&nbsp;                    Class&lt;?&gt; valueType;
+<b class="fc">&nbsp;                    if (setter != null) {</b>
+<b class="fc">&nbsp;                        valueType = setter.getParameterTypes()[0];</b>
+&nbsp;                    } else {
+<b class="fc">&nbsp;                        valueType = propertyInfo.field.getType();</b>
 &nbsp;                    }
+<b class="fc">&nbsp;                    value = helper.getTypedValueReturnedFromGeneratedKeys(valueType, rs);</b>
+<b class="fc">&nbsp;                    if (value == null) {</b>
+<b class="fc">&nbsp;                        throw new PersismException(&quot;Could not retrieve value from column &quot; + column + &quot; for table &quot; + metaData.getTableInfo(objectClass));</b>
+&nbsp;                    }
+<b class="fc">&nbsp;                    value = converter.convert(value, valueType, column);</b>
+&nbsp;                    // Set property ONLY FOR NON-RECORDS.
+<b class="fc">&nbsp;                    if (!isRecord(objectClass)) {</b>
+<b class="fc">&nbsp;                        propertyInfo.setValue(object, value);</b>
+&nbsp;                    }
+<b class="fc">&nbsp;                    primaryKeyValues.add(value);</b>
 &nbsp;                }
 &nbsp;            }
 <b class="fc">&nbsp;            Util.cleanup(st, rs);</b>
@@ -878,7 +852,7 @@ Current scope:     <a href="../../index.html">all classes</a>
 <b class="fc">&nbsp;                returnObject = object;</b>
 &nbsp;            }
 &nbsp;
-<b class="fc">&nbsp;            if (object instanceof Persistable&lt;?&gt; pojo) {</b>
+<b class="fc">&nbsp;            if (returnObject instanceof Persistable&lt;?&gt; pojo) {</b>
 &nbsp;                // Save this pojo&#39;s new state to later detect changed properties
 <b class="fc">&nbsp;                pojo.saveReadState();</b>
 &nbsp;            }
@@ -981,8 +955,8 @@ Current scope:     <a href="../../index.html">all classes</a>
 <b class="fc">&nbsp;        helper.checkIfOkForWriteOperation(objectClass, &quot;DELETE&quot;);</b>
 &nbsp;
 <b class="fc">&nbsp;        List&lt;String&gt; primaryKeys = metaData.getPrimaryKeys(objectClass, connection);</b>
-<b class="fc">&nbsp;        if (primaryKeys.size() == 0) {</b>
-<b class="fc">&nbsp;            throw new PersismException(Message.TableHasNoPrimaryKeys.message(&quot;DELETE&quot;, metaData.getTableInfo(objectClass).name()));</b>
+<b class="fc">&nbsp;        if (primaryKeys.isEmpty()) {</b>
+<b class="fc">&nbsp;            throw new PersismException(Message.TableHasNoPrimaryKeys.message(&quot;DELETE&quot;, metaData.getTableInfo(objectClass).name(), objectClass.getName()));</b>
 &nbsp;        }
 &nbsp;
 <b class="fc">&nbsp;        PreparedStatement st = null;</b>
@@ -1002,6 +976,7 @@ Current scope:     <a href="../../index.html">all classes</a>
 <b class="fc">&nbsp;                columnInfos.add(metaData.getColumns(objectClass, connection).get(column));</b>
 &nbsp;            }
 &nbsp;
+&nbsp;            // todo under what circumstance would a param here be null?
 <b class="fc">&nbsp;            for (int j = 0; j &lt; params.size(); j++) {</b>
 <b class="pc">&nbsp;                if (params.get(j) != null) {</b>
 <b class="fc">&nbsp;                    params.set(j, converter.convert(params.get(j), columnInfos.get(j).columnType.getJavaType(), columnInfos.get(j).columnName));</b>
@@ -1012,7 +987,7 @@ Current scope:     <a href="../../index.html">all classes</a>
 <b class="fc">&nbsp;                sqllog.debug(&quot;%s params: %s&quot;, deleteStatement, params);</b>
 &nbsp;            }
 &nbsp;
-<b class="fc">&nbsp;            helper.setParameters(st, params.toArray());</b>
+<b class="fc">&nbsp;            helper.setParameters(st, params.toArray(), Collections.emptyMap());</b>
 <b class="fc">&nbsp;            int rows = st.executeUpdate();</b>
 <b class="fc">&nbsp;            return new Result&lt;&gt;(rows, object);</b>
 &nbsp;
@@ -1056,8 +1031,8 @@ Current scope:     <a href="../../index.html">all classes</a>
 &nbsp;        }
 &nbsp;
 <b class="fc">&nbsp;        List&lt;String&gt; primaryKeys = metaData.getPrimaryKeys(objectClass, connection);</b>
-<b class="fc">&nbsp;        if (primaryKeys.size() == 0) {</b>
-<b class="fc">&nbsp;            throw new PersismException(Message.TableHasNoPrimaryKeys.message(&quot;DELETE&quot;, metaData.getTableInfo(objectClass)));</b>
+<b class="fc">&nbsp;        if (primaryKeys.isEmpty()) {</b>
+<b class="fc">&nbsp;            throw new PersismException(Message.TableHasNoPrimaryKeys.message(&quot;DELETE&quot;, metaData.getTableInfo(objectClass), objectClass.getName()));</b>
 &nbsp;        }
 &nbsp;
 <b class="fc">&nbsp;        primaryKeyValues.areKeys = true;</b>
@@ -1067,7 +1042,7 @@ Current scope:     <a href="../../index.html">all classes</a>
 <b class="fc">&nbsp;            sqllog.debug(&quot;%s params: %s&quot;, deleteStatement, primaryKeyValues);</b>
 &nbsp;        }
 <b class="fc">&nbsp;        try (PreparedStatement st = connection.prepareStatement(deleteStatement)) {</b>
-<b class="fc">&nbsp;            helper.setParameters(st, primaryKeyValues.toArray());</b>
+<b class="fc">&nbsp;            helper.setParameters(st, primaryKeyValues.toArray(), Collections.emptyMap());</b>
 <b class="fc">&nbsp;            return st.executeUpdate();</b>
 &nbsp;        } catch (SQLException e) {
 <b class="nc">&nbsp;            Util.rollback(connection);</b>
@@ -1097,7 +1072,7 @@ Current scope:     <a href="../../index.html">all classes</a>
 &nbsp;        }
 &nbsp;
 <b class="fc">&nbsp;        try (PreparedStatement st = connection.prepareStatement(deleteStatement)) {</b>
-<b class="fc">&nbsp;            helper.setParameters(st, parameters.toArray());</b>
+<b class="fc">&nbsp;            helper.setParameters(st, parameters.toArray(), Collections.emptyMap());</b>
 <b class="fc">&nbsp;            return st.executeUpdate();</b>
 &nbsp;        } catch (SQLException e) {
 <b class="nc">&nbsp;            Util.rollback(connection);</b>
@@ -1142,7 +1117,7 @@ Current scope:     <a href="../../index.html">all classes</a>
 &nbsp;        }
 &nbsp;    }
 &nbsp;
-&nbsp;// do we need these getters? we have them in case we ever need expose these for some feature...
+&nbsp;    // do we need these getters? we have them in case we ever need expose these for some feature...
 &nbsp;    MetaData getMetaData() {
 <b class="fc">&nbsp;        return metaData;</b>
 &nbsp;    }
@@ -1179,7 +1154,7 @@ Current scope:     <a href="../../index.html">all classes</a>
 
 <div class="footer">
     
-    <div style="float:right;">generated on 2026-02-19 07:36</div>
+    <div style="float:right;">generated on 2026-07-02 15:11</div>
 </div>
 </body>
 </html>
