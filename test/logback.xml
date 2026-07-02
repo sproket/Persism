@@ -55,7 +55,7 @@
     </logger>
     <logger name="net.sf.persism.Benchmarks" level="WARN"/>
 
-    <logger name="net" level="ERROR"/>
+<!--    <logger name="net" level="ERROR"/>-->
 
     <!-- ERROR, WARN, INFO, DEBUG, OFF -->
     <logger name="jdbc.sqlonly" level="OFF"/>
