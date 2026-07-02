@@ -1,4 +1,4 @@
-[Current Version 2.3](release-notes.md)
+[Current Version 2.4](release-notes.md)
 
 <div style="float: right">
 <span style="font-weight: bold">By the numbers</span>
@@ -94,6 +94,7 @@ at runtime - SLF4J, LOG4J2, LOG4J or JUL.
 
 [Using Persism with Modules](modules.md)
 
+[Using InitializeEvent interface](initialize-event.md)
 
 
 Supported Databases

@@ -1,7 +1,7 @@
 ## ![](img/logo2.png) Release Notes
 
 ### 2.4
-* Added InitializeEvent interface to provide an onInitialized method when objects are read and initialized (TODO LINK) #39
+* Added [InitializeEvent](initialize-event.md) interface to provide an onInitialized method when objects are read and initialized
 * Fixed issues with some jdbc drivers not properly setting null on BLOB/CLOB types #52
 * Marked Derby connection type deprecated (tests kept)
 * Warn on using limit with stored proc
