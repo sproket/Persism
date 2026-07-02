@@ -9,7 +9,7 @@ enum Message {
     DateFormatException("%s. Column: %s Target Conversion: %s - Type read: %s VALUE: %s"),
     ReadRecordColumnNotFound("readRecord: Could not find column in the SQL query for class: %s. Missing column: %s"),
     ReadRecordCouldNotInstantiate("readRecord: Could not instantiate the constructor for: %s (%s)"),
-    TableHasNoPrimaryKeys("Cannot perform %s - %s has no primary keys"),
+    TableHasNoPrimaryKeys("Cannot perform %s - table %s has no primary keys - class %s"),
     TableHasNoPrimaryKeysForWhere("Could not determine WHERE IN clause for TABLE: %s. No primary keys detected"),
     ClassHasNoGetterForProperty("%s has no getter for property %s"),
     NonAutoIncGeneratedNotSupported("Non-auto inc generated primary keys are not supported. Please assign your primary key value before performing an insert"),
@@ -38,7 +38,7 @@ enum Message {
     // WARNINGS
     UnknownConnectionType("Unknown connection type. Please contact Persism to add support for %s"),
     NoPropertyFoundForColumn("No property found for column: %s class: %s"),
-    ColumnAnnotatedAsAutoIncButNAN("Column %s is annotated as auto-increment but it is not a number type (%s)"),
+    ColumnAnnotatedAsAutoIncButNAN("Column %s is annotated as auto-increment but it is not a number type (%s) - Class: %s"),
     DatabaseMetaDataCouldNotFindPrimaryKeys("DatabaseMetaData could not find primary keys for table %s"),
     DatabaseMetaDataCouldNotFindColumns("DatabaseMetaData could not find columns for table %s! Your database account may not have that permission."),
     NoPrimaryKeyFoundForTable("No primary key found for table %s. Do not use with insert/update/delete/fetch or add a primary key"),
@@ -57,6 +57,7 @@ enum Message {
     UnSupportedTypeInSetParameters("setParameters: %s type not supported yet. We're probably about to fail....."),
     ParametersDoNotUseClobOrBlob("Usually you should not use blob or clob as an SQL parameter type. Blob maps to byteArray, Clob maps to String"),
     PrimaryAnnotationOnViewOrQueryMakesNoSense("Primary annotation on %s:%s is only useful on POJOs for tables. Not for queries or views."),
+    LimitNotSupportedOnStoredProcedures("Limit not supported on stored procedures proc: %s class: %s"),
     ;
 
     private final String message;

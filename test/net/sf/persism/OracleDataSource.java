@@ -51,6 +51,9 @@ public class OracleDataSource {
             poolProps.setProperty("defaultBatchValue", "20");
         }
 
+        // Instructs the driver to ignore Out-Of-Band network handshakes that trigger DNS checks
+        poolProps.setProperty("oracle.net.disableOob", "true");
+
         ConnectionFactory connectionFactory = new DriverManagerConnectionFactory(url, poolProps);
 
         PoolableConnectionFactory poolableConnectionFactory = new PoolableConnectionFactory(connectionFactory, connectionPool, null, "SELECT 1", false, true);

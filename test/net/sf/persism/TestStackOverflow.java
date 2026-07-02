@@ -29,7 +29,7 @@ public class TestStackOverflow extends TestCase {
 
         Class.forName("com.microsoft.sqlserver.jdbc.SQLServerDriver");
 
-        String url = "jdbc:sqlserver://localhost;database=StackOverflow2010;integratedSecurity=true;";
+        String url = "jdbc:sqlserver://localhost;database=StackOverflow2010;integratedSecurity=true;encrypt=false";
         con = DriverManager.getConnection(url);
         session = new Session(con);
     }
@@ -60,9 +60,11 @@ public class TestStackOverflow extends TestCase {
     public void testQueryExtendedUsers() {
 
         long ms = System.currentTimeMillis();
-        // List<ExtendedUser> users = session.query(ExtendedUser.class, where("Id < ?"), params(1000));
-        List<ExtendedUser> users = session.query(ExtendedUser.class, where("Id = ?"), params(36));
-        System.out.println(users.size());
+        List<User> userList = session.query(User.class, sql("select * from users where id = ?").limit(1), params(36));
+        System.out.println(userList);
+
+//        List<ExtendedUser> users = session.query(ExtendedUser.class, where("Id = ?"), params(36));
+//        System.out.println(users.size());
         System.out.println("time: " + (System.currentTimeMillis() - ms));
     }
 

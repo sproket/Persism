@@ -262,7 +262,7 @@ final class MetaData {
                             columnInfo.autoIncrement = true;
                             if (!columnInfo.columnType.isEligibleForAutoinc()) {
                                 // This will probably cause some error or other problem. Notify the user.
-                                log.warn(Message.ColumnAnnotatedAsAutoIncButNAN.message(columnInfo.columnName, columnInfo.columnType));
+                                log.warn(Message.ColumnAnnotatedAsAutoIncButNAN.message(columnInfo.columnName, columnInfo.columnType, objectClass.getName()));
                             }
                         }
 
@@ -287,7 +287,6 @@ final class MetaData {
                 } else {
                     rs = dmd.getPrimaryKeys(null, schemaName, tableName);
                 }
-                int primaryKeysCount = 0;
                 while (rs.next()) {
                     ColumnInfo columnInfo = map.get(rs.getString("COLUMN_NAME"));
                     if (columnInfo != null) {
@@ -297,10 +296,9 @@ final class MetaData {
                             primaryKeysFound = columnInfo.primary;
                         }
                     }
-                    primaryKeysCount++;
                 }
 
-                if (primaryKeysCount == 0 && !primaryKeysFound) {
+                if (!primaryKeysFound) {
                     log.warn(Message.DatabaseMetaDataCouldNotFindPrimaryKeys.message(table));
                 }
             }
@@ -540,7 +538,7 @@ final class MetaData {
         String sql;
         if (object instanceof Persistable<?> pojo) {
             Map<String, PropertyInfo> changes = getChangedProperties(pojo, connection);
-            if (changes.size() == 0) {
+            if (changes.isEmpty()) {
                 throw new NoChangesDetectedForUpdateException();
             }
 
@@ -588,10 +586,6 @@ final class MetaData {
 
         if (object instanceof Persistable<?>) {
             String key = propertyMap.keySet().toString();
-            if (variableUpdateStatements.containsKey(objectClass) && variableUpdateStatements.get(objectClass).containsKey(key)) {
-                return variableUpdateStatements.get(objectClass).get(key);
-            }
-
             variableUpdateStatements.putIfAbsent(objectClass, new HashMap<>());
             variableUpdateStatements.get(objectClass).put(key, updateStatement);
         } else {

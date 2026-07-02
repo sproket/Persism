@@ -679,7 +679,7 @@ public abstract class BaseTest extends TestCase {
         CorporateHoliday holiday = new CorporateHoliday("-99", "blah", LocalDate.now());
         session.insert(holiday);
 
-        messageTester(TableHasNoPrimaryKeys.message("FETCH", table.name()), () -> session.fetch(holiday));
+        messageTester(TableHasNoPrimaryKeys.message("FETCH", table.name(), CorporateHoliday.class.getName()), () -> session.fetch(holiday));
 
         messageTester(TableHasNoPrimaryKeysForWhere.message(table.name()), () -> session.fetch(CorporateHoliday.class, params(1, 2, 3)));
 
@@ -690,9 +690,9 @@ public abstract class BaseTest extends TestCase {
         messageTester("class java.lang.String: QUERY operation not supported for Java types", () -> session.query(String.class, params(1, 2, 3)));
 
         var tableInfo = session.metaData.getTableInfo(TableNoPrimary.class);
-        messageTester("Cannot perform QUERY - " + tableInfo + " has no primary keys", () -> session.query(TableNoPrimary.class, params(1, 2, 3)));
+        messageTester("Cannot perform QUERY - table " + tableInfo + " has no primary keys - class net.sf.persism.dao.TableNoPrimary", () -> session.query(TableNoPrimary.class, params(1, 2, 3)));
 
-        messageTester("Cannot perform DELETE - " + tableInfo + " has no primary keys", () -> session.delete(TableNoPrimary.class, params(1, 2, 3)));
+        messageTester("Cannot perform DELETE - table " + tableInfo + " has no primary keys - class net.sf.persism.dao.TableNoPrimary", () -> session.delete(TableNoPrimary.class, params(1, 2, 3)));
 
         if (connectionType != ConnectionType.Informix) {
             // Informix doesn't allow a manually specified primary on the POJO
@@ -945,7 +945,7 @@ public abstract class BaseTest extends TestCase {
         } catch (PersismException e) {
             shouldFail = true;
             assertEquals("Message s/b eq",
-                    Message.TableHasNoPrimaryKeys.message("UPDATE", "TableNoPrimary").toLowerCase(),
+                    Message.TableHasNoPrimaryKeys.message("UPDATE", "TableNoPrimary", TableNoPrimary.class.getName()).toLowerCase(),
                     e.getMessage().toLowerCase());
         }
         assertTrue(shouldFail);
@@ -956,7 +956,7 @@ public abstract class BaseTest extends TestCase {
         } catch (PersismException e) {
             shouldFail = true;
             assertEquals("Message s/b eq",
-                    Message.TableHasNoPrimaryKeys.message("FETCH", "TableNoPrimary").toLowerCase(),
+                    Message.TableHasNoPrimaryKeys.message("FETCH", "TableNoPrimary", TableNoPrimary.class.getName()).toLowerCase(),
                     e.getMessage().toLowerCase());
         }
         assertTrue(shouldFail);
@@ -967,7 +967,7 @@ public abstract class BaseTest extends TestCase {
         } catch (PersismException e) {
             shouldFail = true;
             assertEquals("Message s/b eq",
-                    Message.TableHasNoPrimaryKeys.message("DELETE", "TableNoPrimary").toLowerCase(),
+                    Message.TableHasNoPrimaryKeys.message("DELETE", "TableNoPrimary", TableNoPrimary.class.getName()).toLowerCase(),
                     e.getMessage().toLowerCase());
         }
         assertTrue(shouldFail);
@@ -1390,6 +1390,12 @@ public abstract class BaseTest extends TestCase {
 
         contact.setNotes(null);
         assertEquals("expect 1", 1, session.update(contact).rows());
+
+        contact.setType("ZZ");
+        session.update(contact);
+
+        contact.setType("AA");
+        session.update(contact);
 
         Contact contact2 = new Contact();
         contact2.setIdentity(identity);

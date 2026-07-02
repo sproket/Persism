@@ -15,6 +15,9 @@ import org.junit.Test;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.ParameterizedType;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.Statement;
 import java.util.*;
 import java.util.function.BiFunction;
 
@@ -30,6 +33,28 @@ public class TestUtil extends TestCase {
         super.tearDown();
     }
 
+    public void testRawConnectionAndTableSpeed() throws Exception {
+        long startTime = System.currentTimeMillis();
+
+        // 1. Test connection handshake speed over your network
+        String url = "jdbc:oracle:thin:@192.168.1.108:1521/FREEPDB1";
+        try (Connection conn = DriverManager.getConnection(url, "system", "pinf");
+             Statement stmt = conn.createStatement()) {
+
+            long connectedTime = System.currentTimeMillis();
+            System.out.println("Network Connection established in: " + (connectedTime - startTime) + " ms");
+
+            // 2. Test table creation speed with your optimizations applied
+            stmt.execute("CREATE TABLE junit_speed_test (id NUMBER PRIMARY KEY)");
+            long tableTime = System.currentTimeMillis();
+            System.out.println("Table created in: " + (tableTime - connectedTime) + " ms");
+
+            // Cleanup
+            stmt.execute("DROP TABLE junit_speed_test");
+
+            // assertTrue((tableTime - connectedTime) < 1000, "Database execution is too slow!");
+        }
+    }
 
     public void testTypeResolves() {
         List<?> stringList = new ArrayList<String>() {

@@ -45,7 +45,7 @@ public final class ExtendedPost {
     @Join(to = PostType.class, onProperties = "postTypeId", toProperties = "id")
     private PostType postType;
 
-    // @NotColumn
+    //@NotColumn
     @Join(to = Post.class, onProperties = "parentId", toProperties = "id")
     private Post parentPost;
 

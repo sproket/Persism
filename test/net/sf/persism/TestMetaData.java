@@ -12,6 +12,8 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.sql.Connection;
 import java.sql.DriverManager;
+import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.*;
 
 import static java.lang.System.out;
@@ -19,7 +21,10 @@ import static java.lang.System.out;
 @Category(LocalDB.class)
 public final class TestMetaData extends TestCase {
 
-    private static final Log log = Log.getLogger(TestMetaData.class, LogMode.LOG4J);
+    private static final Log log = Log.getLogger(TestMetaData.class);
+
+    // test old log4j code coverage - log4j logger is not properly configured
+    private static final Log log4j = Log.getLogger("TestMetaData-log4j", LogMode.LOG4J);
 
     Connection con;
     Session session;
@@ -34,11 +39,26 @@ public final class TestMetaData extends TestCase {
 
         String home = UtilsForTests.createHomeFolder("pinfderby");
         String url = UtilsForTests.replace(props.getProperty("database.url"), "{$home}", home);
+
+        assertSame("log mode", LogMode.SLF4J, log.getLogMode());
+        assertSame("log mode", LogMode.LOG4J, log4j.getLogMode());
+
+        log.info("log mode?? " + log.getLogMode());
+        log.info("log class? " + log.getLogger().getClass());
+
         log.info(url);
+        log4j.info(url);
 
         con = DriverManager.getConnection(url);
 
         session = new Session(con);
+
+        log4j.debug("1");
+        log4j.info("1");
+        log4j.warn("1");
+        log4j.warn("1", new Throwable("n/a"));
+        log4j.error("1");
+        log4j.error("1", new Throwable("n/a"));
     }
 
     @Override
@@ -94,8 +114,8 @@ public final class TestMetaData extends TestCase {
         assertTrue(failed);
     }
 
-    public void testComments() {
-        String sql = """
+    public void testComments() throws SQLException {
+        String q1 = """
                 -- works?
                 /* how about this? */
                 /*
@@ -107,14 +127,39 @@ public final class TestMetaData extends TestCase {
                 SELECT * FROM RecordTest2 -- what about this?
                 """;
 
-        SQL sql1 = new SQL(sql);
+        String q2 = """
+                /* how about this? */
+                /*
+                HOW 
+                ABOUT 
+                THIS?
+                */
+                   -- hello?
+                SELECT * FROM RecordTest2 -- what about this?
+                """;
 
-        log.info("before: [" + sql + "]");
-        log.info("after: " + sql1);
+
+        SQL sql = new SQL(q1);
+
+        log.info("before: [" + q1 + "]");
+        log.info("after: " + sql);
 
         // the comment after is fine.
-        assertEquals("s/b 'SELECT * FROM RecordTest2 -- what about this?'", "SELECT * FROM RecordTest2 -- what about this?", sql1.toString());
+        assertEquals("s/b 'SELECT * FROM RecordTest2 -- what about this?'", "SELECT * FROM RecordTest2 -- what about this?", sql.toString());
         log.info("-------");
+
+        // should be executable
+        try (Statement st = con.createStatement()) {
+            st.execute(sql.sql);
+        }
+
+        sql = new SQL(q2);
+        log.info("before: [" + q2 + "]");
+        log.info("after: " + sql);
+        assertEquals("s/b 'SELECT * FROM RecordTest2 -- what about this?'", "SELECT * FROM RecordTest2 -- what about this?", sql.toString());
+        try (Statement st = con.createStatement()) {
+            st.execute(sql.sql);
+        }
     }
 
     public void testDeterminePropertyInfo() {

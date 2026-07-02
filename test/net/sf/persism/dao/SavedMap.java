@@ -1,5 +1,6 @@
 package net.sf.persism.dao;
 
+import net.sf.persism.annotations.Column;
 import net.sf.persism.annotations.NotColumn;
 
 import javax.imageio.ImageIO;
@@ -9,6 +10,7 @@ import java.io.IOException;
 
 public final class SavedMap {
 
+    @Column(autoIncrement = true)
     private Integer id;
     private int gameId;
     private String mapName;

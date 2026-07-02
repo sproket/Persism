@@ -1055,7 +1055,7 @@ public class TestMSSQL extends BaseTest {
         session.fetch(order);
 
         List<CustomerOrder> list;
-        list = session.query(CustomerOrder.class, proc("[spCustomerOrders](?)"), params("123"));
+        list = session.query(CustomerOrder.class, proc("[spCustomerOrders](?)").limit(1), params("123"));
         log.info(list);
         assertTrue(list.size() > 0);
 

@@ -48,7 +48,7 @@
 
     <logger name="org" level="ERROR"/>
 
-    <logger name="net.sf.persism" level="INFO"/>
+    <logger name="net.sf.persism" level="DEBUG"/>
     <!-- SET TO DEBUG to log the SQL statements Persism produces -->
     <logger name="net.sf.persism.SQL" level="DEBUG">
         <appender-ref ref="SQL"/>

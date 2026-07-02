@@ -99,6 +99,15 @@ final class Log {
         return log;
     }
 
+    static Log getLogger(String logName, LogMode logMode) {
+        if (loggers.containsKey(logName)) {
+            return loggers.get(logName);
+        }
+        Log log = new Log(logName, logMode);
+        loggers.put(logName, log);
+        return log;
+    }
+
     public static Log getLogger(String logName) {
         if (loggers.containsKey(logName)) {
             return loggers.get(logName);
@@ -155,5 +164,9 @@ final class Log {
 
     public String getLogName() {
         return logger.getLogName();
+    }
+
+    public AbstractLogger getLogger() {
+        return logger;
     }
 }

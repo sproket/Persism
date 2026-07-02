@@ -50,6 +50,13 @@ public final class TestWideWorldImporters extends TestCase {
 
             session = new Session(con);
         }
+
+        log.debug("1");
+        log.info("1");
+        log.warn("1");
+        log.warn("1", new Throwable("n/a"));
+        log.error("1");
+        log.error("1", new Throwable("n/a"));
     }
 
     public void testLogger() {

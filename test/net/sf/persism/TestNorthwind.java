@@ -296,6 +296,21 @@ public class TestNorthwind extends TestCase {
                 orderx.setShipVia(shipper.getShipperId());
                 session.insert(orderx);
 
+                // test OrderBad which we marked the primary key property as @NotColumn
+                OrderBad orderb = new OrderBad();
+                orderb.setCustomerId("Moo");
+                orderb.setOrderId(1);
+                orderb.setShipName("place");
+                orderb.setEmployeeId(employee.getEmployeeId());
+                orderb.setShipVia(shipper.getShipperId());
+                try {
+                    session.insert(orderb);
+                } catch (PersismException e) {
+                    log.warn(e.getMessage(), e);
+                }
+
+
+
 // remove orders and details for 'MOO'
                 List<Order> orders = session.query(Order.class, sql("select * from orders where customerID=?"), params("MOO"));
                 assertTrue(orders.size() > 0);

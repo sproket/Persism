@@ -131,7 +131,7 @@ public final class Session implements AutoCloseable {
 
         List<String> primaryKeys = metaData.getPrimaryKeys(objectClass, connection);
         if (primaryKeys.isEmpty()) {
-            throw new PersismException(Message.TableHasNoPrimaryKeys.message("FETCH", metaData.getTableInfo(objectClass).name()));
+            throw new PersismException(Message.TableHasNoPrimaryKeys.message("FETCH", metaData.getTableInfo(objectClass).name(), objectClass.getName()));
         }
 
         Map<String, PropertyInfo> properties = metaData.getTableColumnsPropertyInfo(objectClass, connection);
@@ -376,7 +376,7 @@ public final class Session implements AutoCloseable {
 
         List<String> primaryKeys = metaData.getPrimaryKeys(objectClass, connection);
         if (primaryKeys.size() == 0) {
-            throw new PersismException(Message.TableHasNoPrimaryKeys.message("QUERY", metaData.getTableInfo(objectClass)));
+            throw new PersismException(Message.TableHasNoPrimaryKeys.message("QUERY", metaData.getTableInfo(objectClass), objectClass.getName()));
         }
 
         primaryKeyValues.areKeys = true;
@@ -547,7 +547,7 @@ public final class Session implements AutoCloseable {
 
         List<String> primaryKeys = metaData.getPrimaryKeys(objectClass, connection);
         if (primaryKeys.size() == 0) {
-            throw new PersismException(Message.TableHasNoPrimaryKeys.message("UPDATE", metaData.getTableInfo(objectClass).name()));
+            throw new PersismException(Message.TableHasNoPrimaryKeys.message("UPDATE", metaData.getTableInfo(objectClass).name(), objectClass.getName()));
         }
 
         PreparedStatement st = null;
@@ -717,27 +717,26 @@ public final class Session implements AutoCloseable {
                 log.debug("insert return count after insert: %s", rowCount);
                 PropertyInfo propertyInfo;
                 for (String column : generatedKeys) {
-                    if (rs.next()) {
-                        propertyInfo = properties.get(column);
-                        Method setter = propertyInfo.setter;
-                        Object value;
-                        Class<?> valueType;
-                        if (setter != null) {
-                            valueType = setter.getParameterTypes()[0];
-                        } else {
-                            valueType = propertyInfo.field.getType();
-                        }
-                        value = helper.getTypedValueReturnedFromGeneratedKeys(valueType, rs);
-                        if (value == null) {
-                            throw new PersismException("Could not retrieve value from column " + column + " for table " + metaData.getTableInfo(objectClass));
-                        }
-                        value = converter.convert(value, valueType, column);
-                        // Set property ONLY FOR NON-RECORDS.
-                        if (!isRecord(objectClass)) {
-                            propertyInfo.setValue(object, value);
-                        }
-                        primaryKeyValues.add(value);
+                    rs.next();
+                    propertyInfo = properties.get(column);
+                    Method setter = propertyInfo.setter;
+                    Object value;
+                    Class<?> valueType;
+                    if (setter != null) {
+                        valueType = setter.getParameterTypes()[0];
+                    } else {
+                        valueType = propertyInfo.field.getType();
                     }
+                    value = helper.getTypedValueReturnedFromGeneratedKeys(valueType, rs);
+                    if (value == null) {
+                        throw new PersismException("Could not retrieve value from column " + column + " for table " + metaData.getTableInfo(objectClass));
+                    }
+                    value = converter.convert(value, valueType, column);
+                    // Set property ONLY FOR NON-RECORDS.
+                    if (!isRecord(objectClass)) {
+                        propertyInfo.setValue(object, value);
+                    }
+                    primaryKeyValues.add(value);
                 }
             }
             Util.cleanup(st, rs);
@@ -868,7 +867,7 @@ public final class Session implements AutoCloseable {
 
         List<String> primaryKeys = metaData.getPrimaryKeys(objectClass, connection);
         if (primaryKeys.isEmpty()) {
-            throw new PersismException(Message.TableHasNoPrimaryKeys.message("DELETE", metaData.getTableInfo(objectClass).name()));
+            throw new PersismException(Message.TableHasNoPrimaryKeys.message("DELETE", metaData.getTableInfo(objectClass).name(), objectClass.getName()));
         }
 
         PreparedStatement st = null;
@@ -944,7 +943,7 @@ public final class Session implements AutoCloseable {
 
         List<String> primaryKeys = metaData.getPrimaryKeys(objectClass, connection);
         if (primaryKeys.isEmpty()) {
-            throw new PersismException(Message.TableHasNoPrimaryKeys.message("DELETE", metaData.getTableInfo(objectClass)));
+            throw new PersismException(Message.TableHasNoPrimaryKeys.message("DELETE", metaData.getTableInfo(objectClass), objectClass.getName()));
         }
 
         primaryKeyValues.areKeys = true;

@@ -8,13 +8,17 @@ package net.sf.persism;
  */
 
 import net.sf.persism.categories.ExternalDB;
-import net.sf.persism.dao.*;
+import net.sf.persism.dao.DAOFactory;
+import net.sf.persism.dao.OracleBit;
+import net.sf.persism.dao.OracleOrder;
+import net.sf.persism.dao.Order;
 import org.junit.experimental.categories.Category;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.sql.*;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Properties;
@@ -27,13 +31,16 @@ public final class TestOracle extends BaseTest {
 
     private static final Log log = Log.getLogger(TestOracle.class);
 
+    private static final List<String> tables = new ArrayList<>();
+    private static final List<String> views = new ArrayList<>();
+
     @Override
     protected void setUp() throws Exception {
         long now = System.currentTimeMillis();
 
         connectionType = ConnectionType.Oracle;
         super.setUp();
-        System.out.println("super setup " +  (System.currentTimeMillis() - now));
+        System.out.println("super setup " + (System.currentTimeMillis() - now));
 
         Properties props = new Properties();
         props.load(getClass().getResourceAsStream("/oracle.properties"));
@@ -43,11 +50,11 @@ public final class TestOracle extends BaseTest {
         Class.forName(driver);
         con = OracleDataSource.getInstance().getConnection();
         log.info("DRIVER: " + con.getMetaData().getDatabaseProductName() + " | " + con.getMetaData().getDatabaseProductVersion());
-        System.out.println("get connection " +  (System.currentTimeMillis() - now));
+        System.out.println("get connection " + (System.currentTimeMillis() - now));
 
-        log.warn("USER: " +  con.getMetaData().getUserName());
+        log.warn("USER: " + con.getMetaData().getUserName());
         createTables();
-        System.out.println("create tables " +  (System.currentTimeMillis() - now));
+        System.out.println("create tables " + (System.currentTimeMillis() - now));
 
         session = new Session(con);
 
@@ -105,7 +112,7 @@ grant create trigger, create sequence to pinf;
                 "\"GARBAGE\" CHAR(1), " + // BIT TEST
                 "\"BIGGIE\" NUMBER(38), " + // BIT TEST
                 " CONSTRAINT \"ORACLEBIT_PK\" PRIMARY KEY (\"ID\") ENABLE" +
-                "   ) ", con);
+                "   ) NOLOGGING", con);
 
 
         // BIT TYPE
@@ -128,9 +135,10 @@ grant create trigger, create sequence to pinf;
                 "\"BIT1\" CHAR(1), " + // BIT TEST
                 "\"BIT2\" NUMBER(3), " + // BIT TEST
                 " CONSTRAINT \"ORDERS_PK\" PRIMARY KEY (\"ID\") ENABLE" +
-                "   ) ", con);
+                "   ) NOLOGGING", con);
 
         if (isViewInDatabase("CUSTOMERINVOICE", con)) {
+            log.warn("DROP VIEW CUSTOMERINVOICE ");
             executeCommand("DROP VIEW CUSTOMERINVOICE", con);
         }
 
@@ -158,7 +166,7 @@ grant create trigger, create sequence to pinf;
                 " Date_Of_Last_Order DATE, " +
                 " TestLocalDate DATE, " +
                 " TestLocalDateTime TIMESTAMP " +
-                ") ", con);
+                ") NOLOGGING", con);
 
         if (isTableInDatabase("INVOICES", con)) {
             executeCommand("DROP TABLE \"INVOICES\"", con);
@@ -175,7 +183,7 @@ grant create trigger, create sequence to pinf;
                 " Quantity NUMERIC(10) NOT NULL, " +
                 " Discount NUMERIC(10,3) NOT NULL, " +
                 " CONSTRAINT \"Invoices_PK\" PRIMARY KEY (\"INVOICE_ID\") ENABLE" +
-                "   ) ";
+                "   ) NOLOGGING";
         executeCommand(sql, con);
 
         sql = "CREATE VIEW \"CUSTOMERINVOICE\" AS\n" +
@@ -188,7 +196,7 @@ grant create trigger, create sequence to pinf;
             executeCommand("DROP TABLE TESTTIMESTAMP", con);
         }
 
-        executeCommand("CREATE TABLE TESTTIMESTAMP ( NAME VARCHAR(10), TS TIMESTAMP DEFAULT CURRENT_TIMESTAMP ) ", con);
+        executeCommand("CREATE TABLE TESTTIMESTAMP ( NAME VARCHAR(10), TS TIMESTAMP DEFAULT CURRENT_TIMESTAMP ) NOLOGGING", con);
 
         if (isTableInDatabase("CONTACTS", con)) {
             executeCommand("DROP TABLE CONTACTS", con);
@@ -221,7 +229,7 @@ grant create trigger, create sequence to pinf;
                 "   TestInstant2 DATE NULL, " +
                 "   WhatMiteIsIt TIMESTAMP NULL, " +
                 "   WhatTimeIsIt TIMESTAMP NULL " +
-                " ) ";
+                " ) NOLOGGING";
         executeCommand(sql, con);
 
         // ORACLE DOESNT have TIME so we use TIMESTAMP FOR IT
@@ -234,7 +242,7 @@ grant create trigger, create sequence to pinf;
                 " Description VARCHAR(100), " +
                 " DateOnly DATE, " +
                 " TimeOnly TIMESTAMP," +
-                " DateAndTime TIMESTAMP) ";
+                " DateAndTime TIMESTAMP) NOLOGGING";
 
         executeCommand(sql, con);
 
@@ -248,7 +256,7 @@ grant create trigger, create sequence to pinf;
                 " DateOnly DATE, " +
                 " TimeOnly TIMESTAMP," +
                 " UtilDateAndTime TIMESTAMP," +
-                " DateAndTime TIMESTAMP) ";
+                " DateAndTime TIMESTAMP) NOLOGGING";
 
         executeCommand(sql, con);
 
@@ -261,7 +269,7 @@ grant create trigger, create sequence to pinf;
                 "NAME VARCHAR(20), " +
                 "QTY INT, " +
                 "PRICE REAL " +
-                ") ";
+                ") NOLOGGING";
         executeCommand(sql, con);
 
         if (UtilsForTests.isTableInDatabase("RecordTest2", con)) {
@@ -274,7 +282,7 @@ grant create trigger, create sequence to pinf;
                 "PRICE NUMERIC(10,3), " +
                 "CREATED_ON TIMESTAMP DEFAULT CURRENT_TIMESTAMP, " +
                 "CONSTRAINT \"RecordTest2_ID\" PRIMARY KEY (\"ID\") ENABLE" +
-                ") ";
+                ") NOLOGGING";
         executeCommand(sql, con);
 
         if (isTableInDatabase("InvoiceLineItems", con)) {
@@ -287,7 +295,7 @@ grant create trigger, create sequence to pinf;
                     Product_ID int,
                     Quantity int,
                     CONSTRAINT "InvoiceLineItems_PK" PRIMARY KEY ("ID") ENABLE                    
-                    )
+                    ) NOLOGGING
                 """;
         executeCommand(sql, con);
 
@@ -302,7 +310,7 @@ grant create trigger, create sequence to pinf;
                     BadDate VARCHAR(30),
                     BadTimeStamp VARCHAR(30),
                     COST NUMERIC(10,3)
-                    )
+                    ) NOLOGGING
                 """;
         executeCommand(sql, con);
 
@@ -320,7 +328,7 @@ grant create trigger, create sequence to pinf;
                 " Copper REAL NULL, " +
                 " Data CLOB NULL, " +
                 " WhatTimeIsIt TIMESTAMP NULL, " +
-                " SomethingBig BLOB NULL) ", con);
+                " SomethingBig BLOB NULL) NOLOGGING", con);
 
         if (isTableInDatabase("Postman", con)) {
             executeCommand("DROP TABLE Postman", con);
@@ -333,7 +341,7 @@ grant create trigger, create sequence to pinf;
                     "User" VARCHAR(50),
                     Password VARCHAR(50),
                     missingGetter NUMERIC(10,3)
-                    )
+                    ) NOLOGGING
                 """;
         executeCommand(sql, con);
 
@@ -346,7 +354,7 @@ grant create trigger, create sequence to pinf;
                     ID varchar(10),
                     NAME varchar(40),
                     "DATE" date
-                    )
+                    ) NOLOGGING
                 """;
         executeCommand(sql, con);
 
@@ -354,7 +362,7 @@ grant create trigger, create sequence to pinf;
             executeCommand("DROP TABLE TABLENOPRIMARY", con);
         }
 
-        executeCommand("CREATE TABLE TABLENOPRIMARY (  ID INT,  Name VARCHAR(30),  Field4 VARCHAR(30),  Field5 DATE,  Field6 INT,  Field7 INT,  Field8 INT )", con);
+        executeCommand("CREATE TABLE TABLENOPRIMARY (  ID INT,  Name VARCHAR(30),  Field4 VARCHAR(30),  Field5 DATE,  Field6 INT,  Field7 INT,  Field8 INT ) NOLOGGING", con);
 
         if (isTableInDatabase("SavedMaps", con)) {
             executeCommand("DROP TABLE SavedMaps", con);
@@ -369,7 +377,7 @@ grant create trigger, create sequence to pinf;
                  ImageData BLOB,
                  LongText CLOB,
                  CONSTRAINT "SavedNaos_PK" PRIMARY KEY ("ID") ENABLE
-                 )
+                 ) NOLOGGING
                 """;
         executeCommand(sql, con);
     }
@@ -461,7 +469,7 @@ grant create trigger, create sequence to pinf;
             ResultSetMetaData rsmd = rs.getMetaData();
 
             while (rs.next()) {
-                log.info("testTimeStamp: TYPE: " + rsmd.getColumnType(2) + " " + JavaType.convert(rsmd.getColumnType(2),"TS")); // second column
+                log.info("testTimeStamp: TYPE: " + rsmd.getColumnType(2) + " " + JavaType.convert(rsmd.getColumnType(2), "TS")); // second column
                 Date dt = rs.getDate("TS"); // loses time component
                 Object obj = rs.getObject("TS"); // returns fucken oracle.sql.TIMESTAMP class
                 Timestamp ts = rs.getTimestamp("TS");
@@ -659,4 +667,41 @@ grant create trigger, create sequence to pinf;
         // TODO SUPER SLOW ON NEW ORACLE FWR
         super.testGetDbMetaData();
     }
+
+
+    private boolean isTableInDatabase(String tableName, Connection con) throws SQLException {
+        long now = System.currentTimeMillis();
+
+        if (tables.isEmpty()) {
+            DatabaseMetaData dma = con.getMetaData();
+            try (ResultSet rs = dma.getTables(null, null, null, tableType)) {
+                while (rs.next()) {
+                    tables.add(rs.getString("TABLE_NAME"));
+                }
+            }
+
+        }
+
+        boolean result = tables.stream().anyMatch(s ->  s.equalsIgnoreCase(tableName));
+        log.warn("time to find TABLE " + tableName + " " + (System.currentTimeMillis() - now));
+        return result;
+    }
+
+   private boolean isViewInDatabase(String viewName, Connection con) throws SQLException {
+        long now = System.currentTimeMillis();
+
+        if (views.isEmpty()) {
+            DatabaseMetaData dma = con.getMetaData();
+            try (ResultSet rs = dma.getTables(null, null, null, viewType)) {
+                while (rs.next()) {
+                    views.add(rs.getString("TABLE_NAME"));
+                }
+            }
+        }
+
+        boolean result = views.stream().anyMatch(s ->  s.equalsIgnoreCase(viewName));
+        log.warn("time to find VIEW " + viewName + " " + (System.currentTimeMillis() - now));
+        return result;
+    }
+
 }

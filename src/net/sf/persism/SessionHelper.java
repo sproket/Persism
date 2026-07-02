@@ -64,8 +64,12 @@ final class SessionHelper {
         }
 
         if (sql.limit > 0) {
-            sqlQuery = addLimitToSQL(sqlQuery, sql.limit, session.metaData.getConnectionType());
-            sql.processedSQL = sqlQuery;
+            if (sql.type == SQL.SQLType.StoredProc) {
+                log.warnNoDuplicates(Message.LimitNotSupportedOnStoredProcedures.message(sql.sql, objectClass.getName()));
+            } else {
+                sqlQuery = addLimitToSQL(sqlQuery, sql.limit, session.metaData.getConnectionType());
+                sql.processedSQL = sqlQuery;
+            }
         }
         executeSelect(result, sqlQuery, parameters.toArray());
         return result;
@@ -486,12 +490,12 @@ final class SessionHelper {
             } else {
                 // value is null
 
-                if (nullTypes.containsKey(n-1)) { // params are 1 based
+                if (nullTypes.containsKey(n - 1)) { // params are 1 based
                     var ct = session.metaData.getConnectionType();
                     if (ct == ConnectionType.PostgreSQL) {
                         st.setObject(n, null);
                     } else {
-                        int sqlType = nullTypes.get(n-1);
+                        int sqlType = nullTypes.get(n - 1);
                         st.setNull(n, sqlType);
                     }
                 } else {

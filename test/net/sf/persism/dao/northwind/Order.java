@@ -1,5 +1,7 @@
 package net.sf.persism.dao.northwind;
 
+import net.sf.persism.annotations.NotColumn;
+
 import java.math.BigDecimal;
 import java.util.Date;
 
@@ -10,24 +12,8 @@ import java.util.Date;
  * @since 5/24/12 4:39 PM
  */
 public class Order {
-    /*
-	[OrderID] [int] IDENTITY(1,1) NOT NULL,
-	[CustomerID] [nchar](5) NULL,
-	[EmployeeID] [int] NULL,
-	[OrderDate] [datetime] NULL,
-	[RequiredDate] [datetime] NULL,
-	[ShippedDate] [datetime] NULL,
-	[ShipVia] [int] NULL,
-	[Freight] [money] NULL,
-	[ShipName] [nvarchar](40) NULL,
-	[ShipAddress] [nvarchar](60) NULL,
-	[ShipCity] [nvarchar](15) NULL,
-	[ShipRegion] [nvarchar](15) NULL,
-	[ShipPostalCode] [nvarchar](10) NULL,
-	[ShipCountry] [nvarchar](15) NULL,
-     */
-
     private int orderId;
+
     private String customerId;
     private int employeeId;
     private Date orderDate;

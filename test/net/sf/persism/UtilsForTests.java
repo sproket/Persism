@@ -52,10 +52,12 @@ public class UtilsForTests {
         return lsNewStr.toString();
     }
 
-    private static final String[] tableType = {"TABLE"};
-    private static final String[] viewType = {"VIEW"};
+    static final String[] tableType = {"TABLE"};
+    static final String[] viewType = {"VIEW"};
 
     public static boolean isTableInDatabase(String tableName, Connection con) throws SQLException {
+        long now = System.currentTimeMillis();
+
         boolean result = false;
         DatabaseMetaData dma = con.getMetaData();
         try (ResultSet rs = dma.getTables(null, null, null, tableType)) {
@@ -66,6 +68,7 @@ public class UtilsForTests {
                 }
             }
         }
+        log.warn("time to find " + tableName + " " + (System.currentTimeMillis() - now));
         return result;
     }
 

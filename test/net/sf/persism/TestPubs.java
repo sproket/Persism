@@ -6,6 +6,7 @@ import net.sf.persism.dao.pubs.Author;
 import net.sf.persism.dao.pubs.JobType;
 import net.sf.persism.dao.pubs.PublisherInfo;
 import net.sf.persism.dao.pubs.PublisherTitle;
+import net.sf.persism.logging.LogMode;
 import org.junit.*;
 import org.junit.experimental.categories.Category;
 
@@ -21,7 +22,7 @@ import static net.sf.persism.SQL.where;
 @Category(ExternalDB.class)
 public class TestPubs extends TestCase {
 
-    private static final Log log = Log.getLogger(TestPubs.class);
+    private static final Log log = Log.getLogger(TestPubs.class, LogMode.LOG4J2);
 
     Connection con;
     static Session session;
@@ -41,6 +42,12 @@ public class TestPubs extends TestCase {
 
             session = new Session(con);
         }
+        log.debug("1");
+        log.info("1");
+        log.warn("1");
+        log.warn("1", new Throwable("n/a"));
+        log.error("1");
+        log.error("1", new Throwable("n/a"));
     }
 
     public void tearDown() throws Exception {
