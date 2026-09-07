@@ -391,7 +391,7 @@
 
 
         <dependency>
-            <!-- needs to use the same as ucanaccess otherwise collides -->
+            <!-- needs to match the hsqldb version used internally by ucanaccess (dep.hsqldb.version in its pom), otherwise collides -->
             <groupId>org.hsqldb</groupId>
             <artifactId>hsqldb</artifactId>
             <version>2.7.4</version>
@@ -501,11 +501,12 @@
             <scope>test</scope>
         </dependency>
 
+        <!-- Fork of the unmaintained net.sf.ucanaccess, see https://github.com/spannm/ucanaccess -->
         <!-- Source: https://mvnrepository.com/artifact/io.github.spannm/ucanaccess -->
         <dependency>
             <groupId>io.github.spannm</groupId>
             <artifactId>ucanaccess</artifactId>
-            <version>5.1.5</version>
+            <version>5.1.7</version>
             <scope>test</scope>
         </dependency>
 
