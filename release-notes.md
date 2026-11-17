@@ -1,5 +1,8 @@
 ## Release Notes
 
+### 3.0
+* Updates for Valhalla Java 28 
+
 ### 2.4.1
 * Tests for UCanAccess update to 5.1.7
 

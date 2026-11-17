@@ -1,4 +1,4 @@
-![](logo1.png) [Release notes 2.4.1](release-notes.md) -- [Getting Started Guide](https://sproket.github.io/Persism/manual2.html)
+![](logo1.png) [Release notes 3.0](release-notes.md) -- [Getting Started Guide](https://sproket.github.io/Persism/manual2.html)
 
 [Table joins are now supported!](https://sproket.github.io/Persism/join.html)
 
@@ -6,6 +6,8 @@
 
 Persism is a light weight, auto discovery, autoconfiguration, and convention
 over configuration ORM (Object Relational Mapping) library for Java 17 or later.
+
+For Java 17 or later see the 2.x branch https://github.com/sproket/Persism/tree/persism2 
 
 For Java 8 or later see the 1.x branch https://github.com/sproket/Persism/tree/persism1
 
