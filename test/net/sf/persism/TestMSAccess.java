@@ -56,7 +56,6 @@ public class TestMSAccess extends TestCase {
         String url = String.format(props.getProperty("database.url"), home + "/Contacts.accdb");
         log.info(url);
 
-        // TODO probably this 6.0 version is never going to happen. Maybe Dump Access Support...
         // https://sourceforge.net/p/ucanaccess/discussion/general/thread/6ebf4eed22/
         // https://sourceforge.net/p/ucanaccess/discussion/general/thread/52ae8bb570/?limit=25#72b7/2875/cb65
         con = DriverManager.getConnection(url);

@@ -1,5 +1,21 @@
 ## Release Notes
 
+### 2.4.1
+* Tests for UCanAccess update to 5.1.7
+
+### 2.4
+* Added InitializeEvent interface to provide an onInitialized method when objects are read and initialized
+* Fixed issues with some jdbc drivers not properly setting null on BLOB/CLOB types #52
+* Marked Derby connection type deprecated (tests kept)
+* Warn on using limit with stored proc
+* Clarified warning messages
+* Baseline Oracle ojdbc8 21.19.0.0
+* Baseline Derby 10.16.1.1 (latest for Java 17)
+* Baseline hsqldb 2.7.4
+* Baseline ucanaccess 5.1.5
+* Baseline mssql 13.2.1.jre11
+* Baseline postgresql 42.7.7
+
 ### 2.3.0 
 * Added support for limit 
 * Added null checks for multi-column joins
