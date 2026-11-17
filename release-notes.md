@@ -1,5 +1,8 @@
 ## ![](img/logo2.png) Release Notes
 
+### 2.4.1
+* Tests for UCanAccess update to 5.1.7
+
 ### 2.4
 * Added [InitializeEvent](initialize-event.md) interface to provide an onInitialized method when objects are read and initialized
 * Fixed issues with some jdbc drivers not properly setting null on BLOB/CLOB types #52
