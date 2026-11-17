@@ -1,4 +1,4 @@
-[Current Version 2.4](release-notes.md)
+[Current Version 2.4.1](release-notes.md)
 
 <div style="float: right">
 <span style="font-weight: bold">By the numbers</span>
