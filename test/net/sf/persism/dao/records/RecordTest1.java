@@ -2,9 +2,9 @@ package net.sf.persism.dao.records;
 
 
 import net.sf.persism.annotations.Column;
+import net.sf.persism.annotations.ConstructorProperties;
 import net.sf.persism.annotations.NotColumn;
 
-import java.beans.ConstructorProperties;
 import java.util.UUID;
 
 // Designed for negative testing. This will fail because of the additional constructor which is messed up

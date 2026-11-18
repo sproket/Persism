@@ -1,8 +1,8 @@
 package net.sf.persism.dao.records;
 
+import net.sf.persism.annotations.ConstructorProperties;
 import net.sf.persism.annotations.NotTable;
 
-import java.beans.ConstructorProperties;
 import java.time.LocalDateTime;
 import java.util.Date;
 

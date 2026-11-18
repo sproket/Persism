@@ -1,10 +1,10 @@
 package net.sf.persism.dao.records;
 
+import net.sf.persism.annotations.ConstructorProperties;
 import net.sf.persism.annotations.Join;
 import net.sf.persism.annotations.Table;
 import net.sf.persism.dao.Invoice;
 
-import java.beans.ConstructorProperties;
 import java.util.ArrayList;
 import java.util.List;
 

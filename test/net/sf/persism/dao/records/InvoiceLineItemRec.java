@@ -1,10 +1,9 @@
 package net.sf.persism.dao.records;
 
+import net.sf.persism.annotations.ConstructorProperties;
 import net.sf.persism.annotations.Join;
 import net.sf.persism.annotations.Table;
 import net.sf.persism.dao.Product;
-
-import java.beans.ConstructorProperties;
 
 /*
 Currently, this will not work since we don't instantiate the Product POJO first.

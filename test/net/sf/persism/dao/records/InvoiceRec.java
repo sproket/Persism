@@ -1,10 +1,10 @@
 package net.sf.persism.dao.records;
 
+import net.sf.persism.annotations.ConstructorProperties;
 import net.sf.persism.annotations.NotColumn;
 import net.sf.persism.annotations.Table;
 import net.sf.persism.dao.Invoice;
 
-import java.beans.ConstructorProperties;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
@@ -22,18 +22,18 @@ public record InvoiceRec(Integer invoiceId, String customerId, float price, int 
         this(invoiceId, customerId, price, quantity, discount, actualPrice, created, paid, "different order 3");
     }
 
-    public InvoiceRec(boolean paid, Integer invoiceId,  float price, String customerId, int quantity, double discount,
+    public InvoiceRec(boolean paid, Integer invoiceId, float price, String customerId, int quantity, double discount,
                       BigDecimal actualPrice, LocalDateTime created) {
         this(invoiceId, customerId, price, quantity, discount, actualPrice, created, paid, "different order");
     }
 
-    public InvoiceRec(boolean paid, Integer invoiceId,  float price, String customerId, double discount, int quantity,
+    public InvoiceRec(boolean paid, Integer invoiceId, float price, String customerId, double discount, int quantity,
                       BigDecimal actualPrice, LocalDateTime created) {
         this(invoiceId, customerId, price, quantity, discount, actualPrice, created, paid, "all different order");
     }
 
-    public InvoiceRec(boolean paid, Integer invoiceId,  float price, String customerId, double discount, int quantity,
-                       LocalDateTime created, BigDecimal actualPrice) {
+    public InvoiceRec(boolean paid, Integer invoiceId, float price, String customerId, double discount, int quantity,
+                      LocalDateTime created, BigDecimal actualPrice) {
         this(invoiceId, customerId, price, quantity, discount, actualPrice, created, paid, "all different order 2");
     }
 

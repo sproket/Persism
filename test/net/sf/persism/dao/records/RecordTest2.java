@@ -1,6 +1,7 @@
 package net.sf.persism.dao.records;
 
-import java.beans.ConstructorProperties;
+import net.sf.persism.annotations.ConstructorProperties;
+
 import java.time.LocalDateTime;
 
 /**

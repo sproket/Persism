@@ -1,9 +1,10 @@
 /**
  * Persism 3.0
+ * Breaking change of module name from sproket.github.io.persism
+ * Sorry about that.
  */
-module sproket.github.io.persism {
+module io.persism {
     requires java.sql;
-    requires java.desktop;
     requires java.logging;
 
     requires static org.apache.logging.log4j;

@@ -1,6 +1,7 @@
 package net.sf.persism;
 
-import java.beans.ConstructorProperties;
+import net.sf.persism.annotations.ConstructorProperties;
+
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Parameter;
 import java.sql.ResultSet;
