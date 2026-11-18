@@ -6,7 +6,7 @@
 
     <groupId>io.github.sproket</groupId>
     <artifactId>persism</artifactId>
-    <version>2.4.1</version>
+    <version>3.0</version>
     <packaging>jar</packaging>
 
     <name>persism</name>
@@ -14,8 +14,10 @@
     <url>https://github.com/sproket/Persism</url>
 
     <properties>
-        <java.version>17</java.version>
-        <maven.compiler.release>17</maven.compiler.release>
+        <java.version>28</java.version>
+        <maven.compiler.source>28</maven.compiler.source>
+        <maven.compiler.target>28</maven.compiler.target>
+        <maven.compiler.release>28</maven.compiler.release>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
 
@@ -93,7 +95,7 @@
                 <version>3.3.0</version>
                 <configuration>
                     <excludePackageNames>net.sf.persism.log*;net.sf.persism.logging.*</excludePackageNames>
-                    <source>17</source>
+                    <source>28</source>
                 </configuration>
                 <executions>
                     <execution>
@@ -263,7 +265,7 @@
                                     <goal>jar</goal>
                                 </goals>
                                 <configuration>
-                                    <release>17</release>
+                                    <release>28</release>
                                 </configuration>
                             </execution>
                         </executions>
@@ -401,7 +403,7 @@
         <dependency>
             <groupId>org.apache.derby</groupId>
             <artifactId>derby</artifactId>
-            <version>10.16.1.1</version>
+            <version>10.17.1.0</version>
             <scope>test</scope>
         </dependency>
 
@@ -409,7 +411,7 @@
         <dependency>
             <groupId>org.apache.derby</groupId>
             <artifactId>derbyshared</artifactId>
-            <version>10.16.1.1</version>
+            <version>10.17.1.0</version>
             <scope>test</scope>
         </dependency>
 
@@ -528,13 +530,6 @@
             <groupId>org.json</groupId>
             <artifactId>json</artifactId>
             <version>20231013</version>
-            <scope>test</scope>
-        </dependency>
-
-        <dependency>
-            <groupId>com.toddfast.typeconverter</groupId>
-            <artifactId>typeconverter</artifactId>
-            <version>1.0</version>
             <scope>test</scope>
         </dependency>
 

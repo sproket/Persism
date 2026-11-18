@@ -24,7 +24,7 @@ public class UtilsForTests {
 
     public static String replace(String baseStr, String strOld, String strNew) {
         // Takes care of possible /x characters in the string's replaceAll function.
-        if (null == baseStr || baseStr.length() == 0) {
+        if (null == baseStr || baseStr.isEmpty()) {
             return "";
         }
         StringBuilder lsNewStr = new StringBuilder(baseStr.length());
@@ -309,7 +309,7 @@ public class UtilsForTests {
 
     public static String readFromResource(String path) {
         try (InputStream is = UtilsForTests.class.getResourceAsStream(path)) {
-            return new Scanner(is, StandardCharsets.UTF_8.name()).useDelimiter("\\A").next();
+            return new Scanner(is, StandardCharsets.UTF_8).useDelimiter("\\A").next();
         } catch (IOException e) {
             throw new UncheckedIOException(e);
         }

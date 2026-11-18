@@ -288,3 +288,11 @@ Where could extend SQL -
 
 todo support Blob to BufferedImage or WritableImage
 DONE store an instances of classes (not records) for use with fetch to get clean data to copy to a re-read instance rather than trying to guess defaults
+
+todo 3.0
+Remove dep on java.desktop for annotation
+new tests for value records
+new tests for value classes which need to use the ConstructorTag annotation which we should copy into our lib to get rid of module dep
+fix new many to one duping objects just keep the single instances and set them
+support rainbowgum logger
+remove Derby and JTDS and add DuckDB

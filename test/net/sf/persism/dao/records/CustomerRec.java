@@ -9,7 +9,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Table("Customers")
-public record CustomerRec(
+public value record CustomerRec(
 
         String customerId,
 

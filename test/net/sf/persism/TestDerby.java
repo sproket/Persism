@@ -23,6 +23,7 @@ import static net.sf.persism.UtilsForTests.*;
  * @author danhoward
  * @since 12-05-22 8:26 AM
  */
+@Deprecated
 @Category(LocalDB.class)
 public final class TestDerby extends BaseTest {
 
